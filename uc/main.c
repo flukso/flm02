@@ -23,7 +23,7 @@
 
 #include "wiring/wiring_private.h"
 
-#include "main.1mhz.h"
+#include "main.h"
 
 #include <avr/io.h>
 // pin/register/ISR definitions

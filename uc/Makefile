@@ -173,7 +173,7 @@ all: bin_files build sizeafter
 
 build: elf hex eep
 
-bin_files: $(TARGET).pde
+bin_files: $(TARGET).c
 	# Here is the "preprocessing".
 	# It creates a .cpp file based with the same name as the .pde file.
 	# On top of the new .cpp file comes the WProgram.h header.
@@ -183,7 +183,7 @@ bin_files: $(TARGET).pde
 	# Not the original .pde file you actually edit...
 	test -d bin || mkdir bin
 	#echo '#include "WProgram.h"' > bin/$(TARGET).cpp
-	cat $(TARGET).pde > bin/$(TARGET).c
+	cp $(TARGET).c  bin/$(TARGET).c
 	#cat main.cxx >> bin/$(TARGET).cpp
 
 elf: bin/$(TARGET).elf
@@ -241,7 +241,7 @@ extcoff: $(TARGET).elf
 	$(NM) -n $< > $@
 
 	# Link: create ELF output file from library.
-bin/$(TARGET).elf: $(TARGET).pde bin/core.a 
+bin/$(TARGET).elf: $(TARGET).c bin/core.a 
 	$(CC) $(ALL_CFLAGS) -o $@ bin/$(TARGET).c -L. bin/core.a $(LDFLAGS)
 
 bin/core.a: $(OBJ)
