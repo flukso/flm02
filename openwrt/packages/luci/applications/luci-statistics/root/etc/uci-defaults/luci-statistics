@@ -1,0 +1,7 @@
+#!/bin/sh
+
+uci batch <<-EOF
+	add ucitrack luci_statistics
+	set ucitrack.@luci_statistics[-1].init=luci_statistics
+	commit ucitrack
+EOF

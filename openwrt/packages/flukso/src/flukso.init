@@ -1,0 +1,17 @@
+#!/bin/sh /etc/rc.common
+# Copyroght (c) 2008 jokamajo.org
+# $Id: flukso.init 7 2009-02-16 23:13:00Z icarus75 $
+
+START=98
+
+start() {
+	stty 4800 < /dev/ttyS0
+	/usr/share/lua/flukso/flukso.lua >&- 2>&- <&- &
+	/usr/share/lua/flukso/heartbeat.lua 1 >&- 2>&- <&-
+        echo -e "$(date '+%M') * * * * /usr/share/lua/flukso/heartbeat.lua 0\n"'*/15 * * * * [ -z "$(ps | grep '\'fluks[o]\'')" ] && reboot' | crontab -
+	}
+
+stop() {
+	crontab -r
+        kill $(ps | grep 'fluks[o]' | awk '{print $1}')
+       }

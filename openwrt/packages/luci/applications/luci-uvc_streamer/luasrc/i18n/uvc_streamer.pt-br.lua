@@ -1,0 +1,5 @@
+framespersecond = 'Frames por segundo'
+resolution = 'Resolução'
+settings = 'Configurações'
+uvc_streamer = 'Webcam streaming'
+uvc_streamer_desc = 'Configure a sua webcam compatível com o Linux-UVC. Coloque no seu browser por ex. <a href="http://%s:%i/">http://%s:%i/</a>'

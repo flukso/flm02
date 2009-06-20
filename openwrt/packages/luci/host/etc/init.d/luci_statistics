@@ -1,0 +1,31 @@
+#!/bin/sh /etc/rc.common
+START=79
+
+start() {
+	### replace shipped config with symlink
+	if [ ! -L /etc/collectd.conf ]; then
+		test -f /etc/collectd.conf && mv /etc/collectd.conf /etc/collectd.conf.bak
+		ln -s /var/etc/collectd.conf /etc/collectd.conf
+	fi
+
+	### create config
+	mkdir -p /var/etc
+	/usr/bin/stat-genconfig > /var/etc/collectd.conf
+
+	### prepare rrdimg directory
+	if [ ! -L /www/rrdimg ]; then
+		imagepath="$(uci get luci_statistics.rrdtool.image_path)"
+		ln -s ${imagepath:-/tmp/rrdimg}/ /www/rrdimg
+	fi
+
+    ### flush LuCI index cache
+    test -f /var/luci-indexcache && rm /var/luci-indexcache
+}
+
+restart() {
+        ### regenerate config / prepare environment
+        start
+
+        ### restart collectd
+        /etc/init.d/collectd restart
+}

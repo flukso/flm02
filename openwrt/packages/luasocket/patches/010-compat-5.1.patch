@@ -1,0 +1,14 @@
+diff -urNad trunk~/src/luasocket.c trunk/src/luasocket.c
+--- trunk~/src/luasocket.c	2006-04-27 05:23:22.000000000 +0200
++++ trunk/src/luasocket.c	2007-08-12 23:57:43.000000000 +0200
+@@ -20,10 +20,6 @@
+ #include "lua.h"
+ #include "lauxlib.h"
+ 
+-#if !defined(LUA_VERSION_NUM) || (LUA_VERSION_NUM < 501)
+-#include "compat-5.1.h"
+-#endif
+-
+ /*=========================================================================*\
+ * LuaSocket includes
+ \*=========================================================================*/

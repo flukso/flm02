@@ -1,0 +1,26 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: footer.htm 3941 2008-12-23 21:39:38Z jow $
+
+-%>
+	<%- if pageaction then -%>
+	<div class="cbi-page-actions">
+		<% if not autoapply then%>
+			<input class="cbi-button cbi-button-apply" type="submit" name="cbi.apply" value="<%:saveapply%>" />
+		<% end %>
+		<input class="cbi-button cbi-button-save" type="submit" value="<%:save%>" />
+		<input class="cbi-button cbi-button-reset" type="reset" value="<%:reset%>" />
+		<script type="text/javascript">cbi_d_update();</script>
+	</div>
+	<%- end -%>
+</form>
+<%+footer%>
