@@ -1,5 +1,5 @@
 # Copyright (c) 2008 jokamajo.org
-# $Id: Makefile 3 2008-08-07 16:00:00Z icarus75 $
+# $Id$
 
 include $(TOPDIR)/rules.mk
 

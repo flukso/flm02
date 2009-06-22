@@ -16,7 +16,7 @@
 -- along with this program; if not, write to the Free Software
 -- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 --
--- $Id: auth.lua 1 2009-03-13 13:40:00Z icarus75 $
+-- $Id$
 --
 
 require 'luci.model.uci'

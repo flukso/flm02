@@ -16,7 +16,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// $Id: main.1mhz.h 1 2009-05-27 20:27:00Z icarus75 $
+// $Id$
 //
 
 #define SENSOR0 "197676b88851e28c489524b4526a3745"

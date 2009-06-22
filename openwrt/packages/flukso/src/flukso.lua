@@ -18,7 +18,7 @@
 -- along with this program; if not, write to the Free Software
 -- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 --
--- $Id: deamon.lua 12 2009-03-04 22:30:00Z icarus75 $
+-- $Id$
 --
 
 require 'posix'
@@ -46,9 +46,9 @@ function receive(device)
         posix.syslog(30, 'received pulse from '..device..': '..line:sub(5))
 
         -- flash the power led for 50ms
-        os.execute('gpioctl set 7')
+        os.execute('gpioctl clear 4')
         socket.select(nil, nil, 0.05)
-        os.execute('gpioctl clear 7')
+        os.execute('gpioctl set 4')
 
         local meter, value = line:sub(5, 36), tonumber(line:sub(38))
         coroutine.yield(meter, os.time(), value)

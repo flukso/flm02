@@ -4,7 +4,7 @@
 -- Vardump: The Power of Seeing What's Behind
 -- Copyright 2008 by Tobias Sülzenbrück and Christoph Beckmann
 --
--- $Id: dbg.lua 1 2009-01-31 22:30:00Z icarus75 $
+-- $Id$
 --
 
 local getfenv, getmetatable, print, pairs, type, tostring = getfenv, getmetatable, print, pairs, type, tostring

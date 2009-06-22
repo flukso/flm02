@@ -1,5 +1,5 @@
 // Copyright (c) 2008 jokamajo.org
-// $Id: main.pde 1 2008-08-19 00:40:00Z icarus75 $
+// $Id$
 
 // define section, move to main.h later on
 
