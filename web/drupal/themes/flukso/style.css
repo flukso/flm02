@@ -1,0 +1,517 @@
+/* Flukso theme by icarus75 */
+/* derived from the teleology theme */
+
+/* $Id* */
+
+a {
+	font-weight: normal;
+	text-decoration: none;
+	padding: 1px;
+}
+
+a:link {
+	color: rgb(150,150,150);
+}
+
+a:visited {
+	color: rgb(150,150,150);
+}
+
+a:hover {
+	background-color:
+	rgb(0,174,239);
+	color: rgb(255,255,255);
+}
+
+body {
+	background: #fff;
+	color: #444;
+	font-family: Arial, system, Tahoma, sans-serif;
+	font-size: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	margin: 0;
+	font-size: 1em;
+}
+
+table {
+	font-size: 1em;
+}
+
+#container {
+	margin: 15px auto;
+	width: 920px;
+	padding 0 10px 10px;
+}
+
+#top {
+	background: #f3f3f3;
+	border: 1px solid #ddd;
+	margin: 0 0 12px;
+	width: 684px;
+}
+
+#home a:hover {
+	background-color: #f3f3f3;
+}
+
+#logo img {
+	margin: 1em auto 1em 1em;
+	vertical-align: bottom;
+}
+
+.site-name {
+	font-size: 1.8em;
+	vertical-align: bottom;
+}
+
+.site-slogan {
+	font-size: .8em;
+	padding: 0em 0em 0em 1em;
+}
+
+#navigation {
+	background: #f3f3f3 url(images/menu-bg.png) center repeat;
+	/*border-top: 1px solid #ddd;*/
+	float: left; font-size: 1em;
+	text-align: center; width: 100%;
+}
+
+#search {
+	background: #f3f3f3 url(images/menu-bg.png) center repeat;
+	padding-right: .4em;
+	text-align: right;
+}
+
+#search .form-text {
+	border-width: 1px;
+	font-size: .6em;
+}
+
+#search .form-submit {
+	border-width: 1px;
+	font-size: .6em;
+}
+
+#leftnav {
+	float: left;
+	width: 222px;
+	margin: 0 auto auto 0;
+}
+
+#rightnav {
+	float: right;
+	width: 222px;
+	margin: 0 0 auto auto;
+}
+
+#leftnav .block, #rightnav .block {
+	background: #f3f3f3;
+	border: 1px solid #ddd;
+	font-size: 0.8em;
+	margin: 0% 0 6% 0;
+}
+
+#content {
+	background: #f3f3f3;
+	border: 1px solid #ddd;
+	font-size: .8em;
+	width: 660px;
+	margin: 0;
+	padding: 12px;
+	text-align: justify;
+}
+
+/* :BVDM: center charts in text body */
+#chart {
+	padding: 1em;
+	text-align: center;
+}
+
+#header .block {
+	border: 1px solid #ddd;
+	font-size: 1em;
+}
+
+#header .content {
+	font-size: 1em;
+}
+
+.content-title {
+	font-size: 1.4em;
+	font-weight: normal;
+}
+
+.node {
+	/* border: 1px solid #ddd; */
+	font-size: 1em;
+	margin-bottom: 3em;
+}
+
+.breadcrumb {
+	font-size: 1em;
+	padding: 0 0 .2em 0;
+}
+
+/* forms */
+.form-item {
+	font-size: 1em;
+}
+
+/* .form-item label { color: #000;} */
+
+fieldset {
+	border: 1px solid #ddd;
+}
+
+input, textarea, select {
+	border: 1px silver inset;
+}
+
+input[type="submit"] {
+	border: 1px #ddd outset;
+	background-color: #f3f3f3;
+}
+
+input[type="text"], textarea, input.form-password {
+	padding: 1px;
+}
+
+.node h2 {
+	/* background: #f3f3f3; */
+	color: #f7f7f7;
+	font-size: 1.6em;
+	padding: 0 0 1em 0;
+}
+
+.node .content, .node .info {
+	background: #f3f3f3; 
+	font-size: 1em;
+}
+
+.node .picture {
+	border: 1px solid #ddd;
+	float: right; 
+	margin: 0.5em;
+}
+
+.node.item-listing {
+	padding: 1em;
+	border-top: 1px solid #ff0000;
+}
+
+.node.item-listing.sticky {
+	background-image: none;
+}
+
+.node table ul {
+	margin: 0;
+	padding: 1em;
+}
+
+.node.sticky .title {
+	background-image: none;
+}
+
+.node .title {
+	border-bottom: 1px solid #ff0000;
+}
+
+.messages {
+	background: #eee;
+	margin: 0em;
+}
+
+.clear.links {
+	font-size: 1em;
+	padding: 0em;
+}
+
+br.clear {
+	clear: both;
+}
+
+.block {
+	margin-bottom: 1em;
+	background: #f7f7f7;
+}
+
+.block h2 {
+	background: #f3f3f3 url(images/menu-bg.png) center repeat;
+	color: #444;
+	font-size: 1em;
+	font-weight: normal;
+	height: auto;
+	padding: .2em;
+}
+
+.block .content {
+	font-size: 1em;
+	padding-left: 0.2em;
+}
+
+.box {
+	/*border: 1px solid #ddd;*/
+	font-size: 1em;
+	padding: 0em 0em 2em 1em;
+	text-align: left;
+}
+
+.box .title {
+	font-size: 1em;
+}
+
+.quote-author {
+	font-style: normal;
+	font-weight: normal;
+}
+
+.quote-msg {
+	/* border: 1px solid #ddd; */
+	background-color: #fefefe;
+	font-style: italic;
+	padding: 0em .2em 0 .2em;
+}
+
+#footer {
+	background: #f3f3f3;
+	border: 1px solid #ddd;
+	color: #aaa;
+	font-size: 0.64em;
+	padding: .2em 0 .2em 0;
+	width: 684px;
+	margin: 12px 0 0 0;
+	text-align: center;
+}
+
+/* icons */
+a.read-more,
+.icon-print,
+.icon-add-child-page,
+.icon-calendar,
+.form-text#edit-name,
+.form-password#edit-pass,
+.form-text#edit-pass,
+.form-text#edit-date {
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 3em;
+}
+
+a.read-more {
+	background-image: url("icons/page_white_go.png");
+}
+
+.icon-print {
+	background-image: url("icons/printer.png");
+}
+
+.icon-add-child-page {
+	background-image: url("icons/page_white_add.png");
+}
+
+.icon-calendar {
+	background-image: url("icons/calendar.png");
+}
+
+.form-text#edit-name {
+	background-image: url("icons/user.png");
+}
+
+.form-password#edit-pass, .form-text#edit-pass {
+	background-image: url("icons/key.png");
+}
+
+.form-text#edit-date {
+	background-image: url("icons/calendar.png");
+}
+
+/* tables */
+tr th, tr.light td, tr.dark td, tr.odd td, tr.even td {
+	padding: 0em .2em 0em .2em;
+}
+
+tr.light, tr.dark, tr.even, tr.odd {
+	background-color: #fff;
+}
+
+tr.light .active, tr.dark .active, tr.even .active, tr.odd .active {
+	background-color: #fff;
+}
+
+/* tr th {border: 1px solid #ddd;} */
+
+tr.watchdog-user {
+	background-color: #ffd;
+	font-size: .7em;
+}
+
+tr.watchdog-user .active {
+	background-color: #eed;
+	font-size: .7em;
+}
+
+tr.watchdog-content {
+	background-color: #ddf;
+	font-size: .7em;
+}
+
+tr.watchdog-content .active {
+	background-color: #cce;
+	font-size: .7em;
+}
+
+tr.watchdog-page-not-found, tr.watchdog-access-denied {
+	background-color: #dfd;
+	font-size: .7em;
+}
+
+tr.watchdog-page-not-found .active, tr.watchdog-access-denied .active {
+	background-color: #cec;
+	font-size: .7em;
+}
+
+tr.watchdog-error {
+	background-color: #ffc9c9;
+	font-size: .7em;
+}
+
+tr.watchdog-error .active {
+	background-color: #eeb9b9;
+	font-size: .7em;
+}
+
+tr.watchdog-menu, tr.watchdog-menu {
+	background-color: #fff;
+	font-size: .7em;
+}
+
+/* lists */
+ul.primary li a:hover {
+	background-color: rgb(0,174,239);
+	color: rgb(255,255,255);
+}
+
+ul.secondary a {
+	padding: 1px;
+}
+
+ul li a:hover {
+	background-color: rgb(0,174,239);
+	color: rgb(255,255,255);
+}
+
+html.js fieldset legend a:hover {
+	background-color: rgb(0,174,239);
+	color: rgb(255,255,255);
+}
+
+/* ------------------------------------------------------------------------
+ * Image-assist: overruling clear: both to eliminate spacing below img
+ * --------------------------------------------------------------------- */
+.image-clear {
+	clear: none;
+}
+
+/* ------------------------------------------------------------------------
+ * Comments
+ * --------------------------------------------------------------------- */
+#comments {
+	margin-top: 0em;
+	margin-bottom: 2em;
+	padding: 0 1.5em 0 1.5em;
+}
+
+div.comment {
+	margin: 0 0 2em 0;
+}
+
+div.even div.content,
+div.odd div.content {
+	border: 1px solid #ccc;
+	border-bottom: 0;
+	margin: 0;
+	padding: 1em;
+}
+
+div.comment div.content h3 {
+	font-weight: normal;
+	margin: 0;
+}
+
+div.comment div.content h3 a:link,
+div.comment div.content h3 a:visited {
+    color: #333;
+	font-weight: normal;
+	text-decoration: none;
+}
+
+div.comment div.content h3 a:hover {
+    color: #ed1a09;
+}
+
+div.comment div.content p {
+	margin: 0;
+	padding: 0;
+}
+
+div.comment img.user-picture { 
+    float: left;
+    padding: 0 10px 5px 0;
+}
+
+div.comment div.content p+p { margin-top: 1.5em; }
+
+div.even div.content { background-color: #fff; }
+
+div.comment-meta {
+	display: block;
+	margin: 0;
+	padding: 0.66em 0 0 0;
+}
+
+div.comment-meta span {
+	margin-left: 0.66em;
+	font-style: normal;
+}
+
+div.even div.comment-meta {
+	background: #f3f3f3 url(images/comment-light.gif) no-repeat top left;
+	margin: 0;
+	font-style: normal;
+}
+
+div.odd {
+	background-color: #eee;
+}
+
+div.odd div.comment-meta {
+	background: #f3f3f3 url(images/comment-dark.gif) no-repeat top left;
+}
+
+em.moderation {
+	background-color: #fffbcc;
+	padding: 2px;
+	border: 1px solid #e6db55;
+}
+
+#respond { font-weight: normal }
+
+#comment-form-wrapper { margin: 0 1.5em 0 1.5em; }
+
+#comments h2.comments,
+#comments div.box h2 {
+	display: block;
+	font-size: 1.75em;
+	margin-bottom: 0;
+	text-transform: lowercase;
+}
+
+#comments div.box {
+    margin-top: 10px;
+}
+
+#comment-controls {
+    margin: 20px 0;
+}

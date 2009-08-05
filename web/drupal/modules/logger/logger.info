@@ -1,0 +1,8 @@
+; $Id$
+name = Logger
+description = Logs metering values reported through XML-RPC in an RRD database and renders them in different charts.
+package = Metering
+core = 6.x
+version = 6.x-0.2
+dependencies[] = autotimezone
+

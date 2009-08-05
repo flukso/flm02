@@ -1,0 +1,238 @@
+<?php
+// Copyright (c) 2009 jokamajo.org
+// $Id$
+
+function logger_schema() {
+  $schema['logger_devices'] = array(
+    'description' => t("Contains the Fluksometer device ID's."),
+    'fields' => array(
+      'device' => array(
+        'type' => 'varchar',
+        'length' => '32',
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '10',
+      ),
+      'sha' => array(
+        'type' => 'varchar',
+        'length' => '32',
+        'not null' => FALSE,
+      ),
+      'created' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '10',
+      ),
+      'access' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '10',
+      ),
+      'version' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '5',
+      ),
+      'upgrade' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '5',
+      ),
+      'resets' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '5',
+      ),
+      'uptime' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '10',
+      ),
+      'memtotal' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '5',
+      ),
+      'memfree' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '5',
+      ),
+      'memcached' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '5',
+      ),
+      'membuffers' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '5',
+      ),
+      'uart_oe' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '5',
+      )
+    ),
+    'primary key' => array('device'),
+  );
+
+  $schema['logger_meters'] = array(
+    'description' => t("Contains the Fluksometer meter ID's."),
+    'fields' => array(
+      'meter' => array(
+        'type' => 'varchar',
+        'length' => '32',
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '10',
+      ),
+      'device' => array(
+        'type' => 'varchar',
+        'length' => '32',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'created' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '10',
+      ),
+      'access' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '10',
+      ),
+      'night' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '10',
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => '16',
+        'not null' => TRUE,
+      ),
+      'function' => array(
+        'type' => 'varchar',
+        'length' => '16',
+        'not null' => TRUE,
+      ),
+      'value' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '10',
+      ),
+      'factor' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+        'disp-width' => '10',
+      ),
+      'unit' => array(
+        'type' => 'varchar',
+        'length' => '16',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('meter'),
+  );
+
+  return $schema;
+}
+
+function logger_install() {
+  drupal_install_schema('logger');
+  drupal_set_message(t('Created logger module tables {logger_devices} and {logger_meters}.'));
+}
+
+function logger_uninstall() {
+  drupal_uninstall_schema('logger');
+  drupal_set_message(t('Deleted logger module tables {logger_devices} and {logger_meters}.'));
+}
+
+/**
+  * R5.x update
+  */
+function logger_update_1() {
+  $items = array();
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      $items[] = update_sql("ALTER TABLE {logger_meters} ADD COLUMN night int unsigned NOT NULL default '0' AFTER access");
+      break;
+    case 'pgsql':
+      break;
+  }
+  return $items;
+}
+
+/**
+ * update to run with logger module's 6.x code
+ */
+function logger_update_6000() {
+  $items = array();
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      $items[] = update_sql("ALTER TABLE {logger_devices} ADD COLUMN sha varchar(32) AFTER uid");
+      $items[] = update_sql("ALTER TABLE {logger_devices} ADD COLUMN memtotal smallint unsigned NOT NULL default '0'");
+      $items[] = update_sql("ALTER TABLE {logger_devices} ADD COLUMN memfree smallint unsigned NOT NULL default '0'");
+      $items[] = update_sql("ALTER TABLE {logger_devices} ADD COLUMN memcached smallint unsigned NOT NULL default '0'");
+      $items[] = update_sql("ALTER TABLE {logger_devices} ADD COLUMN membuffers smallint unsigned NOT NULL default '0'");
+      $items[] = update_sql("ALTER TABLE {logger_devices} ADD COLUMN uart_oe smallint unsigned NOT NULL default '0'");
+      break;
+    case 'pgsql':
+      break;
+  }
+  return $items;
+}
