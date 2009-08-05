@@ -1,0 +1,17 @@
+? reciprocal-one-way-relationships-not-allowed.patch
+Index: user_relationships_api.api.inc
+===================================================================
+RCS file: /cvs/drupal-contrib/contributions/modules/user_relationships/user_relationships_api/Attic/user_relationships_api.api.inc,v
+retrieving revision 1.1.2.15
+diff -u -p -r1.1.2.15 user_relationships_api.api.inc
+--- user_relationships_api.api.inc	6 Jul 2009 15:55:04 -0000	1.1.2.15
++++ user_relationships_api.api.inc	5 Aug 2009 21:08:00 -0000
+@@ -170,7 +170,7 @@ function user_relationships_request_rela
+     return FALSE;
+   }
+   
+-  if (!user_relationships_load(array('between' => array($requester->uid, $requestee->uid), 'rtid' => $type->rtid), array('count' => TRUE))) {
++  if (!user_relationships_load(array('requester_id' => $requester->uid, 'requestee_id' => $requestee->uid, 'rtid' => $type->rtid), array('count' => TRUE))) {
+     $relationship = (object)array(
+       'requester_id'  => $requester->uid,
+       'requestee_id'  => $requestee->uid,
