@@ -221,8 +221,6 @@ void setup()
   // enable ADC and start a first ADC conversion
   ADCSRA |= (1<<ADEN) | (1<<ADSC);
 
-  WDT_on();
-
   //set global interrupt enable in SREG to 1 (DS p.12)
   sei();
 }
@@ -269,8 +267,15 @@ void loop()
 int main(void)
 {
   WDT_off();
-//  init();
   setup();
+
+  // insert a startup delay of 20s to prevent interference with redboot
+  // interrupts are already enabled at this stage
+  // so the pulses are counted but not sent to the deamon
+  for (i=0; i<4; i++) _delay_ms(5000);
+
+  WDT_on();
+
   for (;;) loop();
   return 0;
 }
