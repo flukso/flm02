@@ -14,7 +14,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/flukso
   SECTION:=utils
   CATEGORY:=Utilities
-  DEPENDS:=+liblua-xmlrpc +ntpclient +netcat
+  DEPENDS:=+liblua-xmlrpc +ntpclient
   TITLE:=Flukso - community metering
 endef
 

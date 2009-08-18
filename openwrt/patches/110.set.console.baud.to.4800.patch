@@ -1,0 +1,13 @@
+Index: config-2.6.26
+===================================================================
+--- config-2.6.26	(revision 16491)
++++ config-2.6.26	(working copy)
+@@ -20,7 +20,7 @@
+ # CONFIG_BT is not set
+ CONFIG_CEVT_R4K=y
+ CONFIG_CLASSIC_RCU=y
+-CONFIG_CMDLINE="console=ttyS0,9600 rootfstype=squashfs,jffs2 init=/etc/preinit"
++CONFIG_CMDLINE="console=ttyS0,4800 rootfstype=squashfs,jffs2 init=/etc/preinit"
+ CONFIG_CPU_BIG_ENDIAN=y
+ CONFIG_CPU_HAS_LLSC=y
+ CONFIG_CPU_HAS_PREFETCH=y

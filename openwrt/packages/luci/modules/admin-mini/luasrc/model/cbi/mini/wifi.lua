@@ -64,11 +64,6 @@ function bssid.cfgvalue(self, section)
 	 or wifidata[ifname]["Access Point"])) or "-"
 end
 
-channel = s:option(DummyValue, "channel", translate("channel"))
-function channel.cfgvalue(self, section)
-	return wireless[self.map:get(section, "device")].channel
-end
-
 protocol = s:option(DummyValue, "_mode", translate("protocol"))
 function protocol.cfgvalue(self, section)
 	local mode = wireless[self.map:get(section, "device")].mode
@@ -134,6 +129,9 @@ end
 
 -- Config Section --
 
+local hwtype = m:get(wifidevs[1], "type")
+
+--[[
 s = m:section(NamedSection, wifidevs[1], "wifi-device", translate("devices"))
 s.addremove = false
 
@@ -155,7 +153,7 @@ ch = s:option(Value, "channel", translate("a_w_channel"))
 for i=1, 14 do
 	ch:value(i, i .. " (2.4 GHz)")
 end
-
+]]--
 
 s = m:section(TypedSection, "wifi-iface", translate("m_n_local"))
 s.anonymous = true
@@ -238,7 +236,7 @@ function key:validate(value, section)
                         return nil
                 end
         elseif encr:formvalue(section) == 'psk' or encr:formvalue(section) == 'psk2' then
-                return #value == 64 and value:hexcheck()
+                return #value > 7 and #value < 64 and value
         else
                 return value
         end

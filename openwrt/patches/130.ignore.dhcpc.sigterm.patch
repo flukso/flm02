@@ -1,0 +1,17 @@
+--- dhcpc.c	2009-08-18 23:24:17.000000000 +0200
++++ dhcpc.c	2009-08-18 23:25:52.000000000 +0200
+@@ -616,10 +616,10 @@
+ 				timeout = INT_MAX;
+ 				break;
+ 			case SIGTERM:
+-				bb_info_msg("Received SIGTERM");
+-				if (opt & OPT_R) /* release on quit */
+-					perform_release(requested_ip, server_addr);
+-				goto ret0;
++				bb_info_msg("Received SIGTERM: ignoring!");
++		//		if (opt & OPT_R) /* release on quit */
++		//			perform_release(requested_ip, server_addr);
++		//		goto ret0;
+ 			}
+ 		}
+ 	} /* for (;;) - main loop ends */

@@ -1,0 +1,8 @@
+$Id$
+
+apply following patches to a fresh 8.09 installation:
+-----------------------------------------------------
+100.disable.console.patch		in	8.09_base_dir/target/linux/generic-2.6/
+110.set.console.baud.to.4800.patch	in	8.09_base_dir/target/linux/atheros/
+120.set.AR5315_RESET_GPIO.to.6.patch	in	8.09_base_dir/target/linux/atheros/files/include/asm-mips/mach-atheros/ar5315/
+130.ignore.dhcpc.sigterm.patch		in	8.09_base_dir/build_dir/mips/busybox-1.11.2/networking/udhcp/

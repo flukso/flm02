@@ -66,7 +66,7 @@ function hmac(T, M, timestamp)
   end
 
   T.timestamp = timestamp or os.time()
-  T.message   = T.timestamp..':'..serialise(M)..':'..T.key -- or T.timestamp..':'..T.nonce..':'..T.key
+  T.message   = T.timestamp..':'..serialise(M)..':'..T.key
   T.signature = lxyssl.hash('hmac-sha1', T.key):digest(T.message):hex()
 
   T.message, T.key, T.version = nil, nil, nil

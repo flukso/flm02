@@ -10,7 +10,7 @@ PKG_NAME:=luci
 PKG_RELEASE:=1
 
 ifeq ($(USELOCAL),1)
-  PKG_VERSION:=0.8+svn
+  PKG_VERSION:=0.8.6
 else
   PKG_SOURCE_URL:=http://svn.luci.subsignal.org/luci/$(PKG_BRANCH)
   ifeq ($(DUMP),)
@@ -287,7 +287,6 @@ endef
 
 define Package/luci-admin-core/install
 	$(call Package/luci/install/template,$(1),modules/admin-core)
-	touch $(1)/etc/init.d/luci_fixtime || true
 endef
 
 
