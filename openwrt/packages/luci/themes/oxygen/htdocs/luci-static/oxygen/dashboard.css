@@ -20,12 +20,16 @@ div.dashicon a {
 	font-weight: bold;
 }
 
+div.di_system a {
+	background-image: url(icons/system.png);
+}
+
 div.di_network a {
 	background-image: url(icons/network.png);
 }
 
 div.di_wifi a {
-        background-image: url(icons/wifi.png);
+	background-image: url(icons/wifi.png);
 }
 
 }

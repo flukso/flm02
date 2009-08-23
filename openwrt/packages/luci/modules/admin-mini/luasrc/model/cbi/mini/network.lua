@@ -31,58 +31,7 @@ for k, v in pairs(network) do
 	end
 end
 
-m = Map("network", translate("network"))
-s = m:section(Table, ifaces, translate("status"))
-s.parse = function() end
-
-s:option(DummyValue, ".name", translate("network"))
-
-hwaddr = s:option(DummyValue, "_hwaddr",
- translate("network_interface_hwaddr"), translate("network_interface_hwaddr_desc"))
-function hwaddr.cfgvalue(self, section)
-	local ix = self.map:get(section, "ifname") or ""
-	return luci.fs.readfile("/sys/class/net/" .. ix .. "/address")
-		or luci.util.exec("ifconfig " .. ix):match(" ([A-F0-9:]+)%s*\n")
-		or "n/a"
-end
-
-
-s:option(DummyValue, "ipaddr", translate("ipaddress"))
-
-s:option(DummyValue, "netmask", translate("netmask"))
-
-
-txrx = s:option(DummyValue, "_txrx",
- translate("network_interface_txrx"), translate("network_interface_txrx_desc"))
-
-function txrx.cfgvalue(self, section)
-	local ix = self.map:get(section, "ifname")
-
-	local rx = netstat and netstat[ix] and netstat[ix][1]
-	rx = rx and luci.tools.webadmin.byte_format(tonumber(rx)) or "-"
-
-	local tx = netstat and netstat[ix] and netstat[ix][9]
-	tx = tx and luci.tools.webadmin.byte_format(tonumber(tx)) or "-"
-
-	return string.format("%s / %s", tx, rx)
-end
-
-errors = s:option(DummyValue, "_err",
- translate("network_interface_err"), translate("network_interface_err_desc"))
-
-function errors.cfgvalue(self, section)
-	local ix = self.map:get(section, "ifname")
-
-	local rx = netstat and netstat[ix] and netstat[ix][3]
-	local tx = netstat and netstat[ix] and netstat[ix][11]
-
-	rx = rx and tostring(rx) or "-"
-	tx = tx and tostring(tx) or "-"
-
-	return string.format("%s / %s", tx, rx)
-end
-
-
+m = Map("network", translate("network"), translate("m_n_network"))
 
 s = m:section(NamedSection, "lan", "interface", translate("m_n_local"))
 s.addremove = false
@@ -105,7 +54,7 @@ p = s:option(ListValue, "proto", translate("protocol"))
 p.override_values = true
 p:value("none", "disabled")
 p:value("static", translate("manual", "manual"))
-p:value("dhcp", translate("automatic", "automatic"))
+p:value("dhcp", translate("automatic", "DHCP"))
 if has_pppoe then p:value("pppoe", "PPPoE") end
 if has_pptp  then p:value("pptp",  "PPTP")  end
 

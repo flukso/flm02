@@ -19,8 +19,6 @@ function index()
 	luci.i18n.loadc("admin-core")
 	local i18n = luci.i18n.translate
 
-	-- entry({"network"}, alias("mini", "network", "index"), i18n("network"), 20).index = true
-	entry({"network"}, cbi("mini/network", {autoapply=true}), i18n("network"), 1)
-	entry({"wifi"}, cbi("mini/wifi", {autoapply=true}), i18n("wifi"), 10).i18n="wifi"
-	-- entry({"network", "dhcp"}, cbi("mini/dhcp", {autoapply=true}), "DHCP", 20)
+	entry({"network"}, cbi("mini/network", {autoapply=true}), i18n("network"), 2)
+	entry({"wifi"}, cbi("mini/wifi", {autoapply=true}), i18n("wifi"), 1).i18n="wifi"
 end
