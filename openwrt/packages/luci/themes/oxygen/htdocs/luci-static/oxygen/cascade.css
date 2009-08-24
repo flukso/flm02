@@ -104,23 +104,21 @@ code {
 }
 
 .menubar {
-	background: #000000;
-	background: rgba(100, 100, 100, 0.8);
-	color: #ffffff;
+	clear: both;
 	width: 80%;
-	font-size: 0.8em;
+	margin: 0.7em auto;
+	padding: 0.5em;
+	background: #f5f5f5;
+	background: rgba(245, 245, 245, 0.9);
+	color: #000000;
+	border-width: 1px solid #444444;
+	font-size: 80%;
 
-	margin: 0.5em auto;
-
-	padding: 0.4em;
-	padding-left: 0.5em;
-	padding-right: 0.5em;
-
-	border-radius: 0.8em;
-	-khtml-border-radius: 0.8em;
-	-moz-border-radius: 0.8em;
-	-webkit-border-radius:0.8em;
-	-opera-border-radius: 0.8em;
+	border-radius: 1em;
+	-khtml-border-radius: 1em;
+	-moz-border-radius: 1em;
+	-webkit-border-radius: 1em;
+	-opera-border-radius: 1em;
 }
 
 .menubar .warning {
@@ -130,7 +128,7 @@ code {
 
 html .menubar a:link,
 html .menubar a:visited {
-	color: #ffffff;
+	color: #000000;
 	text-decoration: none;
 	font-weight: bold;
 }
@@ -175,7 +173,7 @@ html .menubar a:visited.warning {
 #maincontent {
 	clear: both;
 	width: 80%;
-	margin: 0 auto;
+	margin: 0.7em auto;
 	padding: 0.5em;
 	background: #f5f5f5;
 	background: rgba(245, 245, 245, 0.9);

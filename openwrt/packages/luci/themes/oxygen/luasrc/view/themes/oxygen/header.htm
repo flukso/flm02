@@ -109,20 +109,21 @@ ucimenu("/" .. category .. "/uci/", tree.nodes[category].nodes["uci"], "changes"
 <% end %>
 
 <div class="menubar">
-<h2 class="navigation"><a id="navigation" name="navigation"><%:navigation Navigation%></a></h2>
-<a href="<%=controller%>">Home</a>
+	<div class="dashboard">
+		<div class="dashicon di_wifi">
+			<a href="/cgi-bin/luci/wifi">Wifi</a>
+		</div>
 
-<%
-	local pointer = tree
-	for k, v in ipairs(crequest) do
-		if pointer.nodes and pointer.nodes[v] then
-			pointer = pointer.nodes[v]
-			%>
-			&#187; <a href="<%=luci.dispatcher.build_url(unpack(crequest, 1, k))%>"><%=pointer.title or v%></a>
-			<%
-		end
-	end
-%>
+		<div class="dashicon di_network">
+			<a href="/cgi-bin/luci/network">Network</a>
+		</div>
+
+		<div class="dashicon di_system">
+			<a href="/cgi-bin/luci/system">System</a>
+		</div>
+	</div>
+
+	<div class="clear"></div>
 </div>
 
 <div id="maincontent">
