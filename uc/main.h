@@ -24,7 +24,7 @@
 #define SENSOR2 "0123456789abcdef0123456789abcdef"
 #define SENSOR3 "0123456789abcdef0123456789abcdef"
 
-#define METERCONST 29165
+#define METERCONST 45205 // 29165 * 1.55
 
 #define START 0
 #define END3 0xffffffff
