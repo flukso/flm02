@@ -156,7 +156,7 @@ function logger_menu() {
  * Callback functions registered in the logger_menu section
  */
 function _logger_dashboard($type, $function, $interval) {
-  watchdog('dashboard', 'arguments: %type, %function, %interval', array('%type' => $type, '%function' => $function, '%interval' => $interval), WATCHDOG_DEBUG);
+  // watchdog('dashboard', 'arguments: %type, %function, %interval', array('%type' => $type, '%function' => $function, '%interval' => $interval), WATCHDOG_DEBUG);
 
   if (user_access('logger')) {
     drupal_set_title(t('your dashboard'));
@@ -240,7 +240,7 @@ function _logger_dashboard($type, $function, $interval) {
   $command .= $string->def;
   $command .= $string->line;
   exec($command, $output, $return_var);
-  watchdog('dashboard', 'arguments: %command ++ %output ++ %return_var', array('%command' => $command, '%output' => serialize($output), '%return_var' => $return_var), WATCHDOG_DEBUG);
+  // watchdog('dashboard', 'arguments: %command ++ %output ++ %return_var', array('%command' => $command, '%output' => serialize($output), '%return_var' => $return_var), WATCHDOG_DEBUG);
   return theme('chart', $graph_path . $pngid .'.png');
 }
 

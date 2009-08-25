@@ -63,41 +63,43 @@ function _logger_measurement_add($logs) {
   $path->night = $path->root .'/data/night/';
   foreach ($logs as $meter => $measurements) {
     //load the normalisation factor, relative to 1pulse = 1Wh
-    $meterdata = db_fetch_object(db_query("SELECT night, factor FROM {logger_meters} WHERE meter = '%s'", $meter));
-    $command = $path->root .'/rrdtool update '. $path->base . $meter .'.rrd ';
-    ksort($measurements); // sort the key-value pairs in the associative array by key, i.e. the timestamp
-    foreach ($measurements as $timestamp => $value) {
-      if (is_numeric($timestamp) and is_numeric($value)) {
-        $command .= $timestamp .':'. $value*$meterdata->factor .' ';
-      }
-      else {
-        watchdog_xmlrpc('logger.measurementAdd', 'corrupted input data for %meter : %timestamp : %value', array('%meter' => $meter, '%timestamp' => $timestamp, '%value' => $value), WATCHDOG_ERROR);
-      }
-    }
-    system($command, $return);
-    if ($return == 0) {
-      // update the night rrd every day at 6AM UTC
-      if (time() > $meterdata->night) {
-        $timestamp = floor(time()/86400)*86400;
-        $start = $timestamp + 3600;
-        $end = $start + 10800; //3h time interval
-        $command = $path->root ."/rrdtool fetch ". $path->base . $meter .".rrd AVERAGE -r 900 -s ". $start ." -e ". $end ." | tail -n 12 | awk -F': ' '{SUM += $2} END {print SUM/12}'";
-        $night = (float)shell_exec($command); //test shell_exec iso system
-        $command = $path->root .'/rrdtool update '. $path->night . $meter .'.rrd '. $timestamp .':'. $night;
-        system($command, $return);
-        if ($return == 0) {
-          watchdog_xmlrpc('logger.measurementAdd', 'successful update for night rrd: %command', array('%command' => $command), WATCHDOG_NOTICE); //debugging
+    $meterdata = db_fetch_object(db_query("SELECT uid, night, factor FROM {logger_meters} WHERE meter = '%s'", $meter));
+    if ($meterdata->uid < 5) { // only alpha users are allowed to call this API
+      $command = $path->root .'/rrdtool update '. $path->base . $meter .'.rrd ';
+      ksort($measurements); // sort the key-value pairs in the associative array by key, i.e. the timestamp
+      foreach ($measurements as $timestamp => $value) {
+        if (is_numeric($timestamp) and is_numeric($value)) {
+          $command .= $timestamp .':'. $value*$meterdata->factor .' ';
         }
         else {
-          watchdog_xmlrpc('logger.measurementAdd', 'error updating night rrd: %command', array('%command' => $command), WATCHDOG_ERROR); //debugging
+          watchdog_xmlrpc('logger.measurementAdd', 'corrupted input data for %meter : %timestamp : %value', array('%meter' => $meter, '%timestamp' => $timestamp, '%value' => $value), WATCHDOG_ERROR);
         }
-        $meterdata->night = $timestamp + 104400; //add an offset of 29h, i.e. 5AM UTC next day
       }
-      // {logger_meters} is updated with the true metervalue $value, NOT $value*$meterdata->factor since we're not normalising this entry!
-      db_query("UPDATE {logger_meters} SET access = %d, night = %d, value = %d WHERE meter = '%s'", time(), $meterdata->night, $value, $meter);
-    }
-    else {
-      watchdog_xmlrpc('logger.measurementAdd', 'shell command execution failed: %return %command', array('%command' => $command, '%return' => $return), WATCHDOG_ERROR);
+      system($command, $return);
+      if ($return == 0) {
+        // update the night rrd every day at 6AM UTC
+        if (time() > $meterdata->night) {
+          $timestamp = floor(time()/86400)*86400;
+          $start = $timestamp + 3600;
+          $end = $start + 10800; //3h time interval
+          $command = $path->root ."/rrdtool fetch ". $path->base . $meter .".rrd AVERAGE -r 900 -s ". $start ." -e ". $end ." | tail -n 12 | awk -F': ' '{SUM += $2} END {print SUM/12}'";
+          $night = (float)shell_exec($command); //test shell_exec iso system
+          $command = $path->root .'/rrdtool update '. $path->night . $meter .'.rrd '. $timestamp .':'. $night;
+          system($command, $return);
+          if ($return == 0) {
+            watchdog_xmlrpc('logger.measurementAdd', 'successful update for night rrd: %command', array('%command' => $command), WATCHDOG_NOTICE); //debugging
+          }
+          else {
+            watchdog_xmlrpc('logger.measurementAdd', 'error updating night rrd: %command', array('%command' => $command), WATCHDOG_ERROR); //debugging
+          }
+          $meterdata->night = $timestamp + 104400; //add an offset of 29h, i.e. 5AM UTC next day
+        }
+        // {logger_meters} is updated with the true metervalue $value, NOT $value*$meterdata->factor since we're not normalising this entry!
+        db_query("UPDATE {logger_meters} SET access = %d, night = %d, value = %d WHERE meter = '%s'", time(), $meterdata->night, $value, $meter);
+      }
+      else {
+        watchdog_xmlrpc('logger.measurementAdd', 'shell command execution failed: %return %command', array('%command' => $command, '%return' => $return), WATCHDOG_ERROR);
+      }
     }
   }
   return $command; //using $command for testing purposes, replace by $info afterwards
