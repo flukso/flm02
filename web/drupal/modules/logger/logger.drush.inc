@@ -32,7 +32,7 @@ function logger_drush_command() {
 /**
  * Drush command callbacks.
  */
-function _logger_create($serial, $version, $uid = 0) {
+function _logger_create($serial, $version = 0, $uid = 0) {
   // guard against duplicating entries for the same S/N
   $count = db_result(db_query("SELECT COUNT(device) FROM {logger_devices} WHERE serial = %d", $serial));
   if ($count > 0) {
@@ -72,7 +72,7 @@ function _logger_create($serial, $version, $uid = 0) {
     }
   }
 
-  if (!drush_get_error()) drush_log(dt('Successfully created the device: @device and meter: @meter entries for S/N: @serial', array('@device' => $device, '@meter' => $meter, '@serial' => $serial)), 'ok');
+  if (!drush_get_error()) drush_log(dt('Successfully created the device/key: @device / @key and meter: @meter entries for S/N: @serial', array('@device' => $device, '@key' => $sha, '@meter' => $meter, '@serial' => $serial)), 'ok');
 }
 
 function _logger_assign($serial, $uid) {
