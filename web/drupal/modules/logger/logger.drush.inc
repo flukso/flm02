@@ -83,7 +83,7 @@ function _logger_assign($serial, $uid) {
   }
   else {
     db_query("UPDATE {logger_devices} SET uid = %d WHERE serial = %d", $uid, $serial);   
-    db_query("UPDATE {logger_meters} SET uid = %d WHERE device = %d", $uid, $device);
+    db_query("UPDATE {logger_meters} SET uid = %d WHERE device = '%s'", $uid, $device);
   }
 
   if (!drush_get_error()) drush_log(dt('Successfully assigned uid: @uid to S/N: @serial', array('@uid' => $uid, '@serial' => $serial)), 'ok');
