@@ -245,7 +245,6 @@ function _logger_dashboard($type, $function, $interval) {
 }
 
 function _logger_add($uid) {
-  // TODO : include security checks
   global $user;
   $rtid = db_result(db_query("SELECT rtid FROM {user_relationship_types} where name = '%s'", 'subscription'));
   user_relationships_request_relationship($user->uid, $uid, $rtid, TRUE);
@@ -254,8 +253,14 @@ function _logger_add($uid) {
 }
 
 function _logger_remove($rid) {
-  // TODO : include security checks
-  db_query("DELETE FROM {user_relationships} WHERE rid = %d", $rid);
+  global $user;
+  // check whether the to-be-deleted relationship was created by the same user
+  if ($user->uid == db_result(db_query("SELECT requester_id FROM {user_relationships} WHERE rid = %d", $rid))) {
+    db_query("DELETE FROM {user_relationships} WHERE rid = %d", $rid);
+  }
+  else {
+    watchdog('relationships', 'attempt to delete rid %rid by non-authorized user %uid', array('%rid' => $rid, '%uid' => $user->uid), WATCHDOG_ERROR);  
+  }
   $destination = drupal_get_destination();
   drupal_goto($destination);
 }
