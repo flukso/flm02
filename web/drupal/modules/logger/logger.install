@@ -11,6 +11,13 @@ function logger_schema() {
         'length' => '32',
         'not null' => TRUE,
       ),
+      'serial' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
       'uid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
@@ -158,11 +165,13 @@ function logger_schema() {
         'type' => 'varchar',
         'length' => '16',
         'not null' => TRUE,
+        'default' => 'electricity',
       ),
       'function' => array(
         'type' => 'varchar',
         'length' => '16',
         'not null' => TRUE,
+        'default' => 'main',
       ),
       'value' => array(
         'type' => 'int',
@@ -182,6 +191,7 @@ function logger_schema() {
         'type' => 'varchar',
         'length' => '16',
         'not null' => TRUE,
+        'default' => 'watt',
       ),
     ),
     'primary key' => array('meter'),
