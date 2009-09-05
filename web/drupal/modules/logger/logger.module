@@ -23,7 +23,7 @@
 
 /**
  * @file
- * Logs metering values reported through XML-RPC in the Drupal & RRD database and displays them in different charts
+ * Support module for charting data stored in RRD's
  */
 
 
@@ -246,8 +246,21 @@ function _logger_dashboard($type, $function, $interval) {
 
 function _logger_add($uid) {
   global $user;
-  $rtid = db_result(db_query("SELECT rtid FROM {user_relationship_types} where name = '%s'", 'subscription'));
-  user_relationships_request_relationship($user->uid, $uid, $rtid, TRUE);
+  $result = db_fetch_array(db_query("SELECT COUNT(rid), MAX(rid), ur.rtid FROM {user_relationships} ur INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid WHERE requester_id = %d AND urt.name = '%s' GROUP BY ur.rtid", $user->uid, 'subscription'));
+
+  // max subscriptions = 4
+  if ($result['COUNT(rid)'] < 4) {
+    user_relationships_request_relationship($user->uid, $uid, $result['rtid'], TRUE);
+  }
+  else {
+    //check whether the requested relationship doesn't already exist
+    if (!db_result(db_query("SELECT rid FROM {user_relationships} WHERE requester_id = %d AND requestee_id = %d AND rtid = %d", $user->uid, $uid, $result['rtid']))) {
+      // if not, delete the most recently added relationship and replace it with the newly selected one
+      db_query("DELETE FROM {user_relationships} WHERE rid = %d", $result['MAX(rid)']);
+      user_relationships_request_relationship($user->uid, $uid, $result['rtid'], TRUE);
+    }
+  }
+
   $destination = drupal_get_destination();
   drupal_goto($destination);
 }
@@ -259,7 +272,7 @@ function _logger_remove($rid) {
     db_query("DELETE FROM {user_relationships} WHERE rid = %d", $rid);
   }
   else {
-    watchdog('relationships', 'attempt to delete rid %rid by non-authorized user %uid', array('%rid' => $rid, '%uid' => $user->uid), WATCHDOG_ERROR);  
+    watchdog('relationships', 'attempt to delete rid %rid by non-authorized user %uid', array('%rid' => $rid, '%uid' => $user->uid), WATCHDOG_ERROR);
   }
   $destination = drupal_get_destination();
   drupal_goto($destination);
@@ -340,7 +353,7 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
         $result = db_query("SELECT u.uid, u.name, ur.rid FROM ({users} u INNER JOIN {user_relationships} ur ON u.uid = ur.requestee_id) INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid WHERE ur.requester_id = %d AND urt.name = '%s' ORDER BY ur.rid", $user->uid, 'subscription');
         $items = array();
         while ($subscription = db_fetch_object($result)) {
-          $items[] = l('[x]', 'logger/remove/'. $subscription->rid, array('attributes' => array('title' => "unsubscribe from ". $subscription->name ."'s stream"), 'query' => $destination)) .' '. l($subscription->name, 'user/'. $subscription->uid, array());
+          $items[] = l('[x]', 'logger/remove/'. $subscription->rid, array('attributes' => array('title' => "unsubscribe from ". $subscription->name ."'s stream"), 'query' => $destination, 'alias' => TRUE)) .' '. l($subscription->name, 'user/'. $subscription->uid, array('alias' => FALSE));
         }
         $block['subject'] = t('Subscriptions');
         $block['content'] = theme('logger_item_list', $items);
@@ -352,7 +365,7 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
         $result = db_query("SELECT u.uid, u.name FROM ({users} u INNER JOIN {users_roles} ur ON u.uid = ur.uid) INNER JOIN {role} r ON ur.rid = r.rid WHERE r.name = '%s' AND NOT u.uid = %d ORDER BY u.name", 'fluksonian', $user->uid);
         $items = array();
         while ($fluksonian = db_fetch_object($result)) {
-          $items[] = l('[+]', 'logger/add/'. $fluksonian->uid, array('attributes' => array('title' => "subscribe to ". $fluksonian->name ."'s stream"), 'query' => $destination)) .' '. l($fluksonian->name, 'user/'. $fluksonian->uid, array());
+          $items[] = l('[+]', 'logger/add/'. $fluksonian->uid, array('attributes' => array('title' => "subscribe to ". $fluksonian->name ."'s stream"), 'query' => $destination, 'alias' => TRUE)) .' '. l($fluksonian->name, 'user/'. $fluksonian->uid, array('alias' => FALSE));
         }
         $block['subject'] = t('Fluksonians');
         $block['content'] = theme('logger_item_list', $items);
@@ -365,17 +378,17 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
         switch ($unit) {
           case 'watt':
             $items[] = 'watt';
-            $items[] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination));
-            $items[] = l('euro/year', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination));
+            $items[] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination, 'alias' => TRUE));
+            $items[] = l('euro/year', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination, 'alias' => TRUE));
             break;
           case 'kwh':
-            $items[] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination));
+            $items[] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination, 'alias' => TRUE));
             $items[] = 'kWh/year';
-            $items[] = l('euro/year', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination));
+            $items[] = l('euro/year', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination, 'alias' => TRUE));
             break;
           case 'eur':
-            $items[] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination));
-            $items[] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination));
+            $items[] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination, 'alias' => TRUE));
+            $items[] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination, 'alias' => TRUE));
             $items[] = 'euro/year';
             break;
         }
