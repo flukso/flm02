@@ -12,7 +12,6 @@ function logger_drush_command() {
     'description' => 'Create a new sensor node entry.',
     'arguments'   => array(
       'serial'      => 'Sensor node serial number.',
-      'version'     => 'Software version number.',
       'uid'         => 'User ID.',
     ),
   );
@@ -32,7 +31,7 @@ function logger_drush_command() {
 /**
  * Drush command callbacks.
  */
-function _logger_create($serial, $version = 0, $uid = 0) {
+function _logger_create($serial, $uid = 0) {
   // guard against duplicating entries for the same S/N
   $count = db_result(db_query("SELECT COUNT(device) FROM {logger_devices} WHERE serial = %d", $serial));
   if ($count > 0) {
@@ -45,7 +44,7 @@ function _logger_create($serial, $version = 0, $uid = 0) {
     $sha     = md5(uniqid(rand(), TRUE));
     $created = time();
 
-    $result = db_query("INSERT INTO {logger_devices} (device, serial, uid, sha, created, version) VALUES ('%s', %d, %d, '%s', %d, %d)", $device, $serial, $uid, $sha, $created, $version);
+    $result = db_query("INSERT INTO {logger_devices} (device, serial, uid, sha, created) VALUES ('%s', %d, %d, '%s', %d)", $device, $serial, $uid, $sha, $created);
     if (!$result) drush_set_error('LOGGER_CREATE_DEVICE_ENTRY', dt('Error creating a device entry for @device.', array('@device' => $device)));
 
     // create an entry in the {logger_meters} table
