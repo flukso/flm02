@@ -13,7 +13,7 @@ diff -u -p -r1.255.2.31 menu.inc
 -    // We do not display single tabs.
 -    return (isset($tabs[$level]) && $tabs[$level]['count'] > 1) ? $tabs[$level]['output'] : '';
 +    // We do not display single tabs: BVDM yes we do for flukso!
-+    return (isset($tabs[$level])) ? $tabs[$level]['output'] : '';
++    return (isset($tabs[$level]) && ($tabs[$level]['count'] > 1 || substr_count($tabs[$level]['output'], 'electricity') > 0)) ? $tabs[$level]['output'] : '';
    }
  }
  
