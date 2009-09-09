@@ -20,7 +20,7 @@ $comment_class = 'comment' . (($comment->new) ? ' comment-new' : '') .
     <div class="clear"></div>
   </div>
   <div class="comment-meta">
-    <span><strong><?php print $author; ?></strong> | <?php print $date; ?></span>
+    <span><strong><?php print $author; ?></strong> | <?php print format_date($comment->timestamp, 'custom', t('d M Y')); ?></span>
       <?php if ($links) { print $links; } ?>
   </div>
 </div>

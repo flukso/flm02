@@ -24,10 +24,14 @@ a:hover {
 }
 
 body {
-	background: #fff;
-	color: #444;
-	font-family: Arial, system, Tahoma, sans-serif;
-	font-size: 100%;
+  background: #fff;
+  color: #222;
+  font: 100%/1.4 "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
+p {
+	margin: 1em 0;
+	padding: 0em 2.6em;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -114,6 +118,8 @@ table {
 }
 
 #content {
+	float: left;
+	clear: none;
 	background: #f3f3f3;
 	border: 1px solid #ddd;
 	font-size: .8em;
@@ -141,12 +147,6 @@ table {
 .content-title {
 	font-size: 1.4em;
 	font-weight: normal;
-}
-
-.node {
-	/* border: 1px solid #ddd; */
-	font-size: 1em;
-	margin-bottom: 3em;
 }
 
 .breadcrumb {
@@ -178,45 +178,124 @@ input[type="text"], textarea, input.form-password {
 	padding: 1px;
 }
 
-.node h2 {
-	/* background: #f3f3f3; */
-	color: #f7f7f7;
-	font-size: 1.6em;
-	padding: 0 0 1em 0;
-}
 
-.node .content, .node .info {
-	background: #f3f3f3; 
+/* ------------------------------------------------------------------------
+ * Node
+ * --------------------------------------------------------------------- */
+.teaser .content p { margin-bottom: 0; }
+
+.readmore { text-transform: lowercase; }
+
+.teaser .content p+p { margin-top: 20px; }
+
+.node {
 	font-size: 1em;
+	margin-bottom: 4.5em;
 }
 
-.node .picture {
-	border: 1px solid #ddd;
-	float: right; 
-	margin: 0.5em;
+.node .node-headline {
+	padding: 1em 0 0 0;
+	width: 100%;
 }
 
-.node.item-listing {
-	padding: 1em;
-	border-top: 1px solid #ff0000;
-}
-
-.node.item-listing.sticky {
-	background-image: none;
-}
-
-.node table ul {
+.node .node-headline h2 {
+	font-size: 1.75em;
+	display: inline-block;
+	float: left;
+	line-height: 1em;
 	margin: 0;
-	padding: 1em;
+	padding: 0;
+	text-transform: lowercase;
+	width: 66%;
 }
 
-.node.sticky .title {
-	background-image: none;
+.node .node-headline {
+	border-bottom: 4px solid #c8c8c8;
+	margin-bottom: 0.5em;
 }
 
-.node .title {
-	border-bottom: 1px solid #ff0000;
+.node .node-headline h2 a:link, .node .node-headline h2 a:visited,
+h3.searchresult a:link, h3.searchresult a:visited {
+	color: #666;
+	font-weight: normal;
+	text-decoration: none;
 }
+
+.node .node-headline h2 a:hover,
+h3.searchresult a:hover {
+	color: #fff;
+	font-weight: normal;
+	text-decoration: none;
+}
+
+.node .node-headline .timestamp {
+	color: #c8c8c8;
+	float: right;
+	font-size: 2em;
+	font-weight: normal;
+	letter-spacing: -1px;
+	line-height: 1em;
+	margin: 0;
+	padding: 0;
+	text-align: right;
+	text-transform: lowercase;
+	vertical-align: bottom;
+	width: 33%;
+}
+
+.node-author {
+	color: #aaa;
+	font-style: normal;
+	margin: -0.4em 0 0.4em 0;
+	padding: 0;
+	text-align: right;
+	text-transform: lowercase;
+}
+
+.node .content .user-picture {
+	display: inline-block;
+	float: right;
+	margin: 0 0 0 0.75em;
+	padding: 0;
+}
+
+.node .content {
+	background-color: #ececec;
+	clear: both;
+	padding: 0;
+}
+
+.node .content p {
+        margin: 2em 0;
+}
+
+.meta { 
+	background-color: #ccc;
+	color: #fff;
+	font-style: normal;
+	padding: 2px 5px;
+	text-align: right;
+	text-transform: lowercase;
+}
+
+.meta ul.inline,
+.meta ul.inline li {
+	display: inline;
+	list-style-image: none;
+	margin: 0;
+	padding: 0;
+}
+
+.meta a:link {
+	color: #fff;
+}
+
+.post-comment-help {
+	color: #888;
+	text-align: right;
+}
+
+
 
 .messages {
 	background: #eee;
@@ -275,13 +354,14 @@ br.clear {
 }
 
 #footer {
+	float: left;
 	background: #f3f3f3;
 	border: 1px solid #ddd;
 	color: #aaa;
-	font-size: 0.64em;
+	font-size: 0.8em;
 	padding: .2em 0 .2em 0;
 	width: 684px;
-	margin: 12px 0 0 0;
+	margin: 12px 0;
 	text-align: center;
 }
 
@@ -414,6 +494,7 @@ html.js fieldset legend a:hover {
 	clear: none;
 }
 
+
 /* ------------------------------------------------------------------------
  * Comments
  * --------------------------------------------------------------------- */
@@ -461,7 +542,14 @@ div.comment img.user-picture {
     padding: 0 10px 5px 0;
 }
 
-div.comment div.content p+p { margin-top: 1.5em; }
+div.comment div.content p {
+        padding: 0 3em;
+}
+
+div.comment div.content p+p {
+	margin-top: 1.5em;
+	padding: 0 3em;
+}
 
 div.even div.content { background-color: #fff; }
 
@@ -483,11 +571,11 @@ div.even div.comment-meta {
 }
 
 div.odd {
-	background-color: #eee;
+	background-color: #fff;
 }
 
 div.odd div.comment-meta {
-	background: #f3f3f3 url(images/comment-dark.gif) no-repeat top left;
+	background: #f3f3f3 url(images/comment-light.gif) no-repeat top left;
 }
 
 em.moderation {
