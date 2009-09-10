@@ -88,7 +88,7 @@ function flukso_preprocess_node(&$vars) {
 }
 
 /**
- * Preprocess the nodes.
+ * Preprocess the pages.
  *
  * @param &$vars The template variables array. After invoking this function,
  *        no page title will be displayed on /node/x pages.
@@ -97,4 +97,7 @@ function flukso_preprocess_page(&$vars) {
   if (substr($_GET['q'], 0, 4) == 'node') {
     $vars['title'] = ''; 
   }
+
+ // -- tab text sould always be Flukso
+ $vars['head_title'] = 'Flukso';
 }
