@@ -105,9 +105,9 @@ function _logger_measurement_add($auth, $logs) {
         if ($return == 0) {
           // update the night rrd every day at 6AM UTC
           if (time() > $meterdata->night) {
-            $timestamp = floor(time()/86400)*86400;
-            $start = $timestamp + 3600;
-            $end = $start + 10800; //3h time interval
+            $midnight = _logger_midnight(time(), $auth['device']);
+            $start = $midnight + 7200; // 2AM local time
+            $end = $start + 10800; // 3h time interval
             $command = $path->root ."/rrdtool fetch ". $path->base . $meter .".rrd AVERAGE -r 900 -s ". $start ." -e ". $end ." | tail -n 12 | awk -F': ' '{SUM += $2} END {print SUM/12}'";
             $night = (float)shell_exec($command); //test shell_exec iso system
             $command = $path->root .'/rrdtool update '. $path->night . $meter .'.rrd '. $timestamp .':'. $night;
@@ -118,7 +118,7 @@ function _logger_measurement_add($auth, $logs) {
             else {
               watchdog_xmlrpc('logger.measurementAdd', 'error updating night rrd: %command', array('%command' => $command), WATCHDOG_ERROR); //debugging
             }
-            $meterdata->night = $timestamp + 104400; //add an offset of 29h, i.e. 5AM UTC next day
+            $meterdata->night = $midnight + 108000; //add an offset of 30h = 6AM local time
           }
           // {logger_meters} is updated with the true metervalue $value, NOT $value*$meterdata->factor since we're not normalising this entry!
           db_query("UPDATE {logger_meters} SET access = %d, night = %d, value = %d WHERE meter = '%s'", time(), $meterdata->night, $value, $meter);
@@ -132,6 +132,18 @@ function _logger_measurement_add($auth, $logs) {
   }
   else
     return xmlrpc_error(-31000, t('Authentication failed.'));
+}
+
+/**
+ * Calculate the most recent midnight for this device based on the user's timezone
+ */
+function _logger_midnight($timestamp, $device) {
+  $timezone = db_result(db_query("SELECT u.timezone FROM {logger_devices} ld INNER JOIN {users} u ON ld.uid = u.uid WHERE ld.device = '%s'", $device));
+  // add one day to make sure $midnight > $timestamp
+  $midnight = floor($timestamp/86400 + 1)*86400 - $timezone;
+  // search for first $midnight < $timestamp
+  while ($midnight > $timestamp) $midnight -= 86400;
+  return $midnight;
 }
 
 function _logger_authenticate_hmac_sha1($auth, $message) {
