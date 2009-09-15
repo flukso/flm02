@@ -1,0 +1,68 @@
+? .svn
+? 330233.patch
+? 480646.patch
+? translations/.svn
+Index: invite.module
+===================================================================
+RCS file: /cvs/drupal-contrib/contributions/modules/invite/invite.module,v
+retrieving revision 1.25.2.6
+diff -u -p -r1.25.2.6 invite.module
+--- invite.module	27 Apr 2009 17:24:44 -0000	1.25.2.6
++++ invite.module	15 Jun 2009 12:30:45 -0000
+@@ -423,7 +423,7 @@ function invite_user($op, &$edit, &$acco
+         }
+       }
+       if ($invite) {
+-        _invite_accept($invite, $account);
++        _invite_accept($invite, $account, $edit);
+ 
+         // Flag the inviting user, this triggers status notifications and
+         // saves us some queries otherwise.
+@@ -449,7 +449,7 @@ function invite_user($op, &$edit, &$acco
+  * @param $account
+  *   The user object of the invitee.
+  */
+-function _invite_accept($invite, $account) {
++function _invite_accept($invite, $account, &$edit) {
+   // Update the invitation record.
+   db_query("UPDATE {invite} SET email = '%s', invitee = %d, joined = %d WHERE reg_code = '%s'", $account->mail, $account->uid, time(), $invite->reg_code);
+   // Delete all invites to these e-mail addresses, except this one.
+@@ -458,7 +458,7 @@ function _invite_accept($invite, $accoun
+   // notification queue.
+   db_query("INSERT INTO {invite_notifications} (uid, invitee) SELECT uid, %d from {invite} WHERE (email = '%s' OR email = '%s') AND canceled = 0", $account->uid, $invite->email, $account->mail);
+   // Escalate the invitee's role.
+-  _invite_escalate_role($account);
++  _invite_escalate_role($account, $edit);
+   // Unblock user account.
+   db_query("UPDATE {users} SET status = 1 WHERE uid = %d", $account->uid);
+ }
+@@ -469,7 +469,7 @@ function _invite_accept($invite, $accoun
+  * @param $account
+  *   The user object of the invitee.
+  */
+-function _invite_escalate_role($account) {
++function _invite_escalate_role($account, &$edit) {
+   // Default target role.
+   $roles = array('default');
+ 
+@@ -489,15 +489,12 @@ function _invite_escalate_role($account)
+     }
+   }
+ 
+-  // Notify other modules of changed user.
+-  $edit = array('roles' => $targets);
+-  user_module_invoke('update', $edit, $account);
+-
+-  // Save new user role(s).
+-  foreach ($targets as $target) {
+-    db_query("DELETE FROM {users_roles} WHERE uid = %d AND rid = %d", $account->uid, $target);
+-    db_query("INSERT INTO {users_roles} (uid, rid) VALUES (%d, %d)", $account->uid, $target);
++  // Let user_save() save the new user role(s).
++  if (!is_array($edit['roles'])) {
++    $edit['roles'] = array();
+   }
++  $edit['roles'] += $targets;
++  $account->roles += $targets;
+ 
+   // Notify other modules of role escalation.
+   $args = array('invitee' => $account, 'inviter' => $inviter, 'roles' => $targets);
