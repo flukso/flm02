@@ -103,7 +103,7 @@ function _logger_measurement_add($auth, $logs) {
         system($command, $return);
 
         if ($return == 0) {
-          // update the night rrd every day at 6AM UTC
+          // update the night rrd every day at 6AM local time
           if (time() > $meterdata->night) {
             $midnight = _logger_midnight(time(), $auth['device']);
             $start = $midnight + 7200; // 2AM local time
