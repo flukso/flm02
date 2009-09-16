@@ -458,9 +458,9 @@ function _logger_admin_settings() {
  * Cron will call this hook periodically [e.g. 1 hour interval] to perform housekeeping on the png's.
  */
 function logger_cron() {
-  exec('rm sites/all/modules/custom/logger/graphs/hour/*');
-  exec('rm sites/all/modules/custom/logger/graphs/day/*');
-  exec('rm sites/all/modules/custom/logger/graphs/month/*');
-  exec('rm sites/all/modules/custom/logger/graphs/year/*');
-  exec('rm sites/all/modules/custom/logger/graphs/night/*');
+  exec('rm sites/all/modules/logger/graphs/hour/*');
+  exec('rm sites/all/modules/logger/graphs/day/*');
+  exec('rm sites/all/modules/logger/graphs/month/*');
+  exec('rm sites/all/modules/logger/graphs/year/*');
+  exec('rm sites/all/modules/logger/graphs/night/*');
 }
