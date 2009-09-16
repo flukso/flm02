@@ -26,7 +26,7 @@ a:hover {
 body {
   background: #fff;
   color: #222;
-  font: 100%/1.4 "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font: 100%/1.5 Tahoma, Arial, Helvetica, sans-serif;
 }
 
 p {
@@ -114,6 +114,7 @@ table {
 	background: #f3f3f3;
 	border: 1px solid #ddd;
 	font-size: 0.8em;
+	line-height: 1.4;
 	margin: 0% 0 6% 0;
 }
 
@@ -126,7 +127,7 @@ table {
 	width: 660px;
 	margin: 0;
 	padding: 12px;
-	text-align: justify;
+	text-align: left;
 }
 
 /* :BVDM: center charts in text body */
@@ -267,6 +268,7 @@ h3.searchresult a:hover {
 
 .node .content p {
         margin: 2em 0;
+	letter-spacing: 1px;
 }
 
 .meta { 

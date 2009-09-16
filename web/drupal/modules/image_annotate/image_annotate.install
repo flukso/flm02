@@ -1,0 +1,74 @@
+<?php
+// $Id: image_annotate.install,v 1.3 2009/01/28 19:27:13 hunvreus Exp $
+
+/**
+ * Implementation of hook_schema().
+ */ 
+function image_annotate_schema() {
+  $schema['image_annotate'] = array(
+    'fields' => array(
+      'aid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'cid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'field_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'size_width' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'size_height' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'position_top' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'position_left' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('aid'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function image_annotate_install() {
+  // Create table
+  drupal_install_schema('image_annotate');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function image_annotate_uninstall() {
+  // Delete all the pathauto variables and then clear the variable cache  
+  db_query("DELETE FROM {variable} WHERE name LIKE 'image_annotate_%'");
+  db_query("DROP TABLE {image_annotate}");
+  cache_clear_all('variables', 'cache');
+  // TODO : DUMP {place} ?
+}

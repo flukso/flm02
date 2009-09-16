@@ -1,0 +1,5 @@
+; $Id $
+name = Image Annotate
+description = Allows users to add notes and references to users on pictures.
+dependencies[] = jquery_ui
+core = 6.x

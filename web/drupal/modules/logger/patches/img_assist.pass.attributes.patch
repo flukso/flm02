@@ -1,0 +1,25 @@
+Index: img_assist.module
+===================================================================
+RCS file: /cvs/drupal-contrib/contributions/modules/img_assist/img_assist.module,v
+retrieving revision 1.75.2.31
+diff -u -p -r1.75.2.31 img_assist.module
+--- img_assist.module	15 Jul 2009 22:58:07 -0000	1.75.2.31
++++ img_assist.module	16 Sep 2009 21:32:43 -0000
+@@ -512,7 +512,7 @@ function img_assist_filter($op, $delta =
+  * Implementation of hook_filter_tips().
+  */
+ function img_assist_filter_tips($delta, $format, $long = FALSE) {
+-  return t('Images can be added to this post.');
++//  return t('Images can be added to this post.');
+ }
+ 
+ /**
+@@ -1304,7 +1304,7 @@ function img_assist_display(&$node, $siz
+     _img_assist_build_derivatives($node, $size);
+   }
+   
+-  return image_display($node, $label);
++  return image_display($node, $label, $attributes);
+ }
+ 
+ /**

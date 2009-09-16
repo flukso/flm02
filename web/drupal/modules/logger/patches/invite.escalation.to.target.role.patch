@@ -1,7 +1,3 @@
-? .svn
-? 330233.patch
-? 480646.patch
-? translations/.svn
 Index: invite.module
 ===================================================================
 RCS file: /cvs/drupal-contrib/contributions/modules/invite/invite.module,v

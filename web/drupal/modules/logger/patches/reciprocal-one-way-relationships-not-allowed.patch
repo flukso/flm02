@@ -1,4 +1,3 @@
-? reciprocal-one-way-relationships-not-allowed.patch
 Index: user_relationships_api.api.inc
 ===================================================================
 RCS file: /cvs/drupal-contrib/contributions/modules/user_relationships/user_relationships_api/Attic/user_relationships_api.api.inc,v
