@@ -1,0 +1,15 @@
+Index: settings.php
+===================================================================
+RCS file: /cvs/drupal/drupal/sites/default/Attic/settings.php,v
+retrieving revision 1.39.2.3
+diff -u -p -r1.39.2.3 settings.php
+--- settings.php	9 Jul 2007 04:28:12 -0000	1.39.2.3
++++ settings.php	18 Sep 2009 21:54:57 -0000
+@@ -163,3 +163,7 @@ ini_set('url_rewriter.tags',        '');
+ #   'anonymous' => 'Visitor',
+ # );
+ 
++//BVDM: disable filter caching for image_annotate to work on img_assist inserted images
++$conf = array(
++  'cache_inc' => './sites/all/modules/cache_no_filter/cache_no_filter.inc',
++);
