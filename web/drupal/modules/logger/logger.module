@@ -246,18 +246,19 @@ function _logger_dashboard($type, $function, $interval) {
 
 function _logger_add($uid) {
   global $user;
-  $result = db_fetch_array(db_query("SELECT COUNT(rid), MAX(rid), ur.rtid FROM {user_relationships} ur INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid WHERE requester_id = %d AND urt.name = '%s' GROUP BY ur.rtid", $user->uid, 'subscription'));
+  $rtid = db_result(db_query("SELECT rtid FROM {user_relationship_types} WHERE name = '%s'", 'subscription'));
+  $result = db_fetch_array(db_query("SELECT COUNT(rid), MAX(rid) FROM {user_relationships} WHERE requester_id = %d AND rtid = %d GROUP BY rtid", $user->uid, $rtid));
 
   // max subscriptions = 4
   if ($result['COUNT(rid)'] < 4) {
-    user_relationships_request_relationship($user->uid, $uid, $result['rtid'], TRUE);
+    user_relationships_request_relationship($user->uid, $uid, $rtid, TRUE);
   }
   else {
     //check whether the requested relationship doesn't already exist
-    if (!db_result(db_query("SELECT rid FROM {user_relationships} WHERE requester_id = %d AND requestee_id = %d AND rtid = %d", $user->uid, $uid, $result['rtid']))) {
+    if (!db_result(db_query("SELECT rid FROM {user_relationships} WHERE requester_id = %d AND requestee_id = %d AND rtid = %d", $user->uid, $uid, $rtid))) {
       // if not, delete the most recently added relationship and replace it with the newly selected one
       db_query("DELETE FROM {user_relationships} WHERE rid = %d", $result['MAX(rid)']);
-      user_relationships_request_relationship($user->uid, $uid, $result['rtid'], TRUE);
+      user_relationships_request_relationship($user->uid, $uid, $rtid, TRUE);
     }
   }
 
