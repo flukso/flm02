@@ -262,6 +262,7 @@ function _logger_add($uid) {
     }
   }
 
+  _logger_cache_clear('subscriptions');
   $destination = drupal_get_destination();
   drupal_goto($destination);
 }
@@ -275,6 +276,8 @@ function _logger_remove($rid) {
   else {
     watchdog('relationships', 'attempt to delete rid %rid by non-authorized user %uid', array('%rid' => $rid, '%uid' => $user->uid), WATCHDOG_ERROR);
   }
+
+  _logger_cache_clear('subscriptions');
   $destination = drupal_get_destination();
   drupal_goto($destination);
 }
@@ -284,8 +287,39 @@ function _logger_unit($unit) {
   global $user;
   // hardcoded type and function
   db_query("UPDATE {logger_meters} SET unit = '%s' WHERE uid = %d AND type = '%s' AND function = '%s'", $unit, $user->uid, 'electricity', 'main');
+
+  _logger_cache_clear('unit');
   $destination = drupal_get_destination();
   drupal_goto($destination);
+}
+
+/**
+ * Clear the specific (per user) cache entry in the {cache_block} table
+ */
+function _logger_cache_clear($delta) {
+  global $theme;
+  //the theme variable isn't set on these callbacks so force it
+  $theme = 'flukso';
+
+  $block = db_fetch_object(db_query("SELECT * FROM {blocks} WHERE module = '%s' AND delta = '%s' AND theme = '%s'", 'logger', $delta, 'flukso'));
+  $cid = _block_get_cache_id($block);
+  // prevent the whole chache_block being cleared when _block_get_cache_id returns an empty string (e.g. uid = 1)
+  if ($cid != '') cache_clear_all($cid, 'cache_block');
+  //watchdog('block_cache', '%cid | %cache', array('%cid' => $cid, '%cache' => variable_get('block_cache', 100)), WATCHDOG_DEBUG);
+}
+
+/**
+ * Implementation of hook_user() for logger
+ * Flush the fluksonians block entries in the block cache 
+ */
+function logger_user($op) {
+  switch($op) {
+    // new user is being inserted into the database
+    case 'insert':
+      // flush the fluksonians block entries
+      cache_clear_all('logger:fluksonians', 'cache_block', TRUE);
+      break;
+  }
 }
 
 /**
@@ -325,24 +359,28 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
       $blocks['subscriptions']['region'] = 'right';
       $blocks['subscriptions']['weight'] = 0;
       $blocks['subscriptions']['pages'] = 'logger<br />logger/*';
+      $blocks['subscriptions']['cache'] = BLOCK_CACHE_PER_USER;
 
       $blocks['fluksonians']['info'] = t('Fluksonians');
       $blocks['fluksonians']['status'] = TRUE;
       $blocks['fluksonians']['region'] = 'right';
       $blocks['fluksonians']['weight'] = 1;
       $blocks['fluksonians']['pages'] = 'logger<br />logger/*';
+      $blocks['fluksonians']['cache'] = BLOCK_CACHE_PER_USER;
 
       $blocks['unit']['info'] = t('Unit');
       $blocks['unit']['status'] = TRUE;
       $blocks['unit']['region'] = 'right';
       $blocks['unit']['weight'] = 2;
       $blocks['unit']['pages'] = 'logger<br />logger/*';
+      $blocks['unit']['cache'] = BLOCK_CACHE_PER_USER;
 
       $blocks['publish']['info'] = t('Publish');
       $blocks['publish']['status'] = TRUE;
       $blocks['publish']['region'] = 'content';
       $blocks['publish']['weight'] = 3;
       $blocks['publish']['pages'] = 'logger<br />logger/*';
+      $blocks['publish']['cache'] = BLOCK_CACHE_PER_ROLE;
 
       return $blocks;
 
