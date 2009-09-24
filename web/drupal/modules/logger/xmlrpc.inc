@@ -84,10 +84,10 @@ function _logger_measurement_add($logs) {
           $end = $start + 10800; // 3h time interval
           $command = $path->root ."/rrdtool fetch ". $path->base . $meter .".rrd AVERAGE -r 900 -s ". $start ." -e ". $end ." | tail -n 12 | awk -F': ' '{SUM += $2} END {print SUM/12}'";
           $night = (float)shell_exec($command); //test shell_exec iso system
-          $command = $path->root .'/rrdtool update '. $path->night . $meter .'.rrd '. $timestamp .':'. $night;
+          $command = $path->root .'/rrdtool update '. $path->night . $meter .'.rrd '. $end .':'. $night;
           system($command, $return);
           if ($return == 0) {
-            watchdog_xmlrpc('logger.measurementAdd', 'successful update for night rrd: %command', array('%command' => $command), WATCHDOG_NOTICE); //debugging
+            watchdog_xmlrpc('logger.measurementAdd', 'successful update for night rrd: %command | midnight = %midnight', array('%command' => $command, '%midnight' => $midnight), WATCHDOG_NOTICE); //debugging
           }
           else {
             watchdog_xmlrpc('logger.measurementAdd', 'error updating night rrd: %command', array('%command' => $command), WATCHDOG_ERROR); //debugging
