@@ -101,6 +101,8 @@ function _logger_measurement_add($auth, $logs) {
         }
 
         system($command, $return);
+        // watchdog_xmlrpc('logger.measurementAdd', '%command', array('%command' => $command), WATCHDOG_NOTICE); //debugging
+
 
         if ($return == 0) {
           // update the night rrd every day at 6AM local time
