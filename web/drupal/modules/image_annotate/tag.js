@@ -74,9 +74,6 @@ Drupal.annotativeImage = function (image) {
     });
     this.image.before(this.button);
   }
-  else {
-    this.image.before($('<a class="image-annotate-add" id="image-annotate-add-'+ image.field +'"></a>'));
-  }
   // Hide the original
   this.image.hide();
 };

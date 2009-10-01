@@ -172,6 +172,7 @@ function theme_image_annotate_formatter_image_annotate($element) {
       'editable' => user_access('administer image annotations') || user_access('create image annotations'),
     ));
     
+    module_load_include('module', 'jquery_ui');
     // Load all the JS and CSS magic
     drupal_add_js(array('imageAnnotate' => $settings), 'setting');
     jquery_ui_add(array('ui.resizable', 'ui.draggable'));
