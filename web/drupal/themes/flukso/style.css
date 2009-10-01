@@ -610,3 +610,33 @@ em.moderation {
 #comment-controls {
     margin: 20px 0;
 }
+
+/* ------------------------------------------------------------------------
+ * Installation page
+ * --------------------------------------------------------------------- */
+
+.install p {
+	padding: 0em 2em;
+	margin: 2em 0;
+	letter-spacing: 1px;
+	width: 400px;
+	height: 120px;
+	float: right;
+}
+
+.install img {
+	/*display: block;*/
+	clear: both;
+	margin: 2em;
+	float: left;
+}
+
+.install a.img {
+	display: block;
+	text-decoration: none;
+}
+
+.install a.img:hover {
+	background-color: #f3f3f3;
+}
+
