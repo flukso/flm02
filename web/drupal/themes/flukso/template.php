@@ -145,6 +145,7 @@ function phptemplate_image_body($node, $size) {
       'editable' => user_access('administer image annotations') || user_access('create image annotations'),
     ));
    
+    module_load_include('module', 'jquery_ui');
     // Load all the JS and CSS magic
     drupal_add_js(array('imageAnnotate' => $settings), 'setting');
     jquery_ui_add(array('ui.resizable', 'ui.draggable'));
@@ -204,7 +205,8 @@ function phptemplate_img_assist_inline($node, $size, $attributes) {
         'top' => $note->position_top,
         'left' => $note->position_left,
         'text' => $text,
-        'editable' => $editable,
+        // notes should be added when residing on the image page
+        'editable' => FALSE,
       );
     }
    
@@ -215,7 +217,8 @@ function phptemplate_img_assist_inline($node, $size, $attributes) {
       'notes' => $notes,
       'editable' => user_access('administer image annotations') || user_access('create image annotations'),
     ));
-   
+
+    module_load_include('module', 'jquery_ui');
     // Load all the JS and CSS magic
     drupal_add_js(array('imageAnnotate' => $settings), 'setting');
     jquery_ui_add(array('ui.resizable', 'ui.draggable'));
