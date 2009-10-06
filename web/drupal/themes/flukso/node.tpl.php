@@ -35,6 +35,8 @@
   <div class="content clear-block">
     <?php if (isset($flukso_node_author)): ?>
     	<div class="node-author"><?php print $flukso_node_author; ?></div>
+    <?php else: ?>
+      <div class="node-author">'</div>
     <?php endif; ?>
     <?php print $picture; ?>
     <?php print $content; ?>
