@@ -110,8 +110,6 @@ ISR(ANALOG_COMP_vect) {
   UCSR0B &= ~((1<<RXEN0) | (1<<TXEN0));
   //disable ADC:
   ADCSRA &= ~(1<<ADEN);
-  // disable AC:
-  ACSR |= (1<<ACD);
 
   for (i=0; i<4; i++)
     eeprom_write_block((const void*)&measurements[i].value, (void*)&EEPROM_measurements[i].value, 4);
@@ -123,8 +121,6 @@ ISR(ANALOG_COMP_vect) {
   UCSR0B |= (1<<RXEN0) | (1<<TXEN0);
   // enable ADC and start a first ADC conversion
   ADCSRA |= (1<<ADEN) | (1<<ADSC);
-  // enable AC
-  ACSR &= ~(1<<ACD);
 
   printString("msg metervalues written to EEPROM (BROWN-OUT)\n");
 }
@@ -202,7 +198,10 @@ void setup()
 
   // analog comparator setup for brown-out detection
   // PD7=AIN1 configured by default as input to obtain high impedance
-  
+ 
+  // disable digital input cicuitry on AIN0 and AIN1 pins to reduce leakage current
+  DIDR1 |= (1<<AIN1D) | (1<<AIN0D);  
+ 
   // comparing AIN1 (Vcc/4.4) to bandgap reference (1.1V)
   // bandgap select | AC interrupt enable | AC interrupt on rising edge (DS p.243)
   ACSR |= (1<<ACBG) | (1<<ACIE) | (1<<ACIS1) | (1<<ACIS0);
@@ -211,6 +210,9 @@ void setup()
   // Timer2 clock prescaler set to 32 => fTOV2 = 1000kHz / 256 / 32 = 122.07Hz
   TCCR2B |= (1<<CS21) | (1<<CS20);
   TIMSK2 |= (1<<TOIE2);
+
+  // disable digital input cicuitry on ADCx pins to reduce leakage current
+  DIDR0 |= (1<<ADC5D) | (1<<ADC4D) | (1<<ADC3D) | (1<<ADC2D) | (1<<ADC1D) | (1<<ADC0D);
 
   // select VBG as reference for ADC
   ADMUX |= (1<<REFS1) | (1<<REFS0);
