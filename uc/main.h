@@ -26,14 +26,21 @@
 
 #define TYPE 2301
 
-#if TYPE = 2301   // 230V - 1-phase @ 488.28Hz sampling rate
+#if TYPE == 2301   // 230V - 1-phase @ 488.28Hz sampling rate
   #define METERCONST 7091
-#elif TYPE = 2303 // 230V - 3-phase @ 488.28Hz sampling rate
+  #warning "230V - 1-phase selected. METERCONST set to 7091"
+
+#elif TYPE == 2303 // 230V - 3-phase @ 488.28Hz sampling rate
   #define METERCONST 7026
-#elif TYPE = 2401 // 240V - 1-phase @ 488.28Hz sampling rate
+  #warning "230V - 3-phase selected. METERCONST set to 7026"
+
+#elif TYPE == 2401 // 240V - 1-phase @ 488.28Hz sampling rate
   #define METERCONST 7399
-#elif TYPE = 2403 // 240V - 3-phase @ 488.28Hz sampling rate
+  #warning "240V - 1-phase selected. METERCONST set to 2401"
+
+#elif TYPE == 2403 // 240V - 3-phase @ 488.28Hz sampling rate
   #define METERCONST 7331
+  #warning "240V - 3-phase selected. METERCONST set to 7331"
 #endif
 
 #define START 0

@@ -44,30 +44,18 @@ volatile struct sensor measurements[4];
 
 // interrupt service routine for INT0
 ISR(INT0_vect) {
-  measurements[0].value++;
-  aux[0].pulse = true;
-}
-
-// interrupt service routine for INT1
-ISR(INT1_vect) {
   measurements[1].value++;
   aux[1].pulse = true;
 }
 
-// interrupt service routine for PCI2 (PCINT20 = pin4)
-ISR(PCINT2_vect) {
-  if (aux[2].toggle == false) {
-    aux[2].toggle = true;
-  }
-  else {
-    measurements[2].value++;
-    aux[2].pulse = true;
-    aux[2].toggle = false;
-  }
+// interrupt service routine for INT1
+ISR(INT1_vect) {
+  measurements[2].value++;
+  aux[2].pulse = true;
 }
 
-// interrupt service routine for PCI0 (PCINT1 = pin9)
-ISR(PCINT0_vect) {
+// interrupt service routine for PCI2 (PCINT20)
+ISR(PCINT2_vect) {
   if (aux[3].toggle == false) {
     aux[3].toggle = true;
   }
@@ -78,6 +66,7 @@ ISR(PCINT0_vect) {
   }
 }
 
+// interrupt service routine for ADC
 ISR(TIMER2_OVF_vect) {
   // read ADC result
   // add to nano(Wh) counter
@@ -187,14 +176,6 @@ void setup()
   PCMSK2 |= (1<<PCINT20);
   //pin change interrupt enable 2
   PCICR |= (1<<PCIE2);
-
-  // PB1=PCINT1 configuration
-  // set as input pin with 20k pull-up enabled
-  PORTB |= (1<<PB1);
-  //enable pin change interrupt on PCINT1
-  PCMSK0 |= (1<<PCINT1);
-  //pin change interrupt enable 0
-  PCICR |= (1<<PCIE0);
 
   // analog comparator setup for brown-out detection
   // PD7=AIN1 configured by default as input to obtain high impedance

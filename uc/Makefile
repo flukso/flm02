@@ -174,17 +174,8 @@ all: bin_files build sizeafter
 build: elf hex eep
 
 bin_files: $(TARGET).c
-	# Here is the "preprocessing".
-	# It creates a .cpp file based with the same name as the .pde file.
-	# On top of the new .cpp file comes the WProgram.h header.
-	# At the end there is a generic main() function attached.
-	# Then the .cpp file will be compiled. Errors during compile will
-	# refer to this new, automatically generated, file. 
-	# Not the original .pde file you actually edit...
 	test -d bin || mkdir bin
-	#echo '#include "WProgram.h"' > bin/$(TARGET).cpp
 	cp $(TARGET).c  bin/$(TARGET).c
-	#cat main.cxx >> bin/$(TARGET).cpp
 
 elf: bin/$(TARGET).elf
 hex: bin/$(TARGET).hex
