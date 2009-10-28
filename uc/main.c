@@ -207,8 +207,8 @@ void setup()
   ACSR |= (1<<ACBG) | (1<<ACIE) | (1<<ACIS1) | (1<<ACIS0);
 
   // Timer2 normal operation
-  // Timer2 clock prescaler set to 32 => fTOV2 = 1000kHz / 256 / 32 = 122.07Hz
-  TCCR2B |= (1<<CS21) | (1<<CS20);
+  // Timer2 clock prescaler set to 8 => fTOV2 = 1000kHz / 256 / 8 = 488.28Hz (DS p.158)
+  TCCR2B |= (1<<CS21);
   TIMSK2 |= (1<<TOIE2);
 
   // disable digital input cicuitry on ADCx pins to reduce leakage current
@@ -217,7 +217,7 @@ void setup()
   // select VBG as reference for ADC
   ADMUX |= (1<<REFS1) | (1<<REFS0);
   // ADC0 selected by default
-  // ADC prescaler set to 16 => 1000kHz / 8 = 125kHz
+  // ADC prescaler set to 8 => 1000kHz / 8 = 125kHz (DS p.258)
   ADCSRA |= (1<<ADPS1) | (1<<ADPS0);
 
   // enable ADC and start a first ADC conversion
