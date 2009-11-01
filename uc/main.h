@@ -36,7 +36,7 @@
 
 #elif TYPE == 2401 // 240V - 1-phase @ 488.28Hz sampling rate
   #define METERCONST 7399
-  #warning "240V - 1-phase selected. METERCONST set to 2401"
+  #warning "240V - 1-phase selected. METERCONST set to 7399"
 
 #elif TYPE == 2403 // 240V - 3-phase @ 488.28Hz sampling rate
   #define METERCONST 7331
