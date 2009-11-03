@@ -36,6 +36,8 @@
 #include <avr/wdt.h>
 
 // variable declarations
+uint8_t i;
+
 volatile struct state aux[4] = {{false, false, START}, {false, false, START}, {false, false, START}, {false, false, START}};
 
 volatile struct sensor EEMEM EEPROM_measurements[4] = {{SENSOR0, START}, {SENSOR1, START}, {SENSOR2, START}, {SENSOR3, START}};
@@ -111,7 +113,7 @@ ISR(ANALOG_COMP_vect) {
   // enable ADC and start a first ADC conversion
   ADCSRA |= (1<<ADEN) | (1<<ADSC);
 
-  printString("msg metervalues written to EEPROM (BROWN-OUT)\n");
+  printString("msg BROWN-OUT\n");
 }
 
 // interrupt service routine for watchdog timeout
@@ -119,7 +121,7 @@ ISR(WDT_vect) {
   for (i=0; i<4; i++)
     eeprom_write_block((const void*)&measurements[i].value, (void*)&EEPROM_measurements[i].value, 4);
 
-  printString("msg metervalues written to EEPROM (WDT)\n");
+  printString("msg WDT\n");
 }
 
 // disable WDT
@@ -210,22 +212,20 @@ void setup()
 
 void send(const struct sensor *measurement)
 {
-  uint8_t i, length;
-  char buffer[49];
+  uint8_t i = 46;
+  uint32_t value = measurement->value;
+  char pulse[49];
 
-  // determine the length of value
-  ltoa(measurement->value, buffer, 10);
-  length = strlen(buffer);
+  // generate pulse message structure
+  strcpy(pulse, "pls ");
+  strcpy(&pulse[4], measurement->id);
+  strcpy(&pulse[36], ":0000000000\n");
 
-  strcpy(buffer, "pls ");
-  strcpy(&buffer[4], measurement->id);
-  strcpy(&buffer[36], ":");
-  // insert leading 0's
-  for (i=0; i<10-length; i++) strcpy(&buffer[37+i], "0");
-  ltoa(measurement->value, &buffer[47-length], 10);
-  strcpy(&buffer[47], "\n");
+  do {                              // generate digits in reverse order
+    pulse[i--] = '0' + value % 10;  // get next digit
+  } while ((value /= 10) > 0);      // delete it
 
-  printString(buffer);
+  printString(pulse);
 
   // blink the green LED
   PORTB |= (1<<PB5);
@@ -257,6 +257,7 @@ int main(void)
   // so the pulses are counted but not sent to the deamon
   for (i=0; i<4; i++) _delay_ms(5000);
 
+  serialFlush();
   WDT_on();
 
   for (;;) loop();

@@ -28,7 +28,7 @@
 // using a ring buffer (I think), in which rx_buffer_head is the index of the
 // location to which to write the next incoming character and rx_buffer_tail
 // is the index of the location from which to read.
-#define RX_BUFFER_SIZE 128
+#define RX_BUFFER_SIZE 64
 
 unsigned char rx_buffer[RX_BUFFER_SIZE];
 
@@ -128,19 +128,9 @@ SIGNAL(SIG_UART_RECV)
 	}
 }
 
-void printMode(int mode)
-{
-	// do nothing, we only support serial printing, not lcd.
-}
-
 void printByte(unsigned char c)
 {
 	serialWrite(c);
-}
-
-void printNewline()
-{
-	printByte('\n');
 }
 
 void printString(const char *s)
@@ -194,19 +184,3 @@ void printBinary(unsigned long n)
 {
 	printIntegerInBase(n, 2);
 }
-
-/* Including print() adds approximately 1500 bytes to the binary size,
- * so we replace it with the smaller and less-confusing printString(),
- * printInteger(), etc.
-void print(const char *format, ...)
-{
-	char buf[256];
-	va_list ap;
-	
-	va_start(ap, format);
-	vsnprintf(buf, 256, format, ap);
-	va_end(ap);
-	
-	printString(buf);
-}
-*/

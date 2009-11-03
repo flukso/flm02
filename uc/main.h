@@ -50,8 +50,6 @@
 #define END0 0xcccccccc
 
 // datastructures
-uint8_t i;
-
 struct state {
   boolean pulse;
   boolean toggle;
