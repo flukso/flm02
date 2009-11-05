@@ -38,6 +38,11 @@ Drupal.annotativeImage = function (image) {
   // Give the canvas and the container their size and background
   this.canvas.height(this.image.height());
   this.canvas.width(this.image.width());
+
+  //BVDM 05/11/2009: include this check to allow co-existence of img_assist positioning (left, center, right) and image_annotate
+  if ($(this.canvas).parent().hasClass('inline-center'))
+    this.canvas.css('left', (602-this.image.width())/2);
+
   this.canvas.css('background-image', 'url("'+ this.image.attr('src') +'")');  
   this.canvas.children('.image-annotate-view, .image-annotate-edit').height(this.image.height());
   this.canvas.children('.image-annotate-view, .image-annotate-edit').width(this.image.width());
