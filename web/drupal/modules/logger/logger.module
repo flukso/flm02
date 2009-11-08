@@ -235,7 +235,11 @@ function _logger_dashboard($type, $function, $interval) {
           break;
         case 'eur':
           $meter->unit = 'euro/year';
-          $meter->factor = 5361.12;
+          $meter->factor = 5676; // 18 EURcent/kWh
+          break;
+        case 'aud':
+          $meter->unit = 'aud/year';
+          $meter->factor = 5991; // 19 AUDcent/kWh
           break;
       }
   }
@@ -309,7 +313,6 @@ function _logger_remove($rid) {
 }
 
 function _logger_unit($unit) {
-  // TODO : include security checks
   global $user;
   // hardcoded type and function
   db_query("UPDATE {logger_meters} SET unit = '%s' WHERE uid = %d AND type = '%s' AND function = '%s'", $unit, $user->uid, 'electricity', 'main');
@@ -445,16 +448,25 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
             $items[] = 'watt';
             $items[] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination, 'alias' => TRUE));
             $items[] = l('euro/year', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination, 'alias' => TRUE));
+            $items[] = l('aud/year', 'logger/unit/aud', array('attributes' => array('title' => "switch to aud/year"), 'query' => $destination, 'alias' => TRUE));
             break;
           case 'kwh':
             $items[] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination, 'alias' => TRUE));
             $items[] = 'kWh/year';
             $items[] = l('euro/year', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination, 'alias' => TRUE));
+            $items[] = l('aud/year', 'logger/unit/aud', array('attributes' => array('title' => "switch to aud/year"), 'query' => $destination, 'alias' => TRUE));
             break;
           case 'eur':
             $items[] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination, 'alias' => TRUE));
             $items[] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination, 'alias' => TRUE));
             $items[] = 'euro/year';
+            $items[] = l('aud/year', 'logger/unit/aud', array('attributes' => array('title' => "switch to aud/year"), 'query' => $destination, 'alias' => TRUE));
+            break;
+          case 'aud':
+            $items[] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination, 'alias' => TRUE));
+            $items[] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination, 'alias' => TRUE));
+            $items[] = l('euro/year', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination, 'alias' => TRUE));
+            $items[] = 'aud/year';
             break;
         }
         $block['subject'] = t('Unit');
