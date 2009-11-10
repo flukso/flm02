@@ -39,10 +39,6 @@ h1, h2, h3, h4, h5, h6 {
 	font-size: 1em;
 }
 
-table {
-	font-size: 1em;
-}
-
 #container {
 	margin: 15px auto;
 	width: 920px;
@@ -270,6 +266,7 @@ h3.searchresult a:hover {
         margin: 1.5em 0;
         padding: 0em 2.6em;
 	letter-spacing: 1px;
+	letter-spacing: 1px;
 }
 
 .meta { 
@@ -415,20 +412,34 @@ a.read-more {
 	background-image: url("icons/calendar.png");
 }
 
-/* tables */
-tr th, tr.light td, tr.dark td, tr.odd td, tr.even td {
-	padding: 0em .2em 0em .2em;
+/* ------------------------------------------------------------------------
+ * Comments
+ * --------------------------------------------------------------------- */
+table {
+	border-collapse: separate;
+	width: 660px;
+	font-size: 1em;
 }
 
-tr.light, tr.dark, tr.even, tr.odd {
+th, td {
+	padding: 0.1em 1em;
+}
+
+tr th, tr.light td, tr.dark td, tr.odd td, tr.even td {
+	padding 0.1em 1em;
+}
+
+tr.light, tr.dark, tr.odd {
 	background-color: #fff;
+}
+
+tr.even {
+	background-color: #fafafa;
 }
 
 tr.light .active, tr.dark .active, tr.even .active, tr.odd .active {
 	background-color: #fff;
 }
-
-/* tr th {border: 1px solid #ddd;} */
 
 tr.watchdog-user {
 	background-color: #ffd;
