@@ -413,7 +413,7 @@ a.read-more {
 }
 
 /* ------------------------------------------------------------------------
- * Comments
+ * Tables
  * --------------------------------------------------------------------- */
 table {
 	border-collapse: separate;
@@ -437,8 +437,12 @@ tr.even {
 	background-color: #fafafa;
 }
 
-tr.light .active, tr.dark .active, tr.even .active, tr.odd .active {
+tr.light .active, tr.dark .active, tr.odd .active {
 	background-color: #fff;
+}
+
+tr.even .active {
+	background-color: #fafafa;
 }
 
 tr.watchdog-user {
