@@ -36,8 +36,6 @@
 #include <avr/wdt.h>
 
 // variable declarations
-uint8_t i;
-
 volatile struct state aux[4] = {{false, false, START}, {false, false, START}, {false, false, START}, {false, false, START}};
 
 volatile struct sensor EEMEM EEPROM_measurements[4] = {{SENSOR0, START}, {SENSOR1, START}, {SENSOR2, START}, {SENSOR3, START}};
@@ -74,10 +72,6 @@ ISR(TIMER2_OVF_vect) {
   // add to nano(Wh) counter
   aux[0].nano += (uint32_t)METERCONST * ADC;
   if (aux[0].nano > 1000000000) {
-     printString("msg ADC0 sample value: ");
-     printIntegerInBase((unsigned long)ADC, 10);
-     printString("\n");
-     //debugging
      measurements[0].value++;
      aux[0].pulse = true;
      aux[0].nano -= 1000000000;
@@ -88,6 +82,7 @@ ISR(TIMER2_OVF_vect) {
 
 // interrupt service routine for analog comparator
 ISR(ANALOG_COMP_vect) {
+  uint8_t i;
 
   //debugging:
   //measurements[3].value = END3;
@@ -118,6 +113,8 @@ ISR(ANALOG_COMP_vect) {
 
 // interrupt service routine for watchdog timeout
 ISR(WDT_vect) {
+  uint8_t i;
+
   for (i=0; i<4; i++)
     eeprom_write_block((const void*)&measurements[i].value, (void*)&EEPROM_measurements[i].value, 4);
 
@@ -235,9 +232,17 @@ void send(const struct sensor *measurement)
 
 void loop()
 {
+  uint8_t i;
+ 
   // check whether we have to send out a pls to the deamon
   for (i=0; i<4; i++) {
     if (aux[i].pulse == true) {
+      if (i == 0) {
+        //debugging
+        printString("msg ADC0 sample value: ");
+        printIntegerInBase((unsigned long)ADC, 10);
+        printString("\n");
+      }
       send((const struct sensor *)&measurements[i]);
       aux[i].pulse = false;
     }
@@ -249,6 +254,8 @@ void loop()
 
 int main(void)
 {
+  uint8_t i;
+
   WDT_off();
   setup();
 
