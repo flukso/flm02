@@ -36,7 +36,7 @@
 #include <avr/wdt.h>
 
 // variable declarations
-volatile struct state aux[4] = {{false, false, START}, {false, false, START}, {false, false, START}, {false, false, START}};
+volatile struct state aux[4] = {{false, false, START, 0}, {false, false, START, 0}, {false, false, START, 0}, {false, false, START, 0}};
 
 volatile struct sensor EEMEM EEPROM_measurements[4] = {{SENSOR0, START}, {SENSOR1, START}, {SENSOR2, START}, {SENSOR3, START}};
 volatile struct sensor measurements[4];
@@ -75,6 +75,7 @@ ISR(TIMER2_OVF_vect) {
      measurements[0].value++;
      aux[0].pulse = true;
      aux[0].nano -= 1000000000;
+     aux[0].debug = ADC;
   }
   // start a new ADC conversion
   ADCSRA |= (1<<ADSC);
@@ -210,8 +211,11 @@ void setup()
 void send(const struct sensor *measurement)
 {
   uint8_t i = 46;
-  uint32_t value = measurement->value;
   char pulse[49];
+
+  cli();
+  uint32_t value = measurement->value;
+  sei();
 
   // generate pulse message structure
   strcpy(pulse, "pls ");
@@ -240,7 +244,7 @@ void loop()
       if (i == 0) {
         //debugging
         printString("msg ADC0 sample value: ");
-        printIntegerInBase((unsigned long)ADC, 10);
+        printIntegerInBase((unsigned long)aux[0].debug, 10);
         printString("\n");
       }
       send((const struct sensor *)&measurements[i]);

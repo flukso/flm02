@@ -54,6 +54,7 @@ struct state {
   boolean pulse;
   boolean toggle;
   uint32_t nano;
+  uint16_t debug;
 };
 
 struct sensor {
