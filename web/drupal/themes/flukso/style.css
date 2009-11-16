@@ -421,6 +421,10 @@ table {
 	font-size: 1em;
 }
 
+form table {
+	width: auto;
+}
+
 th, td {
 	padding: 0.1em 1em;
 }
@@ -546,13 +550,13 @@ div.comment div.content h3 {
 
 div.comment div.content h3 a:link,
 div.comment div.content h3 a:visited {
-    color: #333;
+	color: #333;
 	font-weight: normal;
 	text-decoration: none;
 }
 
 div.comment div.content h3 a:hover {
-    color: #ed1a09;
+	color: #ed1a09;
 }
 
 div.comment div.content p {
@@ -561,8 +565,8 @@ div.comment div.content p {
 }
 
 div.comment img.user-picture { 
-    float: left;
-    padding: 0 10px 5px 0;
+	float: left;
+	padding: 0 10px 5px 0;
 }
 
 div.comment div.content p {
@@ -571,7 +575,6 @@ div.comment div.content p {
 
 div.comment div.content p+p {
 	margin-top: 1.5em;
-	padding: 0 3em;
 }
 
 div.even div.content { background-color: #fff; }
@@ -620,7 +623,7 @@ em.moderation {
 }
 
 #comments div.box {
-    margin-top: 10px;
+	margin-top: 10px;
 }
 
 #comment-controls {
@@ -638,7 +641,7 @@ div.geshifilter {
 	font-size: 1.3em;
 	line-height: 1.3;
 	padding: 1em;
-	margin: 0.5em 2.6em;
+	margin: 0.5em 2em;
 }
 
 .tips code{
