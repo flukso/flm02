@@ -1,5 +1,5 @@
 //
-// main.1mhz.h : AVR uC header file for flukso sensor board
+// main.h : AVR uC header file for flukso sensor board
 // Copyright (c) 2008-2009 jokamajo.org
 //
 // This program is free software; you can redistribute it and/or
@@ -48,6 +48,37 @@
 #define END2 0xeeeeeeee
 #define END1 0xdddddddd
 #define END0 0xcccccccc
+
+
+// This macro performs a 16x16 -> 32 unsigned MAC in 37 cycles with operands and results in memory
+// based on http://www2.ife.ee.ethz.ch/~roggend/publications/wear/DSPMic_v1.1.pdf par 3.4 and table 31.
+#define MacU16X16to32(uint_32Acc, uint_16In1, uint_16In2) \
+asm volatile ( \
+  "clr r2 \n\t" \
+  "mul %B2, %B1 \n\t" \
+  "movw r4, r0 \n\t" \
+  "mul %A2, %A1 \n\t" \
+  "add %A0, r0 \n\t" \
+  "adc %B0, r1 \n\t" \
+  "adc %C0, r4 \n\t" \
+  "adc %D0, r5 \n\t" \
+  "mul %B2, %A1 \n\t" \
+  "add %B0, r0 \n\t" \
+  "adc %C0, r1 \n\t" \
+  "adc %D0, r2 \n\t" \
+  "mul %A2, %B1 \n\t" \
+  "add %B0, r0 \n\t" \
+  "adc %C0, r1 \n\t" \
+  "adc %D0, r2 \n\t" \
+  "clr r1 \n\t" \
+  : \
+  "+r" (uint_32Acc) \
+  : \
+  "a" (uint_16In1), \
+  "a" (uint_16In2) \
+  : \
+  "r2", "r4", "r5" \
+)
 
 // datastructures
 struct state {

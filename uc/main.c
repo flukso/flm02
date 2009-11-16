@@ -1,5 +1,5 @@
 //
-// main.1mhz.c : AVR uC code for flukso sensor board
+// main.c : AVR uC code for flukso sensor board
 // Copyright (c) 2008-2009 jokamajo.org
 //
 // This program is free software; you can redistribute it and/or
@@ -70,7 +70,8 @@ ISR(PCINT2_vect) {
 ISR(TIMER2_OVF_vect) {
   // read ADC result
   // add to nano(Wh) counter
-  aux[0].nano += (uint32_t)METERCONST * ADC;
+  MacU16X16to32(aux[0].nano, METERCONST, ADC);
+
   if (aux[0].nano > 1000000000) {
      measurements[0].value++;
      aux[0].pulse = true;
@@ -269,6 +270,8 @@ int main(void)
   for (i=0; i<4; i++) _delay_ms(5000);
 
   serialFlush();
+  printString("\n");
+
   WDT_on();
 
   for (;;) loop();
