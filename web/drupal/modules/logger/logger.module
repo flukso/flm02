@@ -156,6 +156,12 @@ function logger_menu() {
     'access callback'     => TRUE,
     'type'                => MENU_CALLBACK,
   );
+  $items['user/%user_uid_optional/privacy'] = array(
+    'title'               => 'Privacy',
+    'page callback'       => '_logger_privacy',
+    'access arguments'    => array('logger'),
+    'type'                => MENU_LOCAL_TASK,
+  );
 
   return $items;
 }
@@ -222,7 +228,10 @@ function _logger_dashboard($type, $function, $interval) {
       break;
   }
 
-  $meter = db_fetch_object(db_query("SELECT meter, unit FROM {logger_meters} WHERE uid = %d AND type = '%s' AND function = '%s'", $user->uid, $type, $function));
+  $meter = db_fetch_object(db_query("SELECT lm.meter, lm.unit, lu.private
+                                     FROM {logger_meters} lm
+                                     INNER JOIN {logger_users} lu on lm.uid = lu.uid
+                                     WHERE lm.uid = %d AND lm.type = '%s' AND lm.function = '%s'", $user->uid, $type, $function));
   switch ($type) {
     case 'electricity':
       switch ($meter->unit) {
@@ -245,17 +254,63 @@ function _logger_dashboard($type, $function, $interval) {
   }
 
   $color = array(RED, BLUE, GREEN, YELLOW, PURPLE);
-  $string->def  = ' DEF:data0='. $data_path . $meter->meter .'.rrd:meter:AVERAGE CDEF:meter0=data0,'. $meter->factor .',* VDEF:min0=meter0,MINIMUM VDEF:max0=meter0,MAXIMUM VDEF:avg0=meter0,AVERAGE VDEF:last0=meter0,LAST';
-  $string->line = ' COMMENT:"\s" LINE1:meter0#'. $color[0] .':'.'"'. substr($user->name.'               ', 0, 15) .'"'.' GPRINT:min0:"min\:%5.0lf" GPRINT:max0:"\tmax\:%5.0lf" GPRINT:avg0:"\tavg\:%5.0lf" GPRINT:last0:"\tlast\:%5.0lf\l"';
 
-  if (user_access('logger') || user_access('staff')) { //allow Veerle to watch the graphs
-    $result = db_query("SELECT u.name, lm.meter FROM (({users} u INNER JOIN {user_relationships} ur ON u.uid = ur.requestee_id) INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid) INNER JOIN {logger_meters} lm ON u.uid = lm.uid WHERE ur.requester_id = %d AND urt.name = '%s' AND type = '%s' AND function = '%s' ORDER BY ur.rid", $user->uid, 'subscription', $type, $function);
+  $string->def  = ' DEF:data0='. $data_path . $meter->meter .'.rrd:meter:AVERAGE' .
+                  ' CDEF:meter0=data0,'. $meter->factor .',*' .
+                  ' VDEF:min0=meter0,MINIMUM'.
+                  ' VDEF:max0=meter0,MAXIMUM'.
+                  ' VDEF:avg0=meter0,AVERAGE'.
+                  ' VDEF:last0=meter0,LAST';
+
+  $string->line = ' COMMENT:"\s"'.
+                  ' LINE1:meter0#'. $color[0] .':'.'"'. substr($user->name.'               ', 0, 15) .'"'.
+                  ' GPRINT:min0:"min\:%5.0lf"'.
+                  ' GPRINT:max0:"\tmax\:%5.0lf"'.
+                  ' GPRINT:avg0:"\tavg\:%5.0lf"'.
+                  ' GPRINT:last0:"\tlast\:%5.0lf\l"';
+
+  if (user_access('logger') && !$meter->private) {
+    $result = db_query("SELECT u.name, lm.meter, lu.private 
+                        FROM ((({users} u 
+                        INNER JOIN {user_relationships} ur ON u.uid = ur.requestee_id) 
+                        INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid)
+                        INNER JOIN {logger_meters} lm ON u.uid = lm.uid)
+                        INNER JOIN {logger_users} lu ON u.uid = lu.uid 
+                        WHERE ur.requester_id = %d AND urt.name = '%s' AND type = '%s' AND function = '%s' 
+                        ORDER BY ur.rid", $user->uid, 'subscription', $type, $function);
     $i = 0;
     while ($subscription = db_fetch_object($result)) {
       $i += 1;
-      // print_r($subscription);
-      $string->def  .= ' DEF:data'. $i .'='. $data_path . $subscription->meter .'.rrd:meter:AVERAGE CDEF:meter'. $i .'=data'. $i .','. $meter->factor .',* VDEF:min'. $i .'=meter'. $i .',MINIMUM VDEF:max'. $i .'=meter'. $i .',MAXIMUM VDEF:avg'. $i .'=meter'. $i .',AVERAGE VDEF:last'. $i .'=meter'. $i .',LAST';
-      $string->line .= ' LINE1:meter'. $i .'#'. $color[$i] .':'.'"'. substr($subscription->name.'               ', 0, 15) .'"'.' GPRINT:min'. $i .':"min\:%5.0lf" GPRINT:max'. $i .':"\tmax\:%5.0lf" GPRINT:avg'. $i .':"\tavg\:%5.0lf" GPRINT:last'. $i .':"\tlast\:%5.0lf\l"';
+      // check whether the person who's datastream you'd like to superimpose on the graph is in private mode
+      if ($subscription->private) {
+        // shift the data left by 1 year = 31556926 seconds to prevent the datastream from being displayed
+        $string->def  .= ' DEF:data'. $i .'='. $data_path . $subscription->meter .'.rrd:meter:AVERAGE'.
+                         ' CDEF:meter'. $i .'=data'. $i .','. $meter->factor .',*'.
+                         ' SHIFT:meter'. $i .':-31556926'; 
+
+        // substitute the actual min/max/avg/last values by 'prv'
+        $string->line .= ' LINE1:meter'. $i .'#'. $color[$i] .':'.'"'. substr($subscription->name.'               ', 0, 15) .'"'.
+                         ' COMMENT:"min\:  prv"'.
+                         ' COMMENT:"\tmax\:  prv"'.
+                         ' COMMENT:"\tavg\:  prv"'.
+                         ' COMMENT:"\tlast\:  prv\l"';
+      }
+
+      // the peer has not set his datastream to private so print it!
+      else {
+        $string->def  .= ' DEF:data'. $i .'='. $data_path . $subscription->meter .'.rrd:meter:AVERAGE'.
+                         ' CDEF:meter'. $i .'=data'. $i .','. $meter->factor .',*'.
+                         ' VDEF:min'. $i .'=meter'. $i .',MINIMUM'.
+                         ' VDEF:max'. $i .'=meter'. $i .',MAXIMUM'.
+                         ' VDEF:avg'. $i .'=meter'. $i .',AVERAGE'.
+                         ' VDEF:last'. $i .'=meter'. $i .',LAST';
+
+        $string->line .= ' LINE1:meter'. $i .'#'. $color[$i] .':'.'"'. substr($subscription->name.'               ', 0, 15) .'"'.
+                         ' GPRINT:min'. $i .':"min\:%5.0lf"'.
+                         ' GPRINT:max'. $i .':"\tmax\:%5.0lf"'.
+                         ' GPRINT:avg'. $i .':"\tavg\:%5.0lf"'.
+                         ' GPRINT:last'. $i .':"\tlast\:%5.0lf\l"';
+      }
     }
   }
 
@@ -266,7 +321,8 @@ function _logger_dashboard($type, $function, $interval) {
     $TZ = 'TZ="GMT+';
   $TZ .= gmdate('h:i', abs($user->timezone)) .'" ';
   //insert the TZ prior to launching rrdtool to obtain a proper time conversion
-  $command = $TZ . $root_path .'/rrdtool graph '. $graph_path . $pngid .'.png -s '. $start .' --vertical-label '. $meter->unit .' --lower-limit 0 -w 500 -h 350 -E -X 0 --font LEGEND:8:';
+  $command = $TZ . $root_path .'/rrdtool graph '. $graph_path . $pngid .'.png -s '. $start .
+             ' --vertical-label '. $meter->unit .' --lower-limit 0 -w 500 -h 350 -E -X 0 --font LEGEND:8:';
   $command .= $string->def;
   $command .= $string->line;
   exec($command, $output, $return_var);
@@ -276,8 +332,14 @@ function _logger_dashboard($type, $function, $interval) {
 
 function _logger_add($uid) {
   global $user;
-  $rtid = db_result(db_query("SELECT rtid FROM {user_relationship_types} WHERE name = '%s'", 'subscription'));
-  $result = db_fetch_array(db_query("SELECT COUNT(rid), MAX(rid) FROM {user_relationships} WHERE requester_id = %d AND rtid = %d GROUP BY rtid", $user->uid, $rtid));
+  $rtid = db_result(db_query("SELECT rtid
+                              FROM {user_relationship_types}
+                              WHERE name = '%s'", 'subscription'));
+
+  $result = db_fetch_array(db_query("SELECT COUNT(rid), MAX(rid)
+                                     FROM {user_relationships}
+                                     WHERE requester_id = %d AND rtid = %d
+                                     GROUP BY rtid", $user->uid, $rtid));
 
   // max subscriptions = 4
   if ($result['COUNT(rid)'] < 4) {
@@ -285,9 +347,15 @@ function _logger_add($uid) {
   }
   else {
     //check whether the requested relationship doesn't already exist
-    if (!db_result(db_query("SELECT rid FROM {user_relationships} WHERE requester_id = %d AND requestee_id = %d AND rtid = %d", $user->uid, $uid, $rtid))) {
+    if (!db_result(db_query("SELECT rid
+                             FROM {user_relationships}
+                             WHERE requester_id = %d AND requestee_id = %d AND rtid = %d", $user->uid, $uid, $rtid))) {
+
       // if not, delete the most recently added relationship and replace it with the newly selected one
-      db_query("DELETE FROM {user_relationships} WHERE rid = %d", $result['MAX(rid)']);
+      db_query("DELETE
+                FROM {user_relationships}
+                WHERE rid = %d", $result['MAX(rid)']);
+
       user_relationships_request_relationship($user->uid, $uid, $rtid, TRUE);
     }
   }
@@ -300,8 +368,12 @@ function _logger_add($uid) {
 function _logger_remove($rid) {
   global $user;
   // check whether the to-be-deleted relationship was created by the same user
-  if ($user->uid == db_result(db_query("SELECT requester_id FROM {user_relationships} WHERE rid = %d", $rid))) {
-    db_query("DELETE FROM {user_relationships} WHERE rid = %d", $rid);
+  if ($user->uid == db_result(db_query("SELECT requester_id
+                                        FROM {user_relationships}
+                                        WHERE rid = %d", $rid))) {
+    db_query("DELETE
+              FROM {user_relationships}
+              WHERE rid = %d", $rid);
   }
   else {
     watchdog('relationships', 'attempt to delete rid %rid by non-authorized user %uid', array('%rid' => $rid, '%uid' => $user->uid), WATCHDOG_ERROR);
@@ -315,7 +387,9 @@ function _logger_remove($rid) {
 function _logger_unit($unit) {
   global $user;
   // hardcoded type and function
-  db_query("UPDATE {logger_meters} SET unit = '%s' WHERE uid = %d AND type = '%s' AND function = '%s'", $unit, $user->uid, 'electricity', 'main');
+  db_query("UPDATE {logger_meters}
+            SET unit = '%s'
+            WHERE uid = %d AND type = '%s' AND function = '%s'", $unit, $user->uid, 'electricity', 'main');
 
   _logger_cache_clear('unit');
   $destination = drupal_get_destination();
@@ -330,7 +404,10 @@ function _logger_cache_clear($delta) {
   //the theme variable isn't set on these callbacks so force it
   $theme = 'flukso';
 
-  $block = db_fetch_object(db_query("SELECT * FROM {blocks} WHERE module = '%s' AND delta = '%s' AND theme = '%s'", 'logger', $delta, 'flukso'));
+  $block = db_fetch_object(db_query("SELECT *
+                                     FROM {blocks}
+                                     WHERE module = '%s' AND delta = '%s' AND theme = '%s'", 'logger', $delta, 'flukso'));
+
   $cid = _block_get_cache_id($block);
   // prevent the whole chache_block being cleared when _block_get_cache_id returns an empty string (e.g. uid = 1)
   if ($cid != '') cache_clear_all($cid, 'cache_block');
@@ -404,13 +481,6 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
       $blocks['unit']['pages'] = 'logger<br />logger/*';
       $blocks['unit']['cache'] = BLOCK_CACHE_PER_USER;
 
-      $blocks['publish']['info'] = t('Publish');
-      $blocks['publish']['status'] = TRUE;
-      $blocks['publish']['region'] = 'content';
-      $blocks['publish']['weight'] = 3;
-      $blocks['publish']['pages'] = 'logger<br />logger/*';
-      $blocks['publish']['cache'] = BLOCK_CACHE_PER_ROLE;
-
       return $blocks;
 
     case 'view':
@@ -418,7 +488,13 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
       $destination = drupal_get_destination();
 
       if ($delta == 'subscriptions' && user_access('logger')) {
-        $result = db_query("SELECT u.uid, u.name, ur.rid FROM ({users} u INNER JOIN {user_relationships} ur ON u.uid = ur.requestee_id) INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid WHERE ur.requester_id = %d AND urt.name = '%s' ORDER BY ur.rid", $user->uid, 'subscription');
+        $result = db_query("SELECT u.uid, u.name, ur.rid
+                            FROM ({users} u
+                            INNER JOIN {user_relationships} ur ON u.uid = ur.requestee_id)
+                            INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid
+                            WHERE ur.requester_id = %d AND urt.name = '%s'
+                            ORDER BY ur.rid", $user->uid, 'subscription');
+
         $items = array();
         while ($subscription = db_fetch_object($result)) {
           $items[] = l('[x]', 'logger/remove/'. $subscription->rid, array('attributes' => array('title' => "unsubscribe from ". $subscription->name ."'s stream"), 'query' => $destination, 'alias' => TRUE)) .' '. l($subscription->name, 'user/'. $subscription->uid, array('alias' => FALSE));
@@ -430,7 +506,12 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
       elseif ($delta == 'fluksonians' && user_access('logger')) {
         // list all users having the fluksionian role for now
         // to be replaced by a real buddylist later on
-        $result = db_query("SELECT u.uid, u.name FROM ({users} u INNER JOIN {users_roles} ur ON u.uid = ur.uid) INNER JOIN {role} r ON ur.rid = r.rid WHERE r.name = '%s' AND NOT u.uid = %d ORDER BY u.name", 'fluksonian', $user->uid);
+        $result = db_query("SELECT u.uid, u.name
+                            FROM ({users} u
+                            INNER JOIN {users_roles} ur ON u.uid = ur.uid)
+                            INNER JOIN {role} r ON ur.rid = r.rid
+                            WHERE r.name = '%s' AND NOT u.uid = %d
+                            ORDER BY u.name", 'fluksonian', $user->uid);
         $items = array();
         while ($fluksonian = db_fetch_object($result)) {
           $items[] = l('[+]', 'logger/add/'. $fluksonian->uid, array('attributes' => array('title' => "subscribe to ". $fluksonian->name ."'s stream"), 'query' => $destination, 'alias' => TRUE)) .' '. l($fluksonian->name, 'user/'. $fluksonian->uid, array('alias' => FALSE));
@@ -441,41 +522,33 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
 
       elseif ($delta == 'unit' && user_access('logger')) {
         //hardcoded the type and function parameters for now
-        $unit = db_result(db_query("SELECT unit FROM {logger_meters} WHERE uid = %d AND type = '%s' AND function = '%s'", $user->uid, 'electricity', 'main'));
+        $unit = db_result(db_query("SELECT unit
+                                    FROM {logger_meters}
+                                    WHERE uid = %d AND type = '%s' AND function = '%s'", $user->uid, 'electricity', 'main'));
+
         $items = array();
+        $items[0] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination, 'alias' => TRUE));
+        $items[1] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination, 'alias' => TRUE));
+        $items[2] = l('euro/year [@ 0.18eur/kWh]', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination, 'alias' => TRUE));
+        $items[3] = l('aud/year [@ 0.19aud/kWh]', 'logger/unit/aud', array('attributes' => array('title' => "switch to aud/year"), 'query' => $destination, 'alias' => TRUE));
+
+        // 'unlink' the currently selected unit option
         switch ($unit) {
           case 'watt':
-            $items[] = 'watt';
-            $items[] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination, 'alias' => TRUE));
-            $items[] = l('euro/year [@ 0.18eur/kWh]', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination, 'alias' => TRUE));
-            $items[] = l('aud/year [@ 0.19aud/kWh]', 'logger/unit/aud', array('attributes' => array('title' => "switch to aud/year"), 'query' => $destination, 'alias' => TRUE));
+            $items[0] = 'watt';
             break;
           case 'kwh':
-            $items[] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination, 'alias' => TRUE));
-            $items[] = 'kWh/year';
-            $items[] = l('euro/year [@ 0.18eur/kWh]', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination, 'alias' => TRUE));
-            $items[] = l('aud/year [@ 0.19aud/kWh]', 'logger/unit/aud', array('attributes' => array('title' => "switch to aud/year"), 'query' => $destination, 'alias' => TRUE));
+            $items[1] = 'kWh/year';
             break;
           case 'eur':
-            $items[] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination, 'alias' => TRUE));
-            $items[] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination, 'alias' => TRUE));
-            $items[] = 'euro/year [@ 0.18eur/kWh]';
-            $items[] = l('aud/year [@ 0.19aud/kWh]', 'logger/unit/aud', array('attributes' => array('title' => "switch to aud/year"), 'query' => $destination, 'alias' => TRUE));
+            $items[2] = 'euro/year [@ 0.18eur/kWh]';
             break;
           case 'aud':
-            $items[] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination, 'alias' => TRUE));
-            $items[] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination, 'alias' => TRUE));
-            $items[] = l('euro/year [@ 0.18eur/kWh]', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination, 'alias' => TRUE));
-            $items[] = 'aud/year [@ 0.19aud/kWh]';
+            $items[3] = 'aud/year [@ 0.19aud/kWh]';
             break;
         }
         $block['subject'] = t('Unit');
         $block['content'] = theme('logger_item_list', $items);
-      }
-
-      elseif ($delta == 'publish' && user_access('logger')) {
-        // $block['subject'] = t('Publish');
-        $block['content'] = drupal_get_form('_logger_publish_form');
       }
 
       return $block;
@@ -494,33 +567,52 @@ function theme_logger_item_list($items, $title = NULL) {
 }
 
 /**
- * Generates the publish block form.
+ * Callback function for the user/x/privacy page
  */
-function _logger_publish_form() {
-  $form['publish'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Publish'),
-    '#description' => t('Publish the chart.'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE
+function _logger_privacy() {
+  $output .= drupal_get_form('_logger_privacy_form');
+  return $output;
+}
+
+/**
+ * Generates the privacy form.
+ */
+function _logger_privacy_form() {
+  global $user;
+
+  $form['privacy'] = array(
+    '#title' => t('Set your preferred privacy mode'),
+    '#type' => 'radios',
+    '#options' => array(
+      t('Shared within Flukso'),
+      t('Private'),
+    ),
+    '#description' => t("When selecting Private mode, your data stream will not be drawn on other people's graph and all statistics will be marked as 'prv'. Conversely, nobody else's data stream will be drawn on your chart."),
+    '#default_value' => db_result(db_query("SELECT private
+                                            FROM {logger_users}
+                                            WHERE uid = %d", $user->uid)),
   );
-  $form['publish']['title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title'),
-    '#description' => t('Please enter the title of your post.')
-  );
-  $form['publish']['submit'] = array(
+  $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Publish')
+    '#value' => t('Submit'),
   );
   return $form;
 }
 
 /**
- * Process publish form submissions.
+ * Process settings form submissions.
  */
-function _logger_publish_form_submit($form, &$form_state) {
-  $form_state['redirect'] = 'node/add';  //placeholder; check whether we can automatically fill in the new content type
+function _logger_privacy_form_submit($form, &$form_state) {
+  global $user;
+
+  // the built-in validation function already checks elements with options
+  $private = $form_state['values']['privacy'];
+  db_query("UPDATE {logger_users}
+            SET private = %d
+            WHERE uid = %d", $private, $user->uid);
+
+  // page redirection to the dashboard after form submission
+  $form_state['redirect'] = 'logger';
 }
 
 /**
