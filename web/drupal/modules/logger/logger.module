@@ -159,7 +159,8 @@ function logger_menu() {
   $items['user/%user_uid_optional/privacy'] = array(
     'title'               => 'Privacy',
     'page callback'       => '_logger_privacy',
-    'access arguments'    => array('logger'),
+    'access callback'     => '_logger_privacy_access',
+    'access arguments'    => array('logger', 1),
     'type'                => MENU_LOCAL_TASK,
   );
 
@@ -613,6 +614,19 @@ function _logger_privacy_form_submit($form, &$form_state) {
 
   // page redirection to the dashboard after form submission
   $form_state['redirect'] = 'logger';
+}
+
+/**
+ * Access callback ensuring the user profile tabs are visible only to their
+ * owner.
+ *
+ * @param $permission
+ *   Required permission to view the item.
+ * @param $account
+ *   A user object.
+ */
+function _logger_privacy_access($permission, $account) {
+  return ($account->uid == $GLOBALS['user']->uid && user_access($permission));
 }
 
 /**
