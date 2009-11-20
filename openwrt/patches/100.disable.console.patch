@@ -1,7 +1,7 @@
-Index: config-2.6.26
+Index: target/linux/generic-2.6/config-2.6.26
 ===================================================================
---- config-2.6.26	(revision 16491)
-+++ config-2.6.26	(working copy)
+--- target/linux/generic-2.6/config-2.6.26	(revision 16491)
++++ target/linux/generic-2.6/config-2.6.26	(working copy)
 @@ -1359,7 +1359,7 @@
  # CONFIG_SENSORS_W83L785TS is not set
  # CONFIG_SENSORS_W83L786NG is not set

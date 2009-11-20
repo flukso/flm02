@@ -1,7 +1,7 @@
-Index: ar5315.h
+Index: target/linux/atheros/files/include/asm-mips/mach-atheros/ar5315/ar5315.h
 ===================================================================
---- ar5315.h	(revision 16491)
-+++ ar5315.h	(working copy)
+--- target/linux/atheros/files/include/asm-mips/mach-atheros/ar5315/ar5315.h	(revision 16491)
++++ target/linux/atheros/files/include/asm-mips/mach-atheros/ar5315/ar5315.h	(working copy)
 @@ -355,7 +355,7 @@
  #define AR5315_GPIO_INT_LVL_HIGH			2   /* High Level Triggered */
  #define AR5315_GPIO_INT_LVL_EDGE			3   /* Edge Triggered */
