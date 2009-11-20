@@ -3,7 +3,7 @@ $Id$
 1/ Set up the OpenWRT build environment
 ---------------------------------------
 svn export svn://svn.openwrt.org/openwrt/tags/8.09 8.09.flukso
-svn co http://svn.jokamajo.org/flukso/trunk/openwrt 8.09.flukso
+svn co --force http://svn.jokamajo.org/flukso/trunk/openwrt 8.09.flukso
 
 2/ Apply custom Flukso patches to OpenWRT
 -----------------------------------------
@@ -18,3 +18,6 @@ ln -s ../../../patches/245.ignore.dhcpc.sigterm.patch .
 --------
 make menuconfig
 make
+
+4/ Enjoy!
+---------
