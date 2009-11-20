@@ -1,16 +1,3 @@
-Index: target/linux/atheros/files/include/asm-mips/mach-atheros/ar5315/ar5315.h
-===================================================================
---- target/linux/atheros/files/include/asm-mips/mach-atheros/ar5315/ar5315.h	(revision 16491)
-+++ target/linux/atheros/files/include/asm-mips/mach-atheros/ar5315/ar5315.h	(working copy)
-@@ -355,7 +355,7 @@
- #define AR5315_GPIO_INT_LVL_HIGH			2   /* High Level Triggered */
- #define AR5315_GPIO_INT_LVL_EDGE			3   /* Edge Triggered */
- 
--#define AR5315_RESET_GPIO       5
-+#define AR5315_RESET_GPIO       6
- #define AR5315_NUM_GPIO         22
- 
- 
 Index: target/linux/atheros/config-2.6.26
 ===================================================================
 --- target/linux/atheros/config-2.6.26	(revision 16491)
