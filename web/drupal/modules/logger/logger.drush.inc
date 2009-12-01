@@ -41,7 +41,7 @@ function logger_drush_command() {
 /**
  * Drush command callbacks.
  */
-function _logger_create($serial, $country, $uid = 0) {
+function _logger_create($serial, $country ="", $uid = 0) {
   // guard against duplicating entries for the same S/N
   $count = db_result(db_query("SELECT COUNT(device) FROM {logger_devices} WHERE serial = %d", $serial));
   if ($count > 0) {
@@ -108,19 +108,19 @@ function _logger_create($serial, $country, $uid = 0) {
         }
       }
 
-      if (!drush_get_error()) drush_log(dt('Successfully created the meter: @meter with type: @type', array('@meter' => $meter, '@type' => $type)), 'ok');
+      if (!drush_get_error()) drush_log(dt('Successfully created the meter: @meter with alias: @alias and type: @type', array('@meter' => $meter, '@alias' => $alias, '@type' => $type)), 'ok');
     }
   }
 }
 
-function _logger_assign($serial, $uid) {
+function _logger_assign($serial, $country, $uid) {
   // check the existence of S/N
   $device = db_result(db_query("SELECT device FROM {logger_devices} WHERE serial = %d", $serial));
   if ($device == '') {
     drush_set_error('LOGGER_ASSIGN_SERIAL_NON_EXISTENT', dt('The S/N: @serial does not exist.', array('@serial' => $serial)));
   }
   else {
-    db_query("UPDATE {logger_devices} SET uid = %d WHERE serial = %d", $uid, $serial);   
+    db_query("UPDATE {logger_devices} SET uid = %d, country = '%s' WHERE serial = %d", $uid, $country, $serial);   
     db_query("UPDATE {logger_meters} SET uid = %d WHERE device = '%s'", $uid, $device);
   }
 
