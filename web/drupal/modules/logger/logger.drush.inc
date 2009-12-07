@@ -48,6 +48,10 @@ function _logger_create($serial, $country ="", $uid = 0) {
     drush_set_error('LOGGER_CREATE_SERIAL_DUPLICATE', dt('The S/N: @serial already exists.', array('@serial' => $serial)));
   }
   else { 
+    if ($uid > 0) {
+      $result = db_query("INSERT INTO {logger_users} (uid, private) VALUES (%d, %d)", $uid, 0);
+      if (!$result) drush_set_error('LOGGER_CREATE_USERS_ENTRY', dt('Error creating a user entry for @uid.', array('@uid' => $uid)));
+    }
 
     // create an entry in the {logger_devices} table
     $device  = md5(uniqid(rand(), TRUE));
@@ -122,6 +126,9 @@ function _logger_assign($serial, $country, $uid) {
   else {
     db_query("UPDATE {logger_devices} SET uid = %d, country = '%s' WHERE serial = %d", $uid, $country, $serial);   
     db_query("UPDATE {logger_meters} SET uid = %d WHERE device = '%s'", $uid, $device);
+    
+    $result = db_query("INSERT INTO {logger_users} (uid, private) VALUES (%d, %d)", $uid, 0);
+    if (!$result) drush_log(dt('uid: @uid already exists in the {logger_users} table', array('@uid' => $uid)), 'notice');
   }
 
   if (!drush_get_error()) drush_log(dt('Successfully assigned uid: @uid to S/N: @serial', array('@uid' => $uid, '@serial' => $serial)), 'ok');
