@@ -90,7 +90,7 @@ function _logger_create($serial, $country ="", $uid = 0) {
 
       // create the meter base rrd
       if (!file_exists($path->base . $meter .'.rrd')) {
-        $command = $path->root .'/rrdtool create '. $path->base . $meter .'.rrd -b 1199487600 -s 60 DS:meter:DERIVE:8640000:-2:2 RRA:AVERAGE:0.5:1:120 RRA:AVERAGE:0.5:15:192 RRA:AVERAGE:0.5:1440:60 RRA:AVERAGE:0.5:10080:520';
+        $command = $path->root .'/rrdtool create '. $path->base . $meter .'.rrd -b 1199487600 -s 60 DS:meter:DERIVE:8640000:0:20 RRA:AVERAGE:0.5:1:120 RRA:AVERAGE:0.5:15:192 RRA:AVERAGE:0.5:1440:60 RRA:AVERAGE:0.5:10080:520';
         system($command, $return);
         if ($return == 0) {
           system('ln ' . $path->base . $meter . '.rrd ' . $path->alias_base . $alias);
@@ -102,7 +102,7 @@ function _logger_create($serial, $country ="", $uid = 0) {
 
       // create the meter night rrd
       if (!file_exists($path->night . $meter .'.rrd')) {
-        $command = $path->root .'/rrdtool create '. $path->night . $meter .'.rrd -b 1199487600 -s 86400 DS:meter:GAUGE:8640000:-2:2 RRA:AVERAGE:0.5:1:60 RRA:AVERAGE:0.5:7:520';
+        $command = $path->root .'/rrdtool create '. $path->night . $meter .'.rrd -b 1199487600 -s 86400 DS:meter:GAUGE:8640000:0:20 RRA:AVERAGE:0.5:1:60 RRA:AVERAGE:0.5:7:520';
         system($command, $return);
         if ($return == 0) {
           system('ln ' . $path->night . $meter . '.rrd ' . $path->alias_night . $alias);
