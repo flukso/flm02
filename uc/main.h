@@ -20,12 +20,26 @@
 // $Id$
 //
 
-#define SENSOR0 "0123456789abcdef0123456789abcde0"
-#define SENSOR1 "0123456789abcdef0123456789abcde1"
-#define SENSOR2 "0123456789abcdef0123456789abcde2"
-#define SENSOR3 "0123456789abcdef0123456789abcde3"
+#ifndef SENSOR0 
+  #define SENSOR0 "0123456789abcdef0123456789abcde0"
+#endif
 
-#define TYPE 2301
+#ifndef SENSOR1
+  #define SENSOR1 "0123456789abcdef0123456789abcde1"
+#endif
+
+#ifndef SENSOR2
+  #define SENSOR2 "0123456789abcdef0123456789abcde2"
+#endif
+
+#ifndef SENSOR3
+  #define SENSOR3 "0123456789abcdef0123456789abcde3"
+#endif
+
+#ifndef TYPE
+  #define TYPE 2301
+#endif
+
 
 #if TYPE == 2201   // 220V - 1-phase @ 488.28Hz sampling rate
   #define METERCONST 6783

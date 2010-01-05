@@ -53,8 +53,7 @@ INSTALL_DIR		= /home/icarus75/arduino/arduino-$(ARDUINO_VERSION)
 PORT			= /dev/ttyUSB*
 UPLOAD_RATE		= 19200 
 AVRDUDE_PROGRAMMER	= usbtiny
-# BVDM; changed from stk500v1. Will probably give us a permissions error
-
+#
 # HINT: If you want to use the automatic reset feature which comes with Arduino 
 # Diecimila, put the follwoing in your avrdude.conf: 
 # (Use the systemwide $(INSTALL_DIR)/tools/avr/etc/avrdude.conf or create a  
@@ -81,9 +80,20 @@ AVRDUDE_PROGRAMMER	= usbtiny
 #
 MCU	= atmega48
 F_CPU	= 1000000
-# F_CPU sets the clock speed in Hz. For LilyPad Arduino, change F_CPU to 8000000.
+#
+# Predefine the TYPE and SENSORx C macros in main.h via this Makefile. Override the
+# defaults on the command line by typing:
+# make TYPE= xxxx SENSOR0=yyyy ...
+#
+TYPE = 2301
+#
+SENSOR0 = 0123456789abcdef0123456789abcde0
+SENSOR1 = 0123456789abcdef0123456789abcde1
+SENSOR2 = 0123456789abcdef0123456789abcde2
+SENSOR3 = 0123456789abcdef0123456789abcde3
+#
+CEXTRA = -D TYPE=$(TYPE) -D 'SENSOR0="$(SENSOR0)"' -D 'SENSOR1="$(SENSOR1)"' -D 'SENSOR2="$(SENSOR2)"' -D 'SENSOR3="$(SENSOR3)"'
 #####################################################################################
-
 
 #####################################################################################
 #
