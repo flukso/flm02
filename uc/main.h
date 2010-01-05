@@ -1,6 +1,7 @@
 //
 // main.h : AVR uC header file for flukso sensor board
 // Copyright (c) 2008-2009 jokamajo.org
+// Copyright (c) 2010      flukso.net
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -26,20 +27,34 @@
 
 #define TYPE 2301
 
-#if TYPE == 2301   // 230V - 1-phase @ 488.28Hz sampling rate
+#if TYPE == 2201   // 220V - 1-phase @ 488.28Hz sampling rate
+  #define METERCONST 6783
+  #define MUXN 0
+  #warning "220V - 1-phase selected. METERCONST set to 6783"
+
+#elif TYPE == 2203 // 220V - 3-phase @ 488.28Hz sampling rate
+  #define METERCONST 6721
+  #define MUXN 1
+  #warning "220V - 3-phase selected. METERCONST set to 6721"
+
+#elif TYPE == 2301   // 230V - 1-phase @ 488.28Hz sampling rate
   #define METERCONST 7091
+  #define MUXN 0
   #warning "230V - 1-phase selected. METERCONST set to 7091"
 
 #elif TYPE == 2303 // 230V - 3-phase @ 488.28Hz sampling rate
   #define METERCONST 7026
+  #define MUXN 1
   #warning "230V - 3-phase selected. METERCONST set to 7026"
 
 #elif TYPE == 2401 // 240V - 1-phase @ 488.28Hz sampling rate
   #define METERCONST 7399
+  #define MUXN 0
   #warning "240V - 1-phase selected. METERCONST set to 7399"
 
 #elif TYPE == 2403 // 240V - 3-phase @ 488.28Hz sampling rate
   #define METERCONST 7331
+  #define MUXN 1
   #warning "240V - 3-phase selected. METERCONST set to 7331"
 #endif
 

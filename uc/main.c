@@ -198,7 +198,8 @@ void setup()
 
   // select VBG as reference for ADC
   ADMUX |= (1<<REFS1) | (1<<REFS0);
-  // ADC0 selected by default
+  // ADCn selected via main.h
+  ADMUX |= MUXN;
   // ADC prescaler set to 8 => 1000kHz / 8 = 125kHz (DS p.258)
   ADCSRA |= (1<<ADPS1) | (1<<ADPS0);
 
@@ -244,7 +245,7 @@ void loop()
     if (aux[i].pulse == true) {
       if (i == 0) {
         //debugging
-        printString("msg ADC0 sample value: ");
+        printString("msg ADC sample value: ");
         printIntegerInBase((unsigned long)aux[0].debug, 10);
         printString("\n");
       }
