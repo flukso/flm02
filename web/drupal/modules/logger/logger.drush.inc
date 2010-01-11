@@ -7,22 +7,41 @@
 function logger_drush_command() {
   $items = array();
 
-  $items['logger create'] = array(
-    'callback'    => '_logger_create',
+  $items['logger create node'] = array(
+    'callback'    => '_logger_create_node',
     'description' => 'Create a new sensor node entry.',
     'arguments'   => array(
       'serial'      => 'Sensor node serial number.',
       'country'     => 'Destination country.',
       'uid'         => 'User ID.',
+    ),  
+    'options'     => array(
+      '--pipe' => 'Returns a space delimited list of created entries.',
     ),
   );
 
-  $items['logger assign'] = array(
-    'callback'    => '_logger_assign',
+  $items['logger assign node'] = array(
+    'callback'    => '_logger_assign_node',
     'description' => 'Assign a sensor node to a user.',
     'arguments'   => array(
       'serial'      => 'Sensor node serial number.',
       'uid'         => 'User ID.',
+    ),
+  );
+
+  $items['logger config meter'] = array(
+    'callback'    => '_logger_config_meter',
+    'description' => 'Configure a specific meter.',
+    'arguments'   => array(
+      'meter'       => 'Meter ID.',
+      'type'        => 'Meter type.',
+      'function'    => 'Meter function.',
+      'phase'       => 'Meter phase. Only applicable in case of type = electricity.',
+      'constant'    => 'Meter constant. Only applicable in case of type = electricity.',
+      'unit'        => 'Meter unit.',
+    ),
+    'options'     => array(
+      '--pipe' => 'Returns ok.',
     ),
   );
 
@@ -41,7 +60,7 @@ function logger_drush_command() {
 /**
  * Drush command callbacks.
  */
-function _logger_create($serial, $country ="", $uid = 0) {
+function _logger_create_node($serial, $country ="", $uid = 0) {
   // guard against duplicating entries for the same S/N
   $count = db_result(db_query("SELECT COUNT(device) FROM {logger_devices} WHERE serial = %d", $serial));
   if ($count > 0) {
@@ -61,17 +80,14 @@ function _logger_create($serial, $country ="", $uid = 0) {
     $result = db_query("INSERT INTO {logger_devices} (device, serial, uid, sha, created, country) VALUES ('%s', %d, %d, '%s', %d, '%s')", $device, $serial, $uid, $sha, $created, $country);
     if (!$result) drush_set_error('LOGGER_CREATE_DEVICE_ENTRY', dt('Error creating a device entry for @device.', array('@device' => $device)));
 
-    if (!drush_get_error()) drush_log(dt('Successfully created the device/key: @device / @key for S/N: @serial', array('@device' => $device, '@key' => $sha, '@serial' => $serial)), 'ok');
+    if (!drush_get_error()) {
+      drush_log(dt('Successfully created the device/key: @device / @key for S/N: @serial', array('@device' => $device, '@key' => $sha, '@serial' => $serial)), 'ok');
+      $pipe[] .= 'DEVICE='.$device;
+      $pipe[] .= 'KEY='.$sha;
+    }
 
     // create an entry in the {logger_meters} table
     for ($i = 0; $i < 4; $i++) {
-      if ($i == 0) {
-        $type = 'electricity';
-      }
-      else {
-        $type = 'undefined';
-      }
-
       $permissions = 62;
       $meter = md5(uniqid(rand(), TRUE));
       $alias = md5(uniqid(rand(), TRUE));
@@ -83,7 +99,7 @@ function _logger_create($serial, $country ="", $uid = 0) {
         $path->alias_base = $path->root .'/alias/base/';
         $path->alias_night = $path->root .'/alias/night/';
 
-      $result = db_query("INSERT INTO {logger_meters} (meter, uid, device, created, type) VALUES ('%s', %d, '%s', %d, '%s')", $meter, $uid, $device, $created, $type); 
+      $result = db_query("INSERT INTO {logger_meters} (meter, uid, device, created) VALUES ('%s', %d, '%s', %d)", $meter, $uid, $device, $created); 
       $insert = db_query("INSERT INTO {logger_aliases} (alias, meter, permissions) VALUES ('%s', '%s', %d)", $alias, $meter, $permissions);
 
       if (!($result && $insert)) drush_set_error('LOGGER_CREATE_METER_ENTRY', dt('Error creating meter entry for @meter.', array('@meter' => $meter)));
@@ -112,12 +128,19 @@ function _logger_create($serial, $country ="", $uid = 0) {
         }
       }
 
-      if (!drush_get_error()) drush_log(dt('Successfully created the meter: @meter with alias: @alias and type: @type', array('@meter' => $meter, '@alias' => $alias, '@type' => $type)), 'ok');
+      if (!drush_get_error()) {
+	drush_log(dt('Successfully created the meter: @meter with alias: @alias and type: @type', array('@meter' => $meter, '@alias' => $alias, '@type' => $type)), 'ok');
+        $pipe[] .= 'SENSOR'.$i.'='.$meter;
+      }
     }
+
+    // Space delimited list for use by other scripts. Set the --pipe option.
+    drush_print_pipe(implode(' ', $pipe));
+
   }
 }
 
-function _logger_assign($serial, $country, $uid) {
+function _logger_assign_node($serial, $country, $uid) {
   // check the existence of S/N
   $device = db_result(db_query("SELECT device FROM {logger_devices} WHERE serial = %d", $serial));
   if ($device == '') {
@@ -133,6 +156,12 @@ function _logger_assign($serial, $country, $uid) {
 
   if (!drush_get_error()) drush_log(dt('Successfully assigned uid: @uid to S/N: @serial', array('@uid' => $uid, '@serial' => $serial)), 'ok');
 
+}
+
+function _logger_config_meter($meter, $type, $function, $phase, $constant, $unit) {
+  $result = db_query("UPDATE {logger_meters} SET type = '%s', function = '%s', phase = %d, constant = %d, unit = '%s' WHERE meter = '%s'", $type, $function, $phase, $constant, $unit, $meter);
+  drush_log(dt('Successfully updated meter: @meter', array('@meter' => $result)), 'ok');  
+  drush_print_pipe('ok');
 }
 
 function _logger_alias($meter = "", $permissions = 62) {
@@ -158,4 +187,3 @@ function _logger_alias($meter = "", $permissions = 62) {
     }
   }
 }
-
