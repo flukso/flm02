@@ -86,13 +86,15 @@ F_CPU	= 1000000
 # make TYPE= xxxx SENSOR0=yyyy ...
 #
 TYPE = 2301
+METERCONST = 7091
+MUXN = 0
 #
 SENSOR0 = 0123456789abcdef0123456789abcde0
 SENSOR1 = 0123456789abcdef0123456789abcde1
 SENSOR2 = 0123456789abcdef0123456789abcde2
 SENSOR3 = 0123456789abcdef0123456789abcde3
 #
-CEXTRA = -D TYPE=$(TYPE) -D 'SENSOR0="$(SENSOR0)"' -D 'SENSOR1="$(SENSOR1)"' -D 'SENSOR2="$(SENSOR2)"' -D 'SENSOR3="$(SENSOR3)"'
+CEXTRA = -D TYPE=$(TYPE) -D METERCONST=$(METERCONST) -D MUXN=$(MUXN) -D 'SENSOR0="$(SENSOR0)"' -D 'SENSOR1="$(SENSOR1)"' -D 'SENSOR2="$(SENSOR2)"' -D 'SENSOR3="$(SENSOR3)"'
 #####################################################################################
 
 #####################################################################################
