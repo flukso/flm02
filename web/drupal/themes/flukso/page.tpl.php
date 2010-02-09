@@ -5,7 +5,6 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <?php print $head ?>
   <?php print $styles ?>
-  <?php print $scripts ?>
 </head>
 
 <body <?php print theme("onload_attribute"); ?>>
@@ -34,8 +33,9 @@
     <?php if ($messages != ""): ?><div id="message"><?php print $messages ?></div><?php endif; ?>
     <!-- start main content --><?php print($content) ?><!-- end main content -->
   </div>
-  <div id="footer"><?php print $footer_message;?><p>Flukso - community metering. Flukso is a project of the <a href="http://www.jokamajo.org">Jokamajo Institute</a>.</p></div>
+  <div id="footer"><?php print $footer_message;?><p>Flukso - community metering. Flukso is a spin-off of the <a href="http://www.jokamajo.org">Jokamajo Institute</a>.</p></div>
 </div>
+<?php print $scripts ?>
 <?php print $closure;?>
 </body>
 </html>
