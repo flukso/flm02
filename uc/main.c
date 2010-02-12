@@ -41,45 +41,60 @@ volatile struct state aux[4] = {{false, false, START, 0}, {false, false, START, 
 volatile struct sensor EEMEM EEPROM_measurements[4] = {{SENSOR0, START}, {SENSOR1, START}, {SENSOR2, START}, {SENSOR3, START}};
 volatile struct sensor measurements[4];
 
+uint8_t muxn = 0;
 
 // interrupt service routine for INT0
 ISR(INT0_vect) {
-  measurements[1].value++;
-  aux[1].pulse = true;
-}
-
-// interrupt service routine for INT1
-ISR(INT1_vect) {
   measurements[2].value++;
   aux[2].pulse = true;
 }
 
+// interrupt service routine for INT1
+ISR(INT1_vect) {
+  measurements[3].value++;
+  aux[3].pulse = true;
+}
+
 // interrupt service routine for PCI2 (PCINT20)
+/**
 ISR(PCINT2_vect) {
-  if (aux[3].toggle == false) {
-    aux[3].toggle = true;
+  if (aux[4].toggle == false) {
+    aux[4].toggle = true;
   }
   else {
-    measurements[3].value++;
-    aux[3].pulse = true;
-    aux[3].toggle = false;
+    measurements[4].value++;
+    aux[4].pulse = true;
+    aux[4].toggle = false;
   }
 }
+**/
 
 // interrupt service routine for ADC
 ISR(TIMER2_OVF_vect) {
   // read ADC result
   // add to nano(Wh) counter
-  MacU16X16to32(aux[0].nano, METERCONST, ADC);
+  if (muxn < 2) {
+    MacU16X16to32(aux[muxn].nano, METERCONST, ADC);
 
-  if (aux[0].nano > 1000000000) {
-     measurements[0].value++;
-     aux[0].pulse = true;
-     aux[0].nano -= 1000000000;
-     aux[0].debug = ADC;
+    if (aux[muxn].nano > 1000000000) {
+       measurements[muxn].value++;
+       aux[muxn].pulse = true;
+       aux[muxn].nano -= 1000000000;
+       aux[muxn].debug = ADC;
+    }
   }
-  // start a new ADC conversion
-  ADCSRA |= (1<<ADSC);
+
+  // rotate amongst the available ADC input channels (0 to 7)
+  muxn = ++muxn & 0x7;
+
+  // but only use ADC0 and 1
+  if (muxn < 2) {
+    ADMUX &= 0xF8;
+    ADMUX |= muxn;
+  
+    // start a new ADC conversion
+    ADCSRA |= (1<<ADSC);
+  }
 }
 
 // interrupt service routine for analog comparator
@@ -189,8 +204,8 @@ void setup()
   ACSR |= (1<<ACBG) | (1<<ACIE) | (1<<ACIS1) | (1<<ACIS0);
 
   // Timer2 normal operation
-  // Timer2 clock prescaler set to 8 => fTOV2 = 1000kHz / 256 / 8 = 488.28Hz (DS p.158)
-  TCCR2B |= (1<<CS21);
+  // Timer2 clock prescaler set to 1 => fTOV2 = 1000kHz / 256 / 1 = 3906.24Hz (DS p.158)
+  TCCR2B |= (1<<CS20);
   TIMSK2 |= (1<<TOIE2);
 
   // disable digital input cicuitry on ADCx pins to reduce leakage current
@@ -198,11 +213,8 @@ void setup()
 
   // select VBG as reference for ADC
   ADMUX |= (1<<REFS1) | (1<<REFS0);
-  // ADCn selected via main.h
-  ADMUX |= MUXN;
   // ADC prescaler set to 8 => 1000kHz / 8 = 125kHz (DS p.258)
   ADCSRA |= (1<<ADPS1) | (1<<ADPS0);
-
   // enable ADC and start a first ADC conversion
   ADCSRA |= (1<<ADEN) | (1<<ADSC);
 
@@ -243,10 +255,12 @@ void loop()
   // check whether we have to send out a pls to the deamon
   for (i=0; i<4; i++) {
     if (aux[i].pulse == true) {
-      if (i == 0) {
+      if (i < 2) {
         //debugging
-        printString("msg ADC sample value: ");
-        printIntegerInBase((unsigned long)aux[0].debug, 10);
+        printString("msg ADC");
+        printInteger((long)i);
+        printString(" sample value: ");
+        printIntegerInBase((unsigned long)aux[i].debug, 10);
         printString("\n");
       }
       send((const struct sensor *)&measurements[i]);
