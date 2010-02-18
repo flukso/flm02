@@ -229,68 +229,71 @@ function _logger_dashboard($type, $function, $interval) {
       break;
   }
 
-  $meter = db_fetch_object(db_query("SELECT lm.meter, lm.unit, lu.private
-                                     FROM {logger_meters} lm
-                                     INNER JOIN {logger_users} lu on lm.uid = lu.uid
-                                     WHERE lm.uid = %d AND lm.type = '%s' AND lm.function = '%s'", $user->uid, $type, $function));
+  $result_me = db_query("SELECT lm.meter, lm.function, lm.unit, lu.private
+	                FROM {logger_meters} lm
+	                INNER JOIN {logger_users} lu on lm.uid = lu.uid
+	                WHERE lm.uid = %d AND lm.type = '%s'
+	                ORDER BY lm.function", $user->uid, $type);
+
+  $meter_me = db_fetch_object($result_me);
+
+  $result_sub = db_query("SELECT u.name, lm.meter, lu.private
+                          FROM ((({users} u
+                          INNER JOIN {user_relationships} ur ON u.uid = ur.requestee_id)
+                          INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid)
+                          INNER JOIN {logger_meters} lm ON u.uid = lm.uid)
+                          INNER JOIN {logger_users} lu ON u.uid = lu.uid
+                          WHERE ur.requester_id = %d AND urt.name = '%s' AND type = '%s' AND function = '%s'
+                          ORDER BY ur.rid", $user->uid, 'subscription', $type, $function);
+
   switch ($type) {
     case 'electricity':
-      switch ($meter->unit) {
+      switch ($meter_me->unit) {
         case 'watt':
-          $meter->factor = 3600; // 1Wh/s = 3600 W
+          $unit = 'watt';
+          $factor = 3600; // 1Wh/s = 3600 W
           break;
         case 'kwh':
-          $meter->unit = 'kWh/year';
-          $meter->factor = 31536;
+          $unit = 'kWh/year';
+          $factor = 31536;
           break;
         case 'eur':
-          $meter->unit = 'euro/year';
-          $meter->factor = 5676; // 18 EURcent/kWh
+          $unit = 'euro/year';
+          $factor = 5676; // 18 EURcent/kWh
           break;
         case 'aud':
-          $meter->unit = 'aud/year';
-          $meter->factor = 5991; // 19 AUDcent/kWh
+          $unit = 'aud/year';
+          $factor = 5991; // 19 AUDcent/kWh
           break;
       }
   }
 
   $color = array(RED, BLUE, GREEN, YELLOW, PURPLE);
 
-  $string->def  = ' DEF:data0='. $data_path . $meter->meter .'.rrd:meter:AVERAGE' .
-                  ' CDEF:meter0=data0,'. $meter->factor .',*' .
-                  ' VDEF:min0=meter0,MINIMUM'.
-                  ' VDEF:max0=meter0,MAXIMUM'.
-                  ' VDEF:avg0=meter0,AVERAGE'.
-                  ' VDEF:last0=meter0,LAST';
+  $i = 0;
 
-  $string->line = ' COMMENT:"\s"'.
-                  ' LINE1:meter0#'. $color[0] .':'.'"'. substr($user->name.'               ', 0, 15) .'"'.
-                  ' GPRINT:min0:"min\:%5.0lf"'.
-                  ' GPRINT:max0:"\tmax\:%5.0lf"'.
-                  ' GPRINT:avg0:"\tavg\:%5.0lf"'.
-                  ' GPRINT:last0:"\tlast\:%5.0lf\l"';
+  if (!$meter_sub = db_fetch_object($result_sub)) {
+    do {
+      $string->def  .= _logger_chart_def($i, $data_path, $meter_me->meter, $factor);
+      $string->line .= _logger_chart_line($i, $color[$i], $meter_me->function);
+      $i++;
+    } while ($meter_me = db_fetch_object($result_me));
+  }
+  elseif (user_access('logger') && !$meter_me->private) {
+    $string->def  .= _logger_chart_def($i, $data_path, $meter_me->meter, $factor);
+    $string->line .= _logger_chart_line($i, $color[$i], $user->name);
 
-  if (user_access('logger') && !$meter->private) {
-    $result = db_query("SELECT u.name, lm.meter, lu.private 
-                        FROM ((({users} u 
-                        INNER JOIN {user_relationships} ur ON u.uid = ur.requestee_id) 
-                        INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid)
-                        INNER JOIN {logger_meters} lm ON u.uid = lm.uid)
-                        INNER JOIN {logger_users} lu ON u.uid = lu.uid 
-                        WHERE ur.requester_id = %d AND urt.name = '%s' AND type = '%s' AND function = '%s' 
-                        ORDER BY ur.rid", $user->uid, 'subscription', $type, $function);
-    $i = 0;
-    while ($subscription = db_fetch_object($result)) {
-      $i += 1;
-      // check whether the person who's datastream you'd like to superimpose on the graph is in private mode
-      if ($subscription->private) {
+    $i++;  
+    do {
+       // check whether the person who's datastream you'd like to superimpose on the graph is in private mode
+      if ($meter_sub->private) {
         // shift the data left by 1 year = 31556926 seconds to prevent the datastream from being displayed
-        $string->def  .= ' DEF:data'. $i .'='. $data_path . $subscription->meter .'.rrd:meter:AVERAGE'.
-                         ' CDEF:meter'. $i .'=data'. $i .','. $meter->factor .',*'.
+        $string->def  .= ' DEF:data'. $i .'='. $data_path . $meter_sub->meter .'.rrd:meter:AVERAGE'.
+                         ' CDEF:meter'. $i .'=data'. $i .','. $factor .',*'.
                          ' SHIFT:meter'. $i .':-31556926'; 
 
         // substitute the actual min/max/avg/last values by 'prv'
-        $string->line .= ' LINE1:meter'. $i .'#'. $color[$i] .':'.'"'. substr($subscription->name.'               ', 0, 15) .'"'.
+        $string->line .= ' LINE1:meter'. $i .'#'. $color[$i] .':'.'"'. substr($meter_sub->name.'               ', 0, 15) .'"'.
                          ' COMMENT:"min\:  prv"'.
                          ' COMMENT:"\tmax\:  prv"'.
                          ' COMMENT:"\tavg\:  prv"'.
@@ -299,20 +302,11 @@ function _logger_dashboard($type, $function, $interval) {
 
       // the peer has not set his datastream to private so print it!
       else {
-        $string->def  .= ' DEF:data'. $i .'='. $data_path . $subscription->meter .'.rrd:meter:AVERAGE'.
-                         ' CDEF:meter'. $i .'=data'. $i .','. $meter->factor .',*'.
-                         ' VDEF:min'. $i .'=meter'. $i .',MINIMUM'.
-                         ' VDEF:max'. $i .'=meter'. $i .',MAXIMUM'.
-                         ' VDEF:avg'. $i .'=meter'. $i .',AVERAGE'.
-                         ' VDEF:last'. $i .'=meter'. $i .',LAST';
-
-        $string->line .= ' LINE1:meter'. $i .'#'. $color[$i] .':'.'"'. substr($subscription->name.'               ', 0, 15) .'"'.
-                         ' GPRINT:min'. $i .':"min\:%5.0lf"'.
-                         ' GPRINT:max'. $i .':"\tmax\:%5.0lf"'.
-                         ' GPRINT:avg'. $i .':"\tavg\:%5.0lf"'.
-                         ' GPRINT:last'. $i .':"\tlast\:%5.0lf\l"';
+        $string->def  .= _logger_chart_def($i, $data_path, $meter_sub->meter, $factor); 
+	$string->line .= _logger_chart_line($i, $color[$i], $meter_sub->name);
       }
-    }
+      $i++;
+    } while($meter_sub = db_fetch_object($result_sub));
   }
 
   //construct the TZ=GMT-02:00 format from the $user->timezone object updated by the autotimezone module
@@ -323,12 +317,29 @@ function _logger_dashboard($type, $function, $interval) {
   $TZ .= gmdate('h:i', abs($user->timezone)) .'" ';
   //insert the TZ prior to launching rrdtool to obtain a proper time conversion
   $command = $TZ . $root_path .'/rrdtool graph '. $graph_path . $pngid .'.png -s '. $start .
-             ' --vertical-label '. $meter->unit .' --lower-limit 0 -w 500 -h 350 -E -X 0 --font LEGEND:8:';
+             ' --vertical-label '. $unit .' --lower-limit 0 -w 500 -h 350 -E -X 0 --font LEGEND:8:';
   $command .= $string->def;
   $command .= $string->line;
   exec($command, $output, $return_var);
   // watchdog('dashboard', 'arguments: %command ++ %output ++ %return_var', array('%command' => $command, '%output' => serialize($output), '%return_var' => $return_var), WATCHDOG_DEBUG);
   return theme('chart', $graph_path . $pngid .'.png');
+}
+
+function _logger_chart_def($i, $path, $meter, $factor) {
+  return ' DEF:data'. $i .'='. $path . $meter .'.rrd:meter:AVERAGE'.
+         ' CDEF:meter'. $i .'=data'. $i .','. $factor .',*'.
+         ' VDEF:min'. $i .'=meter'. $i .',MINIMUM'.
+         ' VDEF:max'. $i .'=meter'. $i .',MAXIMUM'.
+         ' VDEF:avg'. $i .'=meter'. $i .',AVERAGE'.
+         ' VDEF:last'. $i .'=meter'. $i .',LAST';
+}
+
+function _logger_chart_line($i, $color, $caption) {
+  return ' LINE1:meter'. $i .'#'. $color .':'.'"'. substr($caption.'               ', 0, 15) .'"'.
+         ' GPRINT:min'. $i .':"min\:%5.0lf"'.
+         ' GPRINT:max'. $i .':"\tmax\:%5.0lf"'.
+         ' GPRINT:avg'. $i .':"\tavg\:%5.0lf"'.
+         ' GPRINT:last'. $i .':"\tlast\:%5.0lf\l"';
 }
 
 function _logger_add($uid) {
