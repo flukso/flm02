@@ -272,6 +272,7 @@ function _logger_dashboard($type, $function, $interval) {
 
   $i = 0;
 
+  $string->line = ' COMMENT:"\s"';
   if (!$meter_sub = db_fetch_object($result_sub)) {
     do {
       $string->def  .= _logger_chart_def($i, $data_path, $meter_me->meter, $factor);
