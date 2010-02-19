@@ -273,20 +273,20 @@ function _logger_dashboard($type, $function, $interval) {
   $i = 0;
 
   $string->line = ' COMMENT:"\s"';
-  if (!$meter_sub = db_fetch_object($result_sub)) {
+  if (user_access('logger') && ((!$meter_sub = db_fetch_object($result_sub)) || $meter_me->private)) {
     do {
       $string->def  .= _logger_chart_def($i, $data_path, $meter_me->meter, $factor);
       $string->line .= _logger_chart_line($i, $color[$i], $meter_me->function);
       $i++;
     } while ($meter_me = db_fetch_object($result_me));
   }
-  elseif (user_access('logger') && !$meter_me->private) {
+  elseif (user_access('logger')) {
     $string->def  .= _logger_chart_def($i, $data_path, $meter_me->meter, $factor);
     $string->line .= _logger_chart_line($i, $color[$i], $user->name);
 
-    $i++;  
     do {
-       // check whether the person who's datastream you'd like to superimpose on the graph is in private mode
+      $i++;   
+      // check whether the person who's datastream you'd like to superimpose on the graph is in private mode
       if ($meter_sub->private) {
         // shift the data left by 1 year = 31556926 seconds to prevent the datastream from being displayed
         $string->def  .= ' DEF:data'. $i .'='. $data_path . $meter_sub->meter .'.rrd:meter:AVERAGE'.
@@ -306,8 +306,11 @@ function _logger_dashboard($type, $function, $interval) {
         $string->def  .= _logger_chart_def($i, $data_path, $meter_sub->meter, $factor); 
 	$string->line .= _logger_chart_line($i, $color[$i], $meter_sub->name);
       }
-      $i++;
     } while($meter_sub = db_fetch_object($result_sub));
+  }
+  else {
+    $string->def  .= _logger_chart_def($i, $data_path, $meter_me->meter, $factor);
+    $string->line .= _logger_chart_line($i, $color[$i], $user->name);
   }
 
   //construct the TZ=GMT-02:00 format from the $user->timezone object updated by the autotimezone module
