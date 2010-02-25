@@ -1,0 +1,10 @@
+Version 0.3.0
+  * enable a timeout env_var for setting the port timeout
+  * change app spec to use a port time out of 30s. 
+
+Version 0.2.2
+  * catch port exit and exit the gen_server
+
+VERSION 0.2.1
+  * rebuild with latest framewerk to get erlrc hooks
+  * specify dependency on rrdtool

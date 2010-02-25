@@ -1,0 +1,9 @@
+@author @FW_PACKAGE_MAINTAINER@
+@copyright 2007 
+@version @VERSION@
+@title erlrrd  - erlang bindings for rrdtool
+@doc erlrrd is a gen_server controlling an erlang Port running the command "rrdtool -"
+  it provides functions for each of the 
+  [http://oss.oetiker.ch/rrdtool/index.en.html rrdtool]
+  commands with 
+  a bit of error checking to make sure the communication doesn't hang.

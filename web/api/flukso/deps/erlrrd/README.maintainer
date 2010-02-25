@@ -1,0 +1,5 @@
+
+if you're trying to build this package from the source repository
+ie: not from a dist tarball you'll need to understand  the "Framewerk
+build system", and the usual autoconf, automake, make voodoo. Framewerk
+is just more voodoo on top of that to make things "easier".

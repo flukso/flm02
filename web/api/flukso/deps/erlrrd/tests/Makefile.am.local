@@ -1,0 +1,4 @@
+TESTS = 		\
+  module-erlrrd
+
+

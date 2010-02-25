@@ -1,0 +1,9 @@
+
+This module provides a gen_server controlling a Port to "rrdtool -"
+
+rrdtool is a very nice graphing system as well as logger for time series data.
+for more info on rrdtool check out:
+
+  http://oss.oetiker.ch/rrdtool/
+
+for more info on this, the erlrrd module see the doc directory.
