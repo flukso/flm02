@@ -20,6 +20,9 @@
 // $Id$
 //
 
+# define PULSE 0
+# define POWER 1
+
 #ifndef SENSOR0 
   #define SENSOR0 "0123456789abcdef0123456789abcde0"
 #endif
@@ -43,35 +46,37 @@
 #ifndef METERCONST
   #if TYPE == 2201   // 220V - 1-phase @ 488.28Hz sampling rate
     #define METERCONST 6783
-//    #define MUXN 0
+    #define POWERCONST 11925
     #warning "220V - 1-phase selected. METERCONST set to 6783"
 
   #elif TYPE == 2203 // 220V - 3-phase @ 488.28Hz sampling rate
     #define METERCONST 6721
-//    #define MUXN 1
+    #define POWERCONST 11816
     #warning "220V - 3-phase selected. METERCONST set to 6721"
 
   #elif TYPE == 2301 // 230V - 1-phase @ 488.28Hz sampling rate
     #define METERCONST 7091
-//    #define MUXN 0
+    #define POWERCONST 12466
     #warning "230V - 1-phase selected. METERCONST set to 7091"
 
   #elif TYPE == 2303 // 230V - 3-phase @ 488.28Hz sampling rate
     #define METERCONST 7026
-//    #define MUXN 1
+    #define POWERCONST 12352
     #warning "230V - 3-phase selected. METERCONST set to 7026"
 
   #elif TYPE == 2401 // 240V - 1-phase @ 488.28Hz sampling rate
     #define METERCONST 7399
-//    #define MUXN 0
+    #define POWERCONST 13007
     #warning "240V - 1-phase selected. METERCONST set to 7399"
 
   #elif TYPE == 2403 // 240V - 3-phase @ 488.28Hz sampling rate
     #define METERCONST 7331
-//    #define MUXN 1
+    #define POWERCONST 12888
     #warning "240V - 3-phase selected. METERCONST set to 7331"
   #endif
 #endif
+
+//#define POWERCONST (METERCONST*1758)/1000 // in mW
 
 #define START 0
 #define END3 0xffffffff
@@ -115,7 +120,8 @@ struct state {
   boolean pulse;
   boolean toggle;
   uint32_t nano;
-  uint16_t debug;
+  uint16_t adc;
+  uint16_t count;
 };
 
 struct sensor {
@@ -126,5 +132,4 @@ struct sensor {
 // prototypes
 void WDT_off(void);
 void WDT_on(void);
-void send(const struct sensor *measurement);
-
+void send(uint8_t msg_type, const struct sensor *measurement, const struct state *aux);

@@ -1,6 +1,8 @@
 //
 // main.c : AVR uC code for flukso sensor board
+//
 // Copyright (c) 2008-2009 jokamajo.org
+//               2010      flukso.net
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -36,12 +38,12 @@
 #include <avr/wdt.h>
 
 // variable declarations
-volatile struct state aux[4] = {{false, false, START, 0}, {false, false, START, 0}, {false, false, START, 0}, {false, false, START, 0}};
+volatile struct state aux[4] = {{false, false, START, 0, 0}, {false, false, START, 0, 244}, {false, false, START, 0, 0}, {false, false, START, 0, 0}};
 
 volatile struct sensor EEMEM EEPROM_measurements[4] = {{SENSOR0, START}, {SENSOR1, START}, {SENSOR2, START}, {SENSOR3, START}};
 volatile struct sensor measurements[4];
 
-uint8_t muxn = 0;
+volatile uint8_t muxn = 0;
 
 // interrupt service routine for INT0
 ISR(INT0_vect) {
@@ -76,16 +78,22 @@ ISR(TIMER2_OVF_vect) {
   if (muxn < 2) {
     MacU16X16to32(aux[muxn].nano, METERCONST, ADC);
 
+    if (++aux[muxn].count > 487) {
+      aux[muxn].adc = ADC;
+      aux[muxn].toggle = true;
+      aux[muxn].count = 0;
+    }
+
     if (aux[muxn].nano > 1000000000) {
        measurements[muxn].value++;
        aux[muxn].pulse = true;
        aux[muxn].nano -= 1000000000;
-       aux[muxn].debug = ADC;
     }
   }
 
   // rotate amongst the available ADC input channels (0 to 7)
-  muxn = ++muxn & 0x7;
+  muxn++;
+  muxn &= 0x7;
 
   // but only use ADC0 and 1
   if (muxn < 2) {
@@ -153,7 +161,7 @@ void WDT_off(void) {
 // enable WDT
 void WDT_on(void) {
   // enable the watchdog timer (1s)
-  wdt_enable(WDTO_1S);
+  wdt_enable(WDTO_2S);
   // set watchdog interrupt enable flag
   WDTCSR |= (1<<WDIE);
 }
@@ -222,53 +230,64 @@ void setup()
   sei();
 }
 
-void send(const struct sensor *measurement)
+void send(uint8_t msg_type, const struct sensor *measurement, const struct state *aux)
 {
   uint8_t i = 46;
-  char pulse[49];
+  char message[49];
+  uint32_t value = 0;
 
-  cli();
-  uint32_t value = measurement->value;
-  sei();
+  switch (msg_type) {
+  case PULSE:
+    // blink the green LED
+    PORTB |= (1<<PB5);
+    _delay_ms(50);
+    PORTB &= ~(1<<PB5);
 
-  // generate pulse message structure
-  strcpy(pulse, "pls ");
-  strcpy(&pulse[4], measurement->id);
-  strcpy(&pulse[36], ":0000000000\n");
+    cli();
+    value = measurement->value;
+    sei();
+ 
+    strcpy(message, "pls ");
+    break;
 
-  do {                              // generate digits in reverse order
-    pulse[i--] = '0' + value % 10;  // get next digit
-  } while ((value /= 10) > 0);      // delete it
+  case POWER:
+    cli();
+    uint16_t adc = aux->adc;
+    sei();
 
-  printString(pulse);
+    MacU16X16to32(value, adc, POWERCONST);
+    value /= 1000;
 
-  // blink the green LED
-  PORTB |= (1<<PB5);
-  _delay_ms(100);
-  PORTB &= ~(1<<PB5);
+    strcpy(message, "pwr ");
+    break;
+  }
+
+  strcpy(&message[4], measurement->id);
+  strcpy(&message[36], ":0000000000\n");
+
+  do {                                // generate digits in reverse order
+    message[i--] = '0' + value % 10;  // get next digit
+  } while ((value /= 10) > 0);        // delete it
+
+  printString(message);
 }
 
 void loop()
 {
   uint8_t i;
  
-  // check whether we have to send out a pls to the deamon
+  // check whether we have to send out a pls or pwr to the deamon
   for (i=0; i<4; i++) {
     if (aux[i].pulse == true) {
-      if (i < 2) {
-        //debugging
-        printString("msg ADC");
-        printInteger((long)i);
-        printString(" sample value: ");
-        printIntegerInBase((unsigned long)aux[i].debug, 10);
-        printString("\n");
-      }
-      send((const struct sensor *)&measurements[i]);
+      send(PULSE, (const struct sensor *)&measurements[i], (const struct state *)&aux[i]);
       aux[i].pulse = false;
     }
-  }
 
-  // reset the watchdog timer
+    if (aux[i].toggle == true && i < 2) {
+      send(POWER, (const struct sensor *)&measurements[i], (const struct state *)&aux[i]);
+      aux[i].toggle = false;
+    }  
+  }
   wdt_reset();
 }
 
