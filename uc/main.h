@@ -23,6 +23,9 @@
 # define PULSE 0
 # define POWER 1
 
+# define WATT 1000000000
+# define SECOND 487 // rounded down from 488.28125 - 1
+
 #ifndef SENSOR0 
   #define SENSOR0 "0123456789abcdef0123456789abcde0"
 #endif
@@ -46,32 +49,26 @@
 #ifndef METERCONST
   #if TYPE == 2201   // 220V - 1-phase @ 488.28Hz sampling rate
     #define METERCONST 6783
-    #define POWERCONST 11925
     #warning "220V - 1-phase selected. METERCONST set to 6783"
 
   #elif TYPE == 2203 // 220V - 3-phase @ 488.28Hz sampling rate
     #define METERCONST 6721
-    #define POWERCONST 11816
     #warning "220V - 3-phase selected. METERCONST set to 6721"
 
   #elif TYPE == 2301 // 230V - 1-phase @ 488.28Hz sampling rate
     #define METERCONST 7091
-    #define POWERCONST 12466
     #warning "230V - 1-phase selected. METERCONST set to 7091"
 
   #elif TYPE == 2303 // 230V - 3-phase @ 488.28Hz sampling rate
     #define METERCONST 7026
-    #define POWERCONST 12352
     #warning "230V - 3-phase selected. METERCONST set to 7026"
 
   #elif TYPE == 2401 // 240V - 1-phase @ 488.28Hz sampling rate
     #define METERCONST 7399
-    #define POWERCONST 13007
     #warning "240V - 1-phase selected. METERCONST set to 7399"
 
   #elif TYPE == 2403 // 240V - 3-phase @ 488.28Hz sampling rate
     #define METERCONST 7331
-    #define POWERCONST 12888
     #warning "240V - 3-phase selected. METERCONST set to 7331"
   #endif
 #endif
@@ -121,7 +118,12 @@ struct state {
   boolean toggle;
   uint32_t nano;
   uint16_t adc;
-  uint16_t count;
+
+  boolean  power;
+  uint32_t nano_start;
+  uint32_t nano_end;
+  uint8_t  pulse_count;
+  uint8_t  pulse_count_final;
 };
 
 struct sensor {

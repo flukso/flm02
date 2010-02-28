@@ -38,12 +38,13 @@
 #include <avr/wdt.h>
 
 // variable declarations
-volatile struct state aux[4] = {{false, false, START, 0, 0}, {false, false, START, 0, 244}, {false, false, START, 0, 0}, {false, false, START, 0, 0}};
+volatile struct state aux[4] = {{false, false, START, 0}, {false, false, START, 0}, {false, false, START, 0}, {false, false, START, 0}};
 
 volatile struct sensor EEMEM EEPROM_measurements[4] = {{SENSOR0, START}, {SENSOR1, START}, {SENSOR2, START}, {SENSOR3, START}};
 volatile struct sensor measurements[4];
 
 volatile uint8_t muxn = 0;
+volatile uint16_t timer = 0;
 
 // interrupt service routine for INT0
 ISR(INT0_vect) {
@@ -78,22 +79,26 @@ ISR(TIMER2_OVF_vect) {
   if (muxn < 2) {
     MacU16X16to32(aux[muxn].nano, METERCONST, ADC);
 
-    if (++aux[muxn].count > 487) {
-      aux[muxn].adc = ADC;
-      aux[muxn].toggle = true;
-      aux[muxn].count = 0;
-    }
-
-    if (aux[muxn].nano > 1000000000) {
+    if (aux[muxn].nano > WATT) {
        measurements[muxn].value++;
        aux[muxn].pulse = true;
-       aux[muxn].nano -= 1000000000;
+       aux[muxn].nano -= WATT;
+       aux[muxn].pulse_count++;
+    }
+
+    if (timer == SECOND) {
+      aux[muxn].nano_start = aux[muxn].nano_end;
+      aux[muxn].nano_end = aux[muxn].nano;
+      aux[muxn].pulse_count_final = aux[muxn].pulse_count;
+      aux[muxn].pulse_count = 0;
+      aux[muxn].power = true;
     }
   }
 
-  // rotate amongst the available ADC input channels (0 to 7)
+  // rotate the available ADC input channels (0 to 7)
   muxn++;
-  muxn &= 0x7;
+  if (!(muxn &= 0x7)) timer++;
+  if (timer > SECOND) timer = 0;
 
   // but only use ADC0 and 1
   if (muxn < 2) {
@@ -236,11 +241,14 @@ void send(uint8_t msg_type, const struct sensor *measurement, const struct state
   char message[49];
   uint32_t value = 0;
 
+  int32_t rest;
+  uint8_t pulse_count;
+
   switch (msg_type) {
   case PULSE:
     // blink the green LED
     PORTB |= (1<<PB5);
-    _delay_ms(50);
+    _delay_ms(20);
     PORTB &= ~(1<<PB5);
 
     cli();
@@ -252,11 +260,17 @@ void send(uint8_t msg_type, const struct sensor *measurement, const struct state
 
   case POWER:
     cli();
-    uint16_t adc = aux->adc;
+    rest = aux->nano_end - aux->nano_start;
+    pulse_count = aux->pulse_count_final;
     sei();
 
-    MacU16X16to32(value, adc, POWERCONST);
-    value /= 1000;
+    MacU16X16to32(value, (uint16_t)(labs(rest)/65536), 242);
+    value /= 1024;
+
+    if (rest >= 0)
+      value += pulse_count*3600;
+    else
+      value = pulse_count*3600 - value;
 
     strcpy(message, "pwr ");
     break;
@@ -283,9 +297,9 @@ void loop()
       aux[i].pulse = false;
     }
 
-    if (aux[i].toggle == true && i < 2) {
+    if (aux[i].power == true) {
       send(POWER, (const struct sensor *)&measurements[i], (const struct state *)&aux[i]);
-      aux[i].toggle = false;
+      aux[i].power = false;
     }  
   }
   wdt_reset();
