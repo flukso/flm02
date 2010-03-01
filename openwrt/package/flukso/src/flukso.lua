@@ -31,27 +31,37 @@ dbg  = require 'flukso.dbg'
 local param = {xmlrpcaddress = 'http://logger.flukso.net/xmlrpc',
                xmlrpcversion = '1',
                xmlrpcmethod  = 'logger.measurementAdd',
+               pwraddress    = '255.255.255.255',
+               pwrport       = 26488,
+               pwrenable     = false,
                device        = '/dev/ttyS0',
                interval      = 300}
 
-function receive(device)
+function receive(device, pwraddress, pwrport, pwrenable)
   return coroutine.wrap(function()
     -- open the connection to the syslog deamon, specifying our identity
     posix.openlog('flukso')
     posix.syslog(30, 'starting the flukso deamon')
     posix.syslog(30, 'listening for pulses on '..device..'...')
 
+    -- open a UDP socket for transmitting the pwr messages
+    local udp = assert(socket.udp())
+    udp:setoption('broadcast', true)
+    assert(udp:setpeername(pwraddress, pwrport))
+                
     for line in io.lines(device) do
       if line:sub(1, 3) == 'pls' and line:len() == 47 and line:find(':') == 37 then -- user data + additional data integrity checks
         posix.syslog(30, 'received pulse from '..device..': '..line:sub(5))
 
         -- flash the power led for 50ms
-        os.execute('gpioctl clear 4')
+        os.execute('gpioctl clear 4 > /dev/null')
         socket.select(nil, nil, 0.05)
-        os.execute('gpioctl set 4')
+        os.execute('gpioctl set 4 > /dev/null')
 
         local meter, value = line:sub(5, 36), tonumber(line:sub(38))
         coroutine.yield(meter, os.time(), value)
+      elseif line:sub(1, 3) == 'pwr' and line:len() == 47 and line:find(':') == 37 and pwrenable then -- user data + additional data integrity checks
+        udp:send(line)
       elseif line:sub(1, 3) == 'msg' then -- control data
         posix.syslog(31, 'received message from '..device..': '..line:sub(5))
       else
@@ -141,7 +151,7 @@ local aggregator = gc(
                          filter(
                            filter(
                              buffer(
-                               receive(param.device)
+                               receive(param.device, param.pwraddress, param.pwrport, param.pwrenable)
                              , param.interval)
                            , 60, 0)
                          , 900, 7200)
