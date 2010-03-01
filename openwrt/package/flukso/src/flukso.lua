@@ -60,8 +60,8 @@ function receive(device, pwraddress, pwrport, pwrenable)
 
         local meter, value = line:sub(5, 36), tonumber(line:sub(38))
         coroutine.yield(meter, os.time(), value)
-      elseif line:sub(1, 3) == 'pwr' and line:len() == 47 and line:find(':') == 37 and pwrenable then -- user data + additional data integrity checks
-        udp:send(line)
+      elseif line:sub(1, 3) == 'pwr' and line:len() == 47 and line:find(':') == 37 then -- user data + additional data integrity checks
+        if pwrenable then udp:send(line) end
       elseif line:sub(1, 3) == 'msg' then -- control data
         posix.syslog(31, 'received message from '..device..': '..line:sub(5))
       else
