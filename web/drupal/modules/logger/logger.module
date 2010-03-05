@@ -158,10 +158,19 @@ function logger_menu() {
   );
   $items['user/%user_uid_optional/privacy'] = array(
     'title'               => 'Privacy',
-    'page callback'       => '_logger_privacy',
-    'access callback'     => '_logger_privacy_access',
+    'page callback'       => '_logger_account_privacy',
+    'access callback'     => '_logger_account_access',
     'access arguments'    => array('logger', 1),
     'type'                => MENU_LOCAL_TASK,
+    'file'                => 'logger.admin.inc',
+  );
+  $items['user/%user_uid_optional/sensors'] = array(
+    'title'               => 'Sensors',
+    'page callback'       => '_logger_account_sensors',
+    'access callback'     => '_logger_account_access',
+    'access arguments'    => array('logger', 1),
+    'type'                => MENU_LOCAL_TASK,
+    'file'                => 'logger.admin.inc',
   );
 
   return $items;
@@ -177,7 +186,7 @@ function _logger_installation(){
   $output .= "<a class='img' href = 'http://www.flukso.net/installation'><img src='http://www.flukso.net/sites/default/files/images/step3.png' height='120' width='150' alt='step 3'/></a>";
   $output .= "<p><b>STEP 3: ATTACHING THE CURRENT CLAMP</b><br/>For safety reasons, switch off the main electricity supply. For a single phase supply, attach the current clamp to one of the two cables running from the electricity meter to the fuse box. Close the clamp firmly.</p>";
   $output .= "<a class='img' href = 'http://www.flukso.net/installation'><img src='http://www.flukso.net/sites/default/files/images/step4.png' height='120' width='150' alt='step 4'/></a>";
-  $output .= "<p><b>STEP 4: CONNECTING THE CLAMP'S SENSOR CABLE</b><br/>Connect the cable from the current clamp to the Fluksometer's input port. Take care of connecting the black and red cable as shown in the drawing on the right. Only apply gentle force when fastening the two screws.</p>";
+  $output .= "<p><b>STEP 4: CONNECTING THE CLAMP'S SENSOR CABLE</b><br/>Connect the cable from the current clamp to the Fluksometer's input port. Take care of connecting the black and red cable as shown in the drawing on the left. Only apply gentle force when fastening the two screws.</p>";
   $output .= "<a class='img' href = 'http://www.flukso.net/installation'><img src='http://www.flukso.net/sites/default/files/images/step5.png' height='120' width='150' alt='step 4'/></a>";
   $output .= "<p><b>STEP 5: POWERING UP</b><br/>Switch the main electricity supply back on. Activate the Fluksometer by connecting the power plug.</p>";
   $output .= "</div>";
@@ -455,6 +464,10 @@ function logger_theme() {
     'logger_item_list' => array(
       'arguments' => array('items' => NULL, 'title' => NULL),
     ),
+    'logger_account_sensors_list' => array(
+      'arguments' => array('items' => NULL),
+      'file' => 'logger.admin.inc',
+    ),
   );
 }
 
@@ -583,56 +596,7 @@ function theme_logger_item_list($items, $title = NULL) {
 }
 
 /**
- * Callback function for the user/x/privacy page
- */
-function _logger_privacy() {
-  $output .= drupal_get_form('_logger_privacy_form');
-  return $output;
-}
-
-/**
- * Generates the privacy form.
- */
-function _logger_privacy_form() {
-  global $user;
-
-  $form['privacy'] = array(
-    '#title' => t('Set your preferred privacy mode'),
-    '#type' => 'radios',
-    '#options' => array(
-      t('Shared within Flukso'),
-      t('Private'),
-    ),
-    '#description' => t("When selecting Private mode, your data stream will not be drawn on other people's graph and all statistics will be marked as 'prv'. Conversely, nobody else's data stream will be drawn on your chart."),
-    '#default_value' => db_result(db_query("SELECT private
-                                            FROM {logger_users}
-                                            WHERE uid = %d", $user->uid)),
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Submit'),
-  );
-  return $form;
-}
-
-/**
- * Process settings form submissions.
- */
-function _logger_privacy_form_submit($form, &$form_state) {
-  global $user;
-
-  // the built-in validation function already checks elements with options
-  $private = $form_state['values']['privacy'];
-  db_query("UPDATE {logger_users}
-            SET private = %d
-            WHERE uid = %d", $private, $user->uid);
-
-  // page redirection to the dashboard after form submission
-  $form_state['redirect'] = 'logger';
-}
-
-/**
- * Access callback ensuring the user profile tabs are visible only to their
+ * Access callback ensuring the user account tabs are visible only to the
  * owner.
  *
  * @param $permission
@@ -640,15 +604,8 @@ function _logger_privacy_form_submit($form, &$form_state) {
  * @param $account
  *   A user object.
  */
-function _logger_privacy_access($permission, $account) {
+function _logger_account_access($permission, $account) {
   return ($account->uid == $GLOBALS['user']->uid && user_access($permission));
-}
-
-/**
- * Define the administration settings form for the logger module
- */
-function _logger_admin_settings() {
-//TODO
 }
 
 /**
