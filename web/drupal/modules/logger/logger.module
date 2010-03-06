@@ -3,6 +3,7 @@
 //
 // logger.module : support module for charting data stored in RRD's
 // Copyright (c) 2008-2009 jokamajo.org
+//               2010 flukso.net
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -493,22 +494,29 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
       $blocks['subscriptions']['status'] = TRUE;
       $blocks['subscriptions']['region'] = 'right';
       $blocks['subscriptions']['weight'] = 0;
-      $blocks['subscriptions']['pages'] = 'logger<br />logger/*';
+      $blocks['subscriptions']['pages'] = '<front>\nlogger/\nlogger/*';
       $blocks['subscriptions']['cache'] = BLOCK_CACHE_PER_USER;
 
       $blocks['fluksonians']['info'] = t('Fluksonians');
       $blocks['fluksonians']['status'] = TRUE;
       $blocks['fluksonians']['region'] = 'right';
       $blocks['fluksonians']['weight'] = 1;
-      $blocks['fluksonians']['pages'] = 'logger<br />logger/*';
+      $blocks['fluksonians']['pages'] = '<front>\nlogger/\nlogger/*';
       $blocks['fluksonians']['cache'] = BLOCK_CACHE_PER_USER;
 
       $blocks['unit']['info'] = t('Unit');
       $blocks['unit']['status'] = TRUE;
       $blocks['unit']['region'] = 'right';
       $blocks['unit']['weight'] = 2;
-      $blocks['unit']['pages'] = 'logger<br />logger/*';
+      $blocks['unit']['pages'] = '<front>\nlogger/\nlogger/*';
       $blocks['unit']['cache'] = BLOCK_CACHE_PER_USER;
+
+      $blocks['posts']['info'] = t('Recent blog posts');
+      $blocks['posts']['status'] = TRUE;
+      $blocks['posts']['region'] = 'right';
+      $blocks['posts']['weight'] = 3;
+      $blocks['posts']['pages'] = '<front>\nlogger/\nlogger/*';
+      $blocks['posts']['cache'] = BLOCK_CACHE_GLOBAL;
 
       return $blocks;
 
@@ -578,6 +586,15 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
         }
         $block['subject'] = t('Unit');
         $block['content'] = theme('logger_item_list', $items);
+      }
+
+      elseif ($delta == 'posts' && user_access('access content')) {
+        $result = db_query_range(db_rewrite_sql("SELECT n.nid, n.title, n.created FROM {node} n WHERE n.type = 'blogpost' AND n.status = 1 ORDER BY n.created DESC"), 0, 5);
+        if ($node_title_list = node_title_list($result)) {
+          $block['subject'] = t('Recent blog posts');
+          $block['content'] = $node_title_list;
+          $block['content'] .= theme('more_link', url('blog'), t('Read the latest blog entries.'));
+        }
       }
 
       return $block;
