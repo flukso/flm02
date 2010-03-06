@@ -156,6 +156,9 @@ h1, h2, h3, h4, h5, h6 {
 	font-size: 1em;
 }
 
+#block-logger-fluksonians .form-item .description {
+	font-size: 1em;
+}
 /* .form-item label { color: #000;} */
 
 fieldset {
