@@ -38,6 +38,16 @@ define('ORANGE', 'F37E2B');
 define('YELLOW', 'FBEB0D');
 define('PURPLE', 'A052A0');
 
+
+/**
+ * Implementation of hook_init().
+ */
+function logger_init() {
+  global $user;
+  // Workaround for collapse.js not being loaded within  _logger_fluksonians_form  when block caching is on.
+  if ($user->uid > 0) drupal_add_js('misc/collapse.js');
+}
+
 /**
  * Implementation of hook_perm().
  */
@@ -387,7 +397,7 @@ function _logger_add($uid) {
         user_relationships_request_relationship($user->uid, $uid, $rtid, TRUE);
       }
     }
-    _logger_cache_clear('subscriptions');
+    _logger_cache_clear('fluksonians');
   }
   $destination = drupal_get_destination();
   drupal_goto($destination);
@@ -407,7 +417,7 @@ function _logger_remove($rid) {
     watchdog('relationships', 'attempt to delete rid %rid by non-authorized user %uid', array('%rid' => $rid, '%uid' => $user->uid), WATCHDOG_ERROR);
   }
 
-  _logger_cache_clear('subscriptions');
+  _logger_cache_clear('fluksonians');
   $destination = drupal_get_destination();
   drupal_goto($destination);
 }
@@ -492,19 +502,12 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
 
   switch ($op) {
     case 'list':
-      $blocks['subscriptions']['info'] = t('Subscriptions');
-      $blocks['subscriptions']['status'] = TRUE;
-      $blocks['subscriptions']['region'] = 'right';
-      $blocks['subscriptions']['weight'] = 0;
-      $blocks['subscriptions']['pages'] = '<front>\nlogger/\nlogger/*';
-      $blocks['subscriptions']['cache'] = BLOCK_CACHE_PER_USER;
-
       $blocks['fluksonians']['info'] = t('Fluksonians');
       $blocks['fluksonians']['status'] = TRUE;
-      $blocks['fluksonians']['region'] = 'right';
+      $blocks['fluksonians']['region'] = 'content';
       $blocks['fluksonians']['weight'] = 1;
       $blocks['fluksonians']['pages'] = '<front>\nlogger/\nlogger/*';
-      $blocks['fluksonians']['cache'] = BLOCK_CACHE_GLOBAL;
+      $blocks['fluksonians']['cache'] = BLOCK_CACHE_PER_USER;
 
       $blocks['unit']['info'] = t('Unit');
       $blocks['unit']['status'] = TRUE;
@@ -526,37 +529,8 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
       //pass along our current destination in the query string so that logger_add and logger_remove can return after processing their task
       $destination = drupal_get_destination();
 
-      if ($delta == 'subscriptions' && user_access('logger')) {
-        $result = db_query("SELECT u.uid, u.name, ur.rid
-                            FROM ({users} u
-                            INNER JOIN {user_relationships} ur ON u.uid = ur.requestee_id)
-                            INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid
-                            WHERE ur.requester_id = %d AND urt.name = '%s'
-                            ORDER BY ur.rid", $user->uid, 'subscription');
-
-        $items = array();
-        while ($subscription = db_fetch_object($result)) {
-          $items[] = l('[x]', 'logger/remove/'. $subscription->rid, array('attributes' => array('title' => "unsubscribe from ". $subscription->name ."'s stream"), 'query' => $destination, 'alias' => TRUE)) .' '. l($subscription->name, 'user/'. $subscription->uid, array('alias' => FALSE));
-        }
-        $block['subject'] = t('Subscriptions');
-        $block['content'] = theme('logger_item_list', $items);
-      }
-
-      elseif ($delta == 'fluksonians' && user_access('logger')) {
-        // list all users having the fluksionian role for now
-        // to be replaced by a real buddylist later on
-        $result = db_query("SELECT u.uid, u.name
-                            FROM ({users} u
-                            INNER JOIN {users_roles} ur ON u.uid = ur.uid)
-                            INNER JOIN {role} r ON ur.rid = r.rid
-                            WHERE r.name = '%s'
-                            ORDER BY u.name", 'fluksonian', $user->uid);
-        $items = array();
-        while ($fluksonian = db_fetch_object($result)) {
-          $items[] = l('[+]', 'logger/add/'. $fluksonian->uid, array('attributes' => array('title' => "subscribe to ". $fluksonian->name ."'s stream"), 'query' => $destination, 'alias' => TRUE)) .' '. l($fluksonian->name, 'user/'. $fluksonian->uid, array('alias' => FALSE));
-        }
-        $block['subject'] = t('Fluksonians');
-        $block['content'] = theme('logger_item_list', $items);
+      if ($delta == 'fluksonians' && user_access('logger')) {
+        $block['content'] = drupal_get_form('_logger_fluksonians_form');
       }
 
       elseif ($delta == 'unit' && user_access('logger')) {
@@ -613,6 +587,65 @@ function theme_logger_item_list($items, $title = NULL) {
   }
   return $output;
 }
+
+/**
+ * Generates the fluksonians block form.
+ */
+function _logger_fluksonians_form() {
+  global $user;
+  $fluksonians = db_query("SELECT u.uid, u.name
+                           FROM ({users} u
+                           INNER JOIN {users_roles} ur ON u.uid = ur.uid)
+                           INNER JOIN {role} r ON ur.rid = r.rid
+                           WHERE r.name = '%s' AND NOT u.uid = %d
+                           ORDER BY u.name", 'fluksonian', $user->uid);
+
+  $subscriptions = db_query("SELECT u.uid, u.name, ur.rid
+                             FROM ({users} u
+                             INNER JOIN {user_relationships} ur ON u.uid = ur.requestee_id)
+                             INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid
+                             WHERE ur.requester_id = %d AND urt.name = '%s'
+                             ORDER BY u.name", $user->uid, 'subscription');
+
+  $i = 0;
+  $rows = array();
+  $row = array();
+  $subscription = db_fetch_object($subscriptions);
+
+  while ($fluksonian = db_fetch_object($fluksonians)) {
+    if ($i > 4) {
+      $rows[] = $row;
+      $row = array();
+      $i = 0;
+    }
+    if ($fluksonian->uid == $subscription->uid) {
+      $row[] = l('[x]', 'logger/remove/'. $subscription->rid, array('attributes' => array('title' => "unsubscribe from ". $subscription->name ."'s stream"), 'query' => $destination, 'alias' => TRUE)) .' '. l($subscription->name, 'user/'. $subscription->uid, array('alias' => FALSE));
+      $subscription = db_fetch_object($subscriptions);
+    }
+    else {
+      $row[] = l('[+]', 'logger/add/'. $fluksonian->uid, array('attributes' => array('title' => "subscribe to ". $fluksonian->name ."'s stream"), 'query' => $destination, 'ali
+as' => TRUE)) .' '. l($fluksonian->name, 'user/'. $fluksonian->uid, array('alias' => FALSE));
+    }
+    $i++;
+  }
+  $rows[] = $row;
+
+  $form['fluksonians'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Fluksonians'),
+    '#description' => t('Select the Fluksonians you wish to add to [+] or clear from [x] the chart.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['fluksonians']['list'] = array(
+    '#type' => 'item',
+    //'#title' => t('Title'),
+    '#value' => theme('table', array(), $rows),
+  );
+
+  return $form;
+}
+
 
 /**
  * Access callback ensuring the user account tabs are visible only to the
