@@ -367,26 +367,28 @@ function _logger_add($uid) {
                                      WHERE requester_id = %d AND rtid = %d
                                      GROUP BY rtid", $user->uid, $rtid));
 
-  // max subscriptions = 4
-  if ($result['COUNT(rid)'] < 4) {
-    user_relationships_request_relationship($user->uid, $uid, $rtid, TRUE);
-  }
-  else {
-    //check whether the requested relationship doesn't already exist
-    if (!db_result(db_query("SELECT rid
-                             FROM {user_relationships}
-                             WHERE requester_id = %d AND requestee_id = %d AND rtid = %d", $user->uid, $uid, $rtid))) {
-
-      // if not, delete the most recently added relationship and replace it with the newly selected one
-      db_query("DELETE
-                FROM {user_relationships}
-                WHERE rid = %d", $result['MAX(rid)']);
-
+  // don't allow users to add themselves
+  if ($uid != $user->uid) { 
+    // max subscriptions = 4
+    if ($result['COUNT(rid)'] < 4) {
       user_relationships_request_relationship($user->uid, $uid, $rtid, TRUE);
     }
-  }
+    else {
+      //check whether the requested relationship doesn't already exist
+      if (!db_result(db_query("SELECT rid
+                               FROM {user_relationships}
+                               WHERE requester_id = %d AND requestee_id = %d AND rtid = %d", $user->uid, $uid, $rtid))) {
 
-  _logger_cache_clear('subscriptions');
+        // if not, delete the most recently added relationship and replace it with the newly selected one
+        db_query("DELETE
+                  FROM {user_relationships}
+                  WHERE rid = %d", $result['MAX(rid)']);
+
+        user_relationships_request_relationship($user->uid, $uid, $rtid, TRUE);
+      }
+    }
+    _logger_cache_clear('subscriptions');
+  }
   $destination = drupal_get_destination();
   drupal_goto($destination);
 }
@@ -502,7 +504,7 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
       $blocks['fluksonians']['region'] = 'right';
       $blocks['fluksonians']['weight'] = 1;
       $blocks['fluksonians']['pages'] = '<front>\nlogger/\nlogger/*';
-      $blocks['fluksonians']['cache'] = BLOCK_CACHE_PER_USER;
+      $blocks['fluksonians']['cache'] = BLOCK_CACHE_GLOBAL;
 
       $blocks['unit']['info'] = t('Unit');
       $blocks['unit']['status'] = TRUE;
@@ -547,7 +549,7 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
                             FROM ({users} u
                             INNER JOIN {users_roles} ur ON u.uid = ur.uid)
                             INNER JOIN {role} r ON ur.rid = r.rid
-                            WHERE r.name = '%s' AND NOT u.uid = %d
+                            WHERE r.name = '%s'
                             ORDER BY u.name", 'fluksonian', $user->uid);
         $items = array();
         while ($fluksonian = db_fetch_object($result)) {
