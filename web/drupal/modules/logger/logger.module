@@ -178,7 +178,8 @@ function logger_menu() {
   );
   $items['user/%user_uid_optional/devices'] = array(
     'title'               => 'Devices',
-    'page callback'       => '_logger_account_devices',
+    'page callback'       => 'drupal_get_form',
+    'page arguments'      => array('_logger_account_devices'),
     'access callback'     => '_logger_account_access',
     'access arguments'    => array('logger', 1),
     'type'                => MENU_LOCAL_TASK,
@@ -486,6 +487,10 @@ function logger_theme() {
     ),
     'logger_item_list' => array(
       'arguments' => array('items' => NULL, 'title' => NULL),
+    ),
+    'logger_account_devices' => array(
+      'arguments' => array('form' => NULL),
+      'file' => 'logger.admin.inc',
     ),
     'logger_account_devices_list' => array(
       'arguments' => array('items' => NULL),

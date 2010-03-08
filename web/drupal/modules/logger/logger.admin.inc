@@ -22,9 +22,63 @@
 //
 
 /**
- * Callback function for the user/x/devices page
+ * Callback function for the user/x/devices page's drupal_get_form
+ * 
+ * @ingroup forms
+ * @see _logger_account_devices_validate
+ * @see _logger_account_devices_submit
+ * @see theme_logger_account_devices
  */
 function _logger_account_devices() {
+  $form['serial'] = array(
+    '#type' => 'textfield',
+    '#size' => 10,
+    '#maxlength' => 10,
+    '#required' => TRUE,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add device'),
+  );
+  $form['#validate'][] = '_logger_account_devices_validate';
+  $form['#submit'][] = '_logger_account_devices_submit';
+  $form['#theme'] = 'logger_account_devices';
+
+  return $form;
+}
+
+function _logger_account_devices_validate($form, &$form_state) {
+  $serial = $form_state['values']['serial'];
+  if (strlen($serial) == 10 && is_numeric(substr($serial, 2, 9))) {
+    if (db_result(db_query("SELECT COUNT(*) FROM {logger_devices} WHERE serial = %d AND uid = %d", substr($serial, 2, 9), 0)) == 0) {
+      form_set_error('serial', t('Please specify a valid serial number.'));
+    }
+  }
+  else {
+    form_set_error('serial', t('Please specify a proper 10-character serial number.'));
+  }
+}
+
+function _logger_account_devices_submit($form, &$form_state) {
+  global $user;
+  $serial = substr($form_state['values']['serial'], 2, 9);
+  $device = db_result(db_query("SELECT device FROM {logger_devices} WHERE serial = %d", $serial));
+
+  db_query("UPDATE {logger_devices} SET uid = %d WHERE serial = %d", $user->uid, $serial); 
+  db_query("UPDATE {logger_meters} SET uid = %d WHERE device = '%s'", $user->uid, $device);
+
+  drupal_set_message(t("The device is now associated with your account."));
+}
+
+/**
+ * Theme function for displaying the devices form
+ *
+ * @ingroup themeable
+ *
+ * @param $form
+ *   The device form array.
+ */
+function theme_logger_account_devices($form) {
   global $user;
   $rows = array();
 
@@ -36,7 +90,7 @@ function _logger_account_devices() {
   function unix_to_userlocaltime($unix) {
     global $user;
     $unix_local = gmdate('r', $unix + $user->timezone);
-    return substr($unix_local, 0, strlen($unix_local)-6);
+    return substr($unix_local, 0, strlen($unix_local) - 6);
   }
 
   function seconds_to_dayshours($seconds) {
@@ -55,11 +109,18 @@ function _logger_account_devices() {
     $rows[] = $row;
   }
 
-  return theme('logger_account_devices_list', $rows);
+  $rows[] = array(drupal_render($form['serial']), array('data' => drupal_render($form['submit']), 'colspan' => 3));
+
+  $output = drupal_render($form);
+  $output .= theme('logger_account_devices_list', $rows);
+
+  return $output;
 }
 
 /**
- * Theme function for displaying the user's devices
+ * Theme function for displaying the list of devices
+ *
+ * @ingroup themeable
  *
  * @param $items
  *   An array of table rows.
