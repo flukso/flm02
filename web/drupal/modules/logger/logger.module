@@ -174,6 +174,16 @@ function logger_menu() {
     'access arguments'    => array('logger', 1),
     'type'                => MENU_LOCAL_TASK,
     'file'                => 'logger.admin.inc',
+    'weight'              => 2,
+  );
+  $items['user/%user_uid_optional/devices'] = array(
+    'title'               => 'Devices',
+    'page callback'       => '_logger_account_devices',
+    'access callback'     => '_logger_account_access',
+    'access arguments'    => array('logger', 1),
+    'type'                => MENU_LOCAL_TASK,
+    'file'                => 'logger.admin.inc',
+    'weight'              => 3,
   );
   $items['user/%user_uid_optional/sensors'] = array(
     'title'               => 'Sensors',
@@ -182,11 +192,11 @@ function logger_menu() {
     'access arguments'    => array('logger', 1),
     'type'                => MENU_LOCAL_TASK,
     'file'                => 'logger.admin.inc',
+    'weight'              => 3,
   );
 
   return $items;
 }
-
 
 function _logger_installation(){
   $output = '<div class="install">';
@@ -476,6 +486,10 @@ function logger_theme() {
     ),
     'logger_item_list' => array(
       'arguments' => array('items' => NULL, 'title' => NULL),
+    ),
+    'logger_account_devices_list' => array(
+      'arguments' => array('items' => NULL),
+      'file' => 'logger.admin.inc',
     ),
     'logger_account_sensors_list' => array(
       'arguments' => array('items' => NULL),

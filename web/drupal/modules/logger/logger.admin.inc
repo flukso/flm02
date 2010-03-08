@@ -1,4 +1,5 @@
 <?php
+
 //
 // logger.admin.inc : callbacks for logger account and admin pages
 // Copyright (c) 2010 flukso.net
@@ -21,7 +22,65 @@
 //
 
 /**
+ * Callback function for the user/x/devices page
+ */
+function _logger_account_devices() {
+  global $user;
+  $rows = array();
+
+  $result = db_query("SELECT serial, access, resets, uptime
+                      FROM {logger_devices}
+                      WHERE uid = %d
+                      ORDER BY serial", $user->uid);
+
+  function unix_to_userlocaltime($unix) {
+    global $user;
+    $unix_local = gmdate('r', $unix + $user->timezone);
+    return substr($unix_local, 0, strlen($unix_local)-6);
+  }
+
+  function seconds_to_dayshours($seconds) {
+    $days    = intval($seconds / 86400);
+    $hours   = intval(($seconds % 86400) / 3600);
+    return sprintf('%d days %d hours', $days, $hours);
+  }
+
+  while ($device = db_fetch_object($result)) {
+    $row = array();
+    $row[] = $device->serial;
+    $row[] = $device->resets;
+    $row[] = unix_to_userlocaltime($device->access);
+    $row[] = seconds_to_dayshours($device->uptime);
+
+    $rows[] = $row;
+  }
+
+  return theme('logger_account_devices_list', $rows);
+}
+
+/**
+ * Theme function for displaying the user's devices
+ *
+ * @param $items
+ *   An array of table rows.
+ */
+function theme_logger_account_devices_list($items) {
+  if (count($items) > 0) {
+    $headers = array(t('Serial'), t('Resets'), t('Last heartbeat'), t('Uptime'));
+    $output  = theme('table', $headers, $items);
+  }
+  else {
+    $output = t('No devices available.');
+  }
+
+  return $output;
+}
+
+/**
  * Callback function for the user/x/sensors page
+ *
+ * @param $type
+ *   String defining the sensor type
  */
 function _logger_account_sensors($type = 'electricity') {
   global $user;
@@ -49,8 +108,6 @@ function _logger_account_sensors($type = 'electricity') {
  *
  * @param $items
  *   An array of table rows.
- *
- * @ingroup themeable
  */
 function theme_logger_account_sensors_list($items) {
   if (count($items) > 0) {
