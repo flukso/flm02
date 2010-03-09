@@ -67,6 +67,10 @@ function _logger_account_devices_submit($form, &$form_state) {
   db_query("UPDATE {logger_devices} SET uid = %d WHERE serial = %d", $user->uid, $serial); 
   db_query("UPDATE {logger_meters} SET uid = %d WHERE device = '%s'", $user->uid, $device);
 
+  if (db_result(db_query("SELECT COUNT(*) FROM {logger_users} WHERE uid = %d", $user->uid)) == 0) {
+    db_query("INSERT INTO {logger_users} (uid, private) VALUES (%d, %d)", $user->uid, 0);
+  }
+
   drupal_set_message(t("The device is now associated with your account."));
 }
 
