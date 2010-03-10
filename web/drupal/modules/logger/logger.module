@@ -345,11 +345,18 @@ function _logger_dashboard($type, $function, $interval) {
   }
 
   //construct the TZ=GMT-02:00 format from the $user->timezone object updated by the autotimezone module
-  if ($user->timezone >= 0)
+  
+  if ($user->timezone > 0) {
     $TZ = 'TZ="GMT-';
-  else
+    $TZ .= gmdate('h:i', abs($user->timezone)) .'" ';
+  }
+  elseif ($user->timezone < 0) {
     $TZ = 'TZ="GMT+';
-  $TZ .= gmdate('h:i', abs($user->timezone)) .'" ';
+    $TZ .= gmdate('h:i', abs($user->timezone)) .'" ';
+  }
+  else
+    $TZ = 'TZ="GMT" ';
+
   //insert the TZ prior to launching rrdtool to obtain a proper time conversion
   $command = $TZ . $root_path .'/rrdtool graph '. $graph_path . $pngid .'.png -s '. $start .
              ' --vertical-label '. $unit .' --lower-limit 0 -w 500 -h 350 -E -X 0 --font LEGEND:8:';
