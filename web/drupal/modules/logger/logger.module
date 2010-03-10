@@ -639,7 +639,7 @@ function _logger_fluksonians_form() {
   $subscription = db_fetch_object($subscriptions);
 
   while ($fluksonian = db_fetch_object($fluksonians)) {
-    if ($i > 4) {
+    if ($i > 3) {
       $rows[] = $row;
       $row = array();
       $i = 0;
