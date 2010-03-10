@@ -665,6 +665,16 @@ as' => TRUE)) .' '. l($fluksonian->name, 'user/'. $fluksonian->uid, array('alias
   return $form;
 }
 
+/**
+ * Implementation of hook_form_alter().
+ */
+function logger_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'user_login') {
+    $form['#redirect'] = 'logger';
+    $form['name']['#size'] = 20;
+    $form['pass']['#size'] = 20;
+  }
+}
 
 /**
  * Access callback ensuring the user account tabs are visible only to the
