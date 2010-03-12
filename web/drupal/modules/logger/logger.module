@@ -52,7 +52,7 @@ function logger_init() {
  * Implementation of hook_perm().
  */
 function logger_perm() {
-  return array('logger');
+  return array('logger', 'register devices');
 }
 
 /**
@@ -181,7 +181,7 @@ function logger_menu() {
     'page callback'       => 'drupal_get_form',
     'page arguments'      => array('_logger_account_devices'),
     'access callback'     => '_logger_account_access',
-    'access arguments'    => array('logger', 1),
+    'access arguments'    => array('register devices', 1),
     'type'                => MENU_LOCAL_TASK,
     'file'                => 'logger.admin.inc',
     'weight'              => 3,
