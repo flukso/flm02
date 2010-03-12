@@ -619,6 +619,8 @@ function theme_logger_item_list($items, $title = NULL) {
  */
 function _logger_fluksonians_form() {
   global $user;
+  $destination = drupal_get_destination();
+
   $fluksonians = db_query("SELECT u.uid, u.name
                            FROM ({users} u
                            INNER JOIN {users_roles} ur ON u.uid = ur.uid)
