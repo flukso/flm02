@@ -1,0 +1,3 @@
+{application,mysql}.
+{packages,[]}.
+{modules,[mysql,mysql_auth,mysql_conn,mysql_recv]}.

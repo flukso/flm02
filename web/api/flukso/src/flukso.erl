@@ -19,8 +19,9 @@ ensure_started(App) ->
 %% @doc Starts the app for inclusion in a supervisor tree
 start_link() ->
     flukso_deps:ensure(),
-    ensure_started(erlrrd),
     ensure_started(crypto),
+    ensure_started(erlrrd),
+    ensure_started(mysql),
     ensure_started(webmachine),
     flukso_sup:start_link().
 
@@ -28,17 +29,18 @@ start_link() ->
 %% @doc Start the flukso server.
 start() ->
     flukso_deps:ensure(),
-    ensure_started(erlrrd),
     ensure_started(crypto),
+    ensure_started(erlrrd),
+    ensure_started(mysql),
     ensure_started(webmachine),
-     application:start(flukso).
+    application:start(flukso).
 
 %% @spec stop() -> ok
 %% @doc Stop the flukso server.
 stop() -> 
     Res = application:stop(flukso),
-    application:stop(erlrrd),
     application:stop(webmachine),
+    application:stop(mysql),
+    application:stop(erlrrd),
     application:stop(crypto),
     Res.
-

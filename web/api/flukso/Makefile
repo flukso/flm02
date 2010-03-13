@@ -2,7 +2,7 @@ ERL          ?= erl
 EBIN_DIRS    := $(wildcard deps/*/ebin)
 APP          := flukso
 
-all: erl ebin/$(APP).app erlrrd
+all: erl ebin/$(APP).app erlrrd mysql
 
 erl:
 	@$(ERL) -pa $(EBIN_DIRS) -noinput +B \
@@ -21,3 +21,5 @@ ebin/$(APP).app: src/$(APP).app
 erlrrd:
 	@(cd deps/erlrrd;$(MAKE))
 
+mysql:
+	@(cd deps/mysql;$(MAKE))
