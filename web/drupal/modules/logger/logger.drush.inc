@@ -65,12 +65,12 @@ function logger_drush_command() {
     ),
   );
 
-  $items['logger alias'] = array(
-    'callback'    => '_logger_alias',
-    'description' => 'Create aliases for meter/sensorIDs.',
+  $items['logger token'] = array(
+    'callback'    => '_logger_token',
+    'description' => 'Create tokens for meter/sensorIDs.',
     'arguments'   => array(
-      'meter'       => 'Create an alias for one specific meterID.',
-      'permissions' => 'Set non-default permissions for this alias.',
+      'meter'       => 'Create a token for one specific meterID.',
+      'permissions' => 'Set non-default permissions for this token.',
     ),
   );
 
@@ -110,17 +110,15 @@ function _logger_create_node($serial, $country ="", $uid = 0) {
     for ($i = 0; $i < 4; $i++) {
       $permissions = 62;
       $meter = md5(uniqid(rand(), TRUE));
-      $alias = md5(uniqid(rand(), TRUE));
+      $token = md5(uniqid(rand(), TRUE));
 
       $path = new stdClass();
         $path->root = DRUPAL_ROOT .'/'. drupal_get_path('module', 'logger');
         $path->base = $path->root .'/data/base/';
         $path->night = $path->root .'/data/night/';
-        $path->alias_base = $path->root .'/alias/base/';
-        $path->alias_night = $path->root .'/alias/night/';
 
       $result = db_query("INSERT INTO {logger_meters} (meter, uid, device, created) VALUES ('%s', %d, '%s', %d)", $meter, $uid, $device, $created); 
-      $insert = db_query("INSERT INTO {logger_aliases} (alias, meter, permissions) VALUES ('%s', '%s', %d)", $alias, $meter, $permissions);
+      $insert = db_query("INSERT INTO {logger_tokens} (token, meter, permissions) VALUES ('%s', '%s', %d)", $token, $meter, $permissions);
 
       if (!($result && $insert)) drush_set_error('LOGGER_CREATE_METER_ENTRY', dt('Error creating meter entry for @meter.', array('@meter' => $meter)));
 
@@ -128,10 +126,7 @@ function _logger_create_node($serial, $country ="", $uid = 0) {
       if (!file_exists($path->base . $meter .'.rrd')) {
         $command = $path->root .'/rrdtool create '. $path->base . $meter .'.rrd -b 1199487600 -s 60 DS:meter:DERIVE:8640000:0:20 RRA:AVERAGE:0.5:1:120 RRA:AVERAGE:0.5:15:192 RRA:AVERAGE:0.5:1440:60 RRA:AVERAGE:0.5:10080:520';
         system($command, $return);
-        if ($return == 0) {
-          system('ln ' . $path->base . $meter . '.rrd ' . $path->alias_base . $alias);
-        }
-        else {
+        if (!($return == 0)) {
           drush_set_error('LOGGER_CREATE_RRD_BASE_ERROR', dt('Error creating the base @meter rrd.', array('@meter' => $meter)));
         }
       }
@@ -140,16 +135,13 @@ function _logger_create_node($serial, $country ="", $uid = 0) {
       if (!file_exists($path->night . $meter .'.rrd')) {
         $command = $path->root .'/rrdtool create '. $path->night . $meter .'.rrd -b 1199487600 -s 86400 DS:meter:GAUGE:8640000:0:20 RRA:AVERAGE:0.5:1:60 RRA:AVERAGE:0.5:7:520';
         system($command, $return);
-        if ($return == 0) {
-          system('ln ' . $path->night . $meter . '.rrd ' . $path->alias_night . $alias);
-        }
-        else {
+        if (!($return == 0)) {
           drush_set_error('LOGGER_CREATE_RRD_NIGHT_ERROR', dt('Error creating the night @meter rrd.', array('@meter' => $meter)));
         }
       }
 
       if (!drush_get_error()) {
-	drush_log(dt('Successfully created the meter: @meter with alias: @alias and type: @type', array('@meter' => $meter, '@alias' => $alias, '@type' => $type)), 'ok');
+	drush_log(dt('Successfully created the meter: @meter with token: @token', array('@meter' => $meter, '@token' => $token)), 'ok');
         $pipe[] .= 'SENSOR'.$i.'='.$meter;
       }
     }
@@ -184,24 +176,20 @@ function _logger_config_meter($meter, $type, $function, $phase, $constant, $unit
   drush_print_pipe('ok');
 }
 
-function _logger_alias($meter = "", $permissions = 62) {
+function _logger_tokens($meter = "", $permissions = 62) {
   if ($meter == "") {
     $result = db_query("SELECT meter FROM {logger_meters}");
     while ($meter = db_fetch_object($result)) {
-      $count = db_result(db_query("SELECT COUNT(meter) FROM {logger_aliases} WHERE meter = '%s'", $meter->meter));
+      $count = db_result(db_query("SELECT COUNT(meter) FROM {logger_tokens} WHERE meter = '%s'", $meter->meter));
       if ($count == 0) {
-        $alias = md5(uniqid(rand(), TRUE));
-        $insert = db_query("INSERT INTO {logger_aliases} (alias, meter, permissions) VALUES ('%s', '%s', %d)", $alias, $meter->meter, $permissions);
+        $token = md5(uniqid(rand(), TRUE));
+        $insert = db_query("INSERT INTO {logger_tokens} (token, meter, permissions) VALUES ('%s', '%s', %d)", $token, $meter->meter, $permissions);
 
         if (!$insert) {
-          drush_set_error('LOGGER_CREATE_ALIAS_ENTRY', dt('Error creating alias entry for @meter.', array('@meter' => $meter->meter)));
+          drush_set_error('LOGGER_CREATE_TOKEN_ENTRY', dt('Error creating token entry for @meter.', array('@meter' => $meter->meter)));
         }
         else {
-          drush_log(dt('Created an entry in {logger_aliases} with alias: @alias and meter: @meter', array('@alias' => $alias , '@meter' => $meter->meter)), 'ok');
-
-          $root_path = DRUPAL_ROOT .'/'. drupal_get_path('module', 'logger');
-          system('ln ' . $root_path . '/data/base/' . $meter->meter . '.rrd ' . $root_path . '/alias/base/' . $alias);
-          system('ln ' . $root_path . '/data/night/' . $meter->meter . '.rrd ' . $root_path . '/alias/night/' . $alias);
+          drush_log(dt('Created an entry in {logger_tokens} with token: @token and meter: @meter', array('@token' => $token , '@meter' => $meter->meter)), 'ok');
         }
       }
     }
