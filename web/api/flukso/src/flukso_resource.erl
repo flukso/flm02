@@ -34,16 +34,16 @@ malformed_request(ReqData, _) ->
 content_types_provided(ReqData, State) -> 
     {[{"application/json", to_json}], ReqData, State}.
 
-to_json(ReqData, State) -> 
+to_json(ReqData, #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor} = State) -> 
     case wrq:path_info(interval, ReqData) of
         "night"   -> Path = "var/data/night/";
         _Interval -> Path = "var/data/base/"
     end,
 
-    case erlrrd:fetch(erlrrd:c([[Path, [State#state.rrdSensor|".rrd"]], "AVERAGE", ["-s",State#state.rrdTime]])) of
+    case erlrrd:fetch(erlrrd:c([[Path, [RrdSensor|".rrd"]], "AVERAGE", ["-s",RrdTime]])) of
         {ok, Response} ->
             Filtered = [re:split(X, "[:][ ]", [{return,list}]) || [X] <- Response, string:str(X, ":") == 11],
-            Datapoints = [[list_to_integer(X), round(list_to_float(Y) * State#state.rrdFactor)] || [X, Y] <- Filtered, string:len(Y) /= 3],
+            Datapoints = [[list_to_integer(X), round(list_to_float(Y) * RrdFactor)] || [X, Y] <- Filtered, string:len(Y) /= 3],
             Nans = [[list_to_integer(X), list_to_binary(Y)] || [X, Y] <- Filtered, string:len(Y) == 3],
             Final = lists:merge(Datapoints, Nans),
             {mochijson2:encode(Final), ReqData, State};
