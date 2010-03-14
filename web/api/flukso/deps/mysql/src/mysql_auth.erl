@@ -172,23 +172,21 @@ bxor_binary(B1, B2) ->
 				   E1 bxor E2
 			   end, binary_to_list(B1), binary_to_list(B2))).
 
+password_new([], _Salt) ->
+    <<>>;
 password_new(Password, Salt) ->
-    %% Check for blank password 
-    case length(Password) of
-	0 ->
-	    <<>>;
-	_ ->
-	    Stage1 = crypto:sha(Password),
-	    Stage2 = crypto:sha(Stage1),
-	    Res = crypto:sha_final(
-		    crypto:sha_update(
-		      crypto:sha_update(crypto:sha_init(), Salt),
-		      Stage2)
-		   ),
-	    bxor_binary(Res, Stage1)
-    end.
+    Stage1 = crypto:sha(Password),
+    Stage2 = crypto:sha(Stage1),
+    Res = crypto:sha_final(
+	    crypto:sha_update(
+	      crypto:sha_update(crypto:sha_init(), Salt),
+	      Stage2)
+	   ),
+    bxor_binary(Res, Stage1).
+
 
 do_send(Sock, Packet, Num, LogFun) ->
-    mysql:log(LogFun, debug, "mysql_auth send packet ~p: ~p", [Num, Packet]),
+    LogFun(?MODULE, ?LINE, debug,
+	   fun() -> {"mysql_auth send packet ~p: ~p", [Num, Packet]} end),
     Data = <<(size(Packet)):24/little, Num:8, Packet/binary>>,
     gen_tcp:send(Sock, Data).
