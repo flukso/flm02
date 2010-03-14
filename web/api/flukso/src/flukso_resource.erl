@@ -7,38 +7,43 @@
 
 -include_lib("webmachine/include/webmachine.hrl").
 
+-record(state,
+        {rrdSensor,
+         rrdTime,
+         rrdFactor}).
+
 init([]) -> 
     {ok, undefined}.
 
 allowed_methods(ReqData, State) ->
     {['GET'], ReqData, State}.
 
-malformed_request(ReqData, State) ->
+malformed_request(ReqData, _) ->
     {RrdSensor, ValidSensor} = rrd_sensor(wrq:path_info(sensor, ReqData)),
     {RrdTime, ValidInterval} = rrd_time(wrq:get_qs_value("interval", ReqData)),
     {RrdFactor, ValidUnit} = rrd_factor(wrq:get_qs_value("unit", ReqData)),
+
+    State = #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor},
 
     {case {ValidSensor, ValidInterval, ValidUnit}  of
 	{true, true, true} -> false;
 	_ -> true
      end, 
-    ReqData, {RrdSensor , RrdTime, RrdFactor}}.
+    ReqData, State}.
 
 content_types_provided(ReqData, State) -> 
     {[{"application/json", to_json}], ReqData, State}.
 
 to_json(ReqData, State) -> 
-    {RrdSensor , RrdTime, RrdFactor} = State,
-
     case wrq:path_info(interval, ReqData) of
         "night"   -> Path = "var/data/night/";
         _Interval -> Path = "var/data/base/"
     end,
 
-    case erlrrd:fetch(erlrrd:c([[Path, [RrdSensor|".rrd"]], "AVERAGE", ["-s",RrdTime]])) of
+    case erlrrd:fetch(erlrrd:c([[Path, [State#state.rrdSensor|".rrd"]], "AVERAGE", ["-s",State#state.rrdTime]])) of
         {ok, Response} ->
             Filtered = [re:split(X, "[:][ ]", [{return,list}]) || [X] <- Response, string:str(X, ":") == 11],
-            Datapoints = [[list_to_integer(X), round(list_to_float(Y) * RrdFactor)] || [X, Y] <- Filtered, string:len(Y) /= 3],
+            Datapoints = [[list_to_integer(X), round(list_to_float(Y) * State#state.rrdFactor)] || [X, Y] <- Filtered, string:len(Y) /= 3],
             Nans = [[list_to_integer(X), list_to_binary(Y)] || [X, Y] <- Filtered, string:len(Y) == 3],
             Final = lists:merge(Datapoints, Nans),
             {mochijson2:encode(Final), ReqData, State};
