@@ -15,6 +15,9 @@ ensure_started(App) ->
 	    ok
     end.
 
+mysql_prepare() ->
+    mysql:prepare(permissions, <<"SELECT permissions FROM logger_tokens WHERE meter = ? AND token = ?">>).
+
 %% @spec start_link() -> {ok,Pid::pid()}
 %% @doc Starts the app for inclusion in a supervisor tree
 start_link() ->
@@ -22,6 +25,7 @@ start_link() ->
     ensure_started(crypto),
     ensure_started(erlrrd),
     ensure_started(mysql),
+    mysql_prepare(),
     ensure_started(webmachine),
     flukso_sup:start_link().
 
@@ -32,6 +36,7 @@ start() ->
     ensure_started(crypto),
     ensure_started(erlrrd),
     ensure_started(mysql),
+    mysql_prepare(),
     ensure_started(webmachine),
     application:start(flukso).
 

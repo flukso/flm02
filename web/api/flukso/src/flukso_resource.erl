@@ -3,14 +3,15 @@
 %% @doc Flukso webmachine_resource.
 
 -module(flukso_resource).
--export([init/1, allowed_methods/2, malformed_request/2, content_types_provided/2, to_json/2]).
+-export([init/1, allowed_methods/2, malformed_request/2, is_authorized/2, content_types_provided/2, to_json/2]).
 
 -include_lib("webmachine/include/webmachine.hrl").
 
 -record(state,
         {rrdSensor,
          rrdTime,
-         rrdFactor}).
+         rrdFactor,
+         token}).
 
 init([]) -> 
     {ok, undefined}.
@@ -22,13 +23,23 @@ malformed_request(ReqData, _) ->
     {RrdSensor, ValidSensor} = rrd_sensor(wrq:path_info(sensor, ReqData)),
     {RrdTime, ValidInterval} = rrd_time(wrq:get_qs_value("interval", ReqData)),
     {RrdFactor, ValidUnit} = rrd_factor(wrq:get_qs_value("unit", ReqData)),
+    {Token, ValidToken} = rrd_sensor(wrq:get_req_header("X-Token", ReqData)),
 
-    State = #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor},
+    State = #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor, token = Token},
 
-    {case {ValidSensor, ValidInterval, ValidUnit}  of
-	{true, true, true} -> false;
+    {case {ValidSensor, ValidInterval, ValidUnit, ValidToken}  of
+	{true, true, true, true} -> false;
 	_ -> true
      end, 
+    ReqData, State}.
+
+is_authorized(ReqData, #state{rrdSensor = RrdSensor, token = Token} = State) ->
+    {data, Result} = mysql:execute(pool, permissions, [RrdSensor, Token]),
+
+    {case mysql:get_result_rows(Result) of
+        [[62]] -> true;
+        _ -> "access refused" 
+    end,
     ReqData, State}.
 
 content_types_provided(ReqData, State) -> 
@@ -48,7 +59,7 @@ to_json(ReqData, #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = Rr
             Final = lists:merge(Datapoints, Nans),
             {mochijson2:encode(Final), ReqData, State};
 
-        {error, Reason} ->
+        {error, _Reason} ->
             {{halt, 404}, ReqData, State}
     end.
 
