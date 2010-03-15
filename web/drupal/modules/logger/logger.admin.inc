@@ -155,14 +155,16 @@ function _logger_account_sensors($type = 'electricity') {
   global $user;
   $rows = array();
 
-  $result = db_query("SELECT lm.meter, lm.function 
+  $result = db_query("SELECT lm.meter, lm.function, lt.token, lt.permissions 
                       FROM {logger_meters} lm
+                      INNER JOIN {logger_tokens} lt ON lm.meter = lt.meter
                       WHERE lm.uid = %d AND lm.type = '%s'
                       ORDER BY lm.function", $user->uid, $type);
 
   while ($sensor = db_fetch_object($result)) {
     $row = array();
     $row[] = $sensor->meter;
+    $row[] = $sensor->token;
     $row[] = $type;
     $row[] = $sensor->function;
 
@@ -180,7 +182,7 @@ function _logger_account_sensors($type = 'electricity') {
  */
 function theme_logger_account_sensors_list($items) {
   if (count($items) > 0) {
-    $headers = array(t('Sensor'), t('Type'), t('Function'));
+    $headers = array(t('Sensor'), t('Token'), t('Type'), t('Function'));
     $output  = theme('table', $headers, $items);
   }
   else {
