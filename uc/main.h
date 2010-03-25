@@ -24,7 +24,7 @@
 # define POWER 1
 
 # define WATT 1000000000
-# define SECOND 487 // rounded down from 488.28125 - 1
+# define SECOND 624 // 625Hz - 1
 
 #ifndef SENSOR0 
   #define SENSOR0 "0123456789abcdef0123456789abcde0"
@@ -43,33 +43,33 @@
 #endif
 
 #ifndef TYPE
-  #define TYPE 2301
+  #define TYPE 2300501
 #endif
 
-#ifndef METERCONST
-  #if TYPE == 2201   // 220V - 1-phase @ 488.28Hz sampling rate
-    #define METERCONST 6783
-    #warning "220V - 1-phase selected. METERCONST set to 6783"
+#ifndef METERCONST // @ 625Hz sampling rate
+  #if TYPE == 2200501
+    #define METERCONST 5299
+    #warning "220V - 50A - 1-phase selected. METERCONST set to 5299"
 
-  #elif TYPE == 2203 // 220V - 3-phase @ 488.28Hz sampling rate
-    #define METERCONST 6721
-    #warning "220V - 3-phase selected. METERCONST set to 6721"
+  #elif TYPE == 2200503
+    #define METERCONST 5251
+    #warning "220V - 50A - 3-phase selected. METERCONST set to 5251"
 
-  #elif TYPE == 2301 // 230V - 1-phase @ 488.28Hz sampling rate
-    #define METERCONST 7091
-    #warning "230V - 1-phase selected. METERCONST set to 7091"
+  #elif TYPE == 2300501
+    #define METERCONST 5540
+    #warning "230V - 50A - 1-phase selected. METERCONST set to 5540"
 
-  #elif TYPE == 2303 // 230V - 3-phase @ 488.28Hz sampling rate
-    #define METERCONST 7026
-    #warning "230V - 3-phase selected. METERCONST set to 7026"
+  #elif TYPE == 2300503
+    #define METERCONST 5489
+    #warning "230V - 50A - 3-phase selected. METERCONST set to 5489"
 
-  #elif TYPE == 2401 // 240V - 1-phase @ 488.28Hz sampling rate
-    #define METERCONST 7399
-    #warning "240V - 1-phase selected. METERCONST set to 7399"
+  #elif TYPE == 2400501
+    #define METERCONST 5780
+    #warning "240V - 50A - 1-phase selected. METERCONST set to 5780"
 
-  #elif TYPE == 2403 // 240V - 3-phase @ 488.28Hz sampling rate
-    #define METERCONST 7331
-    #warning "240V - 3-phase selected. METERCONST set to 7331"
+  #elif TYPE == 2400503
+    #define METERCONST 5727
+    #warning "240V - 50A - 3-phase selected. METERCONST set to 5727"
   #endif
 #endif
 

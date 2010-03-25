@@ -81,19 +81,20 @@ AVRDUDE_PROGRAMMER	= usbtiny
 MCU	= atmega48
 F_CPU	= 1000000
 #
-# Predefine the TYPE and SENSORx C macros in main.h via this Makefile. Override the
-# defaults on the command line by typing:
+# Predefine the TYPE and SENSORx C macros in main.h via this Makefile.
+# Override the defaults on the command line by typing:
 # make TYPE=xxxx SENSOR0=yyyy ...
 #
-TYPE = 2301
-METERCONST = 7091
+DBG = 0
+#
+TYPE = 2300501
 #
 SENSOR0 = 0123456789abcdef0123456789abcde0
 SENSOR1 = 0123456789abcdef0123456789abcde1
 SENSOR2 = 0123456789abcdef0123456789abcde2
 SENSOR3 = 0123456789abcdef0123456789abcde3
 #
-CEXTRA = -D TYPE=$(TYPE) -D METERCONST=$(METERCONST) -D POWERCONST=$(POWERCONST) -D 'SENSOR0="$(SENSOR0)"' -D 'SENSOR1="$(SENSOR1)"' -D 'SENSOR2="$(SENSOR2)"' -D 'SENSOR3="$(SENSOR3)"'
+CEXTRA = -D DBG=$(DBG) -D TYPE=$(TYPE) -D 'SENSOR0="$(SENSOR0)"' -D 'SENSOR1="$(SENSOR1)"' -D 'SENSOR2="$(SENSOR2)"' -D 'SENSOR3="$(SENSOR3)"'
 #####################################################################################
 
 #####################################################################################

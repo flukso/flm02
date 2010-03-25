@@ -73,43 +73,49 @@ ISR(PCINT2_vect) {
 **/
 
 // interrupt service routine for ADC
-ISR(TIMER2_OVF_vect) {
+ISR(TIMER2_COMPA_vect) {
+#if DBG > 0
+  PORTD |= (1<<PD4);
+#endif
   // read ADC result
   // add to nano(Wh) counter
-  if (muxn < 2) {
-    MacU16X16to32(aux[muxn].nano, METERCONST, ADC);
+  MacU16X16to32(aux[muxn].nano, METERCONST, ADC);
 
-    if (aux[muxn].nano > WATT) {
-       measurements[muxn].value++;
-       aux[muxn].pulse = true;
-       aux[muxn].nano -= WATT;
-       aux[muxn].pulse_count++;
-    }
-
-    if (timer == SECOND) {
-      aux[muxn].nano_start = aux[muxn].nano_end;
-      aux[muxn].nano_end = aux[muxn].nano;
-      aux[muxn].pulse_count_final = aux[muxn].pulse_count;
-      aux[muxn].pulse_count = 0;
-      aux[muxn].power = true;
-    }
+  if (aux[muxn].nano > WATT) {
+     measurements[muxn].value++;
+     aux[muxn].pulse = true;
+     aux[muxn].nano -= WATT;
+     aux[muxn].pulse_count++;
   }
 
-  // rotate the available ADC input channels (0 to 7)
+  if (timer == SECOND) {
+    aux[muxn].nano_start = aux[muxn].nano_end;
+    aux[muxn].nano_end = aux[muxn].nano;
+    aux[muxn].pulse_count_final = aux[muxn].pulse_count;
+    aux[muxn].pulse_count = 0;
+    aux[muxn].power = true;
+  }
+
+  // cycle through the available ADC input channels (0 and 1)
   muxn++;
-  if (!(muxn &= 0x7)) timer++;
+  if (!(muxn &= 0x1)) timer++;
   if (timer > SECOND) timer = 0;
 
-  // but only use ADC0 and 1
-  if (muxn < 2) {
-    ADMUX &= 0xF8;
-    ADMUX |= muxn;
-  
-    // start a new ADC conversion
-    ADCSRA |= (1<<ADSC);
-  }
-}
+  ADMUX &= 0xF8;
+  ADMUX |= muxn;
+  // start a new ADC conversion
+  ADCSRA |= (1<<ADSC);
 
+#if DBG > 0
+  PORTD &= ~(1<<PD4);
+#endif
+
+#if DBG > 1
+  aux[muxn].nano = WATT+1;
+  timer = SECOND;
+#endif
+}
+ 
 // interrupt service routine for analog comparator
 ISR(ANALOG_COMP_vect) {
   uint8_t i;
@@ -197,7 +203,10 @@ void setup()
   // enable INT0 and INT1 interrupts
   EIMSK = (1<<INT0) | (1<<INT1);
 
-
+#if DBG > 0
+  // re-use PD4 pin for tracing interrupt times
+  DDRD |= (1<<DDD4);
+#else
   // PD4=PCINT20 configuration
   // set as input pin with 20k pull-up enabled
   PORTD |= (1<<PD4);
@@ -205,6 +214,7 @@ void setup()
   PCMSK2 |= (1<<PCINT20);
   //pin change interrupt enable 2
   PCICR |= (1<<PCIE2);
+#endif
 
   // analog comparator setup for brown-out detection
   // PD7=AIN1 configured by default as input to obtain high impedance
@@ -216,10 +226,20 @@ void setup()
   // bandgap select | AC interrupt enable | AC interrupt on rising edge (DS p.243)
   ACSR |= (1<<ACBG) | (1<<ACIE) | (1<<ACIS1) | (1<<ACIS0);
 
-  // Timer2 normal operation
-  // Timer2 clock prescaler set to 1 => fTOV2 = 1000kHz / 256 / 1 = 3906.24Hz (DS p.158)
-  TCCR2B |= (1<<CS20);
-  TIMSK2 |= (1<<TOIE2);
+  // Timer2 set to CTC mode (DS p.146, 154, 157)
+  TCCR2A |= 1<<WGM21;
+#if DBG > 0
+  // Toogle pin OC2A=PB3 on compare match
+  TCCR2A |= 1<<COM2A0;
+#endif
+  // Set PB3 as output pin
+  DDRB |= (1<<DDB3);
+  // Timer2 clock prescaler set to 8 => fTOV2 = 1000kHz / 256 / 8 = 488.28Hz (DS p.158)
+  TCCR2B |= (1<<CS21);
+  // Enable output compare match interrupt for timer2 (DS p.159)
+  TIMSK2 |= (1<<OCIE2A);
+  // Increase sampling frequency to 1250Hz (= 625Hz per channel)
+  OCR2A = 0x63;
 
   // disable digital input cicuitry on ADCx pins to reduce leakage current
   DIDR0 |= (1<<ADC5D) | (1<<ADC4D) | (1<<ADC3D) | (1<<ADC2D) | (1<<ADC1D) | (1<<ADC0D);
