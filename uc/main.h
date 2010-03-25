@@ -70,6 +70,81 @@
   #elif TYPE == 2400503
     #define METERCONST 5727
     #warning "240V - 50A - 3-phase selected. METERCONST set to 5727"
+
+
+  #elif TYPE == 2201001
+    #define METERCONST 10598
+    #warning "220V - 100A - 1-phase selected. METERCONST set to 10598"
+
+  #elif TYPE == 2201003
+    #define METERCONST 10502
+    #warning "220V - 100A - 3-phase selected. METERCONST set to 10502"
+
+  #elif TYPE == 2301001
+    #define METERCONST 11080
+    #warning "230V - 100A - 1-phase selected. METERCONST set to 11080"
+
+  #elif TYPE == 2301003
+    #define METERCONST 10978
+    #warning "230V - 100A - 3-phase selected. METERCONST set to 10978"
+
+  #elif TYPE == 2401001
+    #define METERCONST 11560
+    #warning "240V - 100A - 1-phase selected. METERCONST set to 11560"
+
+  #elif TYPE == 2401003
+    #define METERCONST 11454
+    #warning "240V - 100A - 3-phase selected. METERCONST set to 11454"
+
+
+  #elif TYPE == 2202501
+    #define METERCONST 26495
+    #warning "220V - 250A - 1-phase selected. METERCONST set to 26495"
+
+  #elif TYPE == 2202503
+    #define METERCONST 26255
+    #warning "220V - 250A - 3-phase selected. METERCONST set to 26255"
+
+  #elif TYPE == 2302501
+    #define METERCONST 27700
+    #warning "230V - 250A - 1-phase selected. METERCONST set to 27700"
+
+  #elif TYPE == 2302503
+    #define METERCONST 27445
+    #warning "230V - 250A - 3-phase selected. METERCONST set to 27445"
+
+  #elif TYPE == 2402501
+    #define METERCONST 28900
+    #warning "240V - 250A - 1-phase selected. METERCONST set to 28900"
+
+  #elif TYPE == 2402503
+    #define METERCONST 28635
+    #warning "240V - 250A - 3-phase selected. METERCONST set to 28635"
+
+
+  #elif TYPE == 2205001
+    #define METERCONST 52990
+    #warning "220V - 500A - 1-phase selected. METERCONST set to 52990"
+
+  #elif TYPE == 2205003
+    #define METERCONST 52510
+    #warning "220V - 500A - 3-phase selected. METERCONST set to 52510"
+
+  #elif TYPE == 2305001
+    #define METERCONST 55400
+    #warning "230V - 500A - 1-phase selected. METERCONST set to 55400"
+
+  #elif TYPE == 2305003
+    #define METERCONST 54890
+    #warning "230V - 500A - 3-phase selected. METERCONST set to 54890"
+
+  #elif TYPE == 2405001
+    #define METERCONST 57800
+    #warning "240V - 500A - 1-phase selected. METERCONST set to 57800"
+
+  #elif TYPE == 2405003
+    #define METERCONST 57270
+    #warning "240V - 500A - 3-phase selected. METERCONST set to 57270"
   #endif
 #endif
 
