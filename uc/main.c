@@ -171,7 +171,7 @@ void WDT_off(void) {
 
 // enable WDT
 void WDT_on(void) {
-  // enable the watchdog timer (1s)
+  // enable the watchdog timer (2s)
   wdt_enable(WDTO_2S);
   // set watchdog interrupt enable flag
   WDTCSR |= (1<<WDIE);
@@ -229,7 +229,7 @@ void setup()
   // Timer2 set to CTC mode (DS p.146, 154, 157)
   TCCR2A |= 1<<WGM21;
 #if DBG > 0
-  // Toogle pin OC2A=PB3 on compare match
+  // Toggle pin OC2A=PB3 on compare match
   TCCR2A |= 1<<COM2A0;
 #endif
   // Set PB3 as output pin
