@@ -40,7 +40,7 @@
 #
 #      project specific settings:
 #
-TARGET			= main
+TARGET = main
 #
 # Predefine the TYPE and SENSORx C macros in main.h via this Makefile.
 # Override the defaults on the command line by typing:
@@ -56,7 +56,7 @@ SENSOR1 = 0123456789abcdef0123456789abcde1
 SENSOR2 = 0123456789abcdef0123456789abcde2
 SENSOR3 = 0123456789abcdef0123456789abcde3
 #
-CEXTRA = -D DBG=$(DBG) -D TYPE=$(TYPE) -D METERCONST=$(METERCONST) -D 'SENSOR0="$(SENSOR0)"' -D 'SENSOR1="$(SENSOR1)"' -D 'SENSOR2="$(SENSOR2)"' -D 'SENSOR3="$(SENSOR3)"'
+CEXTRA = -D DBG=$(DBG) -D METERCONST=$(METERCONST) -D 'SENSOR0="$(SENSOR0)"' -D 'SENSOR1="$(SENSOR1)"' -D 'SENSOR2="$(SENSOR2)"' -D 'SENSOR3="$(SENSOR3)"'
 ###############################################################################
 
 
@@ -259,7 +259,7 @@ bin/core.a: $(OBJ)
 
 # Target: clean project.
 clean:
-	$(REMOVE) bin/$(TARGET).hex bin/$(TARGET).eep bin/$(TARGET).cof bin/$(TARGET).elf \
+	@$(REMOVE) bin/$(TARGET).hex bin/$(TARGET).eep bin/$(TARGET).cof bin/$(TARGET).elf \
 	bin/$(TARGET).map bin/$(TARGET).sym bin/$(TARGET).lss bin/$(TARGET).c bin/core.a \
 	$(OBJ) $(LST) $(SRC:.c=.s) $(SRC:.c=.d) $(CXXSRC:.cpp=.s) $(CXXSRC:.cpp=.d)
 
