@@ -38,11 +38,25 @@
 
 ###############################################################################
 #
-#      project specific settings: WEE!
+#      project specific settings:
 #
 TARGET			= main
-ARDUINO_VERSION		= 0011
-INSTALL_DIR		= /home/icarus75/arduino/arduino-$(ARDUINO_VERSION)
+#
+# Predefine the TYPE and SENSORx C macros in main.h via this Makefile.
+# Override the defaults on the command line by typing:
+# make TYPE=xxxx SENSOR0=yyyy ...
+#
+DBG = 0
+#
+TYPE = 2300501
+METERCONST= 5508
+#
+SENSOR0 = 0123456789abcdef0123456789abcde0
+SENSOR1 = 0123456789abcdef0123456789abcde1
+SENSOR2 = 0123456789abcdef0123456789abcde2
+SENSOR3 = 0123456789abcdef0123456789abcde3
+#
+CEXTRA = -D DBG=$(DBG) -D TYPE=$(TYPE) -D METERCONST=$(METERCONST) -D 'SENSOR0="$(SENSOR0)"' -D 'SENSOR1="$(SENSOR1)"' -D 'SENSOR2="$(SENSOR2)"' -D 'SENSOR3="$(SENSOR3)"'
 ###############################################################################
 
 
@@ -51,7 +65,7 @@ INSTALL_DIR		= /home/icarus75/arduino/arduino-$(ARDUINO_VERSION)
 #      serial uploader settings
 #
 PORT			= /dev/ttyUSB*
-UPLOAD_RATE		= 19200 
+UPLOAD_RATE		= 19200
 AVRDUDE_PROGRAMMER	= usbtiny
 #
 # HINT: If you want to use the automatic reset feature which comes with Arduino 
@@ -80,21 +94,6 @@ AVRDUDE_PROGRAMMER	= usbtiny
 #
 MCU	= atmega48
 F_CPU	= 1000000
-#
-# Predefine the TYPE and SENSORx C macros in main.h via this Makefile.
-# Override the defaults on the command line by typing:
-# make TYPE=xxxx SENSOR0=yyyy ...
-#
-DBG = 0
-#
-TYPE = 2300501
-#
-SENSOR0 = 0123456789abcdef0123456789abcde0
-SENSOR1 = 0123456789abcdef0123456789abcde1
-SENSOR2 = 0123456789abcdef0123456789abcde2
-SENSOR3 = 0123456789abcdef0123456789abcde3
-#
-CEXTRA = -D DBG=$(DBG) -D TYPE=$(TYPE) -D 'SENSOR0="$(SENSOR0)"' -D 'SENSOR1="$(SENSOR1)"' -D 'SENSOR2="$(SENSOR2)"' -D 'SENSOR3="$(SENSOR3)"'
 #####################################################################################
 
 #####################################################################################
@@ -140,6 +139,7 @@ LDFLAGS = -lm
 
 # Programming support using avrdude. Settings and variables.
 AVRDUDE_PORT = $(PORT)
+AVRDUDE_WRITE_FUSES= -U lfuse:w:0x6E:m -U hfuse:w:0xD6:m -U efuse:w:0x1:m
 AVRDUDE_WRITE_FLASH = -U flash:w:bin/$(TARGET).hex
 AVRDUDE_WRITE_EEPROM = -U eeprom:w:bin/$(TARGET).eep
 AVRDUDE_FLAGS = -p $(MCU) -c $(AVRDUDE_PROGRAMMER) -b $(UPLOAD_RATE)
@@ -152,7 +152,7 @@ OBJDUMP = $(AVR_TOOLS_PATH)/avr-objdump
 AR  = $(AVR_TOOLS_PATH)/avr-ar
 SIZE = $(AVR_TOOLS_PATH)/avr-size
 NM = $(AVR_TOOLS_PATH)/avr-nm
-AVRDUDE = $(INSTALL_DIR)/hardware/tools/avrdude
+AVRDUDE = avrdude
 REMOVE = rm -f
 MV = mv -f
 
@@ -175,8 +175,8 @@ all: bin_files build sizeafter
 build: elf hex eep
 
 bin_files: $(TARGET).c
-	test -d bin || mkdir bin
-	cp $(TARGET).c  bin/$(TARGET).c
+	@test -d bin || mkdir bin
+	@cp $(TARGET).c  bin/$(TARGET).c
 
 elf: bin/$(TARGET).elf
 hex: bin/$(TARGET).hex
@@ -186,11 +186,9 @@ sym: bin/$(TARGET).sym
 
 # Program the device.
 upload: bin/$(TARGET).hex
-	sudo $(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
-#	sudo $(AVRDUDE) -c usbtiny -p atmega168 -b $(UPLOAD_RATE) -U lock:w:0x0F:m
+	@$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
 
-
-	# Display size of file.
+# Display size of file.
 HEXSIZE = $(SIZE) --target=$(FORMAT) bin/$(TARGET).hex
 ELFSIZE = $(SIZE)  bin/$(TARGET).elf
 sizebefore:
@@ -218,10 +216,10 @@ extcoff: $(TARGET).elf
 .SUFFIXES: .elf .hex .eep .lss .sym
 
 .elf.hex:
-	$(OBJCOPY) -O $(FORMAT) -R .eeprom $< $@
+	@$(OBJCOPY) -O $(FORMAT) -R .eeprom $< $@
 
 .elf.eep:
-	$(OBJCOPY) -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+	@$(OBJCOPY) -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 	--change-section-lma .eeprom=0 -O $(FORMAT) $< $@
 
 # Create extended listing file from ELF output file.
@@ -234,20 +232,18 @@ extcoff: $(TARGET).elf
 
 	# Link: create ELF output file from library.
 bin/$(TARGET).elf: $(TARGET).c bin/core.a 
-	$(CC) $(ALL_CFLAGS) -o $@ bin/$(TARGET).c -L. bin/core.a $(LDFLAGS)
+	@$(CC) $(ALL_CFLAGS) -o $@ bin/$(TARGET).c -L. bin/core.a $(LDFLAGS)
 
 bin/core.a: $(OBJ)
-	@for i in $(OBJ); do echo $(AR) rcs bin/core.a $$i; $(AR) rcs bin/core.a $$i; done
-
-
+	@for i in $(OBJ); do $(AR) rcs bin/core.a $$i; done
 
 # Compile: create object files from C++ source files.
 .cpp.o:
-	$(CXX) -c $(ALL_CXXFLAGS) $< -o $@ 
+	@$(CXX) -c $(ALL_CXXFLAGS) $< -o $@ 
 
 # Compile: create object files from C source files.
 .c.o:
-	$(CC) -c $(ALL_CFLAGS) $< -o $@ 
+	@$(CC) -c $(ALL_CFLAGS) $< -o $@ 
 
 
 # Compile: create assembler files from C source files.
