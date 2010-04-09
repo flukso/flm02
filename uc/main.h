@@ -42,6 +42,10 @@
   #error "SENSOR3 not defined"
 #endif
 
+#ifndef PHASE
+  #error "PHASE not defined"
+#endif
+
 #ifndef METERCONST
   #error "METERCONST not defined"
 #endif

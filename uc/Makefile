@@ -44,11 +44,12 @@ TARGET = main
 #
 # Predefine the TYPE and SENSORx C macros in main.h via this Makefile.
 # Override the defaults on the command line by typing:
-# make TYPE=xxxx SENSOR0=yyyy ...
+# make PHASE=x METERCONST=y SENSOR0=z ...
 #
 DBG = 0
 #
 TYPE = 2300501
+PHASE = 1
 METERCONST= 5508
 #
 SENSOR0 = 0123456789abcdef0123456789abcde0
@@ -56,7 +57,7 @@ SENSOR1 = 0123456789abcdef0123456789abcde1
 SENSOR2 = 0123456789abcdef0123456789abcde2
 SENSOR3 = 0123456789abcdef0123456789abcde3
 #
-CEXTRA = -D DBG=$(DBG) -D METERCONST=$(METERCONST) -D 'SENSOR0="$(SENSOR0)"' -D 'SENSOR1="$(SENSOR1)"' -D 'SENSOR2="$(SENSOR2)"' -D 'SENSOR3="$(SENSOR3)"'
+CEXTRA = -D DBG=$(DBG) -D PHASE=$(PHASE) -D METERCONST=$(METERCONST) -D 'SENSOR0="$(SENSOR0)"' -D 'SENSOR1="$(SENSOR1)"' -D 'SENSOR2="$(SENSOR2)"' -D 'SENSOR3="$(SENSOR3)"'
 ###############################################################################
 
 

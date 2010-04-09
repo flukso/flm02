@@ -79,8 +79,11 @@ ISR(TIMER2_COMPA_vect) {
 #endif
   // read ADC result
   // add to nano(Wh) counter
+#if PHASE == 2
+  MacU16X16to32(aux[0].nano, METERCONST, ADC);
+#else
   MacU16X16to32(aux[muxn].nano, METERCONST, ADC);
-
+#endif
   if (aux[muxn].nano > WATT) {
      measurements[muxn].value++;
      aux[muxn].pulse = true;
