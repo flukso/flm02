@@ -1,0 +1,8 @@
+This repository holds the code for the community metering project called Flukso and is split into following subsections:
+- web/drupal: theme and modules that turn a stock Drupal installation into www.flukso.net
+- web/api: our Erlang/Webmachine-based JSON/REST code for api.flukso.net
+- openwrt: contains openwrt packages/patches/make menuconfig to tweak a stock openwrt kamikaze build into a Fluksometer
+- uc: the microcontroller code that is loaded onto the sensor board's AVR.
+
+Enjoy!
+Bart.
