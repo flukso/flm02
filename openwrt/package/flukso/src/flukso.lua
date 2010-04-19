@@ -79,12 +79,14 @@ function buffer(child, interval)
   return coroutine.create(function(meter, timestamp, value)
     local measurements = data.new()
     local threshold = os.time() + interval
+    local old_timestamp = 0
 
     while true do
-      if meter ~= nil and timestamp > 1234567890 then measurements:add(meter, timestamp, value) end
+      if meter ~= nil and timestamp > math.max(1234567890, old_timestamp) then measurements:add(meter, timestamp, value) end
       if timestamp > threshold and next(measurements) then  --checking whether table is not empty
         coroutine.resume(child, measurements)
         threshold = timestamp + interval
+        old_timestamp = timestamp
       end
       meter, timestamp, value = coroutine.yield()
     end
