@@ -35,10 +35,12 @@ local param = {xmlrpcaddress = 'http://logger.flukso.net/xmlrpc',
                pwraddress    = '255.255.255.255',
                pwrport       = 26488,
                pwrenable     = false,
+               pwrinterval   = 1,
+               pwrdir        = '/tmp/sensor',
                device        = '/dev/ttyS0',
                interval      = 300}
 
-function receive(child, device, pwraddress, pwrport, pwrenable)
+function dispatch(e_child, p_child, device, pwraddress, pwrport, pwrenable)
   return coroutine.create(function()
     -- open the connection to the syslog deamon, specifying our identity
     posix.openlog('flukso')
@@ -60,11 +62,15 @@ function receive(child, device, pwraddress, pwrport, pwrenable)
         os.execute('gpioctl set 4 > /dev/null')
 
         local meter, value = line:sub(5, 36), tonumber(line:sub(38))
-        coroutine.resume(child, meter, os.time(), value)
+        coroutine.resume(e_child, meter, os.time(), value)
+
       elseif line:sub(1, 3) == 'pwr' and line:len() == 47 and line:find(':') == 37 then -- user data + additional data integrity checks
-        if pwrenable then udp:send(line) end
+        local meter, value = line:sub(5, 36), tonumber(line:sub(38))
+        if pwrenable then coroutine.resume(p_child, meter, os.time(), value) end
+
       elseif line:sub(1, 3) == 'msg' then -- control data
         posix.syslog(31, 'received message from '..device..': '..line:sub(5))
+
       else
         posix.syslog(27, 'input error on '..device..': '..line)
       end
@@ -142,24 +148,51 @@ function gc(child)
   end)
 end
 
-function debug()
+function polish(child, cutoff)
   return coroutine.create(function(measurements)
     while true do
-      dbg.vardump(measurements)
+      measurements:fill()
+      measurements:truncate(cutoff)
+      coroutine.resume(child, measurements)
       measurements = coroutine.yield()
     end
   end)
 end
 
--- receive: listen to the serial port for incoming pulses
+function publish(child, dir)
+  return coroutine.create(function(measurements)
+    os.execute('mkdir -p ' .. dir .. ' > /dev/null')
+    while true do
+      local measurements_json = measurements:json_encode()
+      for meter, json in measurements_json do
+        io.output(dir .. '/' .. meter)
+        io.write(json)
+        io.close()
+      end
+      coroutine.resume(child, measurements)
+      measurements = coroutine.yield()
+    end
+  end)
+end
+
+function debug(child)
+  return coroutine.create(function(measurements)
+    while true do
+      dbg.vardump(measurements)
+      if child then coroutine.resume(child, measurements) end
+      measurements = coroutine.yield()
+    end
+  end)
+end
+
+-- dispatch: listen to the serial port for incoming pulses
 -- buffer: buffer the pulses in a measurement object
 -- filter: sweep recursively to filter all redundant entries
 -- send: report the measurements to the server via xmlrpc
 -- gc: perform a full garbage collection cycle
 -- debug: dump measurements table to stdout
 
-local chain = receive(
-                buffer(
+local e_chain = buffer(
                   filter(
                     filter(
                       filter(
@@ -172,6 +205,15 @@ local chain = receive(
                     , 900, 7200)
                   , 60, 0)
                 , param.interval)
-              , param.device, param.pwraddress, param.pwrport, param.pwrenable)
+
+local p_chain = buffer(
+                  polish(
+                    publish(
+                      debug()
+                    , param.pwrdir)
+                  , 60)
+                , param.pwrinterval)
+
+local chain = dispatch(e_chain, p_chain, param.device, param.pwraddress, param.pwrport, param.pwrenable)
 
 coroutine.resume(chain)

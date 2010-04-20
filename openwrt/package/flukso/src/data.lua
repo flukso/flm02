@@ -1,6 +1,7 @@
 --
 -- data.lua: property and methods for manipulating incoming measurements
 -- Copyright (c) 2009 jokamajo.org
+--               2010 flukso.net
 --
 -- This program is free software; you can redistribute it and/or
 -- modify it under the terms of the GNU General Public License
@@ -45,10 +46,7 @@ end
 
 function filter(M, span, offset)
   for meter, T in pairs(M) do
-    local H = {} -- helper table, an indexed array containing all the measurement's timestamps
-    for timestamp in pairs(T) do H[#H+1] = timestamp end
-    table.sort(H) -- sort in ascending order, oldest timestamps will be treated first
-
+    local H = timestamps(T)
     local i = 2
     while not (H[i+1] == nil or H[i] > os.time()-offset) do
       if math.floor(H[i-1]/span) == math.floor(H[i]/span) and math.floor(H[i]/span) == math.floor(H[i+1]/span) then
@@ -59,4 +57,42 @@ function filter(M, span, offset)
       end
     end
   end
+end
+
+function truncate(M, cutoff)
+  for meter, T in pairs(M) do
+    local H = timestamps(T)
+    for i = H[1], H[#H]-60 do
+      T[i] = nil
+    end
+  end
+end
+
+function fill(M)
+  for meter, T in pairs(M) do
+    local H = timestamps(T)
+    for i = H[1]+1, H[#H]-1 do
+      if T[i] == nil then T[i] = T[i-1] end
+    end
+  end
+end
+
+function json_encode(M)
+  J = {}
+  for meter, T in pairs(M) do
+    J[meter] = '['
+    local H = timestamps(T)
+    for i = H[1], H[#H] do
+      J[meter] = J[meter] .. '[' .. T[i]  .. ']'
+    end
+    J[meter] = J[meter] .. ']'
+  end
+  return J
+end
+
+local function timestamps(T)
+  local H = {} -- helper table, an indexed array containing all the measurement's timestamps
+  for timestamp in pairs(T) do H[#H+1] = timestamp end
+  table.sort(H) -- sort in ascending order, oldest timestamps will be treated first
+  return H
 end
