@@ -35,7 +35,7 @@ local param = {xmlrpcaddress = 'http://logger.flukso.net/xmlrpc',
                pwraddress    = '255.255.255.255',
                pwrport       = 26488,
                pwrenable     = false,
-               pwrinterval   = 1,
+               pwrinterval   = 0,
                pwrdir        = '/tmp/sensor',
                device        = '/dev/ttyS0',
                interval      = 300}
@@ -164,7 +164,7 @@ function publish(child, dir)
     os.execute('mkdir -p ' .. dir .. ' > /dev/null')
     while true do
       local measurements_json = measurements:json_encode()
-      for meter, json in measurements_json do
+      for meter, json in pairs(measurements_json) do
         io.output(dir .. '/' .. meter)
         io.write(json)
         io.close()

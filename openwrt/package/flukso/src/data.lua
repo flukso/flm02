@@ -20,11 +20,11 @@
 -- $Id$
 --
 
-local os, math, table =
-      os, math, table
+local os, math, table, string =
+      os, math, table, string
 
-local getfenv, setmetatable, pairs =
-      getfenv, setmetatable, pairs
+local getfenv, setmetatable, pairs, ipairs =
+      getfenv, setmetatable, pairs, ipairs
 
 module (...)
 local modenv = getfenv() -- module environment
@@ -78,19 +78,19 @@ function fill(M)
 end
 
 function json_encode(M)
-  J = {}
+  local J = {}
   for meter, T in pairs(M) do
     J[meter] = '['
     local H = timestamps(T)
-    for i = H[1], H[#H] do
-      J[meter] = J[meter] .. '[' .. T[i]  .. ']'
+    for k, timestamp in ipairs(H) do
+      J[meter] = J[meter] .. '[' .. timestamp .. ',' .. T[timestamp]  .. '],'
     end
-    J[meter] = J[meter] .. ']'
+    J[meter] = string.sub(J[meter], 1, -2) .. ']'
   end
   return J
 end
 
-local function timestamps(T)
+function timestamps(T)
   local H = {} -- helper table, an indexed array containing all the measurement's timestamps
   for timestamp in pairs(T) do H[#H+1] = timestamp end
   table.sort(H) -- sort in ascending order, oldest timestamps will be treated first
