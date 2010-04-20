@@ -29,6 +29,14 @@ local getfenv, setmetatable, pairs, ipairs =
 module (...)
 local modenv = getfenv() -- module environment
 
+-- private
+local function timestamps(T)
+  local H = {} -- helper table, an indexed array containing all the measurement's timestamps
+  for timestamp in pairs(T) do H[#H+1] = timestamp end
+  table.sort(H) -- sort in ascending order, oldest timestamps will be treated first
+  return H
+end
+
 function new()
   return setmetatable({}, {__index = modenv})
 end
@@ -88,11 +96,4 @@ function json_encode(M)
     J[meter] = string.sub(J[meter], 1, -2) .. ']'
   end
   return J
-end
-
-function timestamps(T)
-  local H = {} -- helper table, an indexed array containing all the measurement's timestamps
-  for timestamp in pairs(T) do H[#H+1] = timestamp end
-  table.sort(H) -- sort in ascending order, oldest timestamps will be treated first
-  return H
 end
