@@ -32,26 +32,19 @@ dbg  = require 'flukso.dbg'
 local param = {xmlrpcaddress = 'http://logger.flukso.net/xmlrpc',
                xmlrpcversion = '1',
                xmlrpcmethod  = 'logger.measurementAdd',
-               pwraddress    = '255.255.255.255',
-               pwrport       = 26488,
                pwrenable     = false,
                pwrinterval   = 0,
                pwrdir        = '/tmp/sensor',
                device        = '/dev/ttyS0',
                interval      = 300}
 
-function dispatch(e_child, p_child, device, pwraddress, pwrport, pwrenable)
+function dispatch(e_child, p_child, device, pwrenable)
   return coroutine.create(function()
     -- open the connection to the syslog deamon, specifying our identity
     posix.openlog('flukso')
     posix.syslog(30, 'starting the flukso deamon')
     posix.syslog(30, 'listening for pulses on '..device..'...')
 
-    -- open a UDP socket for transmitting the pwr messages
-    local udp = assert(socket.udp())
-    udp:setoption('broadcast', true)
-    assert(udp:setpeername(pwraddress, pwrport))
-                
     for line in io.lines(device) do
       if line:sub(1, 3) == 'pls' and line:len() == 47 and line:find(':') == 37 then -- user data + additional data integrity checks
         posix.syslog(30, 'received pulse from '..device..': '..line:sub(5))
@@ -84,7 +77,7 @@ end
 function buffer(child, interval)
   return coroutine.create(function(meter, timestamp, value)
     local measurements = data.new()
-    local threshold = os.time() + interval
+    local threshold = timestamp + interval
     local old_timestamp = 0
 
     while true do
@@ -214,6 +207,6 @@ local p_chain = buffer(
                   , 60)
                 , param.pwrinterval)
 
-local chain = dispatch(e_chain, p_chain, param.device, param.pwraddress, param.pwrport, param.pwrenable)
+local chain = dispatch(e_chain, p_chain, param.device, param.pwrenable)
 
 coroutine.resume(chain)
