@@ -11,7 +11,8 @@
         {rrdSensor,
          rrdTime,
          rrdFactor,
-         token}).
+         token,
+         jsonpCallback}).
 
 init([]) -> 
     {ok, undefined}.
@@ -19,16 +20,17 @@ init([]) ->
 allowed_methods(ReqData, State) ->
     {['GET'], ReqData, State}.
 
-malformed_request(ReqData, _) ->
+malformed_request(ReqData, _State) ->
     {RrdSensor, ValidSensor} = rrd_sensor(wrq:path_info(sensor, ReqData)),
     {RrdTime, ValidInterval} = rrd_time(wrq:get_qs_value("interval", ReqData)),
     {RrdFactor, ValidUnit} = rrd_factor(wrq:get_qs_value("unit", ReqData)),
     {Token, ValidToken} = rrd_sensor(wrq:get_req_header("X-Token", ReqData)),
+    {JsonpCallback, ValidJsonpCallback} = jsonp_callback(wrq:get_qs_value("jsonp_callback", ReqData)),
 
-    State = #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor, token = Token},
+    State = #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor, token = Token, jsonpCallback = JsonpCallback},
 
-    {case {ValidSensor, ValidInterval, ValidUnit, ValidToken}  of
-	{true, true, true, true} -> false;
+    {case {ValidSensor, ValidInterval, ValidUnit, ValidToken, ValidJsonpCallback}  of
+	{true, true, true, true, true} -> false;
 	_ -> true
      end, 
     ReqData, State}.
@@ -38,14 +40,14 @@ is_authorized(ReqData, #state{rrdSensor = RrdSensor, token = Token} = State) ->
 
     {case mysql:get_result_rows(Result) of
         [[62]] -> true;
-        _ -> "access refused" 
+        _Permission -> "access refused" 
     end,
     ReqData, State}.
 
 content_types_provided(ReqData, State) -> 
     {[{"application/json", to_json}], ReqData, State}.
 
-to_json(ReqData, #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor} = State) -> 
+to_json(ReqData, #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor, jsonpCallback = JsonpCallback} = State) -> 
     case wrq:path_info(interval, ReqData) of
         "night"   -> Path = "var/data/night/";
         _Interval -> Path = "var/data/base/"
@@ -56,8 +58,12 @@ to_json(ReqData, #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = Rr
             Filtered = [re:split(X, "[:][ ]", [{return,list}]) || [X] <- Response, string:str(X, ":") == 11],
             Datapoints = [[list_to_integer(X), round(list_to_float(Y) * RrdFactor)] || [X, Y] <- Filtered, string:len(Y) /= 3],
             Nans = [[list_to_integer(X), list_to_binary(Y)] || [X, Y] <- Filtered, string:len(Y) == 3],
-            Final = lists:merge(Datapoints, Nans),
-            {mochijson2:encode(Final), ReqData, State};
+            Final = mochijson2:encode(lists:merge(Datapoints, Nans)),
+            {case JsonpCallback of
+                undefined -> Final;
+                _ -> [JsonpCallback, "(", Final, ");"]
+             end,
+            ReqData, State};
 
         {error, _Reason} ->
             {{halt, 404}, ReqData, State}
@@ -92,3 +98,13 @@ rrd_factor(Unit) ->
         {_Unit, RrdFactor} -> {RrdFactor, true}
     end.
 
+jsonp_callback(undefined) ->
+    {undefined, true};
+
+jsonp_callback(JsonpCallback) ->
+    Length = string:len(JsonpCallback),
+
+    case re:run(JsonpCallback, "[0-9a-zA-Z_]+", []) of
+        {match, [{0, Length}]} -> {JsonpCallback, true};
+        _ -> {false, false}
+    end.
