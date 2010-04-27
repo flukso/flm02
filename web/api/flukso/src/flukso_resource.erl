@@ -24,7 +24,7 @@ malformed_request(ReqData, _State) ->
     {RrdSensor, ValidSensor} = rrd_sensor(wrq:path_info(sensor, ReqData)),
     {RrdTime, ValidInterval} = rrd_time(wrq:get_qs_value("interval", ReqData)),
     {RrdFactor, ValidUnit} = rrd_factor(wrq:get_qs_value("unit", ReqData)),
-    {Token, ValidToken} = rrd_sensor(wrq:get_req_header("X-Token", ReqData)),
+    {Token, ValidToken} = token(wrq:get_req_header("X-Token", ReqData), wrq:get_qs_value("token", ReqData)),
     {JsonpCallback, ValidJsonpCallback} = jsonp_callback(wrq:get_qs_value("jsonp_callback", ReqData)),
 
     State = #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor, token = Token, jsonpCallback = JsonpCallback},
@@ -98,9 +98,17 @@ rrd_factor(Unit) ->
         {_Unit, RrdFactor} -> {RrdFactor, true}
     end.
 
+token(undefined, undefined) ->
+    {false, false};
+token(Token, undefined) ->
+    rrd_sensor(Token);
+token(undefined, Token) ->
+    rrd_sensor(Token);
+token(_, _) ->
+    {false, false}.
+
 jsonp_callback(undefined) ->
     {undefined, true};
-
 jsonp_callback(JsonpCallback) ->
     Length = string:len(JsonpCallback),
 
