@@ -21,11 +21,11 @@ allowed_methods(ReqData, State) ->
     {['GET'], ReqData, State}.
 
 malformed_request(ReqData, _State) ->
-    {RrdSensor, ValidSensor} = rrd_sensor(wrq:path_info(sensor, ReqData)),
-    {RrdTime, ValidInterval} = rrd_time(wrq:get_qs_value("interval", ReqData)),
-    {RrdFactor, ValidUnit} = rrd_factor(wrq:get_qs_value("unit", ReqData)),
-    {Token, ValidToken} = token(wrq:get_req_header("X-Token", ReqData), wrq:get_qs_value("token", ReqData)),
-    {JsonpCallback, ValidJsonpCallback} = jsonp_callback(wrq:get_qs_value("jsonp_callback", ReqData)),
+    {RrdSensor, ValidSensor} = check_sensor(wrq:path_info(sensor, ReqData)),
+    {RrdTime, ValidInterval} = check_time(wrq:get_qs_value("interval", ReqData)),
+    {RrdFactor, ValidUnit} = check_factor(wrq:get_qs_value("unit", ReqData)),
+    {Token, ValidToken} = check_token(wrq:get_req_header("X-Token", ReqData), wrq:get_qs_value("token", ReqData)),
+    {JsonpCallback, ValidJsonpCallback} = check_jsonp_callback(wrq:get_qs_value("jsonp_callback", ReqData)),
 
     State = #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor, token = Token, jsonpCallback = JsonpCallback},
 
@@ -69,13 +69,14 @@ to_json(ReqData, #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = Rr
             {{halt, 404}, ReqData, State}
     end.
 
-rrd_sensor(Sensor) ->
+%% internal functions
+check_sensor(Sensor) ->
     case re:run(Sensor, "[0-9a-f]+", []) of 
         {match, [{0,32}]} -> {Sensor, true};
         _ -> {false, false}
     end.
 
-rrd_time(Interval) ->
+check_time(Interval) ->
     Intervals = [{"hour", "end-1h"},
                  {"day", "end-1d"},
                  {"month", "end-30d"},
@@ -87,7 +88,7 @@ rrd_time(Interval) ->
         {_Interval, RrdTime} -> {RrdTime, true}
     end.
 
-rrd_factor(Unit) ->
+check_factor(Unit) ->
     Units = [{"watt", 3600},
              {"kwhperyear", 31536},
              {"eurperyear", 5676},
@@ -98,18 +99,18 @@ rrd_factor(Unit) ->
         {_Unit, RrdFactor} -> {RrdFactor, true}
     end.
 
-token(undefined, undefined) ->
+check_token(undefined, undefined) ->
     {false, false};
-token(Token, undefined) ->
-    rrd_sensor(Token);
-token(undefined, Token) ->
-    rrd_sensor(Token);
-token(_, _) ->
+check_token(Token, undefined) ->
+    check_sensor(Token);
+check_token(undefined, Token) ->
+    check_sensor(Token);
+check_token(_, _) ->
     {false, false}.
 
-jsonp_callback(undefined) ->
+check_jsonp_callback(undefined) ->
     {undefined, true};
-jsonp_callback(JsonpCallback) ->
+check_jsonp_callback(JsonpCallback) ->
     Length = string:len(JsonpCallback),
 
     case re:run(JsonpCallback, "[0-9a-zA-Z_]+", []) of
