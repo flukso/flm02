@@ -21,6 +21,7 @@ allowed_methods(ReqData, State) ->
     {['GET'], ReqData, State}.
 
 malformed_request(ReqData, _State) ->
+    {_Version, ValidVersion} = check_version(wrq:get_req_header("X-Version", ReqData), wrq:get_qs_value("version", ReqData)),
     {RrdSensor, ValidSensor} = check_sensor(wrq:path_info(sensor, ReqData)),
     {RrdTime, ValidInterval} = check_time(wrq:get_qs_value("interval", ReqData)),
     {RrdFactor, ValidUnit} = check_unit(wrq:get_qs_value("unit", ReqData)),
@@ -29,8 +30,8 @@ malformed_request(ReqData, _State) ->
 
     State = #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor, token = Token, jsonpCallback = JsonpCallback},
 
-    {case {ValidSensor, ValidInterval, ValidUnit, ValidToken, ValidJsonpCallback}  of
-	{true, true, true, true, true} -> false;
+    {case {ValidVersion, ValidSensor, ValidInterval, ValidUnit, ValidToken, ValidJsonpCallback}  of
+	{true, true, true, true, true, true} -> false;
 	_ -> true
      end, 
     ReqData, State}.
@@ -70,6 +71,18 @@ to_json(ReqData, #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = Rr
     end.
 
 %% internal functions
+check_version(undefined, undefined) ->
+    {false, false};
+check_version(Version, undefined) ->
+    case Version of
+        "1.0" -> {Version, true};
+        _ -> {false, false}
+    end;
+check_version(undefined, Version) ->
+    check_version(Version, undefined);
+check_version(_, _) ->
+    {false, false}.
+
 check_sensor(Sensor) ->
     case re:run(Sensor, "[0-9a-f]+", []) of 
         {match, [{0,32}]} -> {Sensor, true};
