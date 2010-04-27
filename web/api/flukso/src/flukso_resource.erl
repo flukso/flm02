@@ -48,7 +48,7 @@ content_types_provided(ReqData, State) ->
     {[{"application/json", to_json}], ReqData, State}.
 
 to_json(ReqData, #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor, jsonpCallback = JsonpCallback} = State) -> 
-    case wrq:path_info(interval, ReqData) of
+    case wrq:get_qs_value("interval", ReqData) of
         "night"   -> Path = "var/data/night/";
         _Interval -> Path = "var/data/base/"
     end,
