@@ -23,7 +23,7 @@ allowed_methods(ReqData, State) ->
 malformed_request(ReqData, _State) ->
     {RrdSensor, ValidSensor} = check_sensor(wrq:path_info(sensor, ReqData)),
     {RrdTime, ValidInterval} = check_time(wrq:get_qs_value("interval", ReqData)),
-    {RrdFactor, ValidUnit} = check_factor(wrq:get_qs_value("unit", ReqData)),
+    {RrdFactor, ValidUnit} = check_unit(wrq:get_qs_value("unit", ReqData)),
     {Token, ValidToken} = check_token(wrq:get_req_header("X-Token", ReqData), wrq:get_qs_value("token", ReqData)),
     {JsonpCallback, ValidJsonpCallback} = check_jsonp_callback(wrq:get_qs_value("jsonp_callback", ReqData)),
 
@@ -88,7 +88,7 @@ check_time(Interval) ->
         {_Interval, RrdTime} -> {RrdTime, true}
     end.
 
-check_factor(Unit) ->
+check_unit(Unit) ->
     Units = [{"watt", 3600},
              {"kwhperyear", 31536},
              {"eurperyear", 5676},
