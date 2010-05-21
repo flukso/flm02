@@ -9,7 +9,8 @@
 
 -record(state,
         {rrdSensor,
-         rrdTime,
+         rrdStart,
+         rrdEnd,
          rrdFactor,
          token,
          jsonpCallback}).
@@ -23,14 +24,14 @@ allowed_methods(ReqData, State) ->
 malformed_request(ReqData, _State) ->
     {_Version, ValidVersion} = check_version(wrq:get_req_header("X-Version", ReqData), wrq:get_qs_value("version", ReqData)),
     {RrdSensor, ValidSensor} = check_sensor(wrq:path_info(sensor, ReqData)),
-    {RrdTime, ValidInterval} = check_time(wrq:get_qs_value("interval", ReqData)),
+    {RrdStart, RrdEnd, ValidTime} = check_time(wrq:get_qs_value("interval", ReqData), wrq:get_qs_value("start", ReqData), wrq:get_qs_value("end", ReqData)),
     {RrdFactor, ValidUnit} = check_unit(wrq:get_qs_value("unit", ReqData)),
     {Token, ValidToken} = check_token(wrq:get_req_header("X-Token", ReqData), wrq:get_qs_value("token", ReqData)),
     {JsonpCallback, ValidJsonpCallback} = check_jsonp_callback(wrq:get_qs_value("jsonp_callback", ReqData)),
 
-    State = #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor, token = Token, jsonpCallback = JsonpCallback},
+    State = #state{rrdSensor = RrdSensor, rrdStart = RrdStart, rrdEnd = RrdEnd, rrdFactor = RrdFactor, token = Token, jsonpCallback = JsonpCallback},
 
-    {case {ValidVersion, ValidSensor, ValidInterval, ValidUnit, ValidToken, ValidJsonpCallback}  of
+    {case {ValidVersion, ValidSensor, ValidTime, ValidUnit, ValidToken, ValidJsonpCallback}  of
 	{true, true, true, true, true, true} -> false;
 	_ -> true
      end, 
@@ -48,13 +49,15 @@ is_authorized(ReqData, #state{rrdSensor = RrdSensor, token = Token} = State) ->
 content_types_provided(ReqData, State) -> 
     {[{"application/json", to_json}], ReqData, State}.
 
-to_json(ReqData, #state{rrdSensor = RrdSensor, rrdTime = RrdTime, rrdFactor = RrdFactor, jsonpCallback = JsonpCallback} = State) -> 
+to_json(ReqData, #state{rrdSensor = RrdSensor, rrdStart = RrdStart, rrdEnd = RrdEnd, rrdFactor = RrdFactor, jsonpCallback = JsonpCallback} = State) -> 
     case wrq:get_qs_value("interval", ReqData) of
         "night"   -> Path = "var/data/night/";
         _Interval -> Path = "var/data/base/"
     end,
 
-    case erlrrd:fetch(erlrrd:c([[Path, [RrdSensor|".rrd"]], "AVERAGE", ["-s",RrdTime]])) of
+%% debugging: io:format("~s~n", [erlrrd:c([[Path, [RrdSensor|".rrd"]], "AVERAGE", ["-s", RrdStart], ["-e", RrdEnd]])]),
+
+    case erlrrd:fetch(erlrrd:c([[Path, [RrdSensor|".rrd"]], "AVERAGE", ["-s", RrdStart], ["-e", RrdEnd]])) of
         {ok, Response} ->
             Filtered = [re:split(X, "[:][ ]", [{return,list}]) || [X] <- Response, string:str(X, ":") == 11],
             Datapoints = [[list_to_integer(X), round(list_to_float(Y) * RrdFactor)] || [X, Y] <- Filtered, string:len(Y) /= 3],
@@ -89,7 +92,9 @@ check_sensor(Sensor) ->
         _ -> {false, false}
     end.
 
-check_time(Interval) ->
+check_time(undefined, undefined, undefined) ->
+    {false, false, false};
+check_time(Interval, undefined, undefined) ->
     Intervals = [{"hour", "end-1h"},
                  {"day", "end-1d"},
                  {"month", "end-30d"},
@@ -97,9 +102,18 @@ check_time(Interval) ->
                  {"night", "end-30d"}],
 
     case lists:keyfind(Interval, 1, Intervals) of
-        false -> {false, false};
-        {_Interval, RrdTime} -> {RrdTime, true}
-    end.
+        false -> {false, false, false};
+        {_Interval, Start} -> {Start, "now", true}
+    end;
+check_time(undefined, Start, undefined) ->
+    check_time(undefined, Start, "now");
+check_time(undefined, Start, End) ->
+    case {re:run(Start, "[0-9]+", []), re:run(End, "[0-9a-z]+", [])} of
+        {{match, [{0,_}]}, {match, [{0,_}]}} -> {Start, End, true};
+        _ -> {false, false, false}
+    end;
+check_time(_, _, _) ->
+    {false, false, false}.
 
 check_unit(Unit) ->
     Units = [{"watt", 3600},
