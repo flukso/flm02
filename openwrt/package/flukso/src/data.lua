@@ -88,12 +88,14 @@ end
 function json_encode(M)
   local J = {}
   for meter, T in pairs(M) do
-    J[meter] = '['
     local H = timestamps(T)
+    local SB = {'['} -- use a string buffer for building up the JSON string
     for k, timestamp in ipairs(H) do
-      J[meter] = J[meter] .. '[' .. timestamp .. ',' .. T[timestamp]  .. '],'
+      SB[#SB+1] = '[' .. timestamp .. ',' .. T[timestamp]  .. '],'
     end
-    J[meter] = string.sub(J[meter], 1, -2) .. ']'
+    SB[#SB] = SB[#SB]:sub(1, -2) -- remove the trialing comma from the last entry
+    SB[#SB+1] = ']'
+    J[meter] = table.concat(SB)
   end
   return J
 end
