@@ -32,11 +32,12 @@ dbg  = require 'flukso.dbg'
 local param = {xmlrpcaddress = 'http://logger.flukso.net/xmlrpc',
                xmlrpcversion = '1',
                xmlrpcmethod  = 'logger.measurementAdd',
-               pwrenable     = false,
+               pwrenable     = true,
                pwrinterval   = 0,
                pwrdir        = '/tmp/sensor',
                device        = '/dev/ttyS0',
-               interval      = 300}
+               interval      = 300,
+               dbgenable     = false}
 
 function dispatch(e_child, p_child, device, pwrenable)
   return coroutine.create(function()
@@ -170,10 +171,10 @@ function publish(child, dir)
   end)
 end
 
-function debug(child)
+function debug(child, dbgenable)
   return coroutine.create(function(measurements)
     while true do
-      dbg.vardump(measurements)
+      if dbgenable then dbg.vardump(measurements) end
       if child then coroutine.resume(child, measurements) end
       measurements = coroutine.yield()
     end
@@ -193,7 +194,7 @@ local e_chain = buffer(
                       filter(
                         send(
                           gc(
-                            debug()
+                            debug(nil, param.dbgenable)
                           )
                         , param.xmlrpcaddress, param.xmlrpcversion, param.xmlrpcmethod)
                       , 86400, 172800)
@@ -204,7 +205,7 @@ local e_chain = buffer(
 local p_chain = buffer(
                   polish(
                     publish(
-                      debug()
+                      debug(nil, param.dbgenable)
                     , param.pwrdir)
                   , 60)
                 , param.pwrinterval)
