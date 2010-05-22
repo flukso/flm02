@@ -241,24 +241,30 @@ function _logger_dashboard($type, $function, $interval) {
     case 'hour':
       $data_path = $root_path .'/data/base/';
       $start = 'end-1h';
+      $resolution = 60;
       break;
     case 'day':
       $data_path = $root_path .'/data/base/';
       $start = 'end-1d';
+      $resolution = 900;
       break;
     case 'month':
       $data_path = $root_path .'/data/base/';
       $start = 'end-60d';
+      $resolution = 86400;
       break;
     case 'year':
       $data_path = $root_path .'/data/base/';
       $start = 'end-1y';
+      $resolution = 604800;
       break;
     case 'night':
       $data_path = $root_path .'/data/night/';
       $start = 'end-60d';
+      $resolution = 86400;
       break;
   }
+  $end = ((int) (time() / $resolution)) * $resolution;
 
   $result_me = db_query("SELECT lm.meter, lm.function, lm.unit, lu.private
 	                FROM {logger_meters} lm
@@ -358,7 +364,7 @@ function _logger_dashboard($type, $function, $interval) {
     $TZ = 'TZ="GMT" ';
 
   //insert the TZ prior to launching rrdtool to obtain a proper time conversion
-  $command = $TZ . $root_path .'/rrdtool graph '. $graph_path . $pngid .'.png -s '. $start .
+  $command = $TZ . $root_path .'/rrdtool graph '. $graph_path . $pngid .'.png -s '. $start .' -e '. $end .' -S '. $resolution .
              ' --vertical-label '. $unit .' --lower-limit 0 -w 500 -h 350 -E -X 0 --font LEGEND:8:';
   $command .= $string->def;
   $command .= $string->line;
