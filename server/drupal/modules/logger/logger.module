@@ -77,24 +77,7 @@ function logger_menu() {
     'access callback'     => TRUE,
     'type'                => MENU_CALLBACK,
   );
-  $items['logger/add'] = array(
-    'title'               => 'add this user to the chart',
-    'page callback'       => '_logger_add',
-    'access arguments'    => array('logger'),
-    'type'                => MENU_CALLBACK,
-  );
-  $items['logger/remove'] = array(
-    'title'               => 'remove this user from the chart',
-    'page callback'       => '_logger_remove',
-    'access arguments'    => array('logger'),
-    'type'                => MENU_CALLBACK,
-  );
-  $items['logger/unit'] = array(
-    'title'               => 'change the unit',
-    'page callback'       => '_logger_unit',
-    'access arguments'    => array('logger'),
-    'type'                => MENU_CALLBACK,
-  );
+
   $items['logger/electricity'] = array(
     'title'               => 'electricity',
 //    'page callback'       => '_logger_dashboard',
@@ -102,30 +85,12 @@ function logger_menu() {
     'access callback'     => TRUE,
     'type'                => MENU_DEFAULT_LOCAL_TASK,
   );
-
-/**
-  $items['logger/water'] = array(
-    'title'               => 'water',
-    'page callback'       => '_logger_dashboard',
-    'page arguments'      => array('water', 'main', 'hour'),
-    'access callback'     => TRUE,
-    'type'                => MENU_LOCAL_TASK,
-  );
-  $items['logger/gas'] = array(
-    'title'               => 'gas',
-    'page callback'       => '_logger_dashboard',
-    'page arguments'      => array('gas', 'main', 'hour'),
-    'access callback'     => TRUE,
-    'type'                => MENU_LOCAL_TASK,
-  );
-**/
-
   $items['logger/electricity/hour'] = array(
     'title'               => 'hour',
     'page callback'       => '_logger_dashboard',
     'page arguments'      => array('electricity', 'main', 'hour'),
     'access callback'     => TRUE,
-    'type'                => MENU_LOCAL_TASK,
+    'type'                => MENU_DEFAULT_LOCAL_TASK,
     'weight'              => 0,
   );
   $items['logger/electricity/day'] = array(
@@ -160,6 +125,84 @@ function logger_menu() {
     'type'                => MENU_LOCAL_TASK,
     'weight'              => 4,
   );
+
+  $items['logger/water'] = array(
+    'title'               => 'water',
+    'page callback'       => '_logger_dashboard',
+    'page arguments'      => array('water', 'main', 'hour'),
+    'access callback'     => TRUE,
+    'type'                => MENU_LOCAL_TASK,
+  );
+  $items['logger/water/hour'] = array(
+    'title'               => 'hour',
+    'page callback'       => '_logger_dashboard',
+    'page arguments'      => array('water', 'main', 'hour'),
+    'access callback'     => TRUE,
+    'type'                => MENU_DEFAULT_LOCAL_TASK,
+    'weight'              => 0,
+  );
+  $items['logger/water/day'] = array(
+    'title'               => 'day',
+    'page callback'       => '_logger_dashboard',
+    'page arguments'      => array('water', 'main', 'day'),
+    'access callback'     => TRUE,
+    'type'                => MENU_LOCAL_TASK,
+    'weight'              => 1,
+  );
+  $items['logger/water/month'] = array(
+    'title'               => 'month',
+    'page callback'       => '_logger_dashboard',
+    'page arguments'      => array('water', 'main', 'month'),
+    'access callback'     => TRUE,
+    'type'                => MENU_LOCAL_TASK,
+    'weight'              => 2,
+  );
+  $items['logger/water/year'] = array(
+    'title'               => 'year',
+    'page callback'       => '_logger_dashboard',
+    'page arguments'      => array('water', 'main', 'year'),
+    'access callback'     => TRUE,
+    'type'                => MENU_LOCAL_TASK,
+    'weight'              => 3,
+  );
+  $items['logger/water/night'] = array(
+    'title'               => 'night',
+    'page callback'       => '_logger_dashboard',
+    'page arguments'      => array('water', 'main', 'night'),
+    'access callback'     => TRUE,
+    'type'                => MENU_LOCAL_TASK,
+    'weight'              => 4,
+  );
+
+/**
+  $items['logger/heating'] = array(
+    'title'               => 'heating',
+    'page callback'       => '_logger_dashboard',
+    'page arguments'      => array('heating', 'main', 'hour'),
+    'access callback'     => TRUE,
+    'type'                => MENU_LOCAL_TASK,
+  );
+**/
+
+  $items['logger/add'] = array(
+    'title'               => 'add this user to the chart',
+    'page callback'       => '_logger_add',
+    'access arguments'    => array('logger'),
+    'type'                => MENU_CALLBACK,
+  );
+  $items['logger/remove'] = array(
+    'title'               => 'remove this user from the chart',
+    'page callback'       => '_logger_remove',
+    'access arguments'    => array('logger'),
+    'type'                => MENU_CALLBACK,
+  );
+  $items['logger/unit'] = array(
+    'title'               => 'change the unit',
+    'page callback'       => '_logger_unit',
+    'access arguments'    => array('logger'),
+    'type'                => MENU_CALLBACK,
+  );
+
   $items['installation'] = array(
     'title'               => '',
     'description'         => 'Howto install a Fluksometer',
@@ -167,6 +210,7 @@ function logger_menu() {
     'access callback'     => TRUE,
     'type'                => MENU_CALLBACK,
   );
+
   $items['user/%user_uid_optional/privacy'] = array(
     'title'               => 'Privacy',
     'page callback'       => '_logger_account_privacy',
@@ -301,6 +345,22 @@ function _logger_dashboard($type, $function, $interval) {
         case 'aud':
           $unit = 'aud/year';
           $factor = 5991; // 19 AUDcent/kWh
+          break;
+      }
+
+    case 'water':
+      switch ($meter_me->unit) {
+        case 'lpmin':
+	  $unit = 'liter/min';
+          $factor = 6; // 1 dl/s = 6 l/min
+          break;
+        case 'lpday':
+          $unit = 'liter/day';
+          $factor = 8640; // 1 dl/s = 8640 l/day
+          break;
+        case 'lpyear':
+          $unit = 'liter/year';
+          $factor = 3153600; // 1 dl/s = 3153600 l/min
           break;
       }
   }
