@@ -310,11 +310,11 @@ function _logger_dashboard($type, $function, $interval) {
   }
   $end = ((int) (time() / $resolution)) * $resolution;
 
-  $result_me = db_query("SELECT lm.meter, lm.function, lm.unit, lu.private
-	                FROM {logger_meters} lm
-	                INNER JOIN {logger_users} lu on lm.uid = lu.uid
-	                WHERE lm.uid = %d AND lm.type = '%s'
-	                ORDER BY lm.function", $user->uid, $type);
+  $result_me = db_query("SELECT lm.meter, lm.function, lu.private, lu.electricity_unit, lu.water_unit
+	                 FROM {logger_meters} lm
+	                 INNER JOIN {logger_users} lu on lm.uid = lu.uid
+	                 WHERE lm.uid = %d AND lm.type = '%s'
+	                 ORDER BY lm.function", $user->uid, $type);
 
   $meter_me = db_fetch_object($result_me);
 
@@ -329,27 +329,28 @@ function _logger_dashboard($type, $function, $interval) {
 
   switch ($type) {
     case 'electricity':
-      switch ($meter_me->unit) {
+      switch ($meter_me->electricity_unit) {
         case 'watt':
           $unit = 'watt';
           $factor = 3600; // 1Wh/s = 3600 W
           break;
-        case 'kwh':
+        case 'kwhpyear':
           $unit = 'kWh/year';
           $factor = 31536;
           break;
-        case 'eur':
+        case 'eurpyear':
           $unit = 'euro/year';
           $factor = 5676; // 18 EURcent/kWh
           break;
-        case 'aud':
+        case 'audpyear':
           $unit = 'aud/year';
           $factor = 5991; // 19 AUDcent/kWh
           break;
       }
+      break;
 
     case 'water':
-      switch ($meter_me->unit) {
+      switch ($meter_me->water_unit) {
         case 'lpmin':
 	  $unit = 'liter/min';
           $factor = 6; // 1 dl/s = 6 l/min
@@ -358,9 +359,9 @@ function _logger_dashboard($type, $function, $interval) {
           $unit = 'liter/day';
           $factor = 8640; // 1 dl/s = 8640 l/day
           break;
-        case 'lpyear':
-          $unit = 'liter/year';
-          $factor = 3153600; // 1 dl/s = 3153600 l/min
+        case 'm3pyear':
+          $unit = 'm3/year';
+          $factor = 3154; // 1 dl/s = 3153600 l/year
           break;
       }
   }
@@ -508,10 +509,26 @@ function _logger_remove($rid) {
 
 function _logger_unit($unit) {
   global $user;
-  // hardcoded type and function
-  db_query("UPDATE {logger_meters}
-            SET unit = '%s'
-            WHERE uid = %d AND type = '%s' AND function = '%s'", $unit, $user->uid, 'electricity', 'main');
+
+  switch($unit) {
+    case 'watt':
+    case 'kwhpyear':
+    case 'eurpyear':
+    case 'audpyear':
+      db_query("UPDATE {logger_users}
+                SET electricity_unit = '%s'
+                WHERE uid = %d", $unit, $user->uid);
+      //watchdog('_logger_unit', '%unit | %uid', array('%unit' => $unit, '%uid' => $user->uid), WATCHDOG_DEBUG);
+      break;
+
+    case 'lpmin':
+    case 'lpday':
+    case 'm3pyear':
+      db_query("UPDATE {logger_users}
+                SET water_unit = '%s'
+                WHERE uid = %d", $unit, $user->uid);
+      break;
+  }
 
   _logger_cache_clear('unit');
   $destination = drupal_get_destination();
@@ -606,7 +623,7 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
       $blocks['unit']['region'] = 'right';
       $blocks['unit']['weight'] = 2;
       $blocks['unit']['pages'] = '<front>\nlogger/\nlogger/*';
-      $blocks['unit']['cache'] = BLOCK_CACHE_PER_USER;
+      $blocks['unit']['cache'] = BLOCK_NO_CACHE;
 
       $blocks['posts']['info'] = t('Recent blog posts');
       $blocks['posts']['status'] = TRUE;
@@ -625,31 +642,56 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
         $block['content'] = drupal_get_form('_logger_fluksonians_form');
       }
 
-      elseif ($delta == 'unit' && user_access('logger')) {
-        //hardcoded the type and function parameters for now
-        $unit = db_result(db_query("SELECT unit
-                                    FROM {logger_meters}
-                                    WHERE uid = %d AND type = '%s' AND function = '%s'", $user->uid, 'electricity', 'main'));
+      elseif ($delta == 'unit' && user_access('logger') && strrpos(' ' . $_GET['q'] . '/electricity', 'logger/electricity')) {
+        $unit = db_result(db_query("SELECT electricity_unit
+                                    FROM {logger_users}
+                                    WHERE uid = %d", $user->uid));
 
         $items = array();
         $items[0] = l('watt', 'logger/unit/watt', array('attributes' => array('title' => "switch to watt"), 'query' => $destination, 'alias' => TRUE));
-        $items[1] = l('kWh/year', 'logger/unit/kwh', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination, 'alias' => TRUE));
-        $items[2] = l('euro/year [@ 0.18eur/kWh]', 'logger/unit/eur', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination, 'alias' => TRUE));
-        $items[3] = l('aud/year [@ 0.19aud/kWh]', 'logger/unit/aud', array('attributes' => array('title' => "switch to aud/year"), 'query' => $destination, 'alias' => TRUE));
+        $items[1] = l('kWh/year', 'logger/unit/kwhpyear', array('attributes' => array('title' => "switch to kWh/year"), 'query' => $destination, 'alias' => TRUE));
+        $items[2] = l('euro/year [@ 0.18eur/kWh]', 'logger/unit/eurpyear', array('attributes' => array('title' => "switch to euro/year"), 'query' => $destination, 'alias' => TRUE));
+        $items[3] = l('aud/year [@ 0.19aud/kWh]', 'logger/unit/audpyear', array('attributes' => array('title' => "switch to aud/year"), 'query' => $destination, 'alias' => TRUE));
 
         // 'unlink' the currently selected unit option
         switch ($unit) {
           case 'watt':
             $items[0] = 'watt';
             break;
-          case 'kwh':
+          case 'kwhpyear':
             $items[1] = 'kWh/year';
             break;
-          case 'eur':
+          case 'eurpyear':
             $items[2] = 'euro/year [@ 0.18eur/kWh]';
             break;
-          case 'aud':
+          case 'audpyear':
             $items[3] = 'aud/year [@ 0.19aud/kWh]';
+            break;
+        }
+        $block['subject'] = t('Unit');
+        $block['content'] = theme('logger_item_list', $items);
+      }
+
+      elseif ($delta == 'unit' && user_access('logger') && strrpos(' ' . $_GET['q'] . '/electricity', 'logger/water')) {
+        $unit = db_result(db_query("SELECT water_unit
+                                    FROM {logger_users}
+                                    WHERE uid = %d", $user->uid));
+
+        $items = array();
+        $items[0] = l('l/min', 'logger/unit/lpmin', array('attributes' => array('title' => "switch to l/min"), 'query' => $destination, 'alias' => TRUE));
+        $items[1] = l('l/day', 'logger/unit/lpday', array('attributes' => array('title' => "switch to l/day"), 'query' => $destination, 'alias' => TRUE));
+        $items[2] = l('m3/year', 'logger/unit/m3pyear', array('attributes' => array('title' => "switch to m3/year"), 'query' => $destination, 'alias' => TRUE));
+
+        // 'unlink' the currently selected unit option
+        switch ($unit) {
+          case 'lpmin':
+            $items[0] = 'l/min';
+            break;
+          case 'lpday':
+            $items[1] = 'l/day';
+            break;
+          case 'm3pyear':
+            $items[2] = 'm3/year';
             break;
         }
         $block['subject'] = t('Unit');
