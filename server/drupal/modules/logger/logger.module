@@ -310,12 +310,19 @@ function _logger_dashboard($type, $function, $interval) {
   }
   $end = ((int) (time() / $resolution)) * $resolution;
 
-  $result_me = db_query("SELECT lm.meter, lm.function, lu.private, lu.electricity_unit, lu.water_unit
-	                 FROM {logger_meters} lm
-	                 INNER JOIN {logger_users} lu on lm.uid = lu.uid
-	                 WHERE lm.uid = %d AND lm.type = '%s'
-	                 ORDER BY lm.function", $user->uid, $type);
+  $settings_me = db_fetch_object(db_query("SELECT private, electricity_unit, water_unit
+                                           FROM {logger_users}
+                                           WHERE uid = %d", $user->uid));
 
+  $main_me = db_fetch_object(db_query("SELECT meter, function
+                                       FROM {logger_meters}
+                                       WHERE uid = %d AND type = '%s' AND function = '%s'
+                                       ORDER BY created", $user->uid, $type, $function));
+
+  $result_me = db_query("SELECT meter, function
+	                 FROM {logger_meters}
+	                 WHERE uid = %d AND type = '%s'
+	                 ORDER BY function", $user->uid, $type);
   $meter_me = db_fetch_object($result_me);
 
   $result_sub = db_query("SELECT u.name, lm.meter, lu.private
@@ -326,10 +333,11 @@ function _logger_dashboard($type, $function, $interval) {
                           INNER JOIN {logger_users} lu ON u.uid = lu.uid
                           WHERE ur.requester_id = %d AND urt.name = '%s' AND type = '%s' AND function = '%s'
                           ORDER BY ur.rid", $user->uid, 'subscription', $type, $function);
+  $meter_sub = db_fetch_object($result_sub);
 
   switch ($type) {
     case 'electricity':
-      switch ($meter_me->electricity_unit) {
+      switch ($settings_me->electricity_unit) {
         case 'watt':
           $unit = 'watt';
           $factor = 3600; // 1Wh/s = 3600 W
@@ -350,7 +358,7 @@ function _logger_dashboard($type, $function, $interval) {
       break;
 
     case 'water':
-      switch ($meter_me->water_unit) {
+      switch ($settings_me->water_unit) {
         case 'lpmin':
 	  $unit = 'liter/min';
           $factor = 6; // 1 dl/s = 6 l/min
@@ -371,16 +379,18 @@ function _logger_dashboard($type, $function, $interval) {
   $i = 0;
 
   $string->line = ' COMMENT:"\s"';
-  if (user_access('logger') && ((!$meter_sub = db_fetch_object($result_sub)) || $meter_me->private)) {
+  if (user_access('logger') && ((!$meter_sub) || $settings_me->private) && $meter_me) {
     do {
       $string->def  .= _logger_chart_def($i, $data_path, $meter_me->meter, $factor);
       $string->line .= _logger_chart_line($i, $color[$i], $meter_me->function);
       $i++;
     } while ($meter_me = db_fetch_object($result_me));
   }
-  elseif (user_access('logger')) {
-    $string->def  .= _logger_chart_def($i, $data_path, $meter_me->meter, $factor);
-    $string->line .= _logger_chart_line($i, $color[$i], $user->name);
+  elseif (user_access('logger') && $meter_sub && (!$settings_me->private)) {
+    if ($main_me) {
+      $string->def  .= _logger_chart_def($i, $data_path, $main_me->meter, $factor);
+      $string->line .= _logger_chart_line($i, $color[$i], $user->name);
+    }
 
     do {
       $i++;   
@@ -406,9 +416,24 @@ function _logger_dashboard($type, $function, $interval) {
       }
     } while($meter_sub = db_fetch_object($result_sub));
   }
+  elseif (user_access('logger')) {
+    $result_def = db_query("SELECT meter, function
+                            FROM {logger_meters}
+                            WHERE uid = %d AND type = '%s'
+                            ORDER BY function", 1, $type);
+
+    $meter_def = db_fetch_object($result_def);
+    $i++;
+
+    $string->def  .= _logger_chart_def($i, $data_path, $meter_def->meter, $factor);
+    $string->line .= _logger_chart_line($i, $color[$i], 'icarus75');
+  }
   else {
-    $string->def  .= _logger_chart_def($i, $data_path, $meter_me->meter, $factor);
-    $string->line .= _logger_chart_line($i, $color[$i], $user->name);
+    do {
+      $string->def  .= _logger_chart_def($i, $data_path, $meter_me->meter, $factor);
+      $string->line .= _logger_chart_line($i, $color[$i], $meter_me->function);
+      $i++;
+    } while ($meter_me = db_fetch_object($result_me));
   }
 
   //construct the TZ=GMT-02:00 format from the $user->timezone object updated by the autotimezone module
