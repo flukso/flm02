@@ -641,7 +641,7 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
       $blocks['fluksonians']['region'] = 'content';
       $blocks['fluksonians']['weight'] = 1;
       $blocks['fluksonians']['pages'] = '<front>\nlogger/\nlogger/*';
-      $blocks['fluksonians']['cache'] = BLOCK_CACHE_PER_USER;
+      $blocks['fluksonians']['cache'] = BLOCK_NO_CACHE;
 
       $blocks['unit']['info'] = t('Unit');
       $blocks['unit']['status'] = TRUE;
