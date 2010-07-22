@@ -129,7 +129,7 @@ function logger_menu() {
   $items['logger/water'] = array(
     'title'               => 'water',
     'page callback'       => '_logger_dashboard',
-    'page arguments'      => array('water', 'main', 'hour'),
+    'page arguments'      => array('water', 'main', 'day'),
     'access callback'     => TRUE,
     'type'                => MENU_LOCAL_TASK,
   );
