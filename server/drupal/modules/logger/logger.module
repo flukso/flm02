@@ -73,7 +73,7 @@ function logger_menu() {
     'title'               => 'your dashboard', // isn't printed as title on the page, therefore resort to drupal_set_title (t('your ecological dashboard')) in ecology_dashboard;
     'description'         => 'Configure settings for logging metering values.',
     'page callback'       => '_logger_dashboard', //takes the callback from the MENU_DEFAULT_LOCAL_TASK -> lightest level-two menu
-    'page arguments'      => array('electricity', 'main', 'hour'),
+    'page arguments'      => array('electricity', 'main', 'day'),
     'access callback'     => TRUE,
     'type'                => MENU_CALLBACK,
   );
@@ -90,7 +90,7 @@ function logger_menu() {
     'page callback'       => '_logger_dashboard',
     'page arguments'      => array('electricity', 'main', 'hour'),
     'access callback'     => TRUE,
-    'type'                => MENU_DEFAULT_LOCAL_TASK,
+    'type'                => MENU_LOCAL_TASK,
     'weight'              => 0,
   );
   $items['logger/electricity/day'] = array(
@@ -98,7 +98,7 @@ function logger_menu() {
     'page callback'       => '_logger_dashboard',
     'page arguments'      => array('electricity', 'main', 'day'),
     'access callback'     => TRUE,
-    'type'                => MENU_LOCAL_TASK,
+    'type'                => MENU_DEFAULT_LOCAL_TASK,
     'weight'              => 1,
   );
   $items['logger/electricity/month'] = array(
@@ -138,7 +138,7 @@ function logger_menu() {
     'page callback'       => '_logger_dashboard',
     'page arguments'      => array('water', 'main', 'hour'),
     'access callback'     => TRUE,
-    'type'                => MENU_DEFAULT_LOCAL_TASK,
+    'type'                => MENU_LOCAL_TASK,
     'weight'              => 0,
   );
   $items['logger/water/day'] = array(
@@ -146,7 +146,7 @@ function logger_menu() {
     'page callback'       => '_logger_dashboard',
     'page arguments'      => array('water', 'main', 'day'),
     'access callback'     => TRUE,
-    'type'                => MENU_LOCAL_TASK,
+    'type'                => MENU_DEFAULT_LOCAL_TASK,
     'weight'              => 1,
   );
   $items['logger/water/month'] = array(
