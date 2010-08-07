@@ -37,13 +37,14 @@
 #define SPI_END_OF_TX			0x00
 #define SPI_END_OF_MESSAGE		':'
 #define SPI_FORWARD_TO_UART_PORT	'u'
-#define SPI_FORWARD_TO_CTRL_PORT	'l'
+#define SPI_FORWARD_TO_CTRL_PORT	'l' // 'l'ocal port
 
 
 volatile uint8_t high_hex;
 volatile uint8_t spi_status;
 
-uint8_t htoi(uint16_t hex) {
+// hex to binary/byte decoding
+uint8_t htob(uint16_t hex) {
 	uint8_t low_hex = (uint8_t) hex;
 	uint8_t high_hex = (uint8_t) (hex >> 8); 
 	uint8_t byte;
@@ -54,7 +55,8 @@ uint8_t htoi(uint16_t hex) {
 	return byte;
 }
 
-uint16_t itoh(uint8_t byte) {
+// binary/byte to hex encoding
+uint16_t btoh(uint8_t byte) {
 	uint8_t low_nibble = (byte & 0x0F);
 	uint8_t high_nibble = (byte & 0xF0) >> 4;
 	uint16_t hex;
@@ -69,12 +71,13 @@ uint16_t itoh(uint8_t byte) {
 SIGNAL(SPI_STC_vect) {
 	uint8_t spi_rx, spi_tx, uart_tx; 
 
+	// the SPI is double-buffered, requiring two NO_OPs when switching from Tx to Rx
 	if (spi_status & (NO_OP_1 | NO_OP_2)) {
 		spi_status--;
 		return;
 	}
 
-	// are we in transmit mode?
+	// are we in Tx mode?
 	if (spi_status & TRANSMIT) {
 		if (spi_status & TO_FROM_UART) {
 
@@ -94,7 +97,7 @@ SIGNAL(SPI_STC_vect) {
 		return;
 	}
 
-//	switch (spi_rx = received_from_spi(ctrlGetFromTxBuffer())) {
+	// we're in Rx mode
 	switch (spi_rx = received_from_spi(0x00)) {
 		case SPI_END_OF_TX:
 			spi_status |= TRANSMIT; 
@@ -113,11 +116,14 @@ SIGNAL(SPI_STC_vect) {
 		case SPI_FORWARD_TO_UART_PORT:
 			spi_status |= TO_FROM_UART;
 			break;
+		case SPI_FORWARD_TO_CTRL_PORT:
+			spi_status &= ~TO_FROM_UART;
+			break;
 		default:
 			//check whether the incoming hex-encoded stream needs to be forwarded to the UART port
 			if (spi_status & TO_FROM_UART) {
 				if (spi_status & HIGH_HEX) {
-					uart_tx = htoi(((uint16_t)high_hex << 8) + spi_rx);
+					uart_tx = htob(((uint16_t)high_hex << 8) + spi_rx);
 					uartAddToTxBuffer(uart_tx);
 				}
 				else {
@@ -151,7 +157,7 @@ int main(void) {
 			// check the HEX bit in spi_status
 			if (spi_status & HIGH_HEX) {
 				// loopback on the UART itf
-				send = itoh(htoi(((uint16_t)high_hex << 8) + data));
+				send = btoh(htob(((uint16_t)high_hex << 8) + data));
 				uartAddToTxBuffer((uint8_t)(send >> 8));
 				uartAddToTxBuffer((uint8_t)(send));
 			}

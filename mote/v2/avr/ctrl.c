@@ -58,6 +58,9 @@ uint8_t ctrlAddToTxBuffer(uint8_t data) {
 }
 
 void ctrlLoop(void) {
+	// source routing
+	bufferAddToEnd(&ctrlTxBuffer, 'l');
+
 	while (ctrlRxBuffer.datalength) {
 		bufferAddToEnd(&ctrlTxBuffer, bufferGetFromFront(&ctrlRxBuffer));
 	}
