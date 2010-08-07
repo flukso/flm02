@@ -42,7 +42,7 @@ diff -urNad /tmp/avrdude-5.10/config_gram.y avrdude-5.10/config_gram.y
      }
    } |
 +  
-+    K_TYPE TKN_EQUAL K_GPIO {
++  K_TYPE TKN_EQUAL K_GPIO {
 +    {
 +      gpio_initpgm(current_prog);
 +    }
