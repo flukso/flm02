@@ -1,0 +1,17 @@
+config system
+	option hostname flukso
+	option timezone UTC
+
+config button
+	option button	reset
+	option action	released
+	option handler	net_toggle
+	option min	2
+	option max	5
+
+config button
+	option button	reset
+	option action	released
+	option handler	net_defaults
+	option min	10
+	option max	30
