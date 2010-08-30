@@ -1,0 +1,27 @@
+--- /tmp/build_dir/linux-atheros/linux-2.6.30.10/arch/mips/ar231x/reset.c	2010-08-29 22:43:02.508208080 +0200
++++ build_dir/linux-atheros/linux-2.6.30.10/arch/mips/ar231x/reset.c	2010-08-30 10:02:11.682269327 +0200
+@@ -19,6 +19,7 @@
+ 	struct work_struct wq;
+ 	int set;
+ 	unsigned long jiffies;
++	unsigned long jiffies_prev;
+ };
+ 
+ static struct timer_list rst_button_timer;
+@@ -68,7 +69,7 @@
+ 	add_msg(skb, "SUBSYSTEM=button");
+ 	add_msg(skb, "BUTTON=reset");
+ 	add_msg(skb, (event->set ? "ACTION=pressed" : "ACTION=released"));
+-	sprintf(buf, "SEEN=%ld", (event->jiffies - seen)/HZ);
++	sprintf(buf, "SEEN=%lu", (event->jiffies - event->jiffies_prev)/HZ);
+ 	add_msg(skb, buf);
+ 	snprintf(buf, 128, "SEQNUM=%llu", uevent_next_seqnum());
+ 	add_msg(skb, buf);
+@@ -127,6 +128,7 @@
+ 		no_release_workaround = 0;
+ 
+ 	event->jiffies = jiffies;
++	event->jiffies_prev = seen;
+ 
+ 	INIT_WORK(&event->wq, hotplug_button);
+ 	schedule_work(&event->wq);
