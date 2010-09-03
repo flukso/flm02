@@ -19,7 +19,10 @@
 
 ]]--
 
-local nixio = require 'nixio'
+require 'nixio'
+
+local nixio, os =
+      nixio, os
 
 local getfenv, setmetatable =
       getfenv, setmetatable
@@ -27,7 +30,7 @@ local getfenv, setmetatable =
 module (...)
 local modenv = getfenv()
 
---- Start an rrdtool server in pipe mode.
+--- Start an rrdtool server in pipe mode. Results in an rrdtool coprocess.
 --
 --   +----------+                  +-----------+
 --   |          | fd[4] ---> fd[3] |           |
@@ -49,22 +52,28 @@ function start()
 		fd[5]:setblocking(false)
 		return setmetatable({pid = pid, fdr = fd[5], fdw = fd[4]}, {__index = modenv})
 	elseif pid == 0 then      -- child
-		fd[4]:close()
-		fd[5]:close()
 		nixio.dup(fd[3], nixio.stdin)
 		nixio.dup(fd[6], nixio.stdout)
+		for i = 3,6 do
+			fd[i]:close()
+		end 
 		nixio.execp('rrdtool', '-')
+		nixio.syslog('err', 'Unable to launch rrdtool')
+		-- Send SIGTERM to parent process, quite drastic I know.
+		nixio.kill(pid, nixio.const.SIGTERM)
 	else                      -- error
-		nixio.syslog("err", "Unable to fork(): " .. err)
+		nixio.syslog('err', 'Unable to fork(): ' .. err)
 		return nil, code, err
 	end
 end
 
 --- Stop the rrdtool server.
 -- @param   rrd.server (RS) object
--- @return  true
+-- @return  waitpid return values
+-- @see nixio.waitpid
 function stop(RS)
 	RS.fdr:close()
 	RS.fdw:close()
-	return nixio.kill(RS.pid, nixio.const.SIGKILL)
+	nixio.kill(RS.pid, nixio.const.SIGTERM)
+	return nixio.waitpid(RS.pid)
 end
