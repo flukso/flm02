@@ -41,42 +41,54 @@ local param = {xmlrpcaddress = 'http://logger.flukso.net/xmlrpc',
 
 function dispatch(e_child, p_child, device, pwrenable)
   return coroutine.create(function()
+
+    local function flash()  -- flash the power led for 50ms
+      os.execute('gpioctl clear 4 > /dev/null')
+      socket.select(nil, nil, 0.05)
+      os.execute('gpioctl set 4 > /dev/null')
+    end
+
     -- open the connection to the syslog deamon, specifying our identity
     posix.openlog('flukso')
     posix.syslog(30, 'starting the flukso deamon')
     posix.syslog(30, 'listening for pulses on '..device..'...')
 
+    pattern = '^(%l+)%s(%x+):(%d+):?(%d*)$'
+
     for line in io.lines(device) do
-      if line:sub(1, 3) == 'pls' and line:len() == 47 and line:find(':') == 37 then -- user data + additional data integrity checks
-        posix.syslog(30, 'received pulse from '..device..': '..line:sub(5))
+      command, meter, value, millis = line:match(pattern)
+      length = line:len()
 
-        -- flash the power led for 50ms
-        os.execute('gpioctl clear 4 > /dev/null')
-        socket.select(nil, nil, 0.05)
-        os.execute('gpioctl set 4 > /dev/null')
+      if command == 'pls' and (length == 47 or length == 58) then  -- user data
+        flash()
+        posix.syslog(30, 'received pulse from ' .. device .. ': ' .. line:sub(5))
 
-        local meter, value = line:sub(5, 36), tonumber(line:sub(38))
-        coroutine.resume(e_child, meter, os.time(), value)
+        coroutine.resume(e_child, meter, os.time(), tonumber(value))
 
-      elseif line:sub(1, 3) == 'pwr' and line:len() == 47 and line:find(':') == 37 then -- user data + additional data integrity checks
-        local meter, value = line:sub(5, 36), tonumber(line:sub(38))
+        -- pls includes a msec timestamp so report to p_child as well
+        if length == 58 then
+          coroutine.resume(p_child, meter, os.time(), nil, tonumber(millis))
+        end
+
+      elseif command == 'pwr' and length == 47 then                 -- user data
         if pwrenable then coroutine.resume(p_child, meter, os.time(), value) end
 
-      elseif line:sub(1, 3) == 'msg' then -- control data
-        posix.syslog(31, 'received message from '..device..': '..line:sub(5))
+      elseif command == 'msg' then                                  -- control data
+        posix.syslog(31, 'received message from ' .. device .. ': ' .. line:sub(5))
 
-      else
-        posix.syslog(27, 'input error on '..device..': '..line)
+      else                                                          -- error
+        posix.syslog(27, 'input error on ' .. device .. ': ' .. line)
       end
     end
 
     posix.syslog(30, 'closing down the flukso deamon')
-    os.exit()
+    os.exit(1)
   end)
 end
 
+-- TODO: adapt for millis input
 function buffer(child, interval)
-  return coroutine.create(function(meter, timestamp, value)
+  return coroutine.create(function(meter, timestamp, value, millis)
     local measurements = data.new()
     local threshold = timestamp + interval
     local timestamp_prev = {}
