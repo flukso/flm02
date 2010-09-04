@@ -88,9 +88,14 @@ asm volatile ( \
 )
 
 // datastructures
+struct time_struct {
+  boolean skip;
+  uint32_t ms; 
+};
+
 struct state {
-  boolean pulse;
-  boolean toggle;
+  boolean  pulse;
+  boolean  toggle;
   uint32_t nano;
   uint16_t adc;
 
@@ -99,6 +104,8 @@ struct state {
   uint32_t nano_end;
   uint8_t  pulse_count;
   uint8_t  pulse_count_final;
+
+  uint32_t time;
 };
 
 struct sensor {
