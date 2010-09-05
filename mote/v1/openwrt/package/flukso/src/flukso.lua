@@ -53,21 +53,23 @@ function dispatch(e_child, p_child, device, pwrenable)
     posix.syslog(30, 'starting the flukso deamon')
     posix.syslog(30, 'listening for pulses on '..device..'...')
 
-    pattern = '^(%l+)%s(%x+):(%d+):?(%d*)$'
+    local pattern = '^(%l+)%s(%x+):(%d+):?(%d*)$'
 
     for line in io.lines(device) do
-      command, meter, value, millis = line:match(pattern)
-      length = line:len()
+      local command, meter, value, msec = line:match(pattern)
+      value = tonumber(value or '0')
+      msec = tonumber(msec or '0')
+      local length = line:len()
 
       if command == 'pls' and (length == 47 or length == 58) then  -- user data
         flash()
         posix.syslog(30, 'received pulse from ' .. device .. ': ' .. line:sub(5))
 
-        coroutine.resume(e_child, meter, os.time(), tonumber(value))
+        coroutine.resume(e_child, meter, os.time(), value)
 
         -- pls includes a msec timestamp so report to p_child as well
         if length == 58 then
-          coroutine.resume(p_child, meter, os.time(), nil, tonumber(millis))
+          coroutine.resume(p_child, meter, os.time(), value, msec)
         end
 
       elseif command == 'pwr' and length == 47 then                 -- user data
@@ -86,9 +88,9 @@ function dispatch(e_child, p_child, device, pwrenable)
   end)
 end
 
--- TODO: adapt for millis input
+-- TODO: adapt for msec input
 function buffer(child, interval)
-  return coroutine.create(function(meter, timestamp, value, millis)
+  return coroutine.create(function(meter, timestamp, value, msec)
     local measurements = data.new()
     local threshold = timestamp + interval
     local timestamp_prev = {}
