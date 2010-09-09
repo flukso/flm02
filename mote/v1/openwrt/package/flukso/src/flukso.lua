@@ -88,23 +88,49 @@ function dispatch(e_child, p_child, device, pwrenable)
   end)
 end
 
--- TODO: adapt for msec input
 function buffer(child, interval)
   return coroutine.create(function(meter, timestamp, value, msec)
     local measurements = data.new()
     local threshold = timestamp + interval
-    local timestamp_prev = {}
+    local prev = {}
 
-    while true do
-      if meter ~= nil and timestamp > math.max(1234567890, timestamp_prev[meter] or 0) then
-        measurements:add(meter, timestamp, value)
+    local function diff(x, y)  -- calculates y - x
+      if y >= x then
+        return y - x
+      else -- y wrapped around 32-bit boundary
+        return (0xFFFFFFFF - x) + y + 1
       end
+    end
+    
+    while true do
+      if meter ~= nil then
+        if not prev[meter] then
+          prev[meter] = {}
+        end
+
+        if msec then  -- we're dealing with a pls xxx:yyy:zzz message so calculate power
+          if prev[meter][msec] then
+            local power = diff(prev[meter][value], value) / diff(prev[meter][msec], msec)
+            prev[meter][value] = value
+            value = power
+          else
+            prev[meter][value] = value
+            value = nil
+          end
+          prev[meter][msec] = msec
+        end
+
+        if timestamp > math.max(1234567890, prev[meter][timestamp] or 0) and value then
+          measurements:add(meter, timestamp, value)
+        end
+      end
+
       if timestamp > threshold and next(measurements) then  --checking whether table is not empty
         coroutine.resume(child, measurements)
         threshold = timestamp + interval
-        timestamp_prev[meter] = timestamp
+        prev[meter][timestamp] = timestamp
       end
-      meter, timestamp, value = coroutine.yield()
+      meter, timestamp, value, msec = coroutine.yield()
     end
   end)
 end
