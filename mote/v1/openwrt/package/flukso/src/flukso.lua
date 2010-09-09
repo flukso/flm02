@@ -109,18 +109,18 @@ function buffer(child, interval)
         end
 
         if msec then  -- we're dealing with a pls xxx:yyy:zzz message so calculate power
-          if prev[meter][msec] then
-            local power = diff(prev[meter][value], value) / diff(prev[meter][msec], msec)
-            prev[meter][value] = value
+          if prev[meter].msec then
+            local power = math.floor(diff(prev[meter].value, value) / diff(prev[meter].msec, msec) * 3.6 * 10^6 + 0.5)
+            prev[meter].value = value
             value = power
           else
-            prev[meter][value] = value
+            prev[meter].value = value
             value = nil
           end
-          prev[meter][msec] = msec
+          prev[meter].msec = msec
         end
 
-        if timestamp > math.max(1234567890, prev[meter][timestamp] or 0) and value then
+        if timestamp > math.max(1234567890, prev[meter].timestamp or 0) and value then
           measurements:add(meter, timestamp, value)
         end
       end
@@ -128,7 +128,7 @@ function buffer(child, interval)
       if timestamp > threshold and next(measurements) then  --checking whether table is not empty
         coroutine.resume(child, measurements)
         threshold = timestamp + interval
-        prev[meter][timestamp] = timestamp
+        prev[meter].timestamp = timestamp
       end
       meter, timestamp, value, msec = coroutine.yield()
     end
