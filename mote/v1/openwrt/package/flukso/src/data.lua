@@ -79,8 +79,8 @@ end
 function fill(M)
   for meter, T in pairs(M) do
     local H = timestamps(T)
-    for i = H[1]+1, H[#H]-1 do
-      if T[i] == nil then T[i] = T[i-1] end
+    for i = H[#H]-1, H[1]+1, -1 do
+      if T[i] == nil then T[i] = T[i+1] end
     end
   end
 end
