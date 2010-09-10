@@ -50,6 +50,14 @@
   #error "METERCONST not defined"
 #endif
 
+#ifndef PULSE_CONST
+  #error "PULSE_CONST not defined" 
+#endif
+
+#ifndef PULSE_HALF
+  #error "PULSE_HALF not defined" 
+#endif
+
 #define START 0
 #define END3 0xffffffff
 #define END2 0xeeeeeeee
@@ -96,6 +104,7 @@ struct time_struct {
 struct state {
   boolean  pulse;
   boolean  toggle;
+  boolean  half;
   uint32_t nano;
   uint16_t adc;
 
@@ -116,4 +125,5 @@ struct sensor {
 // prototypes
 void WDT_off(void);
 void WDT_on(void);
+void pulse_add(volatile struct sensor *measurement, volatile struct state *aux);
 void send(uint8_t msg_type, const struct sensor *measurement, const struct state *aux);

@@ -38,7 +38,7 @@
 #include <avr/wdt.h>
 
 // variable declarations
-volatile struct state aux[4] = {{false, false, START, 0}, {false, false, START, 0}, {false, false, START, 0}, {false, false, START, 0}};
+volatile struct state aux[4] = {{false, false, false, START, 0}, {false, false, false, START, 0}, {false, false, false, START, 0}, {false, false, false, START, 0}};
 
 volatile struct sensor EEMEM EEPROM_measurements[4] = {{SENSOR0, START}, {SENSOR1, START}, {SENSOR2, START}, {SENSOR3, START}};
 volatile struct sensor measurements[4];
@@ -50,16 +50,12 @@ volatile uint16_t timer = 0;
 
 // interrupt service routine for INT0
 ISR(INT0_vect) {
-  measurements[2].value++;
-  aux[2].pulse = true;
-  aux[2].time  = time.ms;
+  pulse_add(&measurements[2], &aux[2]);
 }
 
 // interrupt service routine for INT1
 ISR(INT1_vect) {
-  measurements[3].value++;
-  aux[3].pulse = true;
-  aux[3].time  = time.ms;
+  pulse_add(&measurements[3], &aux[3]);
 }
 
 // interrupt service routine for PCI2 (PCINT20)
@@ -69,13 +65,24 @@ ISR(PCINT2_vect) {
     aux[4].toggle = true;
   }
   else {
-    measurements[4].value++;
-    aux[4].pulse = true;
-    aux[4].time  = time.ms;
-    aux[4].toggle = false;
+    pulse_add(&measurements[4], &aux[4]);
   }
 }
 **/
+
+void pulse_add(volatile struct sensor *measurement, volatile struct state *aux) {
+  if (aux->half == true) {
+    measurement->value += PULSE_CONST + 1;
+  }
+  else {
+    measurement->value += PULSE_CONST;
+  }
+#if PULSE_HALF
+  aux->half = !aux->half;
+#endif
+  aux->pulse = true;
+  aux->time  = time.ms;
+}
 
 // interrupt service routine for ADC
 ISR(TIMER2_COMPA_vect) {
