@@ -98,7 +98,7 @@ function buffer(child, interval)
       if y >= x then
         return y - x
       else -- y wrapped around 32-bit boundary
-        return (0xFFFFFFFF - x) + y + 1
+        return 4294967296 - x + y
       end
     end
     
