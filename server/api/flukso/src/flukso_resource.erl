@@ -102,35 +102,31 @@ check_sensor(Sensor) ->
 check_time(undefined, undefined, _End, _Resolution) ->
     {false, false, false, false};
 check_time(Interval, undefined, undefined, undefined) ->
-    check_time(Interval, undefined, undefined, "");
+    case default_resolution(Interval) of
+        false -> {false, false, false, false};
+        DefResolution -> check_time(Interval, undefined, undefined, DefResolution)
+    end;
 check_time(Interval, undefined, undefined, Resolution) ->
     Now = unix_time(),
-
-    Intervals = [{"hour", "end-1h", 60},
-                 {"day", "end-1d", 900},
-                 {"month", "end-30d", 86400},
-                 {"year", "end-1y", 604800},
-                 {"night", "end-30d", 86400}],
-
-    case {lists:keyfind(Interval, 1, Intervals), re:run(Resolution, "[0-9]+", [])} of
+    case {time_to_seconds(Interval), time_to_seconds(Resolution)} of
         {false, _} -> {false, false, false, false};
-        {{_Interval, Start, _DefResolution}, {match, [{0,_}]}} ->
-            AlignedEnd = integer_to_list(time_align(Now, list_to_integer(Resolution))),
-            {Start, AlignedEnd, Resolution, true};
-        {{_Interval, Start, DefResolution}, _} ->
-            AlignedEnd = integer_to_list(time_align(Now, DefResolution)),
-            {Start, AlignedEnd, integer_to_list(DefResolution), true}
+        {_, false} -> {false, false, false, false};
+        {IntervalSec, ResolutionSec} -> 
+            AlignedEnd = time_align(Now, ResolutionSec),
+            AlignedStart = AlignedEnd - IntervalSec,
+            {integer_to_list(AlignedStart), integer_to_list(AlignedEnd), integer_to_list(ResolutionSec), true}
     end;
 check_time(undefined, Start, undefined, Resolution) ->
     check_time(undefined, Start, integer_to_list(unix_time()), Resolution);
 check_time(undefined, Start, End, undefined) ->
-    check_time(undefined, Start, End, "60");
+    check_time(undefined, Start, End, "minute");
 check_time(undefined, Start, End, Resolution) ->
-    case {re:run(Start, "[0-9]+", []), re:run(End, "[0-9]+", []), re:run(Resolution, "[0-9]+", [])} of
-        {{match, [{0,_}]}, {match, [{0,_}]}, {match, [{0,_}]}} ->
-            AlignedStart = integer_to_list(time_align(list_to_integer(Start), list_to_integer(Resolution))),
-            AlignedEnd = integer_to_list(time_align(list_to_integer(End), list_to_integer(Resolution))),
-            {AlignedStart, AlignedEnd, Resolution, true};
+    case {re:run(Start, "[0-9]+", []), re:run(End, "[0-9]+", []), time_to_seconds(Resolution)} of
+        {_, _, false} -> {false, false, false, false};
+        {{match, [{0,_}]}, {match, [{0,_}]}, ResolutionSec} ->
+            AlignedStart = time_align(list_to_integer(Start), ResolutionSec),
+            AlignedEnd = time_align(list_to_integer(End), ResolutionSec),
+            {integer_to_list(AlignedStart), integer_to_list(AlignedEnd), integer_to_list(ResolutionSec), true};
         _ -> {false, false, false, false}
     end;
 check_time(_, _, _, _) ->
@@ -173,3 +169,32 @@ unix_time() ->
 
 time_align(Time, Resolution) ->
     (Time div Resolution) * Resolution.
+
+default_resolution(Interval) ->
+    DefResolutions = [{"15min", "minute"},
+                      {"hour", "minute"},
+                      {"day", "15min"},
+                      {"week", "day"},
+                      {"month", "day"},
+                      {"year", "week"},
+                      {"night", "day"}],
+
+    case lists:keyfind(Interval, 1, DefResolutions) of
+        false -> false;
+        {_Interval, Defresolution} -> Defresolution
+    end.
+
+time_to_seconds(Time) ->
+    Times = [{"minute", 60},
+             {"15min", 900},
+             {"hour", 3600},
+             {"day", 86400},
+             {"week", 604800},
+             {"month", 2419200},
+             {"year", 31536000},
+             {"night", 2419200}],
+
+    case lists:keyfind(Time, 1, Times) of
+        false -> false;
+        {_Time, TimeSec} -> TimeSec
+    end.
