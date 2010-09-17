@@ -306,8 +306,18 @@ void send(uint8_t msg_type, const struct sensor *measurement, const struct state
     pulse_count = aux->pulse_count_final;
     sei();
 
-    MacU16X16to32(value, (uint16_t)(labs(rest)/65536), 242);
-    value /= 1024;
+    // Since the AVR has no dedicated floating-point hardware, we need 
+    // to resort to fixed-point calculations for converting nWh/s to W.
+    // 1W = 10^6/3.6 nWh/s
+    // value[watt] = 3.6/10^6 * rest[nWh/s]
+    // value[watt] = 3.6/10^6 * 65536 * (rest[nWh/s] / 65536)
+    // value[watt] = 3.6/10^6 * 65536 * 262144 / 262144 * (rest[nWh/s] / 65536)
+    // value[watt] = 61847.53 / 262144 * (rest[nWh/s] / 65536)
+    // We round the constant down to 61847 to prevent 'underflow' in the
+    // consecutive else statement.
+    // The error introduced in the fixed-point rounding equals 8.6*10^-6.
+    MacU16X16to32(value, (uint16_t)(labs(rest)/65536), 61847);
+    value /= 262144;
 
     if (rest >= 0)
       value += pulse_count*3600;
