@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi
+END
+asterisk-meetme.lua
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-meetme.lua
+END
+asterisk-mod-cdr.lua
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-mod-cdr.lua
+END
+asterisk-mod-chan.lua
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-mod-chan.lua
+END
+asterisk-mod-codec.lua
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-mod-codec.lua
+END
+asterisk-mod-app.lua
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-mod-app.lua
+END
+asterisk-mod-res-feature.lua
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-mod-res-feature.lua
+END
+asterisk-iax-connections.lua
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-iax-connections.lua
+END
+asterisk.lua
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk.lua
+END
+asterisk-voice.lua
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-voice.lua
+END
+asterisk-mod-format.lua
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-mod-format.lua
+END
+asterisk-mod-res.lua
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-mod-res.lua
+END
+asterisk-mod-pbx.lua
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-mod-pbx.lua
+END
+asterisk-dialplans.lua
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-dialplans.lua
+END
+asterisk-mod-func.lua
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-mod-func.lua
+END
+asterisk-sip-connections.lua
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/luasrc/model/cbi/asterisk-sip-connections.lua
+END

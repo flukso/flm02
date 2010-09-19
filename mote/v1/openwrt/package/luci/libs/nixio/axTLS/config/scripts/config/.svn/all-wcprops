@@ -1,0 +1,113 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config
+END
+Kconfig-language.txt
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/Kconfig-language.txt
+END
+mkconfigs
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/mkconfigs
+END
+zconf.tab.c_shipped
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/zconf.tab.c_shipped
+END
+lkc_proto.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/lkc_proto.h
+END
+mconf.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/mconf.c
+END
+menu.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/menu.c
+END
+symbol.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/symbol.c
+END
+zconf.tab.h_shipped
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/zconf.tab.h_shipped
+END
+zconf.y
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/zconf.y
+END
+util.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/util.c
+END
+lkc.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/lkc.h
+END
+expr.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/expr.c
+END
+confdata.c
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/confdata.c
+END
+lex.zconf.c_shipped
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/lex.zconf.c_shipped
+END
+expr.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/expr.h
+END
+conf.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/conf.c
+END
+zconf.l
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/zconf.l
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/config/scripts/config/Makefile
+END

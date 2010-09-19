@@ -1,0 +1,10 @@
+K 10
+svn:ignore
+V 5
+dist
+
+K 13
+svn:mergeinfo
+V 60
+/luci/trunk/libs/uvl:5655,5861-5863,5871,5902-5903,6024-6025
+END

@@ -1,0 +1,58 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-05-19 19:35+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 1.1.1\n"
+
+#. Time Synchronisation
+#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:1
+msgid "ntpc"
+msgstr "Time Synchronisation"
+
+#. Synchronizes the system time
+#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:2
+msgid "ntpc_desc"
+msgstr "Synchronizes the system time"
+
+#. Time Server
+#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:3
+msgid "ntpc_timeserver"
+msgstr "Time Server"
+
+#. Update Interval (in s)
+#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:4
+msgid "ntpc_interval"
+msgstr "Update Interval (in s)"
+
+#. Count of Time Measurements
+#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:5
+msgid "ntpc_count"
+msgstr "Count of Time Measurements"
+
+#. empty = infinite
+#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:6
+msgid "ntpc_count_desc"
+msgstr "empty = infinite"
+
+#. Clock Adjustment
+#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:7
+msgid "ntpc_drift"
+msgstr "Clock Adjustment"
+
+#. Offset Frequency
+#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:8
+msgid "ntpc_drift_freq"
+msgstr "Offset Frequency"
+
+#. Current system time
+#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:9
+msgid "ntpc_current"
+msgstr "Current system time"

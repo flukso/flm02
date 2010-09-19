@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/5614/luci/branches/luci-0.9/contrib/package/olsrd-luci/patches
+END
+200-mid_memory_cleanup.patch
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/5614/luci/branches/luci-0.9/contrib/package/olsrd-luci/patches/200-mid_memory_cleanup.patch
+END
+131-olsrd-tweak-ffetx.patch
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/4830/luci/branches/luci-0.9/contrib/package/olsrd-luci/patches/131-olsrd-tweak-ffetx.patch
+END
+140-olsrd-optimize-size.patch
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/5531/luci/branches/luci-0.9/contrib/package/olsrd-luci/patches/140-olsrd-optimize-size.patch
+END
+160-add-mdns.patch
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/5411/luci/branches/luci-0.9/contrib/package/olsrd-luci/patches/160-add-mdns.patch
+END
+139-olsrd-magicarprefresh.patch
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/5411/luci/branches/luci-0.9/contrib/package/olsrd-luci/patches/139-olsrd-magicarprefresh.patch
+END
+137-olsrd-192.168.1.1.patch
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/4830/luci/branches/luci-0.9/contrib/package/olsrd-luci/patches/137-olsrd-192.168.1.1.patch
+END
+170-fcntl-fix.patch
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/5411/luci/branches/luci-0.9/contrib/package/olsrd-luci/patches/170-fcntl-fix.patch
+END

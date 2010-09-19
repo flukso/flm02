@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/root/lib/uci/schema/default
+END
+asterisk.hide
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-asterisk/root/lib/uci/schema/default/asterisk.hide
+END

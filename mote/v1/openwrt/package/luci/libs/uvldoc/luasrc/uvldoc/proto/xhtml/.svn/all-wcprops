@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/4830/luci/branches/luci-0.9/libs/uvldoc/luasrc/uvldoc/proto/xhtml
+END
+menu.xml
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/4830/luci/branches/luci-0.9/libs/uvldoc/luasrc/uvldoc/proto/xhtml/menu.xml
+END
+scheme.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/4830/luci/branches/luci-0.9/libs/uvldoc/luasrc/uvldoc/proto/xhtml/scheme.xml
+END
+section.xml
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/4830/luci/branches/luci-0.9/libs/uvldoc/luasrc/uvldoc/proto/xhtml/section.xml
+END
+uvldoc.css
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/4830/luci/branches/luci-0.9/libs/uvldoc/luasrc/uvldoc/proto/xhtml/uvldoc.css
+END
+index.xml
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/4830/luci/branches/luci-0.9/libs/uvldoc/luasrc/uvldoc/proto/xhtml/index.xml
+END
+header.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/4830/luci/branches/luci-0.9/libs/uvldoc/luasrc/uvldoc/proto/xhtml/header.xml
+END
+footer.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/4830/luci/branches/luci-0.9/libs/uvldoc/luasrc/uvldoc/proto/xhtml/footer.xml
+END

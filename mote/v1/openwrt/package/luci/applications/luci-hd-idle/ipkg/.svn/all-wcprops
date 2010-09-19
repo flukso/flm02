@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/5770/luci/branches/luci-0.9/applications/luci-hd-idle/ipkg
+END
+postinst
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/5770/luci/branches/luci-0.9/applications/luci-hd-idle/ipkg/postinst
+END

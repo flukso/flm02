@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/root/lib/uci/schema/default
+END
+fstab
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/root/lib/uci/schema/default/fstab
+END
+httpd
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/root/lib/uci/schema/default/httpd
+END
+system
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/root/lib/uci/schema/default/system
+END
+network
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/root/lib/uci/schema/default/network
+END
+luci_hosts
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/root/lib/uci/schema/default/luci_hosts
+END
+wireless
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/root/lib/uci/schema/default/wireless
+END
+dhcp
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/root/lib/uci/schema/default/dhcp
+END
+dropbear
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/root/lib/uci/schema/default/dropbear
+END

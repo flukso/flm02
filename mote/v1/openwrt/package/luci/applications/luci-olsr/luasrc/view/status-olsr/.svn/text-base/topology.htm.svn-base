@@ -1,0 +1,39 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id$
+
+-%>
+<%+header%>
+<h2><a id="content" name="content"><%:olsrd_topology%></a></h2>
+<p><%:olsrd_topology_desc%></p>
+<br />
+<table class="smalltext" cellspacing="0" cellpadding="6">
+<tr>
+<th><%:olsrd_node%></th>
+<th><%:olsrd_topology_lasthop%></th>
+<th>LQ</th>
+<th>ILQ</th>
+<th>ETX</th>
+</tr>
+<% for k, route in ipairs(routes) do
+%>
+<tr>
+<td><a href="http://<%=route["Dest. IP"]%>"><%=route["Dest. IP"]%></a></td>
+<td><a href="http://<%=route["Last hop IP"]%>"><%=route["Last hop IP"]%></a></td>
+<td><%=route.LQ%></td>
+<td><%=route.NLQ%></td>
+<td><%=string.format("%.3f", tonumber(route.Cost) or 0)%></td>
+</tr>
+<% end %>
+</table>
+<br />
+<%+footer%>

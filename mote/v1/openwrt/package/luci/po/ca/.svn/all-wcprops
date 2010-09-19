@@ -1,0 +1,167 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/5765/luci/branches/luci-0.9/po/ca
+END
+polipo.po
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/polipo.po
+END
+qos.po
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/qos.po
+END
+ntpc.po
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/ntpc.po
+END
+luci-fw.po
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/luci-fw.po
+END
+uvl.po
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/uvl.po
+END
+initmgr.po
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/5765/luci/branches/luci-0.9/po/ca/initmgr.po
+END
+freifunk.po
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/freifunk.po
+END
+p910nd.po
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/p910nd.po
+END
+livestats.po
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/livestats.po
+END
+admin-core.po
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/admin-core.po
+END
+olsr.po
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/olsr.po
+END
+upnp.po
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/upnp.po
+END
+samba.po
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/samba.po
+END
+default.po
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/default.po
+END
+openvpn.po
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/openvpn.po
+END
+mmc_over_gpio.po
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/mmc_over_gpio.po
+END
+asterisk.po
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/asterisk.po
+END
+rrdtool.po
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/rrdtool.po
+END
+tinyproxy.po
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/tinyproxy.po
+END
+ushare.po
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/ushare.po
+END
+hd_idle.po
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/hd_idle.po
+END
+ddns.po
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/ddns.po
+END
+statistics.po
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/statistics.po
+END
+coovachilli.po
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/coovachilli.po
+END
+cbi.po
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/cbi.po
+END
+wifi.po
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/wifi.po
+END
+sysauth.po
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/4830/luci/branches/luci-0.9/po/ca/sysauth.po
+END

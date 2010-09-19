@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/5176/luci/branches/luci-0.9/libs/lmo/src
+END
+lmo_core.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/5176/luci/branches/luci-0.9/libs/lmo/src/lmo_core.c
+END
+lmo_lualib.c
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/5144/luci/branches/luci-0.9/libs/lmo/src/lmo_lualib.c
+END
+lmo_po2lmo.c
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/5118/luci/branches/luci-0.9/libs/lmo/src/lmo_po2lmo.c
+END
+lmo_lookup.c
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/5118/luci/branches/luci-0.9/libs/lmo/src/lmo_lookup.c
+END
+lmo_lualib.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/5144/luci/branches/luci-0.9/libs/lmo/src/lmo_lualib.h
+END
+lmo_hash.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/5118/luci/branches/luci-0.9/libs/lmo/src/lmo_hash.c
+END
+lmo.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/5118/luci/branches/luci-0.9/libs/lmo/src/lmo.h
+END

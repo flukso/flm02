@@ -1,0 +1,52 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: simpleform.htm 4415 2009-04-09 13:59:50Z Cyrus $
+
+-%>
+<% if not self.embedded then %>
+<form method="post" action="<%=REQUEST_URI%>">
+	<div>
+		<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+		<input type="hidden" name="cbi.submit" value="1" />
+	</div>
+<% end %>
+	<div class="cbi-map" id="cbi-<%=self.config%>">
+		<h2><a id="content" name="content"><%=self.title%></a></h2>
+		<div class="cbi-map-descr"><%=self.description%></div>
+		<% self:render_children() %>
+		<br />
+	</div>
+<%- if self.message then %>
+	<div><%=self.message%></div>
+<%- end %>
+<%- if self.errmessage then %>
+	<div class="error"><%=self.errmessage%></div>
+<%- end %>	
+<% if not self.embedded then %>
+	<div>
+<%- if self.flow and self.flow.skip then %>
+	<input class="cbi-button cbi-button-skip" type="submit" name="cbi.skip" value="<%:skip Skip%>" />
+<% end %>
+<%- if self.submit ~= false then %>
+		<input class="cbi-button-save" type="submit" value="
+	<%- if not self.submit then -%><%-:submit-%><%-else-%><%=self.submit%><%end-%>
+	" />
+<% end %>
+<%- if self.reset ~= false then %>
+		<input class="cbi-button-reset" type="reset" value="
+	<%- if not self.reset then -%><%-:reset-%><%-else-%><%=self.reset%><%end-%>
+	" />
+<% end %>
+		<script type="text/javascript">cbi_d_update();</script>
+	</div>
+</form>
+<% end %>

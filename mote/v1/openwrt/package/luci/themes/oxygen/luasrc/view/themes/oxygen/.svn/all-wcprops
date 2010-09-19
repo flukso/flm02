@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/4830/luci/branches/luci-0.9/themes/oxygen/luasrc/view/themes/oxygen
+END
+header.htm
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/4830/luci/branches/luci-0.9/themes/oxygen/luasrc/view/themes/oxygen/header.htm
+END
+footer.htm
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/4830/luci/branches/luci-0.9/themes/oxygen/luasrc/view/themes/oxygen/footer.htm
+END
+indexer.htm
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/4830/luci/branches/luci-0.9/themes/oxygen/luasrc/view/themes/oxygen/indexer.htm
+END
+dashboard.htm
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/4830/luci/branches/luci-0.9/themes/oxygen/luasrc/view/themes/oxygen/dashboard.htm
+END
