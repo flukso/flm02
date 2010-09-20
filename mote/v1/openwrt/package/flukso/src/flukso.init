@@ -5,7 +5,7 @@
 START=98
 
 start() {
-	stty 4800 < /dev/ttyS0
+	stty 4800 -echo -onlcr < /dev/ttyS0
 	/usr/share/lua/flukso/flukso.lua >&- 2>&- <&- &
 	/usr/share/lua/flukso/heartbeat.lua 1 >&- 2>&- <&-
 	echo -e "$(date '+%M') * * * * /usr/share/lua/flukso/heartbeat.lua 0\n"'*/15 * * * * [ -z "$(ps | grep '\'flukso.lu[a]\'')" ] && reboot' | crontab -
