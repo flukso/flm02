@@ -40,13 +40,13 @@ endef
 
 define Build/Compile
 	cd $(PKG_BUILD_DIR)/ && \
-	$(TARGET_CROSS)gcc -shared -o luaexpat.so src/lxplib.c -Wall -fPIC \
+	$(TARGET_CROSS)gcc -shared -o luaexpat.so src/lxplib.c -Wall -fPIC --std=c99 \
 		$(EXTRA_CFLAGS) $(EXTRA_LDFLAGS) \
 		$(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		-I$(STAGING_DIR)/usr/include \
 		-lexpat -llua -lm -ldl &&\
 	$(TARGET_CROSS)strip luaexpat.so &&\
-	$(TARGET_CROSS)gcc -c src/lxplib.c -Wall \
+	$(TARGET_CROSS)gcc -c src/lxplib.c -Wall --std=c99 \
 		$(EXTRA_CFLAGS) $(EXTRA_LDFLAGS) \
 		$(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		-I$(STAGING_DIR)/usr/include &&\
