@@ -104,7 +104,7 @@ if hwtype == "atheros" or hwtype == "mac80211" then
 		encr:value("psk-mixed", "WPA-PSK/WPA2-PSK Mixed Mode", {mode="sta"})
 		encr:value("wpa", "WPA-EAP", {mode="sta"})
 		encr:value("wpa2", "WPA2-EAP", {mode="sta"})
-		encr.description = translate("wifi_wpareq")
+		-- encr.description = translate("wifi_wpareq")
 	else
 		encr.description = translate("wifi_wpareq")
 	end
