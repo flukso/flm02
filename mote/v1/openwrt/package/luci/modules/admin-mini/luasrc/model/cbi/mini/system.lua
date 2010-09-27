@@ -15,6 +15,7 @@ $Id: system.lua 5314 2009-08-27 17:54:51Z jow $
 require("luci.sys")
 require("luci.sys.zoneinfo")
 require("luci.tools.webadmin")
+require("luci.fs")
 
 
 m = Map("system", translate("system"), "")
