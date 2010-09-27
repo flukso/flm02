@@ -52,12 +52,8 @@ s:option(DummyValue, "_systime", translate("m_i_systemtime")).value =
 s:option(DummyValue, "_uptime", translate("m_i_uptime")).value = 
  luci.tools.webadmin.date_format(tonumber(uptime))
 
-hn = s:option(Value, "hostname", translate("hostname"))
-
-function hn.write(self, section, value)
-	Value.write(self, section, value)
-	luci.sys.hostname(value)
-end
+s:option(DummyValue, "_hostname", translate("hostname")).value =                   
+ luci.sys.hostname(value)                                                          
 
 
 -- Wifi Data init -- 
