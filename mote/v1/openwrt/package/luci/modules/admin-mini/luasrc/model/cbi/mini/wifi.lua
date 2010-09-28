@@ -152,6 +152,7 @@ function key:validate(value, section)
 	end
 end
 
+--[[
 server = s:option(Value, "server", translate("a_w_radiussrv"))
 server:depends({mode="ap", encryption="wpa"})
 server:depends({mode="ap", encryption="wpa2"})
@@ -223,6 +224,7 @@ if hwtype == "atheros" or hwtype == "broadcom" then
 	hide.rmempty = true
 	hide:depends("mode", "ap")
 end
+]]--
 
 if hwtype == "mac80211" or hwtype == "atheros" then
 	bssid:depends({mode="adhoc"})
