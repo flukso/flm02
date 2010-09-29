@@ -1,0 +1,40 @@
+config flukso main
+	option port /dev/ttyS0
+	option home logger.flukso.net
+	option homeVersion 1
+	option homeInterval 300
+	option homeEnable 1
+	option local /tmp/sensor
+	option localVersion 1
+	option localInterval 0 
+	option localEnable 1
+	option debug 0
+	
+### sensor config options
+# config sensor <1..6>
+#	option id <uuid>
+#	option input <analog|pulse>
+#	list port <1..6>
+#	option constant [<meterconstant>]
+#	option voltage [<volts>]
+#	option current [<amps>]
+
+config sensor 1
+	option id 0123456789abcdef0123456789abcde0
+	option input analog
+	list port 1
+	option voltage 230
+	option current 50
+
+config sensor 2
+	option id 0123456789abcdef0123456789abcde1
+	option input analog
+	list port 2               
+	option voltage 230               
+	option current 50
+
+config sensor 3
+	option id 0123456789abcdef0123456789abcde2
+	option input pulse
+	list port 3
+	option constant 1
