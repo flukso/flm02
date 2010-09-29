@@ -9,6 +9,7 @@ set -e
 
 start() {
 	echo -n "Starting $DESC: $NAME"
+	[ -e /tmp/luci-indexcache ] && rm /tmp/luci-indexcache
 	lua -lluci.lucid -e 'luci.lucid.start()'
 	echo "."
 }
@@ -16,6 +17,7 @@ start() {
 stop() {
 	echo -n "Stopping $DESC: $NAME"
 	lua -lluci.lucid -e 'luci.lucid.stop()'
+	[ -e /tmp/luci-indexcache ] && rm /tmp/luci-indexcache
 	echo "."
 }
 
