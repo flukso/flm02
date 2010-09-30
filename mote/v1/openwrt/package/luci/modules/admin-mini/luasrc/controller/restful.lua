@@ -62,7 +62,7 @@ function rest_sensor(id)
 	local ltn12    = require "luci.ltn12"                                                         
 	local uci      = require "luci.model.uci".cursor()
 
-	local path     = uci:get("flukso", "main", "local")
+	local path     = uci:get("flukso", "main", "localDir")
 	local param    = decode(http.getenv("QUERY_STRING"))
 
 	if param.interval == "minute" and param.unit == "watt" then

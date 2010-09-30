@@ -4,7 +4,7 @@ config flukso main
 	option homeVersion 1
 	option homeInterval 300
 	option homeEnable 1
-	option local /tmp/sensor
+	option localDir /tmp/sensor
 	option localVersion 1
 	option localInterval 0 
 	option localEnable 1

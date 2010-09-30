@@ -25,21 +25,15 @@
 require 'posix'
 require 'xmlrpc.http'
 
-data = require 'flukso.data'
-auth = require 'flukso.auth'
-dbg  = require 'flukso.dbg'
+local data  = require 'flukso.data'
+local auth  = require 'flukso.auth'
+local dbg   = require 'flukso.dbg'
 
-local param = {xmlrpcaddress = 'http://logger.flukso.net/xmlrpc',
-               xmlrpcversion = '1',
-               xmlrpcmethod  = 'logger.measurementAdd',
-               pwrenable     = true,
-               pwrinterval   = 0,
-               pwrdir        = '/tmp/sensor',
-               device        = '/dev/ttyS0',
-               interval      = 300,
-               dbgenable     = false}
+local uci   = require 'luci.model.uci'.cursor()
+local param = uci:get_all('flukso', 'main')
 
-function dispatch(e_child, p_child, device, pwrenable)
+
+function dispatch(e_child, p_child, port, homeEnable, localEnable)
   return coroutine.create(function()
 
     local function flash()  -- flash the power led for 50ms
@@ -51,11 +45,11 @@ function dispatch(e_child, p_child, device, pwrenable)
     -- open the connection to the syslog deamon, specifying our identity
     posix.openlog('flukso')
     posix.syslog(30, 'starting the flukso deamon')
-    posix.syslog(30, 'listening for pulses on '..device..'...')
+    posix.syslog(30, 'listening for pulses on ' .. port .. '...')
 
     local pattern = '^(%l+)%s(%x+):(%d+):?(%d*)$'
 
-    for line in io.lines(device) do
+    for line in io.lines(port) do
       local command, meter, value, msec = line:match(pattern)
       value = tonumber(value or '0')
       msec = tonumber(msec or '0')
@@ -63,23 +57,23 @@ function dispatch(e_child, p_child, device, pwrenable)
 
       if command == 'pls' and (length == 47 or length == 58) then  -- user data
         flash()
-        posix.syslog(30, 'received pulse from ' .. device .. ': ' .. line:sub(5))
+        posix.syslog(30, 'received pulse from ' .. port .. ': ' .. line:sub(5))
 
-        coroutine.resume(e_child, meter, os.time(), value)
+        if homeEnable == 1 then coroutine.resume(e_child, meter, os.time(), value) end
 
         -- pls includes a msec timestamp so report to p_child as well
-        if length == 58 then
+        if length == 58 and localEnable == 1 then
           coroutine.resume(p_child, meter, os.time(), value, msec)
         end
 
       elseif command == 'pwr' and length == 47 then                 -- user data
-        if pwrenable then coroutine.resume(p_child, meter, os.time(), value) end
+        if localEnable == 1 then coroutine.resume(p_child, meter, os.time(), value) end
 
       elseif command == 'msg' then                                  -- control data
-        posix.syslog(31, 'received message from ' .. device .. ': ' .. line:sub(5))
+        posix.syslog(31, 'received message from ' .. port .. ': ' .. line:sub(5))
 
       else                                                          -- error
-        posix.syslog(27, 'input error on ' .. device .. ': ' .. line)
+        posix.syslog(27, 'input error on ' .. port .. ': ' .. line)
       end
     end
 
@@ -145,7 +139,7 @@ function filter(child, span, offset)
   end)
 end
 
-function send(child, address, version, method)
+function send(child, home, version, method)
   return coroutine.create(function(measurements)
     while true do
       local auth = auth.new()
@@ -153,7 +147,7 @@ function send(child, address, version, method)
       auth:hmac(measurements)
 
       local status, ret_or_err, res = pcall(xmlrpc.http.call,
-          address..'/'..version,
+          'http://' .. home .. '/' .. version,
           method,
           auth,
           measurements)
@@ -164,7 +158,7 @@ function send(child, address, version, method)
           measurements:clear()
         end
       else
-        posix.syslog(27, tostring(ret_or_err)..' '..address..' '..tostring(res))
+        posix.syslog(27, tostring(ret_or_err) .. ' ' .. home .. ' ' .. tostring(res))
       end
       coroutine.resume(child, measurements)
       measurements = coroutine.yield()
@@ -195,13 +189,13 @@ function polish(child, cutoff)
   end)
 end
 
-function publish(child, dir)
+function publish(child, path)
   return coroutine.create(function(measurements)
-    os.execute('mkdir -p ' .. dir .. ' > /dev/null')
+    os.execute('mkdir -p ' .. path .. ' > /dev/null')
     while true do
       local measurements_json = measurements:json_encode()
       for meter, json in pairs(measurements_json) do
-        io.output(dir .. '/' .. meter)
+        io.output(path .. '/' .. meter)
         io.write(json)
         io.close()
       end
@@ -211,10 +205,10 @@ function publish(child, dir)
   end)
 end
 
-function debug(child, dbgenable)
+function debug(child, debug)
   return coroutine.create(function(measurements)
     while true do
-      if dbgenable then dbg.vardump(measurements) end
+      if debug == 1 then dbg.vardump(measurements) end
       if child then coroutine.resume(child, measurements) end
       measurements = coroutine.yield()
     end
@@ -234,22 +228,22 @@ local e_chain = buffer(
                       filter(
                         send(
                           gc(
-                            debug(nil, param.dbgenable)
+                            debug(nil, tonumber(param.debug) or 0)
                           )
-                        , param.xmlrpcaddress, param.xmlrpcversion, param.xmlrpcmethod)
+                        , param.home, param.homeVersion, 'logger.measurementAdd')
                       , 86400, 172800)
                     , 900, 7200)
                   , 60, 0)
-                , param.interval)
+                , tonumber(param.homeInterval) or 300)
 
 local p_chain = buffer(
                   polish(
                     publish(
-                      debug(nil, param.dbgenable)
-                    , param.pwrdir)
+                      debug(nil, tonumber(param.debug) or 0)
+                    , param.localDir or '/tmp/sensor')
                   , 60)
-                , param.pwrinterval)
+                , tonumber(param.localInterval) or 0)
 
-local chain = dispatch(e_chain, p_chain, param.device, param.pwrenable)
+local chain = dispatch(e_chain, p_chain, param.port or '/dev/ttyS0', tonumber(param.homeEnable) or 1, tonumber(param.localEnable) or 1)
 
 coroutine.resume(chain)
