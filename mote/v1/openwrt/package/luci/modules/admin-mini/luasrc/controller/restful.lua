@@ -63,9 +63,10 @@ function rest_sensor(id)
 	local uci      = require "luci.model.uci".cursor()
 
 	local path     = uci:get("flukso", "main", "localDir")
+	local version  = uci:get("flukso", "main", "localVersion")
 	local param    = decode(http.getenv("QUERY_STRING"))
 
-	if param.interval == "minute" and param.unit == "watt" then
+	if param.interval == "minute" and param.unit == "watt" and param.version == version then
 		http.prepare_content("application/json")
 		http.write("sensor:" .. (id[1] or 'nok') .. "\n" ..
 			   "query string:" .. http.getenv("QUERY_STRING") .. "\n" ..
@@ -74,6 +75,6 @@ function rest_sensor(id)
 		local source = ltn12.source.file(io.open(path .. "/" .. id[1], "r"))
 		ltn12.pump.all(source, http.write)
 	else
-		error400("Malformed query string: 'interval' and 'unit' query parameters are obligatory.")
+		error400("Malformed query string: interval, unit and version query parameters are obligatory.")
 	end
 end
