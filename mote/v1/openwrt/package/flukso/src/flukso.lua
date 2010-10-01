@@ -103,7 +103,9 @@ function buffer(child, interval)
         end
 
         if msec then  -- we're dealing with a pls xxx:yyy:zzz message so calculate power
-          if prev[meter].msec then
+          -- if msec decreased, just update the value in the table
+          -- but don't make any calculations since the AVR might have gone through a reset
+          if prev[meter].msec and msec > prev[meter].msec then
             local power = math.floor(diff(prev[meter].value, value) / diff(prev[meter].msec, msec) * 3.6 * 10^6 + 0.5)
             prev[meter].value = value
             value = power
@@ -140,6 +142,7 @@ function filter(child, span, offset)
 end
 
 function send(child, home, version, method)
+  local url = 'http://' .. home .. '/xmlrpc/' .. version
   return coroutine.create(function(measurements)
     while true do
       local auth = auth.new()
@@ -147,7 +150,7 @@ function send(child, home, version, method)
       auth:hmac(measurements)
 
       local status, ret_or_err, res = pcall(xmlrpc.http.call,
-          'http://' .. home .. '/' .. version,
+          url,
           method,
           auth,
           measurements)
