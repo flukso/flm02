@@ -114,7 +114,7 @@ function buffer(child, interval)
           prev[meter].msec = msec
         end
 
-        if timestamp > math.max(1234567890, prev[meter].timestamp or 0) and value then
+        if timestamp > 1234567890 and timestamp > (prev[meter].timestamp or 0) and value then
           measurements:add(meter, timestamp, value)
         end
       end
