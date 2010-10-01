@@ -29,15 +29,11 @@ else
   require 'xmlrpc.http'
   require 'luci.sys'
 
-  auth = require 'flukso.auth'
-  dbg  = require 'flukso.dbg'
+  local auth    = require 'flukso.auth'
+  local dbg     = require 'flukso.dbg'
 
-  -- config parameters
-  local param = {server        = 'logger.flukso.net',
-                 xmlrpcaddress = 'http://logger.flukso.net/xmlrpc',
-                 xmlrpcversion = '1',
-                 xmlrpcmethod  = 'logger.heartbeat'}
-
+  local uci     = require 'luci.model.uci'.cursor()
+  local param   = uci:get_all('flukso', 'main')
   local monitor = {reset = tonumber(arg[1])}
 
   -- open the connection to the syslog deamon, specifying our identity
@@ -58,9 +54,11 @@ else
   dbg.vardump(monitor)
 
   -- send a heartbeat method call
+  local url = 'http://' ..  param.home .. '/xmlrpc/' .. param.homeVersion
+
   local pcall_ok, return_or_err, pong = pcall(xmlrpc.http.call,
-    param.xmlrpcaddress..'/'..param.xmlrpcversion,
-    param.xmlrpcmethod,
+    url,
+    'logger.heartbeat',
     auth,
     monitor)
 
@@ -76,7 +74,7 @@ else
       if tonumber(pong.upgrade) == monitor.version then --reset device
         os.execute('reboot')
       elseif tonumber(pong.upgrade) > monitor.version then -- upgrade device to specified version
-        os.execute('wget -P /tmp http://'..param.server..'/files/upgrade/upgrade.'..pong.upgrade)
+        os.execute('wget -P /tmp http://'.. param.home ..'/files/upgrade/upgrade.'..pong.upgrade)
         os.execute('chmod a+x /tmp/upgrade.'..pong.upgrade)
         os.execute('/tmp/upgrade.'..pong.upgrade)
         os.execute('rm /tmp/upgrade.'..pong.upgrade)
