@@ -70,7 +70,7 @@ end
 function truncate(M, cutoff)
   for meter, T in pairs(M) do
     local H = timestamps(T)
-    for i = H[1], H[#H]-60 do
+    for i = H[1], os.time() - cutoff do
       T[i] = nil
     end
   end
@@ -80,7 +80,10 @@ function fill(M)
   for meter, T in pairs(M) do
     local H = timestamps(T)
     for i = H[#H]-1, H[1]+1, -1 do
-      if T[i] == nil then T[i] = T[i+1] end
+      if T[i] == nil or T[i] == 'nan' then T[i] = T[i+1] end
+    end
+    for i = H[#H]+1, os.time() do
+      T[i] = 'nan'
     end
   end
 end
