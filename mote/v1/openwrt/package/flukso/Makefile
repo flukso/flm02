@@ -33,11 +33,7 @@ endef
 
 define Package/flukso/install
 	$(INSTALL_DIR) $(1)/usr/share/lua/flukso/
-	$(CP) $(PKG_BUILD_DIR)/flukso.lua $(1)/usr/share/lua/flukso/
-	$(CP) $(PKG_BUILD_DIR)/data.lua $(1)/usr/share/lua/flukso/
-	$(CP) $(PKG_BUILD_DIR)/dbg.lua $(1)/usr/share/lua/flukso/
-	$(CP) $(PKG_BUILD_DIR)/auth.lua $(1)/usr/share/lua/flukso/
-	$(CP) $(PKG_BUILD_DIR)/heartbeat.lua $(1)/usr/share/lua/flukso/
+	$(CP) $(PKG_BUILD_DIR)/{flukso,data,dbg,auth,heartbeat,restful}.lua $(1)/usr/share/lua/flukso/
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(CP) $(PKG_BUILD_DIR)/flukso.init $(1)/etc/init.d/flukso
 	$(INSTALL_DIR) $(1)/etc/config/
