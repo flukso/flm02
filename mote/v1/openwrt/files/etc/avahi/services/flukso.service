@@ -1,0 +1,12 @@
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+ <name replace-wildcards="yes">Sensor 0123456789abcdef0123456789abcde1 on %h</name>
+  <service>
+    <type>_flukso._tcp</type>
+    <port>8080</port>
+    <txt-record>id=0123456789abcdef0123456789abcde1</txt-record>
+    <txt-record>path=/sensor/0123456789abcdef0123456789abcde1</txt-record>
+    <txt-record>version=1.0</txt-record>
+  </service>
+</service-group>
