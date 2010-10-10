@@ -50,12 +50,28 @@
   #error "METERCONST not defined"
 #endif
 
-#ifndef PULSE_CONST
-  #error "PULSE_CONST not defined" 
+#ifndef PULSE_CONST_2
+  #error "PULSE_CONST_2 not defined" 
 #endif
 
-#ifndef PULSE_HALF
-  #error "PULSE_HALF not defined" 
+#ifndef PULSE_HALF_2
+  #error "PULSE_HALF_2 not defined" 
+#endif
+
+#ifndef PULSE_CONST_3
+  #error "PULSE_CONST_3 not defined" 
+#endif
+
+#ifndef PULSE_HALF_3
+  #error "PULSE_HALF_3 not defined" 
+#endif
+
+#ifndef PULSE_CONST_4
+  #error "PULSE_CONST_4 not defined" 
+#endif
+
+#ifndef PULSE_HALF_4
+  #error "PULSE_HALF_4 not defined" 
 #endif
 
 #define START 0
@@ -125,5 +141,5 @@ struct sensor {
 // prototypes
 void WDT_off(void);
 void WDT_on(void);
-void pulse_add(volatile struct sensor *measurement, volatile struct state *aux);
+void pulse_add(volatile struct sensor *measurement, volatile struct state *aux, uint8_t pulse_const, uint8_t pulse_half);
 void send(uint8_t msg_type, const struct sensor *measurement, const struct state *aux);

@@ -50,12 +50,12 @@ volatile uint16_t timer = 0;
 
 // interrupt service routine for INT0
 ISR(INT0_vect) {
-  pulse_add(&measurements[2], &aux[2]);
+  pulse_add(&measurements[2], &aux[2], PULSE_CONST_2, PULSE_HALF_2);
 }
 
 // interrupt service routine for INT1
 ISR(INT1_vect) {
-  pulse_add(&measurements[3], &aux[3]);
+  pulse_add(&measurements[3], &aux[3], PULSE_CONST_3, PULSE_HALF_3);
 }
 
 // interrupt service routine for PCI2 (PCINT20)
@@ -65,21 +65,22 @@ ISR(PCINT2_vect) {
     aux[4].toggle = true;
   }
   else {
-    pulse_add(&measurements[4], &aux[4]);
+    pulse_add(&measurements[4], &aux[4], PULSE_CONST_4, PULSE_HALF_4);
   }
 }
 **/
 
-void pulse_add(volatile struct sensor *measurement, volatile struct state *aux) {
+void pulse_add(volatile struct sensor *measurement, volatile struct state *aux, uint8_t pulse_const, uint8_t pulse_half) {
+  measurement->value += pulse_const;
+
   if (aux->half == true) {
-    measurement->value += PULSE_CONST + 1;
+    measurement->value += 1;
   }
-  else {
-    measurement->value += PULSE_CONST;
+
+  if (pulse_half) {
+    aux->half = !aux->half;
   }
-#if PULSE_HALF
-  aux->half = !aux->half;
-#endif
+
   aux->pulse = true;
   aux->time  = time.ms;
 }
