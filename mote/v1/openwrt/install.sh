@@ -26,6 +26,7 @@ cp .config $BACKFIRE_PATH
 cp -r files $BACKFIRE_PATH
 
 cp patches/300-set.AR2315_RESET_GPIO.to.6.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
+cp patches/310-hotplug_button_jiffies_calc.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
 
 cd $BACKFIRE_PATH
 patch -p0 < $REPO_PATH/patches/100-disable.console.patch
