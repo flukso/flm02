@@ -70,7 +70,7 @@ ISR(PCINT2_vect) {
 }
 **/
 
-void pulse_add(volatile struct sensor *measurement, volatile struct state *aux, uint8_t pulse_const, uint8_t pulse_half) {
+void pulse_add(volatile struct sensor *measurement, volatile struct state *aux, uint32_t pulse_const, uint32_t pulse_half) {
   measurement->value += pulse_const;
 
   if (aux->half == true) {

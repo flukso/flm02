@@ -141,5 +141,5 @@ struct sensor {
 // prototypes
 void WDT_off(void);
 void WDT_on(void);
-void pulse_add(volatile struct sensor *measurement, volatile struct state *aux, uint8_t pulse_const, uint8_t pulse_half);
+void pulse_add(volatile struct sensor *measurement, volatile struct state *aux, uint32_t pulse_const, uint32_t pulse_half);
 void send(uint8_t msg_type, const struct sensor *measurement, const struct state *aux);
