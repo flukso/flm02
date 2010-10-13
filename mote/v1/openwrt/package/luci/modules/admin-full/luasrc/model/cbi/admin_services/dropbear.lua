@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: dropbear.lua 4150 2009-01-26 02:10:02Z jow $
+$Id: dropbear.lua 4149 2009-01-26 02:09:13Z jow $
 ]]--
 m = Map("dropbear", "Dropbear SSHd", translate("a_srv_dropbear1"))
 

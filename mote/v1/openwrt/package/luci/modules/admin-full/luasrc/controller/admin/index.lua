@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: index.lua 4041 2009-01-16 12:39:50Z Cyrus $
+$Id: index.lua 4040 2009-01-16 12:35:25Z Cyrus $
 ]]--
 module("luci.controller.admin.index", package.seeall)
 

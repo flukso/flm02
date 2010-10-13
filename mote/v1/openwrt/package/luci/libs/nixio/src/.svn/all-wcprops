@@ -1,0 +1,173 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/!svn/ver/5979/luci/branches/luci-0.9/libs/nixio/src
+END
+mingw-compat.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/mingw-compat.c
+END
+openssl-compat.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/openssl-compat.c
+END
+poll.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/poll.c
+END
+mingw-compat.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/mingw-compat.h
+END
+io.c
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/5506/luci/branches/luci-0.9/libs/nixio/src/io.c
+END
+fs.c
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/5609/luci/branches/luci-0.9/libs/nixio/src/fs.c
+END
+openssl-compat.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/openssl-compat.h
+END
+bind.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/5506/luci/branches/luci-0.9/libs/nixio/src/bind.c
+END
+axtls-compat.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/axtls-compat.c
+END
+bit.c
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/5609/luci/branches/luci-0.9/libs/nixio/src/bit.c
+END
+process.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/5609/luci/branches/luci-0.9/libs/nixio/src/process.c
+END
+user.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/5506/luci/branches/luci-0.9/libs/nixio/src/user.c
+END
+file.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/5609/luci/branches/luci-0.9/libs/nixio/src/file.c
+END
+cyassl-compat.c
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/cyassl-compat.c
+END
+splice.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/5506/luci/branches/luci-0.9/libs/nixio/src/splice.c
+END
+syslog.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/syslog.c
+END
+tls-crypto.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/tls-crypto.c
+END
+axtls-compat.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/axtls-compat.h
+END
+sockopt.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/5506/luci/branches/luci-0.9/libs/nixio/src/sockopt.c
+END
+cyassl-compat.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/cyassl-compat.h
+END
+binary.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/5506/luci/branches/luci-0.9/libs/nixio/src/binary.c
+END
+tls-context.c
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/tls-context.c
+END
+address.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/5979/luci/branches/luci-0.9/libs/nixio/src/address.c
+END
+nixio.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/5955/luci/branches/luci-0.9/libs/nixio/src/nixio.c
+END
+socket.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/socket.c
+END
+tls-socket.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/tls-socket.c
+END
+nixio.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/5955/luci/branches/luci-0.9/libs/nixio/src/nixio.h
+END
+nixio-tls.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/src/nixio-tls.h
+END

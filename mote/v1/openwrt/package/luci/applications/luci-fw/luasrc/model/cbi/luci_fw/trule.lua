@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: trule.lua 4012 2009-01-09 10:05:59Z Cyrus $
+$Id: trule.lua 6189 2010-05-30 23:48:02Z jow $
 ]]--
 arg[1] = arg[1] or ""
 m = Map("firewall", translate("firewall_rule"), translate("firewall_rule_desc"))
@@ -41,7 +41,7 @@ luci.model.uci.cursor():foreach("firewall", "zone",
 
 proto = s:option(Value, "proto", translate("protocol"))
 proto.optional = true
-proto:value("")
+proto:value("all", translate("firewall_rule_proto_all", "Any"))
 proto:value("tcpudp", "TCP+UDP")
 proto:value("tcp", "TCP")
 proto:value("udp", "UDP")

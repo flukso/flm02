@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: passwd.lua 3864 2008-12-07 13:44:25Z Cyrus $
+$Id: passwd.lua 3863 2008-12-07 13:26:34Z Cyrus $
 ]]--
 f = SimpleForm("password", translate("a_s_changepw"), translate("a_s_changepw1"))
 

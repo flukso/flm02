@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: dns.lua 3648 2008-10-29 19:11:54Z jow $
+$Id: dns.lua 3471 2008-09-30 18:44:34Z jow $
 
 ]]--
 

@@ -10,13 +10,14 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: ntpcmini.lua 3240 2008-09-11 17:25:44Z Cyrus $
+$Id: ntpcmini.lua 5941 2010-03-27 02:41:29Z jow $
 ]]--
 require("luci.tools.webadmin")
 m = Map("ntpclient", translate("ntpc"), translate("ntpc_desc"))
 
 s = m:section(TypedSection, "ntpclient", translate("general"))
 s.anonymous = true
+s.addremove = false
 
 s:option(DummyValue, "_time", translate("ntpc_current")).value = os.date("%c")
 

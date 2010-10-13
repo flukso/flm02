@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: uci.lua 3650 2008-10-29 19:40:40Z jow $
+$Id: uci.lua 3554 2008-10-10 20:59:27Z Cyrus $
 ]]--
 module("luci.controller.admin.uci", package.seeall)
 

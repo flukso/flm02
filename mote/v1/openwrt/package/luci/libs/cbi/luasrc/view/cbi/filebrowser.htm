@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: filebrowser.htm 3555 2008-10-10 21:52:22Z jow $
+$Id: filebrowser.htm 5118 2009-07-23 03:32:30Z jow $
 
 -%>
 
@@ -48,7 +48,8 @@ $Id: filebrowser.htm 3555 2008-10-10 21:52:22Z jow $
 </head>
 <body>
 	<%
-		require("luci.fs")
+		require("nixio.fs")
+		require("nixio.util")
 		require("luci.http")
 		require("luci.dispatcher")
 
@@ -63,20 +64,20 @@ $Id: filebrowser.htm 3555 2008-10-10 21:52:22Z jow $
 		end
 
 		local filepath = table.concat( path, '/' )
-		local filestat = luci.fs.stat( filepath )
+		local filestat = nixio.fs.stat( filepath )
 		local baseurl  = luci.dispatcher.build_url('admin', 'filebrowser')
 
-		if filestat and filestat.type == "regular" then
+		if filestat and filestat.type == "reg" then
 			table.remove( path, #path )
 			filepath = table.concat( path, '/' ) .. '/'
-		elseif not ( filestat and filestat.type == "directory" ) then
+		elseif not ( filestat and filestat.type == "dir" ) then
 			path     = { '' }
 			filepath = '/'
 		else
 			filepath = filepath .. '/'
 		end
 
-		local entries = luci.fs.dir(filepath)
+		local entries = nixio.util.consume((nixio.fs.dir(filepath)))
 	-%>
     <div id="path">
 		Location:
@@ -98,8 +99,8 @@ $Id: filebrowser.htm 3555 2008-10-10 21:52:22Z jow $
 	<div id="listing">
 		<ul>
 			<% for _, e in luci.util.vspairs(entries) do
-			    local stat = luci.fs.stat(filepath..e)
-				if e ~= '.' and e ~= '..' and stat and stat.type == 'directory' then
+			    local stat = nixio.fs.stat(filepath..e)
+				if stat and stat.type == 'dir' then
 			-%>
 				<li class="dir">
 					<img src="/luci-static/resources/cbi/folder.png" alt="Directory" />
@@ -108,8 +109,8 @@ $Id: filebrowser.htm 3555 2008-10-10 21:52:22Z jow $
 			<% end end -%>
 
 			<% for _, e in luci.util.vspairs(entries) do
-			    local stat = luci.fs.stat(filepath..e)
-				if stat and stat.type ~= 'directory' then
+			    local stat = nixio.fs.stat(filepath..e)
+				if stat and stat.type ~= 'dir' then
 			-%>
 				<li class="file">
 					<img src="/luci-static/resources/cbi/file.png" alt="File" />

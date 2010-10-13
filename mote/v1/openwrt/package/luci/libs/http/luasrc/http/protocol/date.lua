@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: date.lua 3941 2008-12-23 21:39:38Z jow $
+$Id: date.lua 3860 2008-12-06 03:18:14Z jow $
 
 ]]--
 

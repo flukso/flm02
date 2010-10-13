@@ -10,22 +10,25 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: ifaces.lua 4114 2009-01-25 12:16:33Z Cyrus $
+$Id: ifaces.lua 5768 2010-03-08 22:45:06Z jow $
 ]]--
 
-require("luci.tools.webadmin")
+local wa = require "luci.tools.webadmin"
+local fs = require "nixio.fs"
+
 arg[1] = arg[1] or ""
 
-local has_3g    = luci.fs.mtime("/usr/bin/gcom")
-local has_pptp  = luci.fs.mtime("/usr/sbin/pptp")
-local has_pppd  = luci.fs.mtime("/usr/sbin/pppd")
-local has_pppoe = luci.fs.glob("/usr/lib/pppd/*/rp-pppoe.so")
-local has_pppoa = luci.fs.glob("/usr/lib/pppd/*/pppoatm.so")
+local has_3g    = fs.access("/usr/bin/gcom")
+local has_pptp  = fs.access("/usr/sbin/pptp")
+local has_pppd  = fs.access("/usr/sbin/pppd")
+local has_pppoe = fs.glob("/usr/lib/pppd/*/rp-pppoe.so")()
+local has_pppoa = fs.glob("/usr/lib/pppd/*/pppoatm.so")()
 
 m = Map("network", translate("interfaces"), translate("a_n_ifaces1"))
 
 s = m:section(NamedSection, arg[1], "interface")
-s.addremove = true
+s.addremove = false
+s.title = arg[1]:upper()
 
 back = s:option(DummyValue, "_overview", translate("overview"))
 back.value = ""
@@ -51,6 +54,11 @@ br = s:option(Flag, "type", translate("a_n_i_bridge"), translate("a_n_i_bridge1"
 br.enabled = "bridge"
 br.rmempty = true
 
+stp = s:option(Flag, "stp", translate("a_n_i_stp"),
+	translate("a_n_i_stp1", "Enables the Spanning Tree Protocol on this bridge"))
+stp:depends("type", "1")
+stp.rmempty = true
+
 ifname = s:option(Value, "ifname", translate("interface"))
 ifname.rmempty = true
 for i,d in ipairs(luci.sys.net.devices()) do
@@ -59,7 +67,7 @@ for i,d in ipairs(luci.sys.net.devices()) do
 	end
 end
 
-local zones = luci.tools.webadmin.network_get_zones(arg[1])
+local zones = wa.network_get_zones(arg[1])
 if zones then
 	if #zones == 0 then
 		m:chain("firewall")
@@ -78,7 +86,7 @@ if zones then
 		)
 
 		function fwzone.write(self, section, value)
-			local zone = luci.tools.webadmin.firewall_find_zone(value)
+			local zone = wa.firewall_find_zone(value)
 			local stat
 
 			if not zone then

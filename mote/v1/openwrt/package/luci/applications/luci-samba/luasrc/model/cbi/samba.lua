@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: samba.lua 3973 2009-01-01 13:33:45Z Cyrus $
+$Id: samba.lua 3972 2009-01-01 13:32:57Z Cyrus $
 ]]--
 
 m = Map("samba")

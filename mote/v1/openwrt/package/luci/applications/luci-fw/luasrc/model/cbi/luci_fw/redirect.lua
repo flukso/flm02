@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: redirect.lua 3500 2008-10-03 16:23:43Z Cyrus $
+$Id: redirect.lua 3497 2008-10-03 16:04:09Z Cyrus $
 ]]--
 require("luci.sys")
 m = Map("firewall", translate("fw_redirect"), translate("fw_redirect_desc"))

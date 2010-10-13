@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: freifunk.lua 4152 2009-01-26 10:21:20Z Cyrus $
+$Id: freifunk.lua 5118 2009-07-23 03:32:30Z jow $
 ]]--
 module("luci.controller.freifunk.freifunk", package.seeall)
 
@@ -41,20 +41,22 @@ function index()
 	page.target = template("freifunk/contact")
 	page.title  = "Kontakt"
 
+	entry({"freifunk", "status"}, alias("freifunk", "status", "status"), "Status", 20)
 
-	local page  = node("freifunk", "status")
+	local page  = node("freifunk", "status", "status")
 	page.target = form("freifunk/public_status")
-	page.title  = "Status"
+	page.title  = i18n("overview")
 	page.order  = 20
 	page.i18n   = "admin-core"
 	page.setuser  = false
 	page.setgroup = false
 
 	entry({"freifunk", "status.json"}, call("jsonstatus"))
+	entry({"freifunk", "status", "zeroes"}, call("zeroes"), "Testdownload") 
 
 	assign({"freifunk", "olsr"}, {"admin", "status", "olsr"}, "OLSR", 30)
 
-	if luci.fs.access("/etc/config/luci_statistics") then
+	if nixio.fs.access("/etc/config/luci_statistics") then
 		assign({"freifunk", "graph"}, {"admin", "statistics", "graph"}, i18n("stat_statistics", "Statistiken"), 40)
 	end
 
@@ -69,6 +71,9 @@ function index()
 	page.target = cbi("freifunk/contact")
 	page.title  = "Kontakt"
 	page.order  = 40
+
+	entry({"freifunk", "map"}, template("freifunk-map/frame"), i18n("freifunk_map", "Karte"), 50)
+	entry({"freifunk", "map", "content"}, template("freifunk-map/map"), nil, 51)
 end
 
 local function fetch_olsrd()
@@ -78,7 +83,7 @@ local function fetch_olsrd()
 	local rawdata = sys.httpget("http://127.0.0.1:2006/")
 
 	if #rawdata == 0 then
-		if luci.fs.access("/proc/net/ipv6_route", "r") then
+		if nixio.fs.access("/proc/net/ipv6_route", "r") then
 			rawdata = sys.httpget("http://[::1]:2006/")
 			if #rawdata == 0 then
 				return nil
@@ -118,6 +123,21 @@ local function fetch_olsrd()
 	end
 
 	return data
+end
+
+function zeroes()
+	local string = require "string"
+	local http = require "luci.http"
+	local zeroes = string.rep(string.char(0), 8192)
+	local cnt = 0
+	local lim = 1024 * 1024 * 1024
+	
+	http.prepare_content("application/x-many-zeroes")
+
+	while cnt < lim do
+		http.write(zeroes)
+		cnt = cnt + #zeroes
+	end
 end
 
 function jsonstatus()

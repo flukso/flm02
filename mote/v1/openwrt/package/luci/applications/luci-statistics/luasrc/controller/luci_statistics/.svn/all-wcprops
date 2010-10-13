@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/6029/luci/branches/luci-0.9/applications/luci-statistics/luasrc/controller/luci_statistics
+END
+luci_statistics.lua
+K 25
+svn:wc:ra_dav:version-url
+V 120
+/!svn/ver/6029/luci/branches/luci-0.9/applications/luci-statistics/luasrc/controller/luci_statistics/luci_statistics.lua
+END

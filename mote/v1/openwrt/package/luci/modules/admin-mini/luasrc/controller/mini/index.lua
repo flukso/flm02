@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: index.lua 3941 2008-12-23 21:39:38Z jow $
+$Id: index.lua 3908 2008-12-15 10:40:45Z Cyrus $
 ]]--
 
 module("luci.controller.mini.index", package.seeall)

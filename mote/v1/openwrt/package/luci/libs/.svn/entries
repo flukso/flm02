@@ -1,0 +1,91 @@
+10
+
+dir
+6253
+http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs
+http://svn.luci.subsignal.org
+
+
+
+2010-04-16T19:05:48.083072Z
+6082
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+http
+dir
+
+uci
+dir
+
+sgi-cgi
+dir
+
+px5g
+dir
+
+fastindex
+dir
+
+nixio
+dir
+
+lmo
+dir
+
+sgi-uhttpd
+dir
+
+core
+dir
+
+ipkg
+dir
+
+uvldoc
+dir
+
+cbi
+dir
+
+lucid
+dir
+
+sgi-wsapi
+dir
+
+uvl
+dir
+
+json
+dir
+
+sgi-luci
+dir
+
+lucid-http
+dir
+
+web
+dir
+
+httpclient
+dir
+
+sys
+dir
+

@@ -11,7 +11,7 @@ You may obtain a copy of the License at
 
 		http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: stat-genconfig 3642 2008-10-29 05:08:03Z jow $
+$Id: stat-genconfig 4931 2009-06-27 14:36:04Z jow $
 
 ]]--
 
@@ -24,6 +24,11 @@ local ipt = luci.sys.iptparser.IptParser()
 local uci = luci.model.uci.cursor()
 local sections = uci:get_all( "luci_statistics" )
 
+
+function print(...)
+	nixio.stdout:write(...)
+	nixio.stdout:write("\n")
+end
 
 function section( plugin )
 

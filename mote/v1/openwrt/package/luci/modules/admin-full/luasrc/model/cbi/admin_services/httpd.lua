@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: httpd.lua 3402 2008-09-23 17:29:05Z jow $
+$Id: httpd.lua 3401 2008-09-23 17:27:39Z jow $
 ]]--
 m = Map("httpd", "Busybox HTTPd", translate("a_srv_http1"))
 

@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: filebrowser.lua 3941 2008-12-23 21:39:38Z jow $
+$Id: filebrowser.lua 3555 2008-10-10 21:52:22Z jow $
 ]]--
 
 module("luci.controller.admin.filebrowser", package.seeall)

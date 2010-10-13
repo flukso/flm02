@@ -9,21 +9,28 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: qos.lua 4075 2009-01-17 16:20:20Z Cyrus $
+$Id: qos.lua 6166 2010-05-15 18:49:20Z jow $
 ]]--
-require("luci.tools.webadmin")
+
+local wa = require "luci.tools.webadmin"
+local fs = require "nixio.fs"
+
 m = Map("qos")
 
 s = m:section(TypedSection, "interface", translate("interfaces"))
 s.addremove = true
+s.anonymous = true
 
-s:option(Flag, "enabled", translate("enable"))
+e = s:option(Flag, "enabled", translate("enable"))
+e.rmempty = false
 
 c = s:option(ListValue, "classgroup")
 c:value("Default", "standard")
 c.default = "Default"
 
 s:option(Flag, "overhead")
+
+s:option(Flag, "halfduplex")
 
 s:option(Value, "download", nil, "kb/s")
 
@@ -44,34 +51,24 @@ t.default = "Normal"
 srch = s:option(Value, "srchost")
 srch.rmempty = true
 srch:value("", translate("all"))
-luci.tools.webadmin.cbi_add_knownips(srch)
+wa.cbi_add_knownips(srch)
 
 dsth = s:option(Value, "dsthost")
 dsth.rmempty = true
 dsth:value("", translate("all"))
-luci.tools.webadmin.cbi_add_knownips(dsth)
+wa.cbi_add_knownips(dsth)
 
 l7 = s:option(ListValue, "layer7", translate("service"))
 l7.rmempty = true
 l7:value("", translate("all"))
-local pats = luci.fs.dir("/etc/l7-protocols")
+local pats = fs.dir("/etc/l7-protocols")
 if pats then
-	for i,f in ipairs(pats) do
+	for f in pats do
 		if f:sub(-4) == ".pat" then
 			l7:value(f:sub(1, #f-4))
 		end
 	end
 end
-
-p2p = s:option(ListValue, "ipp2p", "P2P")
-p2p:value("", "-")
-p2p:value("all", translate("all"))
-p2p:value("bit", "BIT")
-p2p:value("dc", "DC")
-p2p:value("edk", "EDK")
-p2p:value("gnu", "GNU")
-p2p:value("kazaa", "KAZ")
-p2p.rmempty = true
 
 p = s:option(Value, "proto", translate("protocol"))
 p:value("", translate("all"))

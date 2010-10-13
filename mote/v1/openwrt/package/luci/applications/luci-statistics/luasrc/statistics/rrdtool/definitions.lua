@@ -9,14 +9,13 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: definitions.lua 3540 2008-10-08 15:59:10Z jow $
+$Id: definitions.lua 5118 2009-07-23 03:32:30Z jow $
 
 ]]--
 
 module("luci.statistics.rrdtool.definitions", package.seeall)
 
 require("luci.util")
-require("luci.fs")
 
 
 Instance = luci.util.class()

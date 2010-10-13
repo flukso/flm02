@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: webadmin.lua 4169 2009-01-27 17:15:58Z jow $
+$Id: webadmin.lua 4168 2009-01-27 17:15:14Z jow $
 ]]--
 
 module("luci.tools.webadmin", package.seeall)

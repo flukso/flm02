@@ -10,11 +10,13 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: dhcp.lua 3675 2008-10-31 09:36:00Z Cyrus $
+$Id: dhcp.lua 6029 2010-04-05 17:46:20Z jow $
 ]]--
-require("luci.model.uci")
-require("luci.sys")
-require("luci.tools.webadmin")
+
+local uci = require "luci.model.uci".cursor()
+local sys = require "luci.sys"
+local wa  = require "luci.tools.webadmin"
+local fs  = require "nixio.fs"
 
 m = Map("dhcp", "DHCP")
 
@@ -57,16 +59,13 @@ time:depends("ignore", "0")
 time.rmempty = true
 
 
-
-m2 = Map("luci_ethers", translate("dhcp_leases"))
-
 local leasefn, leasefp, leases
-luci.model.uci.cursor():foreach("dhcp", "dnsmasq",
+uci:foreach("dhcp", "dnsmasq",
  function(section)
  	leasefn = section.leasefile
  end
 ) 
-local leasefp = leasefn and luci.fs.access(leasefn) and io.lines(leasefn)
+local leasefp = leasefn and fs.access(leasefn) and io.lines(leasefn)
 if leasefp then
 	leases = {}
 	for lease in leasefp do
@@ -75,31 +74,36 @@ if leasefp then
 end
 
 if leases then
-	v = m2:section(Table, leases, translate("dhcp_leases_active"))
+	v = m:section(Table, leases, translate("dhcp_leases_active"))
+	name = v:option(DummyValue, 4, translate("hostname"))
+	function name.cfgvalue(self, ...)
+		local value = DummyValue.cfgvalue(self, ...)
+		return (value == "*") and "?" or value
+	end
 	ip = v:option(DummyValue, 3, translate("ipaddress"))
-	
 	mac  = v:option(DummyValue, 2, translate("macaddress"))
-	
 	ltime = v:option(DummyValue, 1, translate("dhcp_timeremain"))
 	function ltime.cfgvalue(self, ...)
 		local value = DummyValue.cfgvalue(self, ...)
-		return luci.tools.webadmin.date_format(
-		 os.difftime(tonumber(value), os.time())
-		)
+		return wa.date_format(os.difftime(tonumber(value), os.time()))
 	end
 end
 
-s = m2:section(TypedSection, "static_lease", translate("luci_ethers"))
-s.addremove = true
-s.anonymous = true
-s.template = "cbi/tblsection"
+s2 = m:section(TypedSection, "host", translate("luci_ethers"))
+s2.addremove = true
+s2.anonymous = true
+s2.template = "cbi/tblsection"
 
-mac = s:option(Value, "macaddr", translate("macaddress"))
-ip = s:option(Value, "ipaddr", translate("ipaddress"))
-for i, dataset in ipairs(luci.sys.net.arptable()) do
-	ip:value(dataset["IP address"])
-	mac:value(dataset["HW address"],
-	 dataset["HW address"] .. " (" .. dataset["IP address"] .. ")")
-end
+name = s2:option(Value, "name", translate("hostname", "Hostname"))
+mac = s2:option(Value, "mac", translate("macaddress"))
+ip = s2:option(Value, "ip", translate("ipaddress"))
+sys.net.arptable(function(entry)
+	ip:value(entry["IP address"])
+	mac:value(
+		entry["HW address"],
+		entry["HW address"] .. " (" .. entry["IP address"] .. ")"
+	)
+end)
 
-return m, m2
+return m
+

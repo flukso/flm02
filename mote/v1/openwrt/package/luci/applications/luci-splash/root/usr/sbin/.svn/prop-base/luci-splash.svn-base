@@ -1,0 +1,10 @@
+K 14
+svn:executable
+V 1
+*
+K 13
+svn:mergeinfo
+V 362
+/luci/branches/luci-0.8/applications/luci-splash/root/usr/sbin/luci-splash:4367-4369
+/luci/trunk/applications/luci-splash/root/usr/sbin/luci-splash:4843-4844,4848-4850,4852,4854,4856-4859,4870-4876,4880-4881,4886-4890,4941-4944,4950,4958-4959,5007-5013,5022-5023,5028-5118,5128,5145-5153,5155-5161,5177-5182,5184-5189,5193-5194,5198,5315-5316,5902-5903,6024-6025
+END

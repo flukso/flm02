@@ -9,13 +9,13 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: sysauth.htm 3941 2008-12-23 21:39:38Z jow $
+$Id: sysauth.htm 5966 2010-03-27 22:23:47Z jow $
 
 -%>
 <%+header%>
 <% luci.i18n.loadc("sysauth") %>
 
-<form method="post" action="<%=luci.http.getenv("REQUEST_URI")%>">
+<form method="post" action="<%=luci.util.pcdata(luci.http.getenv("REQUEST_URI"))%>">
 	<div class="cbi-map">
 		<h2><a id="content" name="content"><%:sysauth_head%></a></h2>
 		<div class="cbi-map-descr">

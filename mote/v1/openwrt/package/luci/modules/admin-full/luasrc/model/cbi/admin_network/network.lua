@@ -10,19 +10,23 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: network.lua 3650 2008-10-29 19:40:40Z jow $
+$Id: network.lua 5949 2010-03-27 14:56:35Z jow $
 ]]--
-require("luci.sys")
-require("luci.tools.webadmin")
+
+local utl = require "luci.util"
+local sys = require "luci.sys"
+local wa  = require "luci.tools.webadmin"
+local fs  = require "nixio.fs"
 
 local netstate = luci.model.uci.cursor_state():get_all("network")
 m = Map("network", translate("interfaces"))
 
 local created
-local netstat = luci.sys.net.deviceinfo()
+local netstat = sys.net.deviceinfo()
 
 s = m:section(TypedSection, "interface", "")
 s.addremove = true
+s.anonymous = false
 s.extedit   = luci.dispatcher.build_url("admin", "network", "network") .. "/%s"
 s.template  = "cbi/tblsection"
 s.override_scheme = true
@@ -65,7 +69,11 @@ end
 
 ifname = s:option(DummyValue, "ifname", translate("device"))
 function ifname.cfgvalue(self, section)
-	return netstate[section] and netstate[section].ifname
+	local ix = utl.trim(netstate[section] and netstate[section].ifname or "")
+	if #ix > 0 then
+		return ix
+	end
+	return "?"
 end
 
 ifname.titleref = luci.dispatcher.build_url("admin", "network", "vlan")
@@ -76,25 +84,35 @@ if luci.model.uci.cursor():load("firewall") then
 	zone.titleref = luci.dispatcher.build_url("admin", "network", "firewall", "zones")
 
 	function zone.cfgvalue(self, section)
-		local zones = luci.tools.webadmin.network_get_zones(section)
-		return zones and table.concat(zones, ", ") or "-"
+		return table.concat(wa.network_get_zones(section) or { "-" }, ", ")
 	end
 end
 
 hwaddr = s:option(DummyValue, "_hwaddr")
 function hwaddr.cfgvalue(self, section)
-	local ix = self.map:get(section, "ifname") or ""
-	return luci.fs.readfile("/sys/class/net/" .. ix .. "/address")
-	 or luci.util.exec("ifconfig " .. ix):match(" ([A-F0-9:]+)%s*\n")
-	 or "n/a"
+	local ix = utl.trim(self.map:get(section, "ifname") or "")
+	local mac = fs.readfile("/sys/class/net/" .. ix .. "/address")
 
+	if not mac then
+		mac = luci.util.exec("ifconfig " .. ix)
+		mac = mac and mac:match(" ([A-F0-9:]+)%s*\n")
+	end
+
+	if mac and #mac > 0 then
+		return mac:upper()
+	end
+
+	return "?"
 end
 
 
 ipaddr = s:option(DummyValue, "ipaddr", translate("addresses"))
 function ipaddr.cfgvalue(self, section)
-	local addr = luci.tools.webadmin.network_get_addresses(section)
-	return table.concat(addr, ", ")
+	local addr = table.concat(wa.network_get_addresses(section), ", ")
+	if addr and #addr > 0 then
+		return addr
+	end
+	return "?"
 end
 
 txrx = s:option(DummyValue, "_txrx")
@@ -103,10 +121,10 @@ function txrx.cfgvalue(self, section)
 	local ix = self.map:get(section, "ifname")
 
 	local rx = netstat and netstat[ix] and netstat[ix][1]
-	rx = rx and luci.tools.webadmin.byte_format(tonumber(rx)) or "-"
+	rx = rx and wa.byte_format(tonumber(rx)) or "-"
 
 	local tx = netstat and netstat[ix] and netstat[ix][9]
-	tx = tx and luci.tools.webadmin.byte_format(tonumber(tx)) or "-"
+	tx = tx and wa.byte_format(tonumber(tx)) or "-"
 
 	return string.format("%s / %s", tx, rx)
 end

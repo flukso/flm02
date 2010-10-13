@@ -38,24 +38,24 @@
 #include <avr/wdt.h>
 
 // variable declarations
-volatile struct state aux[4] = {{false, false, START, 0}, {false, false, START, 0}, {false, false, START, 0}, {false, false, START, 0}};
+volatile struct state aux[4] = {{false, false, false, START, 0}, {false, false, false, START, 0}, {false, false, false, START, 0}, {false, false, false, START, 0}};
 
 volatile struct sensor EEMEM EEPROM_measurements[4] = {{SENSOR0, START}, {SENSOR1, START}, {SENSOR2, START}, {SENSOR3, START}};
 volatile struct sensor measurements[4];
+
+volatile struct time_struct time = {false, 0};
 
 volatile uint8_t muxn = 0;
 volatile uint16_t timer = 0;
 
 // interrupt service routine for INT0
 ISR(INT0_vect) {
-  measurements[2].value++;
-  aux[2].pulse = true;
+  pulse_add(&measurements[2], &aux[2], PULSE_CONST_2, PULSE_HALF_2);
 }
 
 // interrupt service routine for INT1
 ISR(INT1_vect) {
-  measurements[3].value++;
-  aux[3].pulse = true;
+  pulse_add(&measurements[3], &aux[3], PULSE_CONST_3, PULSE_HALF_3);
 }
 
 // interrupt service routine for PCI2 (PCINT20)
@@ -65,12 +65,25 @@ ISR(PCINT2_vect) {
     aux[4].toggle = true;
   }
   else {
-    measurements[4].value++;
-    aux[4].pulse = true;
-    aux[4].toggle = false;
+    pulse_add(&measurements[4], &aux[4], PULSE_CONST_4, PULSE_HALF_4);
   }
 }
 **/
+
+void pulse_add(volatile struct sensor *measurement, volatile struct state *aux, uint32_t pulse_const, uint32_t pulse_half) {
+  measurement->value += pulse_const;
+
+  if (aux->half == true) {
+    measurement->value += 1;
+  }
+
+  if (pulse_half) {
+    aux->half = !aux->half;
+  }
+
+  aux->pulse = true;
+  aux->time  = time.ms;
+}
 
 // interrupt service routine for ADC
 ISR(TIMER2_COMPA_vect) {
@@ -103,6 +116,11 @@ ISR(TIMER2_COMPA_vect) {
   muxn++;
   if (!(muxn &= 0x1)) timer++;
   if (timer > SECOND) timer = 0;
+
+  // We have timer interrupts occcuring at a frequency of 1250Hz.
+  // In order to map this to 1000Hz (=ms) we have to skip every fifth interrupt.
+  if (!time.skip) time.ms++;
+  time.skip = (((time.ms & 0x3) == 3) && !time.skip) ? true : false;
 
   ADMUX &= 0xF8;
   ADMUX |= muxn;
@@ -260,12 +278,13 @@ void setup()
 
 void send(uint8_t msg_type, const struct sensor *measurement, const struct state *aux)
 {
-  uint8_t i = 46;
-  char message[49];
+  uint8_t i;
   uint32_t value = 0;
-
+  uint32_t ms = 0;
   int32_t rest;
   uint8_t pulse_count;
+
+  char message[60];
 
   switch (msg_type) {
   case PULSE:
@@ -276,6 +295,7 @@ void send(uint8_t msg_type, const struct sensor *measurement, const struct state
 
     cli();
     value = measurement->value;
+    ms = aux->time;
     sei();
  
     strcpy(message, "pls ");
@@ -312,9 +332,18 @@ void send(uint8_t msg_type, const struct sensor *measurement, const struct state
   strcpy(&message[4], measurement->id);
   strcpy(&message[36], ":0000000000\n");
 
+  i = 46;
   do {                                // generate digits in reverse order
     message[i--] = '0' + value % 10;  // get next digit
   } while ((value /= 10) > 0);        // delete it
+
+  if ((msg_type == PULSE) && ms) {
+    strcpy(&message[47], ":0000000000\n");
+    i = 57;
+    do {                                // generate digits in reverse order
+      message[i--] = '0' + ms % 10;     // get next digit
+    } while ((ms /= 10) > 0);           // delete it
+  }
 
   printString(message);
 }

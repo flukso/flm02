@@ -10,19 +10,19 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: network.lua 4171 2009-01-27 20:50:28Z Cyrus $
+$Id: network.lua 5949 2010-03-27 14:56:35Z jow $
 ]]--
 
-require("luci.tools.webadmin")
-require("luci.sys")
-require("luci.fs")
+local wa  = require "luci.tools.webadmin"
+local sys = require "luci.sys"
+local fs  = require "nixio.fs"
 
-local has_pptp  = luci.fs.mtime("/usr/sbin/pptp")
-local has_pppoe = luci.fs.glob("/usr/lib/pppd/*/rp-pppoe.so")
+local has_pptp  = fs.access("/usr/sbin/pptp")
+local has_pppoe = fs.glob("/usr/lib/pppd/*/rp-pppoe.so")()
 
 local network = luci.model.uci.cursor_state():get_all("network")
 
-local netstat = luci.sys.net.deviceinfo()
+local netstat = sys.net.deviceinfo()
 local ifaces = {}
 
 for k, v in pairs(network) do
@@ -32,7 +32,6 @@ for k, v in pairs(network) do
 end
 
 m = Map("network", translate("network"), translate("m_n_network"))
-
 s = m:section(NamedSection, "lan", "interface", translate("m_n_local"))
 s.addremove = false
 s:option(Value, "ipaddr", translate("ipaddress"))
@@ -99,7 +98,7 @@ pwd:depends("proto", "pptp")
 
 -- Allow user to set MSS correction here if the UCI firewall is installed
 -- This cures some cancer for providers with pre-war routers
-if luci.fs.access("/etc/config/firewall") then
+if fs.access("/etc/config/firewall") then
 	mssfix = s:option(Flag, "_mssfix",
 		translate("m_n_mssfix"), translate("m_n_mssfix_desc"))
 	mssfix.rmempty = false

@@ -9,7 +9,13 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: header.htm 3650 2008-10-29 19:40:40Z jow $
+$Id: header.htm 4234 2009-02-09 13:17:26Z jow $
 
 -%>
-<% include("themes/" .. theme .. "/header") %>
+
+<%
+	if not luci.dispatcher.context.template_header_sent then
+		include("themes/" .. theme .. "/header")
+		luci.dispatcher.context.template_header_sent = true
+	end
+%>

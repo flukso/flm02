@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: contact.lua 3941 2008-12-23 21:39:38Z jow $
+$Id: contact.lua 3387 2008-09-20 22:44:58Z jow $
 ]]--
 
 luci.i18n.loadc("freifunk")

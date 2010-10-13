@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: livestats.lua 3941 2008-12-23 21:39:38Z jow $
+$Id: livestats.lua 3866 2008-12-07 19:38:31Z Cyrus $
 ]]--
 
 module("luci.controller.livestats", package.seeall)

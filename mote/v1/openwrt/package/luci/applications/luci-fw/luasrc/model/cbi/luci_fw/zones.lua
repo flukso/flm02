@@ -9,13 +9,14 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: zones.lua 4051 2009-01-16 20:29:47Z Cyrus $
+$Id: zones.lua 5755 2010-03-08 02:34:12Z jow $
 ]]--
 require("luci.tools.webadmin")
 m = Map("firewall", translate("fw_fw"), translate("fw_fw1"))
 
 s = m:section(TypedSection, "defaults")
 s.anonymous = true
+s.addremove = false
 
 s:option(Flag, "syn_flood")
 
@@ -57,6 +58,7 @@ for i, v in ipairs(p) do
 end
 
 s:option(Flag, "masq")
+s:option(Flag, "mtu_fix", translate("fw_mtufix"))
 
 net = s:option(MultiValue, "network")
 net.widget = "select"

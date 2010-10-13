@@ -9,16 +9,17 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: sauth.lua 3941 2008-12-23 21:39:38Z jow $
+$Id: sauth.lua 5190 2009-07-31 23:36:15Z jow $
 
 ]]--
 
 --- LuCI session library.
 module("luci.sauth", package.seeall)
-require("luci.fs")
 require("luci.util")
 require("luci.sys")
 require("luci.config")
+local nixio = require "nixio", require "nixio.util"
+local fs = require "nixio.fs"
 
 
 luci.config.sauth = luci.config.sauth or {}
@@ -28,25 +29,24 @@ sessiontime = tonumber(luci.config.sauth.sessiontime) or 15 * 60
 --- Manually clean up expired sessions.
 function clean()
 	local now   = os.time()
-	local files = luci.fs.dir(sessionpath)
+	local files = fs.dir(sessionpath)
 	
 	if not files then
 		return nil
 	end
 	
-	for i, file in pairs(files) do
+	for file in files do
 		local fname = sessionpath .. "/" .. file
-		local stat = luci.fs.stat(fname)
-		if stat and stat.type == "regular" and stat.atime + sessiontime < now then
-			luci.fs.unlink(fname)
+		local stat = fs.stat(fname)
+		if stat and stat.type == "reg" and stat.mtime + sessiontime < now then
+			fs.unlink(fname)
 		end 
 	end
 end
 
 --- Prepare session storage by creating the session directory.
 function prepare()
-	luci.fs.mkdir(sessionpath)
-	luci.fs.chmod(sessionpath, "a-rwx,u+rwx")
+	fs.mkdir(sessionpath, 700)
 	 
 	if not sane() then
 		error("Security Exception: Session path is not sane!")
@@ -57,7 +57,7 @@ end
 -- @param id	Session identifier
 -- @return		Session data
 function read(id)
-	if not id then
+	if not id or #id == 0 then
 		return
 	end
 	if not id:match("^%w+$") then
@@ -67,7 +67,8 @@ function read(id)
 	if not sane(sessionpath .. "/" .. id) then
 		return
 	end
-	return luci.fs.readfile(sessionpath .. "/" .. id)
+	fs.utimes(sessionpath .. "/" .. id)
+	return fs.readfile(sessionpath .. "/" .. id)
 end
 
 
@@ -75,8 +76,8 @@ end
 -- @return Boolean status
 function sane(file)
 	return luci.sys.process.info("uid")
-			== luci.fs.stat(file or sessionpath, "uid")
-		and luci.fs.stat(file or sessionpath, "mode")
+			== fs.stat(file or sessionpath, "uid")
+		and fs.stat(file or sessionpath, "modestr")
 			== (file and "rw-------" or "rwx------")
 end
 
@@ -91,8 +92,10 @@ function write(id, data)
 	if not id:match("^%w+$") then
 		error("Session ID is not sane!")
 	end
-	luci.fs.writefile(sessionpath .. "/" .. id, data)
-	luci.fs.chmod(sessionpath .. "/" .. id, "a-rwx,u+rw")
+	
+	local f = nixio.open(sessionpath .. "/" .. id, "w", 600)
+	f:writeall(data)
+	f:close()
 end
 
 
@@ -102,5 +105,5 @@ function kill(id)
 	if not id:match("^%w+$") then
 		error("Session ID is not sane!")
 	end
-	luci.fs.unlink(sessionpath .. "/" .. id)
+	fs.unlink(sessionpath .. "/" .. id)
 end

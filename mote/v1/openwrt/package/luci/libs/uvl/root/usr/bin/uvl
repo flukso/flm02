@@ -11,7 +11,7 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: uvl 4085 2009-01-17 23:51:28Z jow $
+$Id: uvl 6027 2010-04-05 17:44:57Z jow $
 
 ]]--
 
@@ -144,7 +144,7 @@ if #arguments ~= 2 or options.help then
 	print([=[
 
 uvl - UCI Validation Layer
-$Id: uvl 4085 2009-01-17 23:51:28Z jow $
+$Id: uvl 6027 2010-04-05 17:44:57Z jow $
 (c) 2008 Jo-Philipp Wich, Steven Barth
 
 Usage:
@@ -216,7 +216,7 @@ elseif arguments[1] == "verify" or arguments[1] == "verify-scheme" then
 		)
 
 		ok, err = uvl:validate_config( cso[1], uci:get_all(cso[1]) )
-		if err then err.code = luci.uvl.errors.ERR_SCHEME end
+		if err then err.code = 'SCHEME' end
 	else
 		ok, err = uvl:validate( unpack(cso) )
 	end

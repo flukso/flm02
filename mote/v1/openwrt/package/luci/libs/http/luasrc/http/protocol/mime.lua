@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: mime.lua 2641 2008-07-22 01:15:39Z jow $
+$Id: mime.lua 6029 2010-04-05 17:46:20Z jow $
 
 ]]--
 
@@ -44,6 +44,7 @@ MIME_TYPES = {
     ["zip"]   = "application/zip";
     ["pdf"]   = "application/pdf";
     ["xml"]   = "application/xml";
+    ["xsl"]   = "application/xml";
     ["doc"]   = "application/msword";
     ["ppt"]   = "application/vnd.ms-powerpoint";
     ["xls"]   = "application/vnd.ms-excel";

@@ -9,20 +9,20 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: hosts.lua 3172 2008-09-06 23:29:58Z jow $
+$Id: hosts.lua 5745 2010-03-08 01:19:46Z jow $
 ]]--
 
 require("luci.sys")
 require("luci.util")
-m = Map("luci_hosts", translate("hostnames"))
+m = Map("dhcp", translate("hostnames"))
 
-s = m:section(TypedSection, "host", translate("hostnames_entries"))
+s = m:section(TypedSection, "domain", translate("hostnames_entries"))
 s.addremove = true
 s.anonymous = true
 s.template = "cbi/tblsection"
 
-hn = s:option(Value, "hostname", translate("hostnames_hostname"))
-ip = s:option(Value, "ipaddr", translate("hostnames_address"))
+hn = s:option(Value, "name", translate("hostnames_hostname"))
+ip = s:option(Value, "ip", translate("hostnames_address"))
 for i, dataset in ipairs(luci.sys.net.arptable()) do
 	ip:value(
 		dataset["IP address"],

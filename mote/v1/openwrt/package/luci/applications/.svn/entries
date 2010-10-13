@@ -1,0 +1,103 @@
+10
+
+dir
+6253
+http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications
+http://svn.luci.subsignal.org
+
+
+
+2010-05-30T23:48:02.464313Z
+6189
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+luci-openvpn
+dir
+
+luci-asterisk
+dir
+
+luci-tinyproxy
+dir
+
+luci-ushare
+dir
+
+luci-ddns
+dir
+
+luci-siitwizard
+dir
+
+luci-splash
+dir
+
+luci-statistics
+dir
+
+luci-coovachilli
+dir
+
+freifunk-community
+dir
+
+luci-polipo
+dir
+
+luci-qos
+dir
+
+luci-ntpc
+dir
+
+luci-hd-idle
+dir
+
+luci-initmgr
+dir
+
+luci-p910nd
+dir
+
+luci-p2pblock
+dir
+
+luci-fw
+dir
+
+luci-ffwizard-leipzig
+dir
+
+luci-livestats
+dir
+
+luci-olsr
+dir
+
+myapplication
+dir
+
+luci-mmc-over-gpio
+dir
+
+luci-upnp
+dir
+
+luci-samba
+dir
+

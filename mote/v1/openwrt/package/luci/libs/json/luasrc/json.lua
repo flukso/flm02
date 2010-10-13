@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: json.lua 3997 2009-01-04 20:09:13Z Cyrus $
+$Id: json.lua 3996 2009-01-04 20:08:45Z Cyrus $
 
 Decoder:
 	Info:

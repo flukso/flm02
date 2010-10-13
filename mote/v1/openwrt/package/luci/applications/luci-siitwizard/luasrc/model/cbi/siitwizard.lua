@@ -10,42 +10,18 @@ You may obtain a copy of the License at
 
 http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: siitwizard.lua 3940 2008-12-23 16:49:48Z jow $
+$Id: siitwizard.lua 3966 2008-12-29 17:39:48Z jow $
 
 ]]--
 
 local uci = require "luci.model.uci".cursor()
 
--------------------- View --------------------
-f = SimpleForm("siitwizward", "4over6-Assistent",
- "Dieser Assistent unterstüzt bei der Einrichtung von IPv4-over-IPv6 Translation.")
+-------------------- Init --------------------
 
-mode = f:field(ListValue, "mode", "Betriebsmodus")
-mode:value("client", "Client")
-mode:value("gateway", "Gateway")
-
-dev = f:field(ListValue, "device", "WLAN-Gerät")
-uci:foreach("wireless", "wifi-device",
-	function(section)
-		dev:value(section[".name"])
-	end)
-
-lanip = f:field(Value, "ipaddr", "LAN IP Adresse")
-lanip.value = "172.23.1.1"
-
-lanmsk = f:field(Value, "lanmask", "Lokale LAN Netzmaske")
-lanmsk.value = "255.255.255.0"
-
-gv4msk = f:field(Value, "gv4mask", "Globale LAN Netzmaske")
-gv4msk.value = "255.255.0.0"
-
-
--------------------- Control --------------------
+--
+-- Find link-local address
+--
 LL_PREFIX = luci.ip.IPv6("fe80::/64")
-
---
--- find link-local address
---
 function find_ll()
 	for _, r in ipairs(luci.sys.net.routes6()) do
 		if LL_PREFIX:contains(r.dest) and r.dest:higher(LL_PREFIX) then
@@ -55,30 +31,108 @@ function find_ll()
 	return luci.ip.IPv6("::")
 end
 
+--
+-- Determine defaults
+--
+local ula_prefix  = uci:get("siit", "ipv6", "ula_prefix")  or "fd00::"
+local ula_global  = uci:get("siit", "ipv6", "ula_global")  or "00ca:ffee:babe::"		-- = Freifunk
+local ula_subnet  = uci:get("siit", "ipv6", "ula_subnet")  or "0000:0000:0000:4223::"	-- = Berlin
+local siit_prefix = uci:get("siit", "ipv6", "siit_prefix") or "::ffff:0000:0000"
+local ipv4_pool   = uci:get("siit", "ipv4", "pool")        or "172.16.0.0/12"
+local ipv4_netsz  = uci:get("siit", "ipv4", "netsize")     or "24"
+
+--
+-- Find IPv4 allocation pool
+--
+local gv4_net = luci.ip.IPv4(ipv4_pool)
+
+--
+-- Generate ULA
+--
+local ula = luci.ip.IPv6("::/64")
+
+for _, prefix in ipairs({ ula_prefix, ula_global, ula_subnet }) do
+	ula = ula:add(luci.ip.IPv6(prefix))
+end
+
+ula = ula:add(find_ll())
 
 
+-------------------- View --------------------
+f = SimpleForm("siitwizward", "SIIT-Wizzard",
+ "This wizzard helps to setup SIIT (IPv4-over-IPv6) translation according to RFC2765.")
+
+f:field(DummyValue, "info_ula", "Mesh ULA address").value = ula:string()
+
+f:field(DummyValue, "ipv4_pool", "IPv4 allocation pool").value =
+	"%s (%i hosts)" %{ gv4_net:string(), 2 ^ ( 32 - gv4_net:prefix() ) - 2 }
+
+f:field(DummyValue, "ipv4_size", "IPv4 LAN network prefix").value =
+	"%i bit (%i hosts)" %{ ipv4_netsz, 2 ^ ( 32 - ipv4_netsz ) - 2 }
+
+mode = f:field(ListValue, "mode", "Operation mode")
+mode:value("client", "Client")
+mode:value("gateway", "Gateway")
+
+dev = f:field(ListValue, "device", "Wireless device")
+uci:foreach("wireless", "wifi-device",
+	function(section)
+		dev:value(section[".name"])
+	end)
+
+lanip = f:field(Value, "ipaddr", "LAN IPv4 subnet")
+function lanip.formvalue(self, section)
+	local val = self.map:formvalue(self:cbid(section))
+	local net = luci.ip.IPv4("%s/%i" %{ val, ipv4_netsz })
+
+	if net then
+		if gv4_net:contains(net) then
+			if not net:minhost():equal(net:host()) then
+				self.error = { [section] = true }
+				f.errmessage = "IPv4 address is not the first host of " ..
+					"subnet, expected " .. net:minhost():string()
+			end
+		else
+			self.error = { [section] = true }
+			f.errmessage = "IPv4 address is not within the allocation pool"
+		end
+	else
+		self.error = { [section] = true }
+		f.errmessage = "Invalid IPv4 address given"
+	end
+
+	return val
+end
+
+dns = f:field(Value, "dns", "DNS server for LAN clients")
+dns.value = "141.1.1.1"
+
+-------------------- Control --------------------
 function f.handle(self, state, data)
 	if state == FORM_VALID then
 		luci.http.redirect(luci.dispatcher.build_url("admin", "uci", "changes"))
 		return false
-	elseif state == FORM_INVALID then
-		self.errmessage = "Ungültige Eingabe: Bitte die Formularfelder auf Fehler prüfen."
 	end
 	return true
 end
 
 function mode.write(self, section, value)
 
-	-- lan interface
+	--
+	-- Find LAN IPv4 range
+	--
 	local lan_net = luci.ip.IPv4(
-		lanip:formvalue(section) or "192.168.1.1",
-		lanmsk:formvalue(section) or "255.255.255.0"
+		( lanip:formvalue(section) or "172.16.0.1" ) .. "/" .. ipv4_netsz
 	)
 
-	local gv4_net = luci.ip.IPv4(
-		lanip:formvalue(section) or "192.168.1.1",
-		gv4msk:formvalue(section) or "255.255.0.0"
-	)
+	if not lan_net then return end
+
+	--
+	-- Find wifi interface, dns server and hostname
+	--
+	local device      = dev:formvalue(section)
+	local dns_server  = dns:formvalue(section) or "141.1.1.1"
+	local hostname    = "siit-" .. lan_net:host():string():gsub("%.","-")
 
 	--
 	-- Configure wifi device
@@ -107,35 +161,13 @@ function mode.write(self, section, value)
 	uci:section("wireless", "wifi-iface", nil, {
 		encryption = "none",
 		mode       = "adhoc",
+		txpower    = 10,
+		sw_merge   = 1,
 		network    = wifi_device,
 		device     = wifi_device,
 		ssid       = wifi_essid,
 		bssid      = wifi_bssid,
 	})
-
-
-	--
-	-- Determine defaults
-	--
-	local ula_prefix  = uci:get("siit", "ipv6", "ula_prefix")  or "fd00::"
-	local ula_global  = uci:get("siit", "ipv6", "ula_global")  or "00ca:ffee:babe::"		-- = Freifunk
-	local ula_subnet  = uci:get("siit", "ipv6", "ula_subnet")  or "0000:0000:0000:4223::"	-- = Berlin
-	local siit_prefix = uci:get("siit", "ipv6", "siit_prefix") or "::ffff:0000:0000"
-
-	-- Find wifi interface
-	local device = dev:formvalue(section)
-
-	--
-	-- Generate ULA
-	--
-	local ula = luci.ip.IPv6("::/64")
-
-	for _, prefix in ipairs({ ula_prefix, ula_global, ula_subnet }) do
-		ula = ula:add(luci.ip.IPv6(prefix))
-	end
-
-	ula = ula:add(find_ll())
-
 
 	--
 	-- Gateway mode
@@ -149,15 +181,15 @@ function mode.write(self, section, value)
 
 	if value == "gateway" then
 
-
 		-- wan mtu
-		uci:set("network", "wan", "mtu", 1400)
+		uci:set("network", "wan", "mtu", 1240)
 
 		-- lan settings
 		uci:tset("network", "lan", {
-			mtu     = 1400,
+			mtu     = 1240,
 			ipaddr  = lan_net:host():string(),
-			netmask = lan_net:mask():string()
+			netmask = lan_net:mask():string(),
+			proto   = "static"
 		})
 
 		-- use full siit subnet
@@ -185,7 +217,7 @@ function mode.write(self, section, value)
 
 		-- lan settings
 		uci:tset("network", "lan", {
-			mtu     = 1400,
+			mtu     = 1240,
 			ipaddr  = lan_net:host():string(),
 			netmask = lan_net:mask():string()
 		})
@@ -305,34 +337,47 @@ function mode.write(self, section, value)
 	uci:section("olsrd", "Interface", nil, {
 		ignore      = 0,
 		interface   = wifi_device,
-		Ip6AddrType = "global"
+		Ip6AddrType = "unique-local"
 	})
 
 	-- hna6
 	uci:delete_all("olsrd", "Hna6",
-		function(s)
-			if s.netaddr and s.prefix then
-				return siit_route:contains(luci.ip.IPv6(s.netaddr.."/"..s.prefix))
-			end
-		end)
+		function(s) return true end)
 
 	uci:section("olsrd", "Hna6", nil, {
 		netaddr = siit_route:host():string(),
 		prefix  = siit_route:prefix()
 	})
 
-	-- txtinfo v6
+	-- txtinfo v6 & olsrd nameservice
 	uci:foreach("olsrd", "LoadPlugin",
 		function(s)
 			if s.library == "olsrd_txtinfo.so.0.1" then
 				uci:set("olsrd", s['.name'], "accept", "::1")
+			elseif s.library == "olsrd_nameservice.so.0.3" then
+				uci:set("olsrd", s['.name'], "name", hostname)
 			end
+		end)
+
+	-- lan dns
+	uci:tset("dhcp", "lan", {
+		dhcp_option = "6," .. dns_server,
+		start       = bit.band(lan_net:minhost():add(1)[2][2], 0xFF),
+		limit       = ( 2 ^ ( 32 - lan_net:prefix() ) ) - 3
+	})
+
+	-- hostname
+	uci:foreach("system", "system",
+		function(s)
+			uci:set("system", s['.name'], "hostname", hostname)
 		end)
 
 	uci:save("wireless")
 	uci:save("firewall")
 	uci:save("network")
+	uci:save("system")
 	uci:save("olsrd")
+	uci:save("dhcp")
 end
 
 return f

@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: olsrd.lua 4204 2009-01-31 03:02:57Z jow $
+$Id: olsrd.lua 5561 2009-11-21 00:24:28Z jow $
 ]]--
 
 require("luci.tools.webadmin")
@@ -90,6 +90,8 @@ for i=0,7 do
 end
 willingness.optional = true
 
+natthr = s:option(Value, "NatThreshold")
+natthr.optional = true
 
 
 i = m:section(TypedSection, "Interface", translate("interfaces"))
@@ -100,6 +102,10 @@ i.dynamic = true
 ign = i:option(Flag, "ignore", "Enable")
 ign.enabled  = "0"
 ign.disabled = "1"
+ign.rmempty = false
+function ign.cfgvalue(self, section)
+	return Flag.cfgvalue(self, section) or "0"
+end
 
 network = i:option(ListValue, "interface", translate("network"))
 luci.tools.webadmin.cbi_add_networks(network)

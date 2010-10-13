@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: freifunk.lua 3941 2008-12-23 21:39:38Z jow $
+$Id: freifunk.lua 3291 2008-09-14 21:59:14Z Cyrus $
 ]]--
 m = Map("freifunk", "Freifunk")
 

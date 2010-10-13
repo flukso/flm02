@@ -11,7 +11,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: uvl2cbi.lua 3941 2008-12-23 21:39:38Z jow $
+$Id: uvl2cbi.lua 3617 2008-10-23 02:23:54Z jow $
 ]]--
 
 local uvl  = require "luci.uvl"

@@ -1,6 +1,6 @@
 include $(TOPDIR)/rules.mk
 
-PKG_BRANCH:=tags/0.8.6
+PKG_BRANCH:=branches/luci-0.9
 
 ifeq ($(DUMP),)
   USELOCAL:=$(shell grep luci ../../../.project 2>/dev/null >/dev/null && echo 1)
@@ -10,12 +10,12 @@ PKG_NAME:=luci
 PKG_RELEASE:=1
 
 ifeq ($(USELOCAL),1)
-  PKG_VERSION:=0.8.6
+  PKG_VERSION:=0.9+svn
 else
   PKG_SOURCE_URL:=http://svn.luci.subsignal.org/luci/$(PKG_BRANCH)
   ifeq ($(DUMP),)
-    PKG_REV:=HEAD
-    PKG_VERSION:=0.8.6
+    PKG_REV:=$(shell LC_ALL=C svn info $(CURDIR) | sed -ne 's/^Revision: //p')
+    PKG_VERSION:=0.9+svn$(PKG_REV)
   endif
   PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
   PKG_SOURCE:=$(PKG_SOURCE_SUBDIR).tar.gz
@@ -23,11 +23,12 @@ else
   PKG_SOURCE_VERSION:=$(PKG_REV)
 endif
 
+PKG_BUILD_DEPENDS:=$(if $(STAGING_DIR_ROOT),lua/host)
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 PKG_INSTALL_DIR:=$(PKG_BUILD_DIR)/ipkg-install
 
-PKG_BUILD_DEPENDS:=libnotimpl
 LUA_TARGET:=source
+LUCI_CFLAGS:=
 PKG_SELECTED_MODULES:=
 
 
@@ -50,42 +51,41 @@ endef
 ### Templates ###
 
 define Package/luci/libtemplate
-  SECTION:=admin
-  CATEGORY:=Administration
+  SECTION:=luci
+  CATEGORY:=LuCI
   TITLE:=LuCI - Lua Configuration Interface
   URL:=http://luci.freifunk-halle.net/
   MAINTAINER:=Steven Barth <steven-at-midlink-dot-org>
-  SUBMENU:=LuCI Libraries
+  SUBMENU:=Libraries
   DEPENDS:=+luci-core
 endef
 
 define Package/luci/fftemplate
   $(call Package/luci/libtemplate)
-  SUBMENU:=LuCI Freifunk Support
+  SUBMENU:=Freifunk
   DEPENDS:=+luci-mod-freifunk
-endef
-
-define Package/luci/httpdtemplate
-  $(call Package/luci/libtemplate)
-  SUBMENU:=LuCIttpd
-  DEPENDS:=+luci-httpd
 endef
 
 define Package/luci/i18ntemplate
   $(call Package/luci/libtemplate)
-  SUBMENU:=LuCI Translations
+  SUBMENU:=Translations
   DEPENDS:=+luci-web
 endef
 
 define Package/luci/thtemplate
   $(call Package/luci/libtemplate)
-  SUBMENU:=LuCI Themes
+  SUBMENU:=Themes
   DEPENDS:=+luci-web
 endef
 
 define Package/luci/webtemplate
   $(call Package/luci/libtemplate)
-  SUBMENU:=LuCI Components
+  SUBMENU:=Components
+endef
+
+define Package/luci/collectiontemplate
+  $(call Package/luci/libtemplate)
+  SUBMENU:=Collections
 endef
 
 
@@ -100,7 +100,7 @@ endef
 
 define Package/luci-core
   $(call Package/luci/libtemplate)
-  DEPENDS:=+lua
+  DEPENDS:=+lua +luci-nixio
   TITLE:=LuCI core libraries
 endef
 
@@ -116,7 +116,7 @@ endef
 define Package/luci-core/config
        choice
                prompt "Build Target"
-               default PACKAGE_luci-core_source
+               default PACKAGE_luci-core_compile
 
        config PACKAGE_luci-core_compile
                bool "Precompiled"
@@ -136,6 +136,10 @@ endif
 
 ifneq ($(CONFIG_PACKAGE_luci-core_stripped),)
   LUA_TARGET:=strip
+endif
+
+ifneq ($(CONFIG_PACKAGE_luci-core_zipped),)
+  LUA_TARGET:=gzip
 endif
 
 
@@ -182,6 +186,17 @@ define Package/luci-http/install
 endef
 
 
+define Package/luci-httpclient
+  $(call Package/luci/libtemplate)
+  TITLE:=HTTP(S) client library
+  DEPENDS+=+luci-http +luci-nixio
+endef
+
+define Package/luci-httpclient/install
+	$(call Package/luci/install/template,$(1),libs/httpclient)
+endef
+
+
 define Package/luci-ipkg
   $(call Package/luci/libtemplate)
   TITLE:=LuCI IPKG/OPKG call abstraction library
@@ -202,6 +217,87 @@ define Package/luci-json/install
 endef
 
 
+define Package/luci-lmo
+  $(call Package/luci/libtemplate)
+  TITLE:=lmo
+endef
+
+define Package/luci-lmo/install
+	$(call Package/luci/install/template,$(1),libs/lmo)
+endef
+
+
+define Package/luci-lucid
+  $(call Package/luci/libtemplate)
+  TITLE:=LuCId Superserver
+  DEPENDS+=+luci-nixio +luci-http +luci-px5g
+endef
+
+define Package/luci-lucid/install
+	$(call Package/luci/install/template,$(1),libs/lucid)
+	$(call Package/luci/install/template,$(1),libs/lucid-http)
+endef
+
+
+
+NIXIO_TLS:=
+
+define Package/luci-nixio
+  $(call Package/luci/libtemplate)
+  TITLE:=NIXIO POSIX Library
+  DEPENDS:=+PACKAGE_luci-nixio_openssl:libopenssl +PACKAGE_luci-nixio_cyassl:libcyassl
+endef
+
+define Package/luci-nixio/install
+	$(call Package/luci/install/template,$(1),libs/nixio)
+endef
+
+define Package/luci-nixio/config
+	choice
+		prompt "TLS Provider"
+		default PACKAGE_luci-nixio_notls
+
+		config PACKAGE_luci-nixio_notls
+			bool "Disabled"
+
+		config PACKAGE_luci-nixio_axtls
+			bool "Builtin (axTLS)"
+
+		config PACKAGE_luci-nixio_cyassl
+			bool "CyaSSL"
+			select PACKAGE_libcyassl
+
+		config PACKAGE_luci-nixio_openssl
+			bool "OpenSSL"
+			select PACKAGE_libopenssl
+	endchoice
+endef
+
+ifneq ($(CONFIG_PACKAGE_luci-nixio_axtls),)
+  NIXIO_TLS:=axtls
+endif
+
+ifneq ($(CONFIG_PACKAGE_luci-nixio_openssl),)
+  NIXIO_TLS:=openssl
+endif
+
+ifneq ($(CONFIG_PACKAGE_luci-nixio_cyassl),)
+  NIXIO_TLS:=cyassl
+  LUCI_CFLAGS+=-I$(STAGING_DIR)/usr/include/cyassl
+endif
+
+
+define Package/luci-px5g
+  $(call Package/luci/libtemplate)
+  TITLE:=PX5G RSA Keymaster
+  DEPENDS:=+luci-nixio
+endef
+
+define Package/luci-px5g/install
+	$(call Package/luci/install/template,$(1),libs/px5g)
+endef
+
+
 define Package/luci-sys
   $(call Package/luci/libtemplate)
   TITLE:=LuCI Linux/POSIX system library
@@ -214,8 +310,10 @@ endef
 
 define Package/luci-web
   $(call Package/luci/libtemplate)
-  DEPENDS+=+luci-http +luci-sys +luci-uci +luci-sgi-cgi
+  DEPENDS+=+luci-http +luci-sys +luci-nixio +luci-uci \
+  	+luci-sgi-cgi +luci-lmo
   TITLE:=MVC Webframework
+  $(call Config,luci.main.lang,string,en,Default Language)
 endef
 
 define Package/luci-web/conffiles
@@ -239,32 +337,18 @@ endef
 
 
 
-### HTTPD ###
-
-define Package/luci-httpd
-  $(call Package/luci/httpdtemplate)
-  DEPENDS:=+luci-http +libuci
-  TITLE:=Server Core
-endef
-
-define Package/luci-httpd/install
-	$(call Package/luci/install/template,$(1),libs/lucittpd)
-endef
-
-
-
 ### Community Packages ###
 
 define Package/luci-freifunk-community
   $(call Package/luci/fftemplate)
   DEPENDS+= \
-   +luci-sgi-cgi +luci-app-splash \
+   +luci-web +luci-app-splash \
    +luci-app-ffwizard-leipzig \
    +luci-i18n-german \
    +PACKAGE_luci-freifunk-community:olsrd-luci +PACKAGE_luci-freifunk-community:olsrd-luci-mod-dyn-gw-plain \
    +PACKAGE_luci-freifunk-community:olsrd-luci-mod-txtinfo +PACKAGE_luci-freifunk-community:olsrd-luci-mod-nameservice \
-   +PACKAGE_luci-freifunk-community:kmod-tun +PACKAGE_luci-freifunk-community:ip \
-   +luci-app-olsr
+   +PACKAGE_luci-freifunk-community:olsrd-luci-mod-watchdog +PACKAGE_luci-freifunk-community:kmod-tun \
+   +PACKAGE_luci-freifunk-community:ip +PACKAGE_luci-freifunk-community:freifunk-watchdog +luci-app-olsr
   TITLE:=Freifunk Community Meta-Package
 endef
 
@@ -276,13 +360,8 @@ endef
 
 define Package/luci-admin-core
   $(call Package/luci/webtemplate)
-  DEPENDS+=+luci-web +luci-cbi +luci-theme-oxygen +luci-i18n-english
+  DEPENDS+=+luci-web +luci-cbi +luci-i18n-english
   TITLE:=Web UI Core Module
-endef
-
-define Package/luci-admin-core/conffiles
-/etc/config/luci_hosts
-/etc/config/luci_ethers
 endef
 
 define Package/luci-admin-core/install
@@ -325,7 +404,7 @@ endef
 
 define Package/luci-mod-freifunk
   $(call Package/luci/fftemplate)
-  DEPENDS:=+luci-admin-full +luci-json
+  DEPENDS:=+luci-admin-full +luci-json +PACKAGE_luci-mod-freifunk:freifunk-firewall
   TITLE:=LuCI Freifunk module
 endef
 
@@ -351,6 +430,17 @@ define Package/luci-app-ffwizard-leipzig/install
 endef
 
 
+define Package/luci-app-siitwizard
+  $(call Package/luci/fftemplate)
+  TITLE:=SIIT IPv4-over-IPv6 configuration wizard
+  DEPENDS:=+luci-admin-core +PACKAGE_luci-app-siitwizard:kmod-siit
+endef
+
+define Package/luci-app-siitwizard/install
+	$(call Package/luci/install/template,$(1),applications/luci-siitwizard)
+endef
+
+
 define Package/luci-app-firewall
   $(call Package/luci/webtemplate)
   DEPENDS+=+luci-admin-core +PACKAGE_luci-app-firewall:firewall
@@ -364,7 +454,8 @@ endef
 
 define Package/luci-app-olsr
   $(call Package/luci/webtemplate)
-  DEPENDS+=+luci-admin-full +PACKAGE_luci-app-olsr:olsrd-luci +PACKAGE_luci-app-olsr:olsrd-luci-mod-txtinfo
+  DEPENDS+=+luci-admin-full +PACKAGE_luci-app-olsr:olsrd-luci \
+   +PACKAGE_luci-app-olsr:olsrd-luci-mod-txtinfo
   TITLE:=OLSR configuration and status module
 endef
 
@@ -386,7 +477,10 @@ endef
 
 define Package/luci-app-splash
   $(call Package/luci/fftemplate)
-  DEPENDS+=+PACKAGE_luci-app-splash:luasocket
+  DEPENDS+=+PACKAGE_luci-app-splash:luci-nixio \
+   +PACKAGE_luci-app-splash:tc +PACKAGE_luci-app-splash:kmod-sched \
+   +PACKAGE_luci-app-splash:iptables-mod-nat-extra \
+   +PACKAGE_luci-app-splash:iptables-mod-ipopt
   TITLE:=Freifunk DHCP-Splash application
 endef
 
@@ -402,7 +496,11 @@ endef
 define Package/luci-app-statistics
   $(call Package/luci/webtemplate)
   DEPENDS+=+luci-admin-full +PACKAGE_luci-app-statistics:collectd \
-   +PACKAGE_luci-app-statistics:collectd-mod-rrdtool1 +PACKAGE_luci-app-statistics:rrdtool1
+   +PACKAGE_luci-app-statistics:rrdtool1 \
+   +PACKAGE_luci-app-statistics:collectd-mod-rrdtool \
+   +PACKAGE_luci-app-statistics:collectd-mod-wireless \
+   +PACKAGE_luci-app-statistics:collectd-mod-interface \
+   +PACKAGE_luci-app-statistics:collectd-mod-load
   TITLE:=LuCI Statistics Application
 endef
 
@@ -413,7 +511,6 @@ endef
 define Package/luci-app-statistics/install
 	$(call Package/luci/install/template,$(1),applications/luci-statistics)
 endef
-
 
 define Package/luci-app-upnp
   $(call Package/luci/webtemplate)
@@ -459,25 +556,14 @@ define Package/luci-app-samba/install
 endef
 
 
-define Package/luci-app-uvc_streamer
+define Package/luci-app-mmc-over-gpio
   $(call Package/luci/webtemplate)
-  DEPENDS+=+luci-admin-full +PACKAGE_luci-app-uvc_streamer:uvc-streamer
-  TITLE:=Webcam Streaming - UVC-Streamer module
-endef
-
-define Package/luci-app-uvc_streamer/install
-        $(call Package/luci/install/template,$(1),applications/luci-uvc_streamer)
-endef
-
-
-define Package/luci-app-mmc_over_gpio
-  $(call Package/luci/webtemplate)
-  DEPENDS+=+luci-admin-full +PACKAGE_luci-app-mmc_over_gpio:kmod-mmc-over-gpio
+  DEPENDS+=+luci-admin-full +PACKAGE_luci-app-mmc-over-gpio:kmod-mmc-over-gpio
   TITLE:=mmc_over_gpio
 endef
 
-define Package/luci-app-mmc_over_gpio/install
-        $(call Package/luci/install/template,$(1),applications/luci-mmc_over_gpio)
+define Package/luci-app-mmc-over-gpio/install
+        $(call Package/luci/install/template,$(1),applications/luci-mmc-over-gpio)
 endef
 
 
@@ -502,14 +588,14 @@ define Package/luci-app-ushare/install
         $(call Package/luci/install/template,$(1),applications/luci-ushare)
 endef
 
-define Package/luci-app-hd_idle
+define Package/luci-app-hd-idle
   $(call Package/luci/webtemplate)
-  DEPENDS+=+luci-admin-full +PACKAGE_luci-app-hd_idle:hd-idle
+  DEPENDS+=+luci-admin-full +PACKAGE_luci-app-hd-idle:hd-idle
   TITLE:=hd-idle
 endef
 
-define Package/luci-app-hd_idle/install
-        $(call Package/luci/install/template,$(1),applications/luci-hd_idle)
+define Package/luci-app-hd-idle/install
+        $(call Package/luci/install/template,$(1),applications/luci-hd-idle)
 endef
 
 define Package/luci-app-tinyproxy
@@ -552,6 +638,27 @@ define Package/luci-app-polipo/install
         $(call Package/luci/install/template,$(1),applications/luci-polipo)
 endef
 
+define Package/luci-app-openvpn
+  $(call Package/luci/webtemplate)
+  TITLE:=LuCI Support for OpenVPN
+  DEPENDS+=+luci-admin-core +PACKAGE_luci-app-openvpn:openvpn
+endef
+
+define Package/luci-app-openvpn/install
+        $(call Package/luci/install/template,$(1),applications/luci-openvpn)
+endef
+
+define Package/luci-app-p2pblock
+  $(call Package/luci/webtemplate)
+  TITLE:=LuCI Support for the Freifunk P2P-Block addon
+  DEPENDS+=+luci-admin-core +luci-app-firewall \
+    +PACKAGE_luci-app-p2pblock:freifunk-p2pblock
+endef
+
+define Package/luci-app-p2pblock/install
+        $(call Package/luci/install/template,$(1),applications/luci-p2pblock)
+endef
+
 
 ### Server Gateway Interfaces ###
 
@@ -564,29 +671,21 @@ define Package/luci-sgi-cgi/install
 	$(call Package/luci/install/template,$(1),libs/sgi-cgi)
 endef
 
-define Package/luci-sgi-luci
+define Package/luci-sgi-uhttpd
   $(call Package/luci/libtemplate)
-  DEPENDS+=+luci-httpd
-  TITLE:=SGI for LuCIttpd
+  TITLE:=Binding for the uHTTPd server
+  DEPENDS+=+uhttpd +uhttpd-mod-lua
 endef
 
-define Package/luci-sgi-luci/install
-	$(call Package/luci/install/template,$(1),libs/sgi-luci)
+define Package/luci-sgi-uhttpd/install
+	$(call Package/luci/install/template,$(1),libs/sgi-uhttpd)
 endef
 
-define Package/luci-sgi-webuci
-  $(call Package/luci/libtemplate)
-  TITLE:=SGI for Webuci
-endef
-
-define Package/luci-sgi-webuci/install
-	$(call Package/luci/install/template,$(1),libs/sgi-webuci)
-endef
 
 ### Themes ###
 define Package/luci-theme-base
   $(call Package/luci/thtemplate)
-  DEPENDS:=+luci-web
+  DEPENDS:=
   TITLE:=Common base for all themes
 endef
 
@@ -626,10 +725,22 @@ define Package/luci-theme-freifunk-bno/install
 	$(call Package/luci/install/template,$(1),themes/freifunk-bno)
 endef
 
+define Package/luci-theme-freifunk-hannover
+  $(call Package/luci/fftemplate)
+  DEPENDS:=+luci-web
+  MAINTAINER:=Mikolas Bingemer <mickey-at-freifunk-hannover-dot-de>
+  TITLE:=Freifunk Hannover Theme
+endef
+
+define Package/luci-theme-freifunk-hannover/install
+	$(call Package/luci/install/template,$(1),themes/freifunk-hannover)
+endef
+
 define Package/luci-theme-openwrt
   $(call Package/luci/thtemplate)
   TITLE:=OpenWrt.org
-  DEPENDS:=+luci-theme-base
+  DEPENDS:=+luci-theme-base luci-core
+  DEFAULT:=y if PACKAGE_luci-core
 endef
 
 define Package/luci-theme-openwrt/install
@@ -717,6 +828,103 @@ define Package/luci-i18n-portuguese_brazilian/install
 endef
 
 
+define Package/luci-i18n-japanese
+  $(call Package/luci/i18ntemplate)
+  TITLE:=Japanese (by Tsukasa Hamano)
+endef
+
+define Package/luci-i18n-japanese/install
+	$(call Package/luci/install/template,$(1),i18n/japanese)
+endef
+
+
+define Package/luci-i18n-greek
+  $(call Package/luci/i18ntemplate)
+  TITLE:=Greek (by Vasilis Tsiligiannis)
+endef
+
+define Package/luci-i18n-greek/install
+	$(call Package/luci/install/template,$(1),i18n/greek)
+endef
+
+
+define Package/luci-i18n-catalan
+  $(call Package/luci/i18ntemplate)
+  TITLE:=Catalan (by Eduard Duran)
+endef
+
+define Package/luci-i18n-catalan/install
+	$(call Package/luci/install/template,$(1),i18n/catalan)
+endef
+
+
+define Package/luci-i18n-portuguese
+  $(call Package/luci/i18ntemplate)
+  TITLE:=Portuguese (by Jose Monteiro)
+endef
+
+define Package/luci-i18n-portuguese/install
+	$(call Package/luci/install/template,$(1),i18n/portuguese)
+endef
+
+
+define Package/luci-i18n-spanish
+  $(call Package/luci/i18ntemplate)
+  TITLE:=Spanish (by Guillermo Javier Nardoni)
+endef
+
+define Package/luci-i18n-spanish/install
+	$(call Package/luci/install/template,$(1),i18n/spanish)
+endef
+
+
+### Collections ###
+define Package/luci
+  $(call Package/luci/collectiontemplate)
+  TITLE:=Standard OpenWrt set including full and mini admin and the standard theme
+  DEPENDS:=+uhttpd +luci-admin-full +luci-admin-mini +luci-theme-openwrt \
+    +luci-app-firewall +luci-app-initmgr
+endef
+
+define Package/luci/install
+	true
+endef
+
+
+define Package/luci-ssl
+  $(call Package/luci/collectiontemplate)
+  TITLE:=Standard OpenWrt set with https support
+  DEPENDS:=+uhttpd +uhttpd-mod-tls +px5g +luci-admin-full +luci-admin-mini \
+    +luci-theme-openwrt +luci-app-firewall +luci-app-initmgr
+endef
+
+define Package/luci-ssl/install
+	true
+endef
+
+
+define Package/luci-medium
+  $(call Package/luci/collectiontemplate)
+  TITLE:=Medium package set using only admin full and a theme without graphics
+  DEPENDS:=+uhttpd +luci-admin-full +luci-theme-openwrtlight
+endef
+
+define Package/luci-medium/install
+	true
+endef
+
+
+define Package/luci-light
+  $(call Package/luci/collectiontemplate)
+  TITLE:=Minimum package set using only admin mini and a theme without graphics
+  DEPENDS:=+uhttpd +luci-admin-mini +luci-theme-openwrtlight
+endef
+
+define Package/luci-light/install
+	true
+endef
+
+
 ### Compile ###
 ifneq ($(CONFIG_PACKAGE_luci-core),)
 	PKG_SELECTED_MODULES+=libs/core
@@ -730,11 +938,26 @@ endif
 ifneq ($(CONFIG_PACKAGE_luci-http),)
 	PKG_SELECTED_MODULES+=libs/http
 endif
+ifneq ($(CONFIG_PACKAGE_luci-httpclient),)
+	PKG_SELECTED_MODULES+=libs/httpclient
+endif
 ifneq ($(CONFIG_PACKAGE_luci-ipkg),)
 	PKG_SELECTED_MODULES+=libs/ipkg
 endif
 ifneq ($(CONFIG_PACKAGE_luci-json),)
 	PKG_SELECTED_MODULES+=libs/json
+endif
+ifneq ($(CONFIG_PACKAGE_luci-lmo),)
+	PKG_SELECTED_MODULES+=libs/lmo
+endif
+ifneq ($(CONFIG_PACKAGE_luci-lucid),)
+	PKG_SELECTED_MODULES+=libs/lucid libs/lucid-http
+endif
+ifneq ($(CONFIG_PACKAGE_luci-nixio),)
+	PKG_SELECTED_MODULES+=libs/nixio
+endif
+ifneq ($(CONFIG_PACKAGE_luci-px5g),)
+	PKG_SELECTED_MODULES+=libs/px5g
 endif
 ifneq ($(CONFIG_PACKAGE_luci-uci),)
 	PKG_SELECTED_MODULES+=libs/uci
@@ -747,10 +970,6 @@ ifneq ($(CONFIG_PACKAGE_luci-web),)
 endif
 ifneq ($(CONFIG_PACKAGE_luci-uvl),)
 	PKG_SELECTED_MODULES+=libs/uvl
-endif
-
-ifneq ($(CONFIG_PACKAGE_luci-httpd),)
-	PKG_SELECTED_MODULES+=libs/lucittpd
 endif
 
 ifneq ($(CONFIG_PACKAGE_luci-admin-core),)
@@ -775,6 +994,9 @@ endif
 
 ifneq ($(CONFIG_PACKAGE_luci-app-ffwizard-leipzig),)
 	PKG_SELECTED_MODULES+=applications/luci-ffwizard-leipzig
+endif
+ifneq ($(CONFIG_PACKAGE_luci-app-siitwizard),)
+	PKG_SELECTED_MODULES+=applications/luci-siitwizard
 endif
 ifneq ($(CONFIG_PACKAGE_luci-app-firewall),)
 	PKG_SELECTED_MODULES+=applications/luci-fw
@@ -803,11 +1025,8 @@ endif
 ifneq ($(CONFIG_PACKAGE_luci-app-samba),)
 	PKG_SELECTED_MODULES+=applications/luci-samba
 endif
-ifneq ($(CONFIG_PACKAGE_luci-app-uvc_streamer),)
-	PKG_SELECTED_MODULES+=applications/luci-uvc_streamer
-endif
-ifneq ($(CONFIG_PACKAGE_luci-app-mmc_over_gpio),)
-        PKG_SELECTED_MODULES+=applications/luci-mmc_over_gpio
+ifneq ($(CONFIG_PACKAGE_luci-app-mmc-over-gpio),)
+        PKG_SELECTED_MODULES+=applications/luci-mmc-over-gpio
 endif
 ifneq ($(CONFIG_PACKAGE_luci-app-p910nd),)
         PKG_SELECTED_MODULES+=applications/luci-p910nd
@@ -815,8 +1034,8 @@ endif
 ifneq ($(CONFIG_PACKAGE_luci-app-ushare),)
         PKG_SELECTED_MODULES+=applications/luci-ushare
 endif
-ifneq ($(CONFIG_PACKAGE_luci-app-hd_idle),)
-       PKG_SELECTED_MODULES+=applications/luci-hd_idle
+ifneq ($(CONFIG_PACKAGE_luci-app-hd-idle),)
+       PKG_SELECTED_MODULES+=applications/luci-hd-idle
 endif
 ifneq ($(CONFIG_PACKAGE_luci-app-tinyproxy),)
        PKG_SELECTED_MODULES+=applications/luci-tinyproxy
@@ -830,16 +1049,22 @@ endif
 ifneq ($(CONFIG_PACKAGE_luci-app-polipo),)
        PKG_SELECTED_MODULES+=applications/luci-polipo
 endif
+ifneq ($(CONFIG_PACKAGE_luci-app-openvpn),)
+       PKG_SELECTED_MODULES+=applications/luci-openvpn
+endif
+ifneq ($(CONFIG_PACKAGE_luci-app-p2pblock),)
+       PKG_SELECTED_MODULES+=applications/luci-p2pblock
+endif
 
 
 ifneq ($(CONFIG_PACKAGE_luci-sgi-cgi),)
 	PKG_SELECTED_MODULES+=libs/sgi-cgi
 endif
+ifneq ($(CONFIG_PACKAGE_luci-sgi-uhttpd),)
+	PKG_SELECTED_MODULES+=libs/sgi-uhttpd
+endif
 ifneq ($(CONFIG_PACKAGE_luci-sgi-luci),)
 	PKG_SELECTED_MODULES+=libs/sgi-luci
-endif
-ifneq ($(CONFIG_PACKAGE_luci-sgi-webuci),)
-	PKG_SELECTED_MODULES+=libs/sgi-webuci
 endif
 
 ifneq ($(CONFIG_PACKAGE_luci-theme-base),)
@@ -851,6 +1076,9 @@ endif
 ifneq ($(CONFIG_PACKAGE_luci-theme-freifunk-bno),)
 	PKG_SELECTED_MODULES+=themes/freifunk-bno
 endif
+ifneq ($(CONFIG_PACKAGE_luci-theme-freifunk-hannover),)
+	PKG_SELECTED_MODULES+=themes/freifunk-hannover
+endif
 ifneq ($(CONFIG_PACKAGE_luci-theme-freifunk),)
 	PKG_SELECTED_MODULES+=themes/freifunk
 endif
@@ -860,9 +1088,8 @@ endif
 ifneq ($(CONFIG_PACKAGE_luci-theme-openwrtlight),)
 	PKG_SELECTED_MODULES+=themes/openwrt-light
 endif
-
 ifneq ($(CONFIG_PACKAGE_luci-theme-oxygen),)
-        PKG_SELECTED_MODULES+=themes/oxygen
+	PKG_SELECTED_MODULES+=themes/oxygen
 endif
 
 ifneq ($(CONFIG_PACKAGE_luci-i18n-german),)
@@ -883,29 +1110,47 @@ endif
 ifneq ($(CONFIG_PACKAGE_luci-i18n-portuguese_brazilian),)
 	PKG_SELECTED_MODULES+=i18n/portuguese_brazilian
 endif
+ifneq ($(CONFIG_PACKAGE_luci-i18n-japanese),)
+	PKG_SELECTED_MODULES+=i18n/japanese
+endif
+ifneq ($(CONFIG_PACKAGE_luci-i18n-greek),)
+	PKG_SELECTED_MODULES+=i18n/greek
+endif
+ifneq ($(CONFIG_PACKAGE_luci-i18n-catalan),)
+	PKG_SELECTED_MODULES+=i18n/catalan
+endif
+ifneq ($(CONFIG_PACKAGE_luci-i18n-portuguese),)
+	PKG_SELECTED_MODULES+=i18n/portuguese
+endif
+ifneq ($(CONFIG_PACKAGE_luci-i18n-spanish),)
+	PKG_SELECTED_MODULES+=i18n/spanish
+endif
 
 
 MAKE_FLAGS += \
 	MODULES="$(PKG_SELECTED_MODULES)" \
 	LUA_TARGET="$(LUA_TARGET)" \
 	LUA_SHLIBS="-llua -lm -ldl -lcrypt" \
-	CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include" \
+	CFLAGS="$(TARGET_CFLAGS) $(LUCI_CFLAGS) -I$(STAGING_DIR)/usr/include" \
 	LDFLAGS="$(TARGET_LDFLAGS) -L$(STAGING_DIR)/usr/lib" \
-	OS="Linux"
+	NIXIO_TLS="$(NIXIO_TLS)" OS="Linux"
 
 
 $(eval $(call BuildPackage,luci-core))
 $(eval $(call BuildPackage,luci-cbi))
 $(eval $(call BuildPackage,luci-fastindex))
 $(eval $(call BuildPackage,luci-http))
+$(eval $(call BuildPackage,luci-httpclient))
 $(eval $(call BuildPackage,luci-ipkg))
 $(eval $(call BuildPackage,luci-json))
+$(eval $(call BuildPackage,luci-lmo))
+$(eval $(call BuildPackage,luci-lucid))
+$(eval $(call BuildPackage,luci-nixio))
+$(eval $(call BuildPackage,luci-px5g))
 $(eval $(call BuildPackage,luci-uci))
 $(eval $(call BuildPackage,luci-sys))
 $(eval $(call BuildPackage,luci-web))
 $(eval $(call BuildPackage,luci-uvl))
-
-$(eval $(call BuildPackage,luci-httpd))
 
 $(eval $(call BuildPackage,luci-admin-core))
 $(eval $(call BuildPackage,luci-admin-mini))
@@ -916,6 +1161,7 @@ $(eval $(call BuildPackage,luci-mod-freifunk))
 $(eval $(call BuildPackage,luci-freifunk-community))
 
 $(eval $(call BuildPackage,luci-app-ffwizard-leipzig))
+$(eval $(call BuildPackage,luci-app-siitwizard))
 $(eval $(call BuildPackage,luci-app-firewall))
 $(eval $(call BuildPackage,luci-app-olsr))
 $(eval $(call BuildPackage,luci-app-qos))
@@ -925,24 +1171,25 @@ $(eval $(call BuildPackage,luci-app-upnp))
 $(eval $(call BuildPackage,luci-app-ntpc))
 $(eval $(call BuildPackage,luci-app-ddns))
 $(eval $(call BuildPackage,luci-app-samba))
-$(eval $(call BuildPackage,luci-app-uvc_streamer))
-$(eval $(call BuildPackage,luci-app-mmc_over_gpio))
+$(eval $(call BuildPackage,luci-app-mmc-over-gpio))
 $(eval $(call BuildPackage,luci-app-p910nd))
 $(eval $(call BuildPackage,luci-app-ushare))
-$(eval $(call BuildPackage,luci-app-hd_idle))
+$(eval $(call BuildPackage,luci-app-hd-idle))
 $(eval $(call BuildPackage,luci-app-tinyproxy))
 $(eval $(call BuildPackage,luci-app-initmgr))
 $(eval $(call BuildPackage,luci-app-livestats))
 $(eval $(call BuildPackage,luci-app-polipo))
+$(eval $(call BuildPackage,luci-app-openvpn))
+$(eval $(call BuildPackage,luci-app-p2pblock))
 
 $(eval $(call BuildPackage,luci-sgi-cgi))
-$(eval $(call BuildPackage,luci-sgi-luci))
-$(eval $(call BuildPackage,luci-sgi-webuci))
+$(eval $(call BuildPackage,luci-sgi-uhttpd))
 
 $(eval $(call BuildPackage,luci-theme-base))
 $(eval $(call BuildPackage,luci-theme-fledermaus))
 $(eval $(call BuildPackage,luci-theme-freifunk))
 $(eval $(call BuildPackage,luci-theme-freifunk-bno))
+$(eval $(call BuildPackage,luci-theme-freifunk-hannover))
 $(eval $(call BuildPackage,luci-theme-openwrt))
 $(eval $(call BuildPackage,luci-theme-openwrtlight))
 $(eval $(call BuildPackage,luci-theme-oxygen))
@@ -953,3 +1200,13 @@ $(eval $(call BuildPackage,luci-i18n-french))
 $(eval $(call BuildPackage,luci-i18n-italian))
 $(eval $(call BuildPackage,luci-i18n-russian))
 $(eval $(call BuildPackage,luci-i18n-portuguese_brazilian))
+$(eval $(call BuildPackage,luci-i18n-japanese))
+$(eval $(call BuildPackage,luci-i18n-greek))
+$(eval $(call BuildPackage,luci-i18n-catalan))
+$(eval $(call BuildPackage,luci-i18n-portuguese))
+$(eval $(call BuildPackage,luci-i18n-spanish))
+
+$(eval $(call BuildPackage,luci))
+$(eval $(call BuildPackage,luci-ssl))
+$(eval $(call BuildPackage,luci-medium))
+$(eval $(call BuildPackage,luci-light))

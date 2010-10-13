@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: outputplugins.htm 3987 2009-01-02 21:35:25Z Cyrus $
+$Id: outputplugins.htm 5118 2009-07-23 03:32:30Z jow $
 
 -%>
 <%+header%>
@@ -23,7 +23,7 @@ and to transmit the data over the network to other collectd instances.%></p>
 <p><%:stat_outputplugins_installed Installed output plugins:%>
 	<ul>
 		<% for plugin, desc in pairs(plugins) do %>
-			<% if luci.fs.access("/usr/lib/collectd/" .. plugin .. ".so") then %>
+			<% if nixio.fs.access("/usr/lib/collectd/" .. plugin .. ".so") then %>
 				<li><a href="<%=controller%>/admin/statistics/collectd/output/<%=plugin%>"><%=desc%></a></li>
 			<% end %>
 		<% end %>

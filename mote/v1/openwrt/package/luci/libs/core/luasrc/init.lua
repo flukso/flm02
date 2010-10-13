@@ -5,7 +5,7 @@ Description:
 Main class
 
 FileId:
-$Id: init.lua 4079 2009-01-17 17:59:11Z Cyrus $
+$Id: init.lua 4537 2009-05-17 01:56:15Z jow $
 
 License:
 Copyright 2008 Steven Barth <steven@midlink.org>
@@ -25,6 +25,11 @@ limitations under the License.
 ]]--
 
 local require = require
+
+-- Make sure that bitlib is loaded
+if not _G.bit then
+	_G.bit = require "bit"
+end
 
 module "luci"
 

@@ -9,12 +9,13 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: dnsmasq.lua 3595 2008-10-17 16:20:01Z Cyrus $
+$Id: dnsmasq.lua 5593 2009-11-25 02:24:16Z jow $
 ]]--
 m = Map("dhcp", "Dnsmasq")
 
 s = m:section(TypedSection, "dnsmasq", translate("settings"))
 s.anonymous = true
+s.addremove = false
 
 s:option(Flag, "domainneeded")
 s:option(Flag, "authoritative")

@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: system.lua 3743 2008-11-09 20:09:31Z Cyrus $
+$Id: system.lua 6029 2010-04-05 17:46:20Z jow $
 ]]--
 
 module("luci.controller.mini.system", package.seeall)
@@ -19,6 +19,5 @@ function index()
 	luci.i18n.loadc("admin-core")
 	local i18n = luci.i18n.translate
 
-        entry({"system"}, cbi("mini/system", {autoapply=true}), i18n("system"), 3)
-
+	entry({"system"}, cbi("mini/system", {autoapply=true}), i18n("system"), 3)
 end

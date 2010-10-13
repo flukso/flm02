@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: rpc.lua 3941 2008-12-23 21:39:38Z jow $
+$Id: rpc.lua 5118 2009-07-23 03:32:30Z jow $
 ]]--
 
 local require = require
@@ -117,7 +117,7 @@ end
 function rpc_fs()
 	local util    = require "luci.util"
 	local io      = require "io"
-	local fs2     = util.clone(require "luci.fs")
+	local fs2     = util.clone(require "nixio.fs")
 	local jsonrpc = require "luci.jsonrpc"
 	local http    = require "luci.http"
 	local ltn12   = require "luci.ltn12"

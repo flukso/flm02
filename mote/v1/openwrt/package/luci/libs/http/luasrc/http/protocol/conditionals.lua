@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: conditionals.lua 3652 2008-10-29 19:41:33Z jow $
+$Id: conditionals.lua 6029 2010-04-05 17:46:20Z jow $
 
 ]]--
 
@@ -35,7 +35,7 @@ end
 -- compare it against the given stat object.
 -- @param req	HTTP request message object
 -- @param stat	A file.stat object
--- @return		Boolean indicating wheather the precondition is ok
+-- @return		Boolean indicating whether the precondition is ok
 -- @return		Alternative status code if the precondition failed
 function if_match( req, stat )
 	local h    = req.headers
@@ -60,7 +60,7 @@ end
 -- and compare it against the given stat object.
 -- @param req	HTTP request message object
 -- @param stat	A file.stat object
--- @return		Boolean indicating wheather the precondition is ok
+-- @return		Boolean indicating whether the precondition is ok
 -- @return		Alternative status code if the precondition failed
 -- @return		Table containing extra HTTP headers if the precondition failed
 function if_modified_since( req, stat )
@@ -89,22 +89,21 @@ end
 -- compare it against the given stat object.
 -- @param req	HTTP request message object
 -- @param stat	A file.stat object
--- @return		Boolean indicating wheather the precondition is ok
+-- @return		Boolean indicating whether the precondition is ok
 -- @return		Alternative status code if the precondition failed
 -- @return		Table containing extra HTTP headers if the precondition failed
 function if_none_match( req, stat )
-	local h    = req.headers
-	local etag = mk_etag( stat )
+	local h      = req.headers
+	local etag   = mk_etag( stat )
+	local method = req.env and req.env.REQUEST_METHOD or "GET"
 
 	-- Check for matching resource
 	if type(h['If-None-Match']) == "string" then
 		for ent in h['If-None-Match']:gmatch("([^, ]+)") do
 			if ( ent == '*' or ent == etag ) and stat ~= nil then
-				if req.request_method == "get"  or
-				   req.request_method == "head"
-				then
+				if method == "GET" or method == "HEAD" then
 					return false, 304, {
-						["ETag"]          = mk_etag( stat );
+						["ETag"]          = etag;
 						["Date"]          = date.to_http( os.time() );
 						["Last-Modified"] = date.to_http( stat.mtime )
 					}
@@ -124,7 +123,7 @@ end
 -- false, 412 to indicate a failed precondition.
 -- @param req	HTTP request message object
 -- @param stat	A file.stat object
--- @return		Boolean indicating wheather the precondition is ok
+-- @return		Boolean indicating whether the precondition is ok
 -- @return		Alternative status code if the precondition failed
 function if_range( req, stat )
 	-- Sorry, no subranges (yet)
@@ -136,7 +135,7 @@ end
 -- header and compare it against the given stat object.
 -- @param req	HTTP request message object
 -- @param stat	A file.stat object
--- @return		Boolean indicating wheather the precondition is ok
+-- @return		Boolean indicating whether the precondition is ok
 -- @return		Alternative status code if the precondition failed
 function if_unmodified_since( req, stat )
 	local h = req.headers

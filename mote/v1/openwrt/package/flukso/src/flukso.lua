@@ -25,72 +25,108 @@
 require 'posix'
 require 'xmlrpc.http'
 
-data = require 'flukso.data'
-auth = require 'flukso.auth'
-dbg  = require 'flukso.dbg'
+local data  = require 'flukso.data'
+local auth  = require 'flukso.auth'
+local dbg   = require 'flukso.dbg'
 
-local param = {xmlrpcaddress = 'http://logger.flukso.net/xmlrpc',
-               xmlrpcversion = '1',
-               xmlrpcmethod  = 'logger.measurementAdd',
-               pwrenable     = true,
-               pwrinterval   = 0,
-               pwrdir        = '/tmp/sensor',
-               device        = '/dev/ttyS0',
-               interval      = 300,
-               dbgenable     = false}
+local uci   = require 'luci.model.uci'.cursor()
+local param = uci:get_all('flukso', 'main')
 
-function dispatch(e_child, p_child, device, pwrenable)
+
+function dispatch(e_child, p_child, port, homeEnable, localEnable)
   return coroutine.create(function()
+
+    local function flash()  -- flash the power led for 50ms
+      os.execute('gpioctl clear 4 > /dev/null')
+      socket.select(nil, nil, 0.05)
+      os.execute('gpioctl set 4 > /dev/null')
+    end
+
     -- open the connection to the syslog deamon, specifying our identity
     posix.openlog('flukso')
     posix.syslog(30, 'starting the flukso deamon')
-    posix.syslog(30, 'listening for pulses on '..device..'...')
+    posix.syslog(30, 'listening for pulses on ' .. port .. '...')
 
-    for line in io.lines(device) do
-      if line:sub(1, 3) == 'pls' and line:len() == 47 and line:find(':') == 37 then -- user data + additional data integrity checks
-        posix.syslog(30, 'received pulse from '..device..': '..line:sub(5))
+    local pattern = '^(%l+)%s(%x+):(%d+):?(%d*)$'
 
-        -- flash the power led for 50ms
-        os.execute('gpioctl clear 4 > /dev/null')
-        socket.select(nil, nil, 0.05)
-        os.execute('gpioctl set 4 > /dev/null')
+    for line in io.lines(port) do
+      local command, meter, value, msec = line:match(pattern)
+      value = tonumber(value or '0')
+      msec = tonumber(msec or '0')
+      local length = line:len()
 
-        local meter, value = line:sub(5, 36), tonumber(line:sub(38))
-        coroutine.resume(e_child, meter, os.time(), value)
+      if command == 'pls' and (length == 47 or length == 58) then  -- user data
+        flash()
+        posix.syslog(30, 'received pulse from ' .. port .. ': ' .. line:sub(5))
 
-      elseif line:sub(1, 3) == 'pwr' and line:len() == 47 and line:find(':') == 37 then -- user data + additional data integrity checks
-        local meter, value = line:sub(5, 36), tonumber(line:sub(38))
-        if pwrenable then coroutine.resume(p_child, meter, os.time(), value) end
+        if homeEnable == 1 then coroutine.resume(e_child, meter, os.time(), value) end
 
-      elseif line:sub(1, 3) == 'msg' then -- control data
-        posix.syslog(31, 'received message from '..device..': '..line:sub(5))
+        -- pls includes a msec timestamp so report to p_child as well
+        if length == 58 and localEnable == 1 then
+          coroutine.resume(p_child, meter, os.time(), value, msec)
+        end
 
-      else
-        posix.syslog(27, 'input error on '..device..': '..line)
+      elseif command == 'pwr' and length == 47 then                 -- user data
+        if localEnable == 1 then coroutine.resume(p_child, meter, os.time(), value) end
+
+      elseif command == 'msg' then                                  -- control data
+        posix.syslog(31, 'received message from ' .. port .. ': ' .. line:sub(5))
+
+      else                                                          -- error
+        posix.syslog(27, 'input error on ' .. port .. ': ' .. line)
       end
     end
 
     posix.syslog(30, 'closing down the flukso deamon')
-    os.exit()
+    os.exit(1)
   end)
 end
 
 function buffer(child, interval)
-  return coroutine.create(function(meter, timestamp, value)
+  return coroutine.create(function(meter, timestamp, value, msec)
     local measurements = data.new()
     local threshold = timestamp + interval
-    local timestamp_prev = {}
+    local prev = {}
 
-    while true do
-      if meter ~= nil and timestamp > math.max(1234567890, timestamp_prev[meter] or 0) then
-        measurements:add(meter, timestamp, value)
+    local function diff(x, y)  -- calculates y - x
+      if y >= x then
+        return y - x
+      else -- y wrapped around 32-bit boundary
+        return 4294967296 - x + y
       end
+    end
+    
+    while true do
+      if meter ~= nil then
+        if not prev[meter] then
+          prev[meter] = {}
+        end
+
+        if msec then  -- we're dealing with a pls xxx:yyy:zzz message so calculate power
+          -- if msec decreased, just update the value in the table
+          -- but don't make any calculations since the AVR might have gone through a reset
+          if prev[meter].msec and msec > prev[meter].msec then
+            local power = math.floor(diff(prev[meter].value, value) / diff(prev[meter].msec, msec) * 3.6 * 10^6 + 0.5)
+            prev[meter].value = value
+            value = power
+          else
+            prev[meter].value = value
+            value = nil
+          end
+          prev[meter].msec = msec
+        end
+
+        if timestamp > 1234567890 and timestamp > (prev[meter].timestamp or 0) and value then
+          measurements:add(meter, timestamp, value)
+        end
+      end
+
       if timestamp > threshold and next(measurements) then  --checking whether table is not empty
         coroutine.resume(child, measurements)
         threshold = timestamp + interval
-        timestamp_prev[meter] = timestamp
+        prev[meter].timestamp = timestamp
       end
-      meter, timestamp, value = coroutine.yield()
+      meter, timestamp, value, msec = coroutine.yield()
     end
   end)
 end
@@ -105,7 +141,8 @@ function filter(child, span, offset)
   end)
 end
 
-function send(child, address, version, method)
+function send(child, home, version, method)
+  local url = 'http://' .. home .. '/xmlrpc/' .. version
   return coroutine.create(function(measurements)
     while true do
       local auth = auth.new()
@@ -113,7 +150,7 @@ function send(child, address, version, method)
       auth:hmac(measurements)
 
       local status, ret_or_err, res = pcall(xmlrpc.http.call,
-          address..'/'..version,
+          url,
           method,
           auth,
           measurements)
@@ -124,7 +161,7 @@ function send(child, address, version, method)
           measurements:clear()
         end
       else
-        posix.syslog(27, tostring(ret_or_err)..' '..address..' '..tostring(res))
+        posix.syslog(27, tostring(ret_or_err) .. ' ' .. home .. ' ' .. tostring(res))
       end
       coroutine.resume(child, measurements)
       measurements = coroutine.yield()
@@ -155,13 +192,13 @@ function polish(child, cutoff)
   end)
 end
 
-function publish(child, dir)
+function publish(child, path)
   return coroutine.create(function(measurements)
-    os.execute('mkdir -p ' .. dir .. ' > /dev/null')
+    os.execute('mkdir -p ' .. path .. ' > /dev/null')
     while true do
       local measurements_json = measurements:json_encode()
       for meter, json in pairs(measurements_json) do
-        io.output(dir .. '/' .. meter)
+        io.output(path .. '/' .. meter)
         io.write(json)
         io.close()
       end
@@ -171,10 +208,10 @@ function publish(child, dir)
   end)
 end
 
-function debug(child, dbgenable)
+function debug(child, debug)
   return coroutine.create(function(measurements)
     while true do
-      if dbgenable then dbg.vardump(measurements) end
+      if debug == 1 then dbg.vardump(measurements) end
       if child then coroutine.resume(child, measurements) end
       measurements = coroutine.yield()
     end
@@ -194,22 +231,22 @@ local e_chain = buffer(
                       filter(
                         send(
                           gc(
-                            debug(nil, param.dbgenable)
+                            debug(nil, tonumber(param.debug) or 0)
                           )
-                        , param.xmlrpcaddress, param.xmlrpcversion, param.xmlrpcmethod)
+                        , param.home, param.homeVersion, 'logger.measurementAdd')
                       , 86400, 172800)
                     , 900, 7200)
                   , 60, 0)
-                , param.interval)
+                , tonumber(param.homeInterval) or 300)
 
 local p_chain = buffer(
                   polish(
                     publish(
-                      debug(nil, param.dbgenable)
-                    , param.pwrdir)
+                      debug(nil, tonumber(param.debug) or 0)
+                    , param.localDir or '/tmp/sensor')
                   , 60)
-                , param.pwrinterval)
+                , tonumber(param.localInterval) or 0)
 
-local chain = dispatch(e_chain, p_chain, param.device, param.pwrenable)
+local chain = dispatch(e_chain, p_chain, param.port or '/dev/ttyS0', tonumber(param.homeEnable) or 1, tonumber(param.localEnable) or 1)
 
 coroutine.resume(chain)

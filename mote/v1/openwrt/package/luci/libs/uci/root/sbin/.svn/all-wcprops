@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/4830/luci/branches/luci-0.9/libs/uci/root/sbin
+END
+luci-reload
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4830/luci/branches/luci-0.9/libs/uci/root/sbin/luci-reload
+END

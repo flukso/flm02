@@ -50,6 +50,30 @@
   #error "METERCONST not defined"
 #endif
 
+#ifndef PULSE_CONST_2
+  #error "PULSE_CONST_2 not defined" 
+#endif
+
+#ifndef PULSE_HALF_2
+  #error "PULSE_HALF_2 not defined" 
+#endif
+
+#ifndef PULSE_CONST_3
+  #error "PULSE_CONST_3 not defined" 
+#endif
+
+#ifndef PULSE_HALF_3
+  #error "PULSE_HALF_3 not defined" 
+#endif
+
+#ifndef PULSE_CONST_4
+  #error "PULSE_CONST_4 not defined" 
+#endif
+
+#ifndef PULSE_HALF_4
+  #error "PULSE_HALF_4 not defined" 
+#endif
+
 #define START 0
 #define END3 0xffffffff
 #define END2 0xeeeeeeee
@@ -88,9 +112,15 @@ asm volatile ( \
 )
 
 // datastructures
+struct time_struct {
+  boolean skip;
+  uint32_t ms; 
+};
+
 struct state {
-  boolean pulse;
-  boolean toggle;
+  boolean  pulse;
+  boolean  toggle;
+  boolean  half;
   uint32_t nano;
   uint16_t adc;
 
@@ -99,6 +129,8 @@ struct state {
   uint32_t nano_end;
   uint8_t  pulse_count;
   uint8_t  pulse_count_final;
+
+  uint32_t time;
 };
 
 struct sensor {
@@ -109,4 +141,5 @@ struct sensor {
 // prototypes
 void WDT_off(void);
 void WDT_on(void);
+void pulse_add(volatile struct sensor *measurement, volatile struct state *aux, uint32_t pulse_const, uint32_t pulse_half);
 void send(uint8_t msg_type, const struct sensor *measurement, const struct state *aux);

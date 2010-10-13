@@ -9,11 +9,14 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: footer.htm 3941 2008-12-23 21:39:38Z jow $
+$Id: footer.htm 4401 2009-04-03 18:08:25Z Cyrus $
 
 -%>
 	<%- if pageaction then -%>
 	<div class="cbi-page-actions">
+		<% if flow.skip then %>
+			<input class="cbi-button cbi-button-skip" type="submit" name="cbi.skip" value="<%:skip Skip%>" />
+		<% end %>
 		<% if not autoapply then%>
 			<input class="cbi-button cbi-button-apply" type="submit" name="cbi.apply" value="<%:saveapply%>" />
 		<% end %>

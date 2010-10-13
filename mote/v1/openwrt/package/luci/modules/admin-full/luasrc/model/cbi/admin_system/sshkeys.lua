@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: sshkeys.lua 4106 2009-01-20 11:33:33Z Cyrus $
+$Id: sshkeys.lua 5118 2009-07-23 03:32:30Z jow $
 ]]--
 local keyfile = "/etc/dropbear/authorized_keys" 
 
@@ -20,13 +20,13 @@ t = f:field(TextValue, "keys")
 t.rmempty = true
 t.rows = 10
 function t.cfgvalue()
-	return luci.fs.readfile(keyfile) or ""
+	return nixio.fs.readfile(keyfile) or ""
 end
 
 function f.handle(self, state, data)
 	if state == FORM_VALID then
 		if data.keys then
-			luci.fs.writefile(keyfile, data.keys:gsub("\r\n", "\n"))
+			nixio.fs.writefile(keyfile, data.keys:gsub("\r\n", "\n"))
 		end
 	end
 	return true

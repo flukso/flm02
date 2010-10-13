@@ -29,7 +29,7 @@ define Build/Configure
 endef
 
 define Build/Compile
-	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) -shared -fpic -pedantic -Wall \
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) -shared -fpic -pedantic -Wall -std=c99 \
 	-I$(STAGING_DIR)/usr/include \
 	-DXYSSL=9 \
 	-o $(PKG_BUILD_DIR)/lxyssl.so -lxyssl $(PKG_BUILD_DIR)/lxyssl.c

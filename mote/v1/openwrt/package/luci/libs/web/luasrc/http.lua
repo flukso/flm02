@@ -5,7 +5,7 @@ Description:
 HTTP-Header manipulator and form variable preprocessor
 
 FileId:
-$Id: http.lua 3838 2008-11-29 21:59:06Z Cyrus $
+$Id: http.lua 5144 2009-07-26 21:28:44Z jow $
 
 License:
 Copyright 2008 Steven Barth <steven@midlink.org>
@@ -256,6 +256,13 @@ function write(content, src_err)
 		coroutine.yield(4, content)
 		return true
 	end
+end
+
+--- Splice data from a filedescriptor to the client.
+-- @param fp	File descriptor
+-- @param size	Bytes to splice (optional)
+function splice(fd, size)
+	coroutine.yield(6, fd, size)
 end
 
 --- Redirects the client to a new URL and closes the connection.

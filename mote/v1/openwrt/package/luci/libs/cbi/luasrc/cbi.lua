@@ -6,7 +6,7 @@ Offers an interface for binding configuration values to certain
 data types. Supports value and range validation and basic dependencies.
 
 FileId:
-$Id: cbi.lua 4102 2009-01-20 00:54:28Z jow $
+$Id: cbi.lua 6029 2010-04-05 17:46:20Z jow $
 
 License:
 Copyright 2008 Steven Barth <steven@midlink.org>
@@ -30,9 +30,10 @@ require("luci.template")
 local util = require("luci.util")
 require("luci.http")
 require("luci.uvl")
-require("luci.fs")
+
 
 --local event      = require "luci.sys.event"
+local fs         = require("nixio.fs")
 local uci        = require("luci.model.uci")
 local class      = util.class
 local instanceof = util.instanceof
@@ -40,8 +41,10 @@ local instanceof = util.instanceof
 FORM_NODATA  =  0
 FORM_PROCEED =  0
 FORM_VALID   =  1
+FORM_DONE	 =  1
 FORM_INVALID = -1
 FORM_CHANGED =  2
+FORM_SKIP    =  4
 
 AUTO = true
 
@@ -50,21 +53,25 @@ REMOVE_PREFIX = "cbi.rts."
 
 -- Loads a CBI map from given file, creating an environment and returns it
 function load(cbimap, ...)
-	require("luci.fs")
+	local fs   = require "nixio.fs"
 	local i18n = require "luci.i18n"
 	require("luci.config")
 	require("luci.util")
 
 	local upldir = "/lib/uci/upload/"
 	local cbidir = luci.util.libpath() .. "/model/cbi/"
+	local func, err
 
-	assert(luci.fs.stat(cbimap) or luci.fs.stat(cbidir..cbimap..".lua"),
-	 "Model not found!")
-
-	local func, err = loadfile(cbimap)
-	if not func then
+	if fs.access(cbimap) then
+		func, err = loadfile(cbimap)
+	elseif fs.access(cbidir..cbimap..".lua") then
 		func, err = loadfile(cbidir..cbimap..".lua")
+	elseif fs.access(cbidir..cbimap..".lua.gz") then
+		func, err = loadfile(cbidir..cbimap..".lua.gz")
+	else
+		func, err = nil, "Model '" .. cbimap .. "' not found!"
 	end
+
 	assert(func, err)
 
 	luci.i18n.loadc("cbi")
@@ -166,8 +173,8 @@ local function _uvl_validate_section(node, name)
 
 	local function tag_section(e)
 		local s = { }
-		for _, c in ipairs(e.childs) do
-			if c.childs and not c:is(luci.uvl.errors.ERR_DEPENDENCY) then
+		for _, c in ipairs(e.childs or { e }) do
+			if c.childs and not c:is('DEPENDENCY') then
 				table.insert( s, c.childs[1]:string() )
 			else
 				table.insert( s, c:string() )
@@ -223,12 +230,31 @@ function Node._i18n(self, config, section, option, title, description)
 
 		local key = config and config:gsub("[^%w]+", "") or ""
 
-		if section then	key = key .. "_" .. section:lower():gsub("[^%w]+", "") end
+		if section then key = key .. "_" .. section:lower():gsub("[^%w]+", "") end
 		if option  then key = key .. "_" .. tostring(option):lower():gsub("[^%w]+", "")  end
 
 		self.title = title or luci.i18n.translate( key, option or section or config )
 		self.description = description or luci.i18n.translate( key .. "_desc", "" )
 	end
+end
+
+-- hook helper
+function Node._run_hook(self, hook)
+	if type(self[hook]) == "function" then
+		return self[hook](self)
+	end 
+end
+
+function Node._run_hooks(self, ...)
+	local f
+	local r = false
+	for _, f in ipairs(arg) do
+		if type(self[f]) == "function" then
+			self[f](self)
+			r = true
+		end
+	end
+	return r
 end
 
 -- Prepare nodes
@@ -280,6 +306,11 @@ function Template.render(self)
 	luci.template.render(self.template, {self=self})
 end
 
+function Template.parse(self, readinput)
+	self.readinput = (readinput ~= false)
+	return Map.formvalue(self, "cbi.submit") and FORM_DONE or FORM_NODATA
+end
+
 
 --[[
 Map - A map describing a configuration file
@@ -295,6 +326,8 @@ function Map.__init__(self, config, ...)
 	self.template = "cbi/map"
 	self.apply_on_parse = nil
 	self.readinput = true
+	self.proceed = false
+	self.flow = {}
 
 	self.uci = uci.cursor()
 	self.save = true
@@ -315,7 +348,7 @@ function Map.formvalue(self, key)
 end
 
 function Map.formvaluetable(self, key)
-	return self.readinput and luci.http.formvaluetable(key)
+	return self.readinput and luci.http.formvaluetable(key) or {}
 end
 
 function Map.get_scheme(self, sectiontype, option)
@@ -343,21 +376,31 @@ end
 -- Use optimized UCI writing
 function Map.parse(self, readinput, ...)
 	self.readinput = (readinput ~= false)
+	self:_run_hooks("on_parse")
+
+	if self:formvalue("cbi.skip") then
+		self.state = FORM_SKIP
+		return self:state_handler(self.state)
+	end
+
 	Node.parse(self, ...)
 
 	if self.save then
 		for i, config in ipairs(self.parsechain) do
 			self.uci:save(config)
 		end
-		if self:submitstate() and (self.autoapply or luci.http.formvalue("cbi.apply")) then
+		if self:submitstate() and ((not self.proceed and self.flow.autoapply) or luci.http.formvalue("cbi.apply")) then
+			self:_run_hooks("on_before_commit")
 			for i, config in ipairs(self.parsechain) do
 				self.uci:commit(config)
 
 				-- Refresh data because commit changes section names
 				self.uci:load(config)
 			end
+			self:_run_hooks("on_commit", "on_after_commit", "on_before_apply")
 			if self.apply_on_parse then
 				self.uci:apply(self.parsechain)
+				self:_run_hooks("on_apply", "on_after_apply")
 			else
 				self._apply = function()
 					local cmd = self.uci:apply(self.parsechain, true)
@@ -378,10 +421,12 @@ function Map.parse(self, readinput, ...)
 	end
 
 	if self:submitstate() then
-		if self.save then
-			self.state = self.changed and FORM_CHANGED or FORM_VALID
-		else
+		if not self.save then
 			self.state = FORM_INVALID
+		elseif self.proceed then
+			self.state = FORM_PROCEED
+		else
+			self.state = self.changed and FORM_CHANGED or FORM_VALID
 		end
 	else
 		self.state = FORM_NODATA
@@ -391,11 +436,13 @@ function Map.parse(self, readinput, ...)
 end
 
 function Map.render(self, ...)
+	self:_run_hooks("on_init")
 	Node.render(self, ...)
 	if self._apply then
 		local fp = self._apply()
 		fp:read("*a")
 		fp:close()
+		self:_run_hooks("on_apply")
 	end
 end
 
@@ -451,11 +498,18 @@ Compound = class(Node)
 
 function Compound.__init__(self, ...)
 	Node.__init__(self)
+	self.template = "cbi/compound"
 	self.children = {...}
 end
 
+function Compound.populate_delegator(self, delegator)
+	for _, v in ipairs(self.children) do
+		v.delegator = delegator
+	end
+end
+
 function Compound.parse(self, ...)
-	local cstate, state = 0, 0
+	local cstate, state = 0
 
 	for k, child in ipairs(self.children) do
 		cstate = child:parse(...)
@@ -473,60 +527,150 @@ Delegator = class(Node)
 function Delegator.__init__(self, ...)
 	Node.__init__(self, ...)
 	self.nodes = {}
+	self.defaultpath = {}
+	self.pageaction = false
+	self.readinput = true
+	self.allow_reset = false
+	self.allow_cancel = false
+	self.allow_back = false
+	self.allow_finish = false
 	self.template = "cbi/delegator"
 end
 
-function Delegator.state(self, name, node, transitor)
-	transitor = transitor or self.transistor_linear
-	local state = {node=node, name=name, transitor=transitor}
-
-	assert(instanceof(node, Node), "Invalid node")
+function Delegator.set(self, name, node)
 	assert(not self.nodes[name], "Duplicate entry")
 
-	self.nodes[name] = state
-	self:append(state)
+	self.nodes[name] = node
+end
 
-	return state
+function Delegator.add(self, name, node)
+	node = self:set(name, node)
+	self.defaultpath[#self.defaultpath+1] = name
+end
+
+function Delegator.insert_after(self, name, after)
+	local n = #self.chain + 1
+	for k, v in ipairs(self.chain) do
+		if v == after then
+			n = k + 1
+			break
+		end
+	end
+	table.insert(self.chain, n, name)
+end
+
+function Delegator.set_route(self, ...)
+	local n, chain, route = 0, self.chain, {...}
+	for i = 1, #chain do
+		if chain[i] == self.current then
+			n = i
+			break
+		end
+	end
+	for i = 1, #route do
+		n = n + 1
+		chain[n] = route[i]
+	end
+	for i = n + 1, #chain do
+		chain[i] = nil
+	end
 end
 
 function Delegator.get(self, name)
-	return self.nodes[name]
-end
+	local node = self.nodes[name]
 
-function Delegator.transistor_linear(self, state, cstate)
-	if cstate > 0 then
-		for i, child in ipairs(self.children) do
-			if state == child then
-				return self.children[i+1]
-			end
-		end
-	else
-		return state
+	if type(node) == "string" then
+		node = load(node, name)
 	end
+
+	if type(node) == "table" and getmetatable(node) == nil then
+		node = Compound(unpack(node))
+	end
+
+	return node
 end
 
 function Delegator.parse(self, ...)
-	local active = self:getactive()
-	assert(active, "Invalid state")
+	if self.allow_cancel and Map.formvalue(self, "cbi.cancel") then
+		if self:_run_hooks("on_cancel") then
+			return FORM_DONE
+		end
+	end
+	
+	if not Map.formvalue(self, "cbi.delg.current") then
+		self:_run_hooks("on_init")
+	end
 
-	local cstate = active.node:parse()
-	self.active = active.transistor(self, active.node, cstate)
-
-	if not self.active then
-		return FORM_DONE
+	local newcurrent
+	self.chain = self.chain or self:get_chain()
+	self.current = self.current or self:get_active()
+	self.active = self.active or self:get(self.current)
+	assert(self.active, "Invalid state")
+	
+	local stat = FORM_DONE
+	if type(self.active) ~= "function" then
+		self.active:populate_delegator(self)
+		stat = self.active:parse() 
 	else
-		self.active:parse(false)
-		return FROM_PROCEED
+		self:active()
+	end
+
+	if stat > FORM_PROCEED then
+		if Map.formvalue(self, "cbi.delg.back") then
+			newcurrent = self:get_prev(self.current)
+		else
+			newcurrent = self:get_next(self.current)
+		end
+	elseif stat < FORM_PROCEED then
+		return stat
+	end
+	
+
+	if not Map.formvalue(self, "cbi.submit") then
+		return FORM_NODATA
+	elseif stat > FORM_PROCEED 
+	and (not newcurrent or not self:get(newcurrent)) then
+		return self:_run_hook("on_done") or FORM_DONE
+	else
+		self.current = newcurrent or self.current
+		self.active = self:get(self.current)
+		if type(self.active) ~= "function" then
+			self.active:populate_delegator(self)
+			local stat = self.active:parse(false)
+			if stat == FORM_SKIP then
+				return self:parse(...)
+			else
+				return FORM_PROCEED
+			end
+		else
+			return self:parse(...)
+		end
 	end
 end
 
-function Delegator.render(self, ...)
-	self.active.node:render(...)
+function Delegator.get_next(self, state)
+	for k, v in ipairs(self.chain) do
+		if v == state then
+			return self.chain[k+1]
+		end
+	end
 end
 
-function Delegator.getactive(self)
-	return self:get(Map.formvalue(self, "cbi.delegated")
-		or (self.children[1] and self.children[1].name))
+function Delegator.get_prev(self, state)
+	for k, v in ipairs(self.chain) do
+		if v == state then
+			return self.chain[k-1]
+		end
+	end
+end
+
+function Delegator.get_chain(self)
+	local x = Map.formvalue(self, "cbi.delg.path") or self.defaultpath
+	return type(x) == "table" and x or {x}
+end
+
+function Delegator.get_active(self)
+	return Map.formvalue(self, "cbi.delg.current") or self.chain[1]
 end
 
 --[[
@@ -558,6 +702,15 @@ SimpleForm.formvaluetable = Map.formvaluetable
 
 function SimpleForm.parse(self, readinput, ...)
 	self.readinput = (readinput ~= false)
+
+	if self:formvalue("cbi.skip") then
+		return FORM_SKIP
+	end
+
+	if self:formvalue("cbi.cancel") and self:_run_hooks("on_cancel") then
+		return FORM_DONE
+	end
+
 	if self:submitstate() then
 		Node.parse(self, 1, ...)
 	end
@@ -577,7 +730,12 @@ function SimpleForm.parse(self, readinput, ...)
 		or valid and FORM_VALID
 		or FORM_INVALID
 
-	self.dorender = not self.handle or self:handle(state, self.data) ~= false
+	self.dorender = not self.handle
+	if self.handle then
+		local nrender, nstate = self:handle(state, self.data)
+		self.dorender = self.dorender or (nrender ~= false)
+		state = nstate or state
+	end
 	return state
 end
 
@@ -644,6 +802,13 @@ function SimpleForm.get_scheme()
 end
 
 
+Form = class(SimpleForm)
+
+function Form.__init__(self, ...)
+	SimpleForm.__init__(self, ...)
+	self.embedded = true
+end
+
 
 --[[
 AbstractSection
@@ -666,6 +831,19 @@ function AbstractSection.__init__(self, map, sectiontype, ...)
 	self.optional = true
 	self.addremove = false
 	self.dynamic = false
+end
+
+-- Define a tab for the section
+function AbstractSection.tab(self, tab, title, desc)
+	self.tabs      = self.tabs      or { }
+	self.tab_names = self.tab_names or { }
+
+	self.tab_names[#self.tab_names+1] = tab
+	self.tabs[tab] = {
+		title       = title,
+		description = desc,
+		childs      = { }
+	}
 end
 
 -- Appends a new option
@@ -699,6 +877,31 @@ function AbstractSection.option(self, class, option, ...)
 	end
 end
 
+-- Appends a new tabbed option
+function AbstractSection.taboption(self, tab, ...)
+
+	assert(tab and self.tabs and self.tabs[tab],
+		"Cannot assign option to not existing tab %q" % tostring(tab))
+
+	local l = self.tabs[tab].childs
+	local o = AbstractSection.option(self, ...)
+
+	if o then l[#l+1] = o end
+
+	return o
+end
+
+-- Render a single tab
+function AbstractSection.render_tab(self, tab, ...)
+
+	assert(tab and self.tabs and self.tabs[tab],
+		"Cannot render not existing tab %q" % tostring(tab))
+
+	for _, node in ipairs(self.tabs[tab].childs) do
+		node:render(...)
+	end
+end
+
 -- Parse optional options
 function AbstractSection.parse_optionals(self, section)
 	if not self.optional then
@@ -712,6 +915,7 @@ function AbstractSection.parse_optionals(self, section)
 		if v.optional and not v:cfgvalue(section) then
 			if field == v.option then
 				field = nil
+				self.map.proceed = true
 			else
 				table.insert(self.optionals[section], v)
 			end
@@ -751,6 +955,7 @@ function AbstractSection.parse_dynamic(self, section)
 		end
 
 		if create and key:sub(1, 1) ~= "." then
+			self.map.proceed = true
 			self:add_dynamic(key, true)
 		end
 	end
@@ -769,7 +974,7 @@ end
 
 -- Removes the section
 function AbstractSection.remove(self, section)
-	self.map.autoapply = false
+	self.map.proceed = true
 	return self.map:del(section)
 end
 
@@ -778,7 +983,7 @@ function AbstractSection.create(self, section)
 	local stat
 
 	if section then
-		stat = section:match("^%w+$") and self.map:set(section, nil, self.sectiontype)
+		stat = section:match("^[%w_]+$") and self.map:set(section, nil, self.sectiontype)
 	else
 		section = self.map:add(self.sectiontype)
 		stat = section
@@ -796,7 +1001,7 @@ function AbstractSection.create(self, section)
 		end
 	end
 
-	self.map.autoapply = false
+	self.map.proceed = true
 
 	return stat
 end
@@ -814,15 +1019,16 @@ Table = class(AbstractSection)
 
 function Table.__init__(self, form, data, ...)
 	local datasource = {}
+	local tself = self
 	datasource.config = "table"
-	self.data = data
+	self.data = data or {}
 
 	datasource.formvalue = Map.formvalue
 	datasource.formvaluetable = Map.formvaluetable
 	datasource.readinput = true
 
 	function datasource.get(self, section, option)
-		return data[section] and data[section][option]
+		return tself.data[section] and tself.data[section][option]
 	end
 
 	function datasource.submitstate(self)
@@ -860,6 +1066,10 @@ function Table.cfgsections(self)
 	end
 
 	return sections
+end
+
+function Table.update(self, data)
+	self.data = data
 end
 
 
@@ -1095,6 +1305,7 @@ function AbstractValue.__init__(self, map, section, option, ...)
 	self.tag_reqerror = {}
 	self.tag_error = {}
 	self.deps = {}
+	self.subdeps = {}
 	--self.cast = "string"
 
 	self.track_missing = false
@@ -1172,6 +1383,22 @@ function AbstractValue.parse(self, section, novld)
 	local fvalue = self:formvalue(section)
 	local cvalue = self:cfgvalue(section)
 
+	-- If favlue and cvalue are both tables and have the same content
+	-- make them identical
+	if type(fvalue) == "table" and type(cvalue) == "table" then
+		local equal = #fvalue == #cvalue
+		if equal then
+			for i=1, #fvalue do
+				if cvalue[i] ~= fvalue[i] then
+					equal = false
+				end
+			end
+		end
+		if equal then
+			fvalue = cvalue
+		end
+	end
+
 	if fvalue and #fvalue > 0 then -- If we have a form value, write it to UCI
 		fvalue = self:transform(self:validate(fvalue, section))
 		if not fvalue and not novld then
@@ -1180,6 +1407,11 @@ function AbstractValue.parse(self, section, novld)
 			else
 				self.error = { [section] = "invalid" }
 			end
+			if self.section.error then
+				table.insert(self.section.error[section], "invalid")
+			else
+				self.section.error = {[section] = {"invalid"}}
+			end 
 			self.map.save = false
 		end
 		if fvalue and not (fvalue == cvalue) then
@@ -1215,6 +1447,7 @@ function AbstractValue.render(self, s, scope)
 		scope.section   = s
 		scope.cbid      = self:cbid(s)
 		scope.striptags = luci.util.striptags
+		scope.pcdata	= luci.util.pcdata
 
 		scope.ifattr = function(cond,key,val)
 			if cond then
@@ -1403,7 +1636,7 @@ function ListValue.value(self, key, val, ...)
 	table.insert(self.vallist, tostring(val))
 
 	for i, deps in ipairs({...}) do
-		table.insert(self.deps, {add = "-"..key, deps=deps})
+		self.subdeps[#self.subdeps + 1] = {add = "-"..key, deps=deps}
 	end
 end
 
@@ -1525,6 +1758,11 @@ function DynamicList.value(self, key, val)
 	table.insert(self.vallist, tostring(val))
 end
 
+function DynamicList.write(self, ...)
+	self.map.proceed = true
+	return AbstractValue.write(self, ...)
+end
+
 function DynamicList.formvalue(self, section)
 	local value = AbstractValue.formvalue(self, section)
 	value = (type(value) == "table") and value or {value}
@@ -1586,7 +1824,7 @@ end
 
 function FileUpload.cfgvalue(self, section)
 	local val = AbstractValue.cfgvalue(self, section)
-	if val and luci.fs.access(val) then
+	if val and fs.access(val) then
 		return val
 	end
 	return nil
@@ -1600,7 +1838,7 @@ function FileUpload.formvalue(self, section)
 		then
 			return val
 		end
-		luci.fs.unlink(val)
+		fs.unlink(val)
 		self.value = nil
 	end
 	return nil
@@ -1608,7 +1846,7 @@ end
 
 function FileUpload.remove(self, section)
 	local val = AbstractValue.formvalue(self, section)
-	if val and luci.fs.access(val) then luci.fs.unlink(val) end
+	if val and fs.access(val) then fs.unlink(val) end
 	return AbstractValue.remove(self, section)
 end
 

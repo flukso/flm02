@@ -9,12 +9,13 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: system.lua 3736 2008-11-06 23:10:43Z jow $
+$Id: system.lua 5314 2009-08-27 17:54:51Z jow $
 ]]--
 
 require("luci.sys")
 require("luci.sys.zoneinfo")
 require("luci.tools.webadmin")
+require("luci.fs")
 
 
 m = Map("system", translate("system"), "")
@@ -22,6 +23,8 @@ m.pageaction = false
 
 s = m:section(TypedSection, "system", translate("general"))
 s.anonymous = true
+s.addremove = false
+
 
 local system, model, memtotal, memcached, membuffers, memfree = luci.sys.sysinfo()
 local uptime = luci.sys.uptime()
@@ -32,22 +35,27 @@ s:option(DummyValue, "_cpu", translate("m_i_processor")).value = model
 local load1, load5, load15 = luci.sys.loadavg()
 s:option(DummyValue, "_la", translate("load")).value = 
  string.format("%.2f, %.2f, %.2f", load1, load5, load15)
- 
-s:option(DummyValue, "_memtotal", translate("m_i_memory")).value = 
+
+s:option(DummyValue, "_memtotal", translate("m_i_memory")).value =
  string.format("%.2f MB (%.0f%% %s, %.0f%% %s, %.0f%% %s)",
   tonumber(memtotal) / 1024,
   100 * memcached / memtotal,
-  translate("mem_cached") or "",
+  tostring(translate("mem_cached", "")),
   100 * membuffers / memtotal,
-  translate("mem_buffered") or "",
+  tostring(translate("mem_buffered", "")),
   100 * memfree / memtotal,
-  translate("mem_free") or "")
-
+  tostring(translate("mem_free", ""))
+)
+ 
 s:option(DummyValue, "_systime", translate("m_i_systemtime")).value =
  os.date("%c")
  
 s:option(DummyValue, "_uptime", translate("m_i_uptime")).value = 
  luci.tools.webadmin.date_format(tonumber(uptime))
+
+s:option(DummyValue, "_hostname", translate("hostname")).value =                   
+ luci.sys.hostname(value)                                                          
+
 
 -- Wifi Data init -- 
 local uci = luci.model.uci.cursor()

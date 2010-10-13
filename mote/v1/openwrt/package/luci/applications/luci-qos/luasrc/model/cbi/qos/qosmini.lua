@@ -10,9 +10,12 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: qosmini.lua 4075 2009-01-17 16:20:20Z Cyrus $
+$Id: qosmini.lua 5118 2009-07-23 03:32:30Z jow $
 ]]--
-require("luci.tools.webadmin")
+
+local wa = require "luci.tools.webadmin"
+local fs = require "nixio.fs"
+
 m = Map("qos")
 
 s = m:section(NamedSection, "wan", "interface", translate("m_n_inet"))
@@ -37,34 +40,24 @@ t.default = "Normal"
 srch = s:option(Value, "srchost")
 srch.rmempty = true
 srch:value("", translate("all"))
-luci.tools.webadmin.cbi_add_knownips(srch)
+wa.cbi_add_knownips(srch)
 
 dsth = s:option(Value, "dsthost")
 dsth.rmempty = true
 dsth:value("", translate("all"))
-luci.tools.webadmin.cbi_add_knownips(dsth)
+wa.cbi_add_knownips(dsth)
 
 l7 = s:option(ListValue, "layer7", translate("service"))
 l7.rmempty = true
 l7:value("", translate("all"))
-local pats = luci.fs.dir("/etc/l7-protocols")
+local pats = fs.dir("/etc/l7-protocols")
 if pats then
-	for i,f in ipairs(pats) do
+	for f in pats do
 		if f:sub(-4) == ".pat" then
 			l7:value(f:sub(1, #f-4))
 		end
 	end
 end
-
-p2p = s:option(ListValue, "ipp2p", "P2P")
-p2p:value("", "-")
-p2p:value("all", translate("all"))
-p2p:value("bit", "BIT")
-p2p:value("dc", "DC")
-p2p:value("edk", "EDK")
-p2p:value("gnu", "GNU")
-p2p:value("kazaa", "KAZ")
-p2p.rmempty = true
 
 p = s:option(ListValue, "proto", translate("protocol"))
 p:value("", translate("all"))

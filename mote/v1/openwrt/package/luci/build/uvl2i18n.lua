@@ -1,6 +1,6 @@
 #!/usr/bin/lua
 -- uvl2i18n.lua - Convert uvl schemes to i18n files
--- $Id: uvl2i18n.lua 3941 2008-12-23 21:39:38Z jow $
+-- $Id: uvl2i18n.lua 3454 2008-09-25 14:25:02Z jow $
 
 require("luci.util")
 require("luci.uvl")

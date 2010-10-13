@@ -9,20 +9,22 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: fstab.lua 3329 2008-09-16 02:01:05Z jow $
+$Id: fstab.lua 5118 2009-07-23 03:32:30Z jow $
 ]]--
 require("luci.tools.webadmin")
 
-local fs = require "luci.fs"
+local fs   = require "nixio.fs"
+local util = require "nixio.util"
+
 local devices = {}
-luci.util.update(devices, fs.glob("/dev/sd*") or {})
-luci.util.update(devices, fs.glob("/dev/hd*") or {})
-luci.util.update(devices, fs.glob("/dev/scd*") or {})
-luci.util.update(devices, fs.glob("/dev/mmc*") or {})
+util.consume((fs.glob("/dev/sd*")), devices)
+util.consume((fs.glob("/dev/hd*")), devices)
+util.consume((fs.glob("/dev/scd*")), devices)
+util.consume((fs.glob("/dev/mmc*")), devices)
 
 local size = {}
 for i, dev in ipairs(devices) do
-	local s = tonumber((luci.fs.readfile("/sys/class/block/%s/size" % dev:sub(6))))
+	local s = tonumber((fs.readfile("/sys/class/block/%s/size" % dev:sub(6))))
 	size[dev] = s and math.floor(s / 2048)
 end
 
@@ -61,7 +63,7 @@ mount.anonymous = true
 mount.addremove = true
 mount.template = "cbi/tblsection"
 
-mount:option(Flag, "enabled", translate("enable"))
+mount:option(Flag, "enabled", translate("enable")).rmempty = false
 dev = mount:option(Value, "device", translate("device"), translate("a_s_fstab_device1"))
 for i, d in ipairs(devices) do
 	dev:value(d, size[d] and "%s (%s MB)" % {d, size[d]})
@@ -77,7 +79,7 @@ swap.anonymous = true
 swap.addremove = true
 swap.template = "cbi/tblsection"
 
-swap:option(Flag, "enabled", translate("enable"))
+swap:option(Flag, "enabled", translate("enable")).rmempty = false
 dev = swap:option(Value, "device", translate("device"), translate("a_s_fstab_device1"))
 for i, d in ipairs(devices) do
 	dev:value(d, size[d] and "%s (%s MB)" % {d, size[d]})

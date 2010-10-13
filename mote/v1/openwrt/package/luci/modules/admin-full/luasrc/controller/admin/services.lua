@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: services.lua 3941 2008-12-23 21:39:38Z jow $
+$Id: services.lua 5118 2009-07-23 03:32:30Z jow $
 ]]--
 module("luci.controller.admin.services", package.seeall)
 
@@ -28,14 +28,14 @@ function index()
 	page.order  = 40
 	page.index  = true
 	
-	if luci.fs.access("/etc/config/lucittpd") then
+	if nixio.fs.access("/etc/config/lucittpd") then
 		local page  = node("admin", "services", "lucittpd")
 		page.target = cbi("admin_services/lucittpd")
 		page.title  = "LuCIttpd"
 		page.order  = 10
 	end
 
-	if luci.fs.access("/etc/config/httpd") then
+	if nixio.fs.access("/etc/config/httpd") then
 		local page  = node("admin", "services", "httpd")
 		page.target = cbi("admin_services/httpd")
 		page.title  = "Busybox HTTPd"

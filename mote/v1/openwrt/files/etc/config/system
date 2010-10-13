@@ -3,9 +3,18 @@ config system
         option hostname flukso
         option device   0123456789abcdef0123456789abcdef
         option key      00112233445566778899aabbccddeeff
-        option version  101
+        option version  111
 
 config button
-        option button   reset
-        option action   pressed
-        option handler  '/etc/init.d/network restart'
+	option button   reset
+	option action   released
+	option handler  net_toggle
+	option min      2
+	option max      5
+
+config button
+	option button   reset
+	option action   released
+	option handler  net_defaults
+	option min      10
+	option max      30

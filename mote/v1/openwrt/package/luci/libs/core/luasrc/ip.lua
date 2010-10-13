@@ -10,18 +10,19 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: ip.lua 3835 2008-11-29 21:37:29Z jow $
+$Id: ip.lua 5197 2009-08-05 01:38:44Z jow $
 
 ]]--
 
 --- LuCI IP calculation library.
 module( "luci.ip", package.seeall )
 
-require("bit")
-require("luci.util")
+require "nixio"
+local bit  = nixio.bit
+local util = require "luci.util"
 
 --- Boolean; true if system is little endian
-LITTLE_ENDIAN = not luci.util.bigendian()
+LITTLE_ENDIAN = not util.bigendian()
 
 --- Boolean; true if system is big endian
 BIG_ENDIAN    = not LITTLE_ENDIAN
@@ -65,7 +66,7 @@ local function __array16( x, family )
 		list = { unpack(x[2]) }
 
 	elseif type(x) == "table" then
-		list = x
+		list = { unpack(x) }
 	end
 
 	assert( list, "Invalid operand" )
@@ -159,6 +160,7 @@ function IPv4(address, netmask)
 	local data = {}
 	local prefix = address:match("/(.+)")
 	address = address:gsub("/.+","")
+	address = address:gsub("^%[(.*)%]$", "%1"):upper():gsub("^::FFFF:", "")
 
 	if netmask then
 		prefix = obj:prefix(netmask)
@@ -206,6 +208,7 @@ function IPv6(address, netmask)
 	local data = {}
 	local prefix = address:match("/(.+)")
 	address = address:gsub("/.+","")
+	address = address:gsub("^%[(.*)%]$", "%1")
 
 	if netmask then
 		prefix = obj:prefix(netmask)
@@ -322,7 +325,7 @@ end
 -- @class	module
 -- @cstyle	instance
 -- @name	luci.ip.cidr
-cidr = luci.util.class()
+cidr = util.class()
 
 --- Test whether the instance is a IPv4 address.
 -- @return	Boolean indicating a IPv4 address type

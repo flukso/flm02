@@ -10,12 +10,12 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: samba.lua 3987 2009-01-02 21:35:25Z Cyrus $
+$Id: samba.lua 5118 2009-07-23 03:32:30Z jow $
 ]]--
 module("luci.controller.samba", package.seeall)
 
 function index()
-	if not luci.fs.access("/etc/config/samba") then
+	if not nixio.fs.access("/etc/config/samba") then
 		return
 	end
 	require("luci.i18n")

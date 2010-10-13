@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: graph.htm 3646 2008-10-29 18:54:56Z jow $
+$Id: graph.htm 5965 2010-03-27 22:20:14Z jow $
 
 -%>
 <%+header%>
@@ -31,7 +31,7 @@ $Id: graph.htm 3646 2008-10-29 18:54:56Z jow $
 
 <div style="text-align: center">
 	<% for i, img in ipairs(images) do %>
-		<img src="/rrdimg/<%=img%>" />
+		<img src="<%=REQUEST_URI%>?img=<%=img%>" />
 		<br />
 	<% end %>
 </div>

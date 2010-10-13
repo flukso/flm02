@@ -10,14 +10,14 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: validation.lua 3260 2008-09-13 09:09:38Z Cyrus $
+$Id: validation.lua 5872 2010-03-18 22:40:57Z jow $
 
 ]]--
 
 local os = require "os"
-local fs = require "luci.fs"
+local fs = require "nixio.fs"
 local sys = require "luci.sys"
-local ERR = require "luci.uvl.errors"
+local ERR = require "luci.uvl.errors".error
 
 local ipairs, unpack, type, tostring = ipairs, unpack, type, tostring
 
@@ -63,7 +63,7 @@ function check( self, object )
 			end
 
 			if not ok then
-				return false, ERR.SME_ERRVAL(object, {tostring(val), err})
+				return false, ERR('SME_ERRVAL', object, {tostring(val), err})
 			end
 		end
 	end

@@ -5,7 +5,7 @@ Description:
 The request dispatcher and module dispatcher generators
 
 FileId:
-$Id: dispatcher.lua 4189 2009-01-30 15:29:53Z Cyrus $
+$Id: dispatcher.lua 6082 2010-04-16 19:05:48Z jow $
 
 License:
 Copyright 2008 Steven Barth <steven@midlink.org>
@@ -25,11 +25,12 @@ limitations under the License.
 ]]--
 
 --- LuCI web dispatcher.
-local fs = require "luci.fs"
+local fs = require "nixio.fs"
 local sys = require "luci.sys"
 local init = require "luci.init"
 local util = require "luci.util"
 local http = require "luci.http"
+local nixio = require "nixio", require "nixio.util"
 
 module("luci.dispatcher", package.seeall)
 context = util.threadlocal()
@@ -74,12 +75,17 @@ end
 -- @param message	Custom error message (optional)#
 -- @return			false
 function error500(message)
-	luci.http.status(500, "Internal Server Error")
-
-	require("luci.template")
-	if not luci.util.copcall(luci.template.render, "error500", {message=message}) then
+	luci.util.perror(message)
+	if not context.template_header_sent then
+		luci.http.status(500, "Internal Server Error")
 		luci.http.prepare_content("text/plain")
 		luci.http.write(message)
+	else
+		require("luci.template")
+		if not luci.util.copcall(luci.template.render, "error500", {message=message}) then
+			luci.http.prepare_content("text/plain")
+			luci.http.write(message)
+		end
 	end
 	return false
 end
@@ -102,20 +108,26 @@ end
 
 --- Dispatch an HTTP request.
 -- @param request	LuCI HTTP Request object
-function httpdispatch(request)
+function httpdispatch(request, prefix)
 	luci.http.context.request = request
-	context.request = {}
+
+	local r = {}
+	context.request = r
 	local pathinfo = http.urldecode(request:getenv("PATH_INFO") or "", true)
 
-	for node in pathinfo:gmatch("[^/]+") do
-		table.insert(context.request, node)
+	if prefix then
+		for _, node in ipairs(prefix) do
+			r[#r+1] = node
+		end
 	end
 
-	local stat, err = util.copcall(dispatch, context.request)
-	if not stat then
-		luci.util.perror(err)
-		error500(err)
+	for node in pathinfo:gmatch("[^/]+") do
+		r[#r+1] = node
 	end
+
+	local stat, err = util.coxpcall(function()
+		dispatch(context.request)
+	end, error500)
 
 	luci.http.close()
 
@@ -125,13 +137,16 @@ end
 --- Dispatches a LuCI virtual path.
 -- @param request	Virtual path
 function dispatch(request)
-	--context._disable_memtrace = require "luci.debug".trap_memtrace()
+	--context._disable_memtrace = require "luci.debug".trap_memtrace("l")
 	local ctx = context
 	ctx.path = request
 	ctx.urltoken   = ctx.urltoken or {}
 
 	local conf = require "luci.config"
-	local lang = conf.main.lang
+	assert(conf.main,
+		"/etc/config/luci seems to be corrupt, unable to find section 'main'")
+
+	local lang = conf.main.lang or "auto"
 	if lang == "auto" then
 		local aclang = http.getenv("HTTP_ACCEPT_LANGUAGE") or ""
 		for lpat in aclang:gmatch("[%w-]+") do
@@ -141,7 +156,7 @@ function dispatch(request)
 				break
 			end
 		end
-        end
+	end
 	require "luci.i18n".setlanguage(lang)
 
 	local c = ctx.tree
@@ -215,7 +230,15 @@ function dispatch(request)
 			assert(media, "No valid theme found")
 		end
 
-		local viewns = setmetatable({}, {__index=function(table, key)
+		tpl.context.viewns = setmetatable({
+		   write       = luci.http.write;
+		   include     = function(name) tpl.Template(name):render(getfenv(2)) end;
+		   translate   = function(...) return require("luci.i18n").translate(...) end;
+		   striptags   = util.striptags;
+		   media       = media;
+		   theme       = fs.basename(media);
+		   resource    = luci.config.main.resourcebase
+		}, {__index=function(table, key)
 			if key == "controller" then
 				return build_url()
 			elseif key == "REQUEST_URI" then
@@ -224,14 +247,6 @@ function dispatch(request)
 				return rawget(table, key) or _G[key]
 			end
 		end})
-		tpl.context.viewns = viewns
-		viewns.write       = luci.http.write
-		viewns.include     = function(name) tpl.Template(name):render(getfenv(2)) end
-		viewns.translate   = function(...) return require("luci.i18n").translate(...) end
-		viewns.striptags   = util.striptags
-		viewns.media       = media
-		viewns.theme       = fs.basename(media)
-		viewns.resource    = luci.config.main.resourcebase
 	end
 
 	track.dependent = (track.dependent ~= false)
@@ -250,7 +265,7 @@ function dispatch(request)
 		local verifytoken = false
 		if not sess then
 			sess = luci.http.getcookie("sysauth")
-			sess = sess and sess:match("^[A-F0-9]+$")
+			sess = sess and sess:match("^[a-f0-9]*$")
 			verifytoken = true
 		end
 
@@ -258,9 +273,17 @@ function dispatch(request)
 		local user
 
 		if sdat then
-			sdat = loadstring(sdat)()
+			sdat = loadstring(sdat)
+			setfenv(sdat, {})
+			sdat = sdat()
 			if not verifytoken or ctx.urltoken.stok == sdat.token then
 				user = sdat.user
+			end
+		else
+			local eu = http.getenv("HTTP_AUTH_USER")
+			local ep = http.getenv("HTTP_AUTH_PASS")
+			if eu and ep and luci.sys.user.checkpasswd(eu, ep) then
+				authen = function() return eu end
 			end
 		end
 
@@ -349,7 +372,7 @@ end
 --- Generate the dispatching index using the best possible strategy.
 function createindex()
 	local path = luci.util.libpath() .. "/controller/"
-	local suff = ".lua"
+	local suff = { ".lua", ".lua.gz" }
 
 	if luci.util.copcall(require, "luci.fastindex") then
 		createindex_fastindex(path, suff)
@@ -360,14 +383,16 @@ end
 
 --- Generate the dispatching index using the fastindex C-indexer.
 -- @param path		Controller base directory
--- @param suffix	Controller file suffix
-function createindex_fastindex(path, suffix)
+-- @param suffixes	Controller file suffixes
+function createindex_fastindex(path, suffixes)
 	index = {}
 
 	if not fi then
 		fi = luci.fastindex.new("index")
-		fi.add(path .. "*" .. suffix)
-		fi.add(path .. "*/*" .. suffix)
+		for _, suffix in ipairs(suffixes) do
+			fi.add(path .. "*" .. suffix)
+			fi.add(path .. "*/*" .. suffix)
+		end
 	end
 	fi.scan()
 
@@ -378,26 +403,27 @@ end
 
 --- Generate the dispatching index using the native file-cache based strategy.
 -- @param path		Controller base directory
--- @param suffix	Controller file suffix
-function createindex_plain(path, suffix)
-	local controllers = util.combine(
-		luci.fs.glob(path .. "*" .. suffix) or {},
-		luci.fs.glob(path .. "*/*" .. suffix) or {}
-	)
+-- @param suffixes	Controller file suffixes
+function createindex_plain(path, suffixes)
+	local controllers = { }
+	for _, suffix in ipairs(suffixes) do
+		nixio.util.consume((fs.glob(path .. "*" .. suffix)), controllers)
+		nixio.util.consume((fs.glob(path .. "*/*" .. suffix)), controllers)
+	end
 
 	if indexcache then
-		local cachedate = fs.mtime(indexcache)
+		local cachedate = fs.stat(indexcache, "mtime")
 		if cachedate then
 			local realdate = 0
 			for _, obj in ipairs(controllers) do
-				local omtime = fs.mtime(path .. "/" .. obj)
+				local omtime = fs.stat(path .. "/" .. obj, "mtime")
 				realdate = (omtime and omtime > realdate) and omtime or realdate
 			end
 
 			if cachedate > realdate then
 				assert(
 					sys.process.info("uid") == fs.stat(indexcache, "uid")
-					and fs.stat(indexcache, "mode") == "rw-------",
+					and fs.stat(indexcache, "modestr") == "rw-------",
 					"Fatal: Indexcache is not sane!"
 				)
 
@@ -410,7 +436,11 @@ function createindex_plain(path, suffix)
 	index = {}
 
 	for i,c in ipairs(controllers) do
-		local module = "luci.controller." .. c:sub(#path+1, #c-#suffix):gsub("/", ".")
+		local module = "luci.controller." .. c:sub(#path+1, #c):gsub("/", ".")
+		for _, suffix in ipairs(suffixes) do
+			module = module:gsub(suffix.."$", "")
+		end
+
 		local mod = require(module)
 		local idx = mod.index
 
@@ -420,8 +450,9 @@ function createindex_plain(path, suffix)
 	end
 
 	if indexcache then
-		fs.writefile(indexcache, util.get_bytecode(index))
-		fs.chmod(indexcache, "a-rwx,u+rw")
+		local f = nixio.open(indexcache, "w", 600)
+		f:writeall(util.get_bytecode(index))
+		f:close()
 	end
 end
 
@@ -512,6 +543,14 @@ function entry(path, target, title, order)
 	return c
 end
 
+--- Fetch or create a dispatching node without setting the target module or
+-- enabling the node.
+-- @param	...		Virtual path
+-- @return			Dispatching tree node
+function get(...)
+	return _create_node({...})
+end
+
 --- Fetch or create a new dispatching node.
 -- @param	...		Virtual path
 -- @return			Dispatching tree node
@@ -589,7 +628,7 @@ end
 
 
 local function _call(self, ...)
-	if #self.argv > 0 then 
+	if #self.argv > 0 then
 		return getfenv()[self.name](unpack(self.argv), ...)
 	else
 		return getfenv()[self.name](...)
@@ -626,27 +665,29 @@ local function _cbi(self, ...)
 	local state = nil
 
 	for i, res in ipairs(maps) do
-		if config.autoapply then
-			res.autoapply = config.autoapply
-		end
+		res.flow = config
 		local cstate = res:parse()
-		if not state or cstate < state then
+		if cstate and (not state or cstate < state) then
 			state = cstate
 		end
 	end
 
+	local function _resolve_path(path)
+		return type(path) == "table" and build_url(unpack(path)) or path
+	end
+
 	if config.on_valid_to and state and state > 0 and state < 2 then
-		http.redirect(config.on_valid_to)
+		http.redirect(_resolve_path(config.on_valid_to))
 		return
 	end
 
 	if config.on_changed_to and state and state > 1 then
-		http.redirect(config.on_changed_to)
+		http.redirect(_resolve_path(config.on_changed_to))
 		return
 	end
 
 	if config.on_success_to and state and state > 0 then
-		http.redirect(config.on_success_to)
+		http.redirect(_resolve_path(config.on_success_to))
 		return
 	end
 
@@ -658,14 +699,18 @@ local function _cbi(self, ...)
 
 	local pageaction = true
 	http.header("X-CBI-State", state or 0)
-	tpl.render("cbi/header", {state = state})
+	if not config.noheader then
+		tpl.render("cbi/header", {state = state})
+	end
 	for i, res in ipairs(maps) do
 		res:render()
 		if res.pageaction == false then
 			pageaction = false
 		end
 	end
-	tpl.render("cbi/footer", {pageaction=pageaction, state = state, autoapply = config.autoapply})
+	if not config.nofooter then
+		tpl.render("cbi/footer", {flow = config, pageaction=pageaction, state = state, autoapply = config.autoapply})
+	end
 end
 
 --- Create a CBI model dispatching target.
@@ -700,7 +745,7 @@ local function _form(self, ...)
 
 	for i, res in ipairs(maps) do
 		local cstate = res:parse()
-		if not state or cstate < state then
+		if cstate and (not state or cstate < state) then
 			state = cstate
 		end
 	end

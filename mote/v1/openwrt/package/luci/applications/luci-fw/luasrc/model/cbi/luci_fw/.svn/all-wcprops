@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/6189/luci/branches/luci-0.9/applications/luci-fw/luasrc/model/cbi/luci_fw
+END
+redirect.lua
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-fw/luasrc/model/cbi/luci_fw/redirect.lua
+END
+rrule.lua
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-fw/luasrc/model/cbi/luci_fw/rrule.lua
+END
+trule.lua
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/6189/luci/branches/luci-0.9/applications/luci-fw/luasrc/model/cbi/luci_fw/trule.lua
+END
+miniportfw.lua
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-fw/luasrc/model/cbi/luci_fw/miniportfw.lua
+END
+traffic.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/5755/luci/branches/luci-0.9/applications/luci-fw/luasrc/model/cbi/luci_fw/traffic.lua
+END
+zones.lua
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/5755/luci/branches/luci-0.9/applications/luci-fw/luasrc/model/cbi/luci_fw/zones.lua
+END

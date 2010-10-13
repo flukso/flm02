@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: protocol.lua 3941 2008-12-23 21:39:38Z jow $
+$Id: protocol.lua 3843 2008-11-30 13:19:45Z Cyrus $
 
 ]]--
 

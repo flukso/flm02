@@ -5,7 +5,7 @@ Description:
 Several common useful Lua functions
 
 FileId:
-$Id: util.lua 4119 2009-01-25 13:14:29Z jow $
+$Id: util.lua 5860 2010-03-18 15:19:48Z jow $
 
 License:
 Copyright 2008 Steven Barth <steven@midlink.org>
@@ -37,6 +37,7 @@ local rawget, rawset, unpack = rawget, rawset, unpack
 local tostring, type, assert = tostring, type, assert
 local ipairs, pairs, loadstring = ipairs, pairs, loadstring
 local require, pcall, xpcall = require, pcall, xpcall
+local collectgarbage, get_memory_limit = collectgarbage, get_memory_limit
 
 --- LuCI utility functions.
 module "luci.util"
@@ -48,8 +49,10 @@ getmetatable("").__mod = function(a, b)
 	if not b then
 		return a
 	elseif type(b) == "table" then
+		for k, _ in pairs(b) do if type(b[k]) == "userdata" then b[k] = tostring(b[k]) end end
 		return a:format(unpack(b))
 	else
+		if type(b) == "userdata" then b = tostring(b) end
 		return a:format(b)
 	end
 end
@@ -113,34 +116,31 @@ end
 -- Scope manipulation routines
 --
 
+local tl_meta = {
+	__mode = "k",
+
+	__index = function(self, key)
+		local t = rawget(self, coxpt[coroutine.running()]
+		 or coroutine.running() or 0)
+		return t and t[key]
+	end,
+
+	__newindex = function(self, key, value)
+		local c = coxpt[coroutine.running()] or coroutine.running() or 0
+		if not rawget(self, c) then
+			rawset(self, c, { [key] = value })
+		else
+			rawget(self, c)[key] = value
+		end
+	end
+}
+
 --- Create a new or get an already existing thread local store associated with
 -- the current active coroutine. A thread local store is private a table object
 -- whose values can't be accessed from outside of the running coroutine.
 -- @return	Table value representing the corresponding thread local store
-function threadlocal()
-	local tbl = {}
-
-	local function get(self, key)
-		local c = coroutine.running()
-		local thread = coxpt[c] or c or 0
-		if not rawget(self, thread) then
-			return nil
-		end
-		return rawget(self, thread)[key]
-	end
-
-	local function set(self, key, value)
-		local c = coroutine.running()
-		local thread = coxpt[c] or c or 0
-		if not rawget(self, thread) then
-			rawset(self, thread, {})
-		end
-		rawget(self, thread)[key] = value
-	end
-
-	setmetatable(tbl, {__index = get, __newindex = set, __mode = "k"})
-
-	return tbl
+function threadlocal(tbl)
+	return setmetatable(tbl or {}, tl_meta)
 end
 
 
@@ -218,7 +218,7 @@ end
 -- @param value	String containing the HTML text
 -- @return	String with HTML tags stripped of
 function striptags(s)
-	return pcdata(s:gsub("</?[A-Za-z][A-Za-z0-9:_%-]*[^>]*>", " "):gsub("%s+", " "))
+	return pcdata(tostring(s):gsub("</?[A-Za-z][A-Za-z0-9:_%-]*[^>]*>", " "):gsub("%s+", " "))
 end
 
 --- Splits given string on a defined separator sequence and return a table
@@ -525,7 +525,7 @@ function get_bytecode(val)
 		code = string.dump( loadstring( "return " .. serialize_data(val) ) )
 	end
 
-	return code and strip_bytecode(code)
+	return code -- and strip_bytecode(code)
 end
 
 --- Strips unnescessary lua bytecode from given string. Information like line
@@ -554,10 +554,10 @@ function strip_bytecode(code)
 		end
 	end
 
-	local strip_function
-	strip_function = function(code)
+	local function strip_function(code)
 		local count, offset = subint(code, 1, size)
-		local stripped, dirty = string.rep("\0", size), offset + count
+		local stripped = { string.rep("\0", size) }
+		local dirty = offset + count
 		offset = offset + count + int * 2 + 4
 		offset = offset + int + subint(code, offset, int) * ins
 		count, offset = subint(code, offset, int)
@@ -575,10 +575,11 @@ function strip_bytecode(code)
 			end
 		end
 		count, offset = subint(code, offset, int)
-		stripped = stripped .. code:sub(dirty, offset - 1)
+		stripped[#stripped+1] = code:sub(dirty, offset - 1)
 		for n = 1, count do
 			local proto, off = strip_function(code:sub(offset, -1))
-			stripped, offset = stripped .. proto, offset + off - 1
+			stripped[#stripped+1] = proto
+			offset = offset + off - 1
 		end
 		offset = offset + subint(code, offset, int) * int + int
 		count, offset = subint(code, offset, int)
@@ -589,8 +590,8 @@ function strip_bytecode(code)
 		for n = 1, count do
 			offset = offset + subint(code, offset, size) + size
 		end
-		stripped = stripped .. string.rep("\0", int * 3)
-		return stripped, offset
+		stripped[#stripped+1] = string.rep("\0", int * 3)
+		return table.concat(stripped), offset
 	end
 
 	return code:sub(1,12) .. strip_function(code:sub(13,-1))
@@ -703,7 +704,7 @@ end
 --- Returns the absolute path to LuCI base directory.
 -- @return		String containing the directory path
 function libpath()
-	return require "luci.fs".dirname(ldebug.__file__)
+	return require "nixio.fs".dirname(ldebug.__file__)
 end
 
 
@@ -770,18 +771,19 @@ function copcall(f, ...)
 end
 
 -- Handle return value of protected call
-function handleReturnValue(err, co, status, ...)
+function handleReturnValue(err, co, status, arg1, arg2, arg3, arg4, arg5)
 	if not status then
-		return false, err(debug.traceback(co, (...)), ...)
+		return false, err(debug.traceback(co, arg1), arg1, arg2, arg3, arg4, arg5)
 	end
-	if coroutine.status(co) == 'suspended' then
-		return performResume(err, co, coroutine.yield(...))
-	else
-		return true, ...
+
+	if coroutine.status(co) ~= 'suspended' then
+		return true, arg1, arg2, arg3, arg4, arg5
 	end
+
+	return performResume(err, co, coroutine.yield(arg1, arg2, arg3, arg4, arg5))
 end
 
 -- Resume execution of protected function call
-function performResume(err, co, ...)
-	return handleReturnValue(err, co, coroutine.resume(co, ...))
+function performResume(err, co, arg1, arg2, arg3, arg4, arg5)
+	return handleReturnValue(err, co, coroutine.resume(co, arg1, arg2, arg3, arg4, arg5))
 end

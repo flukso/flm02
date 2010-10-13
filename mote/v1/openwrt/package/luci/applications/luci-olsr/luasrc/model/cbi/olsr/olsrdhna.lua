@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: olsrdhna.lua 3823 2008-11-27 14:26:37Z jow $
+$Id: olsrdhna.lua 3817 2008-11-27 00:11:26Z jow $
 ]]--
 
 mh = Map("olsrd", translate("olsrd_hna", "OLSR - HNA-Ankündigungen"))

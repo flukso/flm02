@@ -29,7 +29,7 @@ DEALINGS IN THE SOFTWARE.
 -- LTN12 - Filters, sources, sinks and pumps.
 -- LuaSocket toolkit.
 -- Author: Diego Nehab
--- RCS ID: $Id: ltn12.lua 3246 2008-09-12 07:48:36Z Cyrus $
+-- RCS ID: $Id: ltn12.lua 3212 2008-09-09 12:44:41Z Cyrus $
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------

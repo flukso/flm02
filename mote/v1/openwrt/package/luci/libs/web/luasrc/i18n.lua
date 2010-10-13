@@ -5,7 +5,7 @@ Description:
 A very minimalistic but yet effective internationalisation module
 
 FileId:
-$Id: i18n.lua 3652 2008-10-29 19:41:33Z jow $
+$Id: i18n.lua 5154 2009-07-26 23:59:58Z jow $
 
 License:
 Copyright 2008 Steven Barth <steven@midlink.org>
@@ -27,6 +27,7 @@ limitations under the License.
 --- LuCI translation library.
 module("luci.i18n", package.seeall)
 require("luci.util")
+require("lmo")
 
 table   = {}
 i18ndir = luci.util.libpath() .. "/i18n/"
@@ -47,11 +48,22 @@ end
 function load(file, lang, force)
 	lang = lang and lang:gsub("_", "-") or ""
 	if force or not loaded[lang] or not loaded[lang][file] then
-		local f = loadfile(i18ndir .. file .. "." .. lang .. ".lua")
+		local f = lmo.open(i18ndir .. file .. "." .. lang .. ".lmo")
 		if f then
-			table[lang] = table[lang] or {}
-			setfenv(f, table[lang])
-			f()
+			if not table[lang] then
+				table[lang] = { f }
+				setmetatable(table[lang], {
+					__index = function(tbl, key)
+						for i = 1, #tbl do
+							local s = rawget(tbl, i):lookup(key)
+							if s then return s end
+						end
+					end
+				})
+			else
+				table[lang][#table[lang]+1] = f
+			end
+
 			loaded[lang] = loaded[lang] or {}
 			loaded[lang][file] = true
 			return true
@@ -69,13 +81,15 @@ end
 -- @param force	Force reload even if already loaded (optional)
 function loadc(file, force)
 	load(file, default, force)
+	if context.parent then load(file, context.parent, force) end
 	return load(file, context.lang, force)
 end
 
 --- Set the context default translation language.
 -- @param lang	Two-letter language code
 function setlanguage(lang)
-	context.lang = lang:gsub("_", "-")
+	context.lang   = lang:gsub("_", "-")
+	context.parent = (context.lang:match("^([a-z][a-z])_"))
 end
 
 --- Return the translated value for a specific translation key.
@@ -84,6 +98,7 @@ end
 -- @return		Translated string
 function translate(key, def)
 	return (table[context.lang] and table[context.lang][key])
+		or (table[context.parent] and table[context.parent][key])
 		or (table[default] and table[default][key])
 		or def
 end
@@ -94,5 +109,26 @@ end
 -- @param ...		Format parameters
 -- @return			Translated and formatted string
 function translatef(key, default, ...)
-	return translate(key, default):format(...)
+	return tostring(translate(key, default)):format(...)
+end
+
+--- Return the translated value for a specific translation key
+-- and ensure that the returned value is a Lua string value.
+-- This is the same as calling <code>tostring(translate(...))</code>
+-- @param key		Translation key
+-- @param default	Default translation
+-- @return			Translated string
+function string(key, default)
+	return tostring(translate(key, default))
+end
+
+--- Return the translated value for a specific translation key and use it as sprintf pattern.
+-- Ensure that the returned value is a Lua string value.
+-- This is the same as calling <code>tostring(translatef(...))</code>
+-- @param key		Translation key
+-- @param default	Default translation
+-- @param ...		Format parameters
+-- @return			Translated and formatted string
+function stringf(key, default, ...)
+	return tostring(translate(key, default)):format(...)
 end

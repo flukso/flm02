@@ -10,12 +10,12 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: init.lua 3987 2009-01-02 21:35:25Z Cyrus $
+$Id: init.lua 5765 2010-03-08 19:07:13Z jow $
 ]]--
 module("luci.controller.init", package.seeall)
 
 function index()
-	if not luci.fs.access("/etc/rc.common") then
+	if not nixio.fs.access("/etc/rc.common") then
 		return
 	end
 
@@ -23,7 +23,7 @@ function index()
 	luci.i18n.loadc("initmgr")
 
 	entry(
-		{"admin", "system", "init"}, form("init/init"),
-		luci.i18n.translate("initmgr", "Init Scripts")
+		{"admin", "services", "init"}, form("init/init"),
+		luci.i18n.translate("initmgr", "Init Scripts"), 0
 	).i18n = "initmgr"
 end
