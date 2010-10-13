@@ -10,7 +10,7 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/flukso
+define Package/button
   SECTION:=utils
   CATEGORY:=Utilities
   DEPENDS:=
@@ -29,7 +29,7 @@ endef
 define Build/Compile
 endef
 
-define Package/flukso/install
+define Package/button/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/net_toggle $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/net_defaults $(1)/usr/sbin/
