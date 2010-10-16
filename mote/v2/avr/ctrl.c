@@ -29,15 +29,27 @@ cBuffer ctrlTxBuffer; // ctrl transmit buffer
 static char ctrlRxData[CTRL_RX_BUFFER_SIZE];
 static char ctrlTxData[CTRL_TX_BUFFER_SIZE];
 
-void ctrlInit(void) {
+void ctrlInit(void)
+{
 	// initialize the CTRL receive buffer
 	bufferInit(&ctrlRxBuffer, (u08*) ctrlRxData, CTRL_RX_BUFFER_SIZE);
 	// initialize the CTRL transmit buffer
 	bufferInit(&ctrlTxBuffer, (u08*) ctrlTxData, CTRL_TX_BUFFER_SIZE);
 }
 
-uint8_t ctrlAddToRxBuffer(uint8_t data) {
-	return bufferAddToEnd(&ctrlRxBuffer, data);
+uint8_t ctrlTxBufferIsEmpty(void)
+{
+	if(ctrlTxBuffer.datalength == 0) {
+		return TRUE;
+	}
+	else {
+		return FALSE;
+	}
+}
+
+uint8_t ctrlAddToTxBuffer(uint8_t data)
+{
+	return bufferAddToEnd(&ctrlTxBuffer, data);
 }
 
 uint8_t ctrlGetFromTxBuffer(uint8_t* data) {
@@ -53,15 +65,40 @@ uint8_t ctrlGetFromTxBuffer(uint8_t* data) {
 	}
 }
 
-uint8_t ctrlAddToTxBuffer(uint8_t data) {
-        return bufferAddToEnd(&ctrlTxBuffer, data);
+uint8_t ctrlRxBufferIsEmpty(void)
+{
+	if(ctrlRxBuffer.datalength == 0) {
+		return TRUE;
+	}
+	else {
+		return FALSE;
+	}
 }
 
-void ctrlLoop(void) {
-	// source routing
-	bufferAddToEnd(&ctrlTxBuffer, 'l');
+uint8_t ctrlAddToRxBuffer(uint8_t data)
+{
+	return bufferAddToEnd(&ctrlRxBuffer, data);
+}
 
-	while (ctrlRxBuffer.datalength) {
-		bufferAddToEnd(&ctrlTxBuffer, bufferGetFromFront(&ctrlRxBuffer));
+uint8_t ctrlGetFromRxBuffer(uint8_t* data)
+{
+	// make sure we have data in the Rx buffer
+	if(ctrlRxBuffer.datalength) {
+		// get byte from beginning of buffer
+		*data = bufferGetFromFront(&ctrlRxBuffer);
+		return TRUE;
+	}
+	else {
+		// no data
+		return FALSE;
+	}
+}
+
+void ctrlRxToTxLoop(void)
+{
+	uint8_t data;
+
+	while (ctrlGetFromRxBuffer(&data)) {
+		ctrlAddToTxBuffer(data);
 	}
 }

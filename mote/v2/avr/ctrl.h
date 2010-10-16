@@ -27,18 +27,67 @@
 #include "buffer.h"
 
 #ifndef CTRL_RX_BUFFER_SIZE
-#define CTRL_RX_BUFFER_SIZE 16
+#define CTRL_RX_BUFFER_SIZE 32
 #endif
 #ifndef CTRL_TX_BUFFER_SIZE
-#define CTRL_TX_BUFFER_SIZE 16
+#define CTRL_TX_BUFFER_SIZE 32
 #endif
 
+/**
+ * Initialize the ctrl receive and transmit buffers.
+ *
+ * Overrule the default Rx and Tx ctrl buffer size (32 bytes) in the makefile.
+ */
 void ctrlInit(void);
 
-uint8_t ctrlAddToRxBuffer(uint8_t data);
+/**
+ * Check whether the ctrl Tx buffer is empty.
+ *
+ * @return	TRUE/FALSE if empty/not empty
+ */
+uint8_t ctrlTxBufferIsEmpty(void);
 
-uint8_t ctrlGetFromTxBuffer(uint8_t* data);
-
+/**
+ * Add a byte to the ctrl Tx buffer's tail.
+ *
+ * @param data 	the byte to be added to the buffer's tail
+ * @return 	TRUE/FALSE if byte could/could not be written
+ */
 uint8_t ctrlAddToTxBuffer(uint8_t data);
 
-void ctrlLoop(void); 
+/**
+ * Fetch a byte from the ctrl Tx buffer's head.
+ *
+ * @param data	pointer where the byte has to be written
+ * @return	TRUE/FALSE if a byte could be fetched/not fetched
+ */
+uint8_t ctrlGetFromTxBuffer(uint8_t* data);
+
+/**
+ * Check whether the ctrl Rx buffer is empty.
+ *
+ * @return	TRUE/FALSE if empty/not empty
+ */
+uint8_t ctrlRxBufferIsEmpty(void);
+
+/**
+ * Add a byte to the ctrl Rx buffer.
+ *
+ * @param data	the byte to be added to the buffer's tail
+ * @return	TRUE/FALSE if empty/not empty
+ */
+uint8_t ctrlAddToRxBuffer(uint8_t data);
+
+/**
+ * Fetch a byte from the ctrl Rx buffer's head.
+ *
+ * @param data  pointer where the byte has to be written
+ * @return      TRUE/FALSE if a byte could be fetched/not fetched
+ */
+uint8_t ctrlGetFromRxBuffer(uint8_t* data);
+
+/**
+ * Loop all bytes from the ctrl Rx to Tx buffer.
+ *
+ */
+void ctrlRxToTxLoop(void); 
