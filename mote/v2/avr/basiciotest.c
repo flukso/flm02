@@ -19,32 +19,33 @@
 //
 // $Id$
 
-#include <avr/io.h>		// include I/O definitions (port names, pin names, etc)
-#include <avr/interrupt.h>	// include interrupt support
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
-#include "uart.h"		// include uart function library
+#include "uart.h"
 #include "spi.h"
 #include "ctrl.h"
 
 
 #define NO_OP_1		1
 #define NO_OP_2		2
-#define TRANSMIT	4
-#define HIGH_HEX	8
-#define TO_FROM_UART	16
-#define NEW_CTRL_MSG	32
+#define START_TX	4
+#define TRANSMIT        8
+#define HIGH_HEX	16
+#define TO_FROM_UART	32
+#define NEW_CTRL_MSG	64
 
 #define SPI_END_OF_TX			0x00
-#define SPI_END_OF_MESSAGE		':'
+#define SPI_END_OF_MESSAGE		'.'
 #define SPI_FORWARD_TO_UART_PORT	'u'
 #define SPI_FORWARD_TO_CTRL_PORT	'l' // 'l'ocal port
 
 
-volatile uint8_t high_hex;
-volatile uint8_t spi_status;
+volatile uint8_t spi_status, high_hex;
 
 // hex to binary/byte decoding
-uint8_t htob(uint16_t hex) {
+uint8_t htob(uint16_t hex)
+{
 	uint8_t low_hex = (uint8_t) hex;
 	uint8_t high_hex = (uint8_t) (hex >> 8); 
 	uint8_t byte;
@@ -56,7 +57,8 @@ uint8_t htob(uint16_t hex) {
 }
 
 // binary/byte to hex encoding
-uint16_t btoh(uint8_t byte) {
+uint16_t btoh(uint8_t byte)
+{
 	uint8_t low_nibble = (byte & 0x0F);
 	uint8_t high_nibble = (byte & 0xF0) >> 4;
 	uint16_t hex;
@@ -68,8 +70,10 @@ uint16_t btoh(uint8_t byte) {
 }
 
 
-SIGNAL(SPI_STC_vect) {
-	uint8_t spi_rx, spi_tx, uart_tx; 
+ISR(SPI_STC_vect)
+{
+	uint8_t spi_rx, rx, tx; 
+	uint16_t spi_tx;
 
 	// the SPI is double-buffered, requiring two NO_OPs when switching from Tx to Rx
 	if (spi_status & (NO_OP_1 | NO_OP_2)) {
@@ -77,38 +81,58 @@ SIGNAL(SPI_STC_vect) {
 		return;
 	}
 
+	// do we have to transmit the first byte?
+	if (spi_status & START_TX) {
+		received_from_spi(SPI_FORWARD_TO_CTRL_PORT);
+		spi_status &= ~START_TX;
+		return;
+	}
+
 	// are we in Tx mode?
 	if (spi_status & TRANSMIT) {
-		if (spi_status & TO_FROM_UART) {
-
+		if (spi_status & HIGH_HEX) {
+			received_from_spi(high_hex);
+			spi_status &= ~HIGH_HEX;
+			return;
 		}
-		else {
-			if (ctrlGetFromTxBuffer(&spi_tx)) {
-				received_from_spi(spi_tx);
-			}
-			else {
+
+		if (spi_status & TO_FROM_UART) {
+			if (!uartReceiveByte(&tx)) {
 				received_from_spi(SPI_END_OF_TX);
 				spi_status &= ~TRANSMIT;
 				spi_status |= NO_OP_2;
-				uartAddToTxBuffer('r'); //debugging
+				return;
+			}
+		}
+		else {
+			if (ctrlGetFromTxBuffer(&tx)) {
+				if (tx == SPI_END_OF_MESSAGE) {
+					received_from_spi(tx);
+					return;
+				}
+			}
+			else {
+				received_from_spi(SPI_FORWARD_TO_UART_PORT);
+				spi_status |= TO_FROM_UART;
+				return;
 			}
 		}
 
+		spi_tx = btoh(tx);
+		high_hex = (uint8_t)spi_tx;
+		spi_status |= HIGH_HEX;
+		received_from_spi((uint8_t)(spi_tx >> 8));
 		return;
 	}
 
 	// we're in Rx mode
 	switch (spi_rx = received_from_spi(0x00)) {
 		case SPI_END_OF_TX:
-			spi_status |= TRANSMIT; 
+			spi_status |= TRANSMIT | START_TX; 
 			spi_status &= ~(HIGH_HEX | TO_FROM_UART);
-			uartAddToTxBuffer('t'); //debugging
 			break;
 		case SPI_END_OF_MESSAGE:
-			if (spi_status & TO_FROM_UART) {
-				spi_status &= ~TO_FROM_UART;
-			}
-			else {
+			if (!(spi_status & TO_FROM_UART)) {
 				ctrlAddToRxBuffer(spi_rx);
 				spi_status |= NEW_CTRL_MSG;
 			}
@@ -120,57 +144,60 @@ SIGNAL(SPI_STC_vect) {
 			spi_status &= ~TO_FROM_UART;
 			break;
 		default:
-			//check whether the incoming hex-encoded stream needs to be forwarded to the UART port
-			if (spi_status & TO_FROM_UART) {
-				if (spi_status & HIGH_HEX) {
-					uart_tx = htob(((uint16_t)high_hex << 8) + spi_rx);
-					uartAddToTxBuffer(uart_tx);
+			if (spi_status & HIGH_HEX) {
+				rx = htob(((uint16_t)high_hex << 8) + spi_rx);
+
+				if (spi_status & TO_FROM_UART) {
+					uartAddToTxBuffer(rx);
 				}
 				else {
-					high_hex = spi_rx;
+					ctrlAddToRxBuffer(rx);
 				}
-				// toggle to the HEX bit in spi_status
-				spi_status ^= HIGH_HEX;
 			}
 			else {
-				// forward to CTRL_RX buffer
-				ctrlAddToRxBuffer(spi_rx);
-			} 
+				high_hex = spi_rx;
+			}
+			// toggle the HEX bit in spi_status
+			spi_status ^= HIGH_HEX;
 	}
 }
 
-int main(void) {
+ISR(TIMER1_COMPA_vect)
+{
+	/* void */
+}
+
+int main(void)
+{
+	// Configure PD5=DE as output pin with low as default
+	DDRD |= (1<<DDD5);
+	
+	// Timer1 clock prescaler set to 1 => fTOV1 = 3686.4kHz / 65536 = 56.25Hz (DS p.134)
+	TCCR1B |= (1<<CS10);
+	// Increase sampling frequency to 2kHz (= 667Hz per channel) with an error of 0.01% (DS p.122)
+	OCR1A = 0x0732;
+	// Timer1 set to CTC mode (DS p.133)
+	TCCR1B |= 1<<WGM12;
+	// Enable output compare match interrupt for timer1 (DS p.136)
+	TIMSK1 |= (1<<OCIE1A);
+#if DBG > 0
+	// Set PB1=OC1A as output pin
+	DDRB |= (1<<DDB1);
+	// Toggle pin OC1A=PB1 on compare match
+	TCCR1A |= 1<<COM1A0;
+#endif
+
 	// initialize the CTRL buffers
 	ctrlInit();
-
-	// initialize the UART buffers with a default UART baud rate of 4800
+	// initialize the UART hardware and buffers
 	uartInit();
-
 	// initialize the SPI in slave mode
 	setup_spi(SPI_MODE_0, SPI_MSB, SPI_INTERRUPT, SPI_SLAVE);
 
-	uint8_t data;
-	uint16_t send;
 
 	for(;;) {
-		if (uartReceiveByte(&data)) {
-			// check the HEX bit in spi_status
-			if (spi_status & HIGH_HEX) {
-				// loopback on the UART itf
-				send = btoh(htob(((uint16_t)high_hex << 8) + data));
-				uartAddToTxBuffer((uint8_t)(send >> 8));
-				uartAddToTxBuffer((uint8_t)(send));
-			}
-			else {
-				high_hex = data;
-			}
-			// toggle to the HEX bit in spi_status
-			spi_status ^= HIGH_HEX;
-
-		}
-
 		if (spi_status & NEW_CTRL_MSG) {
-			ctrlLoop();	
+			ctrlRxToTxLoop();
 			spi_status &= ~NEW_CTRL_MSG;
 		}
 	}
