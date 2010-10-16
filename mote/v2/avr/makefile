@@ -35,6 +35,9 @@
 # make program = Download the hex file to the device, using avrdude.
 #                Please customize the avrdude settings below first!
 #
+# make rprogram = Upload the hex and eep file to the Fluksometer's /tmp.
+#                 Then flash the fuses, hex and eep through the onboard avrdude.
+#
 # make debug = Start either simulavr or avarice as specified for debugging, 
 #              with avr-gdb or avr-insight as the front end for debugging.
 #
@@ -48,7 +51,7 @@
 
 
 # MCU name
-MCU = atmega48
+MCU = atmega168
 
 
 # Processor frequency.
@@ -56,7 +59,7 @@ MCU = atmega48
 #     processor frequency. You can then use this symbol in your source code to 
 #     calculate timings. Do NOT tack on a 'UL' at the end, this will be done
 #     automatically to create a 32-bit value in your source code.
-F_CPU = 1000000
+F_CPU = 3686400
 
 
 # Output format. (can be srec, ihex, binary)
@@ -113,14 +116,14 @@ CSTANDARD = -std=gnu99
 CDEFS = -DF_CPU=$(F_CPU)UL  
 
 # uncomment and adapt these line if you want different UART library buffer size
-CDEFS += -DUART_RX_BUFFER_SIZE=32
-CDEFS += -DUART_TX_BUFFER_SIZE=32
+CDEFS += -DUART_RX_BUFFER_SIZE=64
+CDEFS += -DUART_TX_BUFFER_SIZE=64
 
-CDEFS += -DUART_DEFAULT_BAUD_RATE=4800
+CDEFS += -DUART_DEFAULT_BAUD_RATE=115200
 
 # override default CTRL buffer sizes
-CDEFS += -DCTRL_RX_BUFFER_SIZE=16
-CDEFS += -DCTRL_TX_BUFFER_SIZE=16
+CDEFS += -DCTRL_RX_BUFFER_SIZE=32
+CDEFS += -DCTRL_TX_BUFFER_SIZE=32
 
 # Place -I options here
 CINCS =
@@ -216,13 +219,14 @@ LDFLAGS += $(EXTMEMOPTS)
 # to get a full listing.
 #
 AVRDUDE_PROGRAMMER = usbtiny
+AVRDUDE_PROGRAMMER_R = gpio
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
 AVRDUDE_PORT = /dev/ttyUSB*    # programmer connected to serial device
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
-
+AVRDUDE_WRITE_FUSES = -U lfuse:w:0xEC:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m
 
 # Uncomment the following if you want avrdude's erase cycle counter.
 # Note that this counter needs to be initialized first using -Yn,
@@ -243,7 +247,10 @@ AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
 AVRDUDE_FLAGS += $(AVRDUDE_VERBOSE)
 AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
 
-
+AVRDUDE_FLAGS_R = -p $(MCU) -c $(AVRDUDE_PROGRAMMER_R)
+AVRDUDE_FLAGS_R += $(AVRDUDE_NO_VERIFY)
+AVRDUDE_FLAGS_R += $(AVRDUDE_VERBOSE)
+AVRDUDE_FLAGS_R += $(AVRDUDE_ERASE_COUNTER)
 
 #---------------- Debugging Options ----------------
 
@@ -379,7 +386,12 @@ gccversion :
 
 # Program the device.  
 program: $(TARGET).hex $(TARGET).eep
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
+	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
+
+# Program the device remotely.
+rprogram: $(TARGET).hex $(TARGET).eep
+	@scp $(TARGET).hex $(TARGET).eep root@192.168.255.1:/tmp
+	@ssh root@192.168.255.1 "cd /tmp; $(AVRDUDE) $(AVRDUDE_FLAGS_R) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)"
 
 
 # Generate avr-gdb config/init file which does the following:
@@ -520,5 +532,5 @@ clean_list :
 # Listing of phony targets.
 .PHONY : all begin finish end sizebefore sizeafter gccversion \
 build elf hex eep lss sym coff extcoff \
-clean clean_list program debug gdb-config
+clean clean_list program rprogram debug gdb-config
 
