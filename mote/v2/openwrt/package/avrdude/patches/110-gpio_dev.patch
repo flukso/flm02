@@ -9,10 +9,10 @@ diff -urNad /tmp/avrdude-5.10/avrdude.conf.in avrdude-5.10/avrdude.conf.in
 +  id    = "gpio";
 +  desc  = "Use gpio_dev to bitbang GPIO lines";
 +  type  = gpio;
-+  reset = 6;
++  reset = 0;
 +  sck   = 3;
-+  mosi  = 2;
-+  miso  = 1;  
++  mosi  = 1;
++  miso  = 2;  
 +;
 +
  # Same as above, different name
