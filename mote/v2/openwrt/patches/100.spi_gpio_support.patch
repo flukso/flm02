@@ -1,5 +1,5 @@
---- /tmp/build_dir/linux-atheros/linux-2.6.30.10/arch/mips/ar231x/ar2315.c	2010-08-07 10:15:11.696355750 +0200
-+++ build_dir/linux-atheros/linux-2.6.30.10/arch/mips/ar231x/ar2315.c	2010-08-07 10:33:47.588393782 +0200
+--- a/arch/mips/ar231x/ar2315.c	2010-08-07 10:15:11.696355750 +0200
++++ b/arch/mips/ar231x/ar2315.c	2010-08-07 10:33:47.588393782 +0200
 @@ -36,6 +36,11 @@
  #include "devices.h"
  #include "ar2315.h"
@@ -18,8 +18,8 @@
  
 +/* BVDM 04/06/2010 */
 +#define SPI_GPIO_SCK  3
-+#define SPI_GPIO_MOSI 2
-+#define SPI_GPIO_MISO 1
++#define SPI_GPIO_MOSI 1
++#define SPI_GPIO_MISO 2
 +
 +static struct spi_gpio_platform_data ar2315_spi_gpio_platform_data = {
 +	.sck  = SPI_GPIO_SCK,
