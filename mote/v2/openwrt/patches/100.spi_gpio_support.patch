@@ -41,7 +41,7 @@
 +	.modalias        = "spidev",
 +	.controller_data = (void *) SPI_GPIO_NO_CHIPSELECT,
 +	.mode            = SPI_MODE_0,
-+	.max_speed_hz    = 10000000,   /* 10kHz */
++	.max_speed_hz    = 16000000,   /* 16kHz */
 +	.bus_num         = 0,
 +},
 +};
