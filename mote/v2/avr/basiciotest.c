@@ -21,6 +21,9 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/eeprom.h>
+
+#include <util/delay.h>
 
 #include "uart.h"
 #include "spi.h"
@@ -39,7 +42,6 @@
 #define SPI_END_OF_MESSAGE		'.'
 #define SPI_FORWARD_TO_UART_PORT	'u'
 #define SPI_FORWARD_TO_CTRL_PORT	'l' // 'l'ocal port
-
 
 volatile uint8_t spi_status, high_hex;
 
@@ -167,11 +169,43 @@ ISR(TIMER1_COMPA_vect)
 	/* void */
 }
 
-int main(void)
+ISR(ANALOG_COMP_vect)
 {
-	// Configure PD5=DE as output pin with low as default
-	DDRD |= (1<<DDD5);
-	
+	uint8_t i;
+
+	PORTB |= (1<<PB0);
+
+	//disable uC sections to consume less power while writing to EEPROM
+	//disable UART Tx and Rx:
+	UCSR0B &= ~((1<<RXEN0) | (1<<TXEN0));
+	//disable ADC:
+	ADCSRA &= ~(1<<ADEN);
+
+	for (i=0; i<128; i++)
+		eeprom_write_byte((uint8_t *)i, i); 			
+
+	//enable UART Tx and Rx:
+	UCSR0B |= (1<<RXEN0) | (1<<TXEN0);
+	// enable ADC and start a first ADC conversion
+	ADCSRA |= (1<<ADEN) | (1<<ADSC);
+
+	PORTB &= ~(1<<PB0);
+}
+
+void setup_pulse_input(void)
+{
+	// PD2=INT0 and PD3=INT1 configuration
+	// set as input pin with 20k pull-up enabled
+	PORTD |= (1<<PD2) | (1<<PD3);
+	// INT0 and INT1 to trigger an interrupt on a falling edge
+	EICRA = (1<<ISC01) | (1<<ISC11);
+	// enable INT0 and INT1 interrupts
+	EIMSK = (1<<INT0) | (1<<INT1);
+}
+
+
+void setup_timer1(void)
+{
 	// Timer1 clock prescaler set to 1 => fTOV1 = 3686.4kHz / 65536 = 56.25Hz (DS p.134)
 	TCCR1B |= (1<<CS10);
 	// Increase sampling frequency to 2kHz (= 667Hz per channel) with an error of 0.01% (DS p.122)
@@ -186,7 +220,32 @@ int main(void)
 	// Toggle pin OC1A=PB1 on compare match
 	TCCR1A |= 1<<COM1A0;
 #endif
+}
 
+void setup_analog_comparator(void)
+{
+	// analog comparator setup for brown-out detection
+	// PD7=AIN1 configured by default as input to obtain high impedance
+
+	// disable digital input cicuitry on AIN0 and AIN1 pins to reduce leakage current
+	DIDR1 |= (1<<AIN1D) | (1<<AIN0D);
+
+	// comparing AIN1 (Vcc/4.4) to bandgap reference (1.1V)
+	// bandgap select | AC interrupt enable | AC interrupt on rising edge (DS p.243)
+	ACSR |= (1<<ACBG) | (1<<ACIE) | (1<<ACIS1) | (1<<ACIS0);
+}
+
+int main(void)
+{
+	// RS-485: Configure PD5=DE as output pin with low as default
+	DDRD |= (1<<DDD5);
+	// set high to transmit
+	//PORTD |= (1<<PD5);
+	
+	setup_timer1();
+	setup_pulse_input();
+	setup_analog_comparator();
+		
 	// initialize the CTRL buffers
 	ctrlInit();
 	// initialize the UART hardware and buffers
@@ -200,6 +259,10 @@ int main(void)
 			ctrlRxToTxLoop();
 			spi_status &= ~NEW_CTRL_MSG;
 		}
+		
+		// toggle the LED=PB0 pin
+		_delay_ms(50);
+		 DDRB ^= (1<<PB0);
 	}
 
 	return 0;
