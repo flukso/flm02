@@ -33,4 +33,6 @@ patch -p0 < $REPO_PATH/patches/100-disable.console.patch
 patch -p0 < $REPO_PATH/patches/110-set.console.baud.to.4800.patch
 
 # and to build the flash image
-# make -j4
+echo To compile this custom backfire build for Flukso, just type: make -j8
+echo Use approx. as many jobs as the number of cores available on your build machine.
+
