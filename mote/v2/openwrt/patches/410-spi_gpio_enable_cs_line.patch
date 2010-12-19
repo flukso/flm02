@@ -1,0 +1,19 @@
+--- a/arch/mips/ar231x/ar2315.c	2010-08-08 15:52:43.005477443 +0200
++++ b/arch/mips/ar231x/ar2315.c	2010-08-08 15:56:06.009475860 +0200
+@@ -407,6 +407,7 @@
+ #define SPI_GPIO_SCK  3
+ #define SPI_GPIO_MOSI 2
+ #define SPI_GPIO_MISO 1
++#define SPI_GPIO_CS   4
+ 
+ static struct spi_gpio_platform_data ar2315_spi_gpio_platform_data = {
+ 	.sck  = SPI_GPIO_SCK,
+@@ -426,7 +427,7 @@
+ static struct spi_board_info ar2315_spi_gpio_board_info[] __initdata = {
+ {
+ 	.modalias        = "spidev",
+-	.controller_data = (void *) SPI_GPIO_NO_CHIPSELECT,
++	.controller_data = (void *) SPI_GPIO_CS,
+ 	.mode            = SPI_MODE_0,
+ 	.max_speed_hz    = 10000000,   /* 10kHz */
+ 	.bus_num         = 0,
