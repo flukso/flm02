@@ -1,0 +1,7 @@
+# Put your custom commands here that should be executed once
+# the system init finished. By default this file does nothing.
+
+# set the wifi led pin (=GPIO 7) direction to output
+gpioctl dirout 7
+
+exit 0

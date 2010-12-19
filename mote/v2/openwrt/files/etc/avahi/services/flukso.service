@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+ <name replace-wildcards="yes">Flukso RESTful API on %h</name>
+  <service>
+    <type>_flukso._tcp</type>
+    <port>8080</port>
+    <txt-record>id1=0123456789abcdef0123456789abcde0</txt-record>
+    <txt-record>id2=0123456789abcdef0123456789abcde1</txt-record>
+    <txt-record>id3=0123456789abcdef0123456789abcde2</txt-record>
+    <txt-record>path=/sensor</txt-record>
+    <txt-record>version=1.0</txt-record>
+  </service>
+</service-group>
