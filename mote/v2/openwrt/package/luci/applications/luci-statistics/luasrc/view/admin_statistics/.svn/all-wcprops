@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/5118/luci/branches/luci-0.9/applications/luci-statistics/luasrc/view/admin_statistics
+END
+networkplugins.htm
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/!svn/ver/5118/luci/branches/luci-0.9/applications/luci-statistics/luasrc/view/admin_statistics/networkplugins.htm
+END
+outputplugins.htm
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/!svn/ver/5118/luci/branches/luci-0.9/applications/luci-statistics/luasrc/view/admin_statistics/outputplugins.htm
+END
+systemplugins.htm
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/!svn/ver/5118/luci/branches/luci-0.9/applications/luci-statistics/luasrc/view/admin_statistics/systemplugins.htm
+END
+index.htm
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/view/admin_statistics/index.htm
+END

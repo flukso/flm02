@@ -1,0 +1,9 @@
+K 12
+svn:keywords
+V 2
+Id
+K 13
+svn:mergeinfo
+V 83
+/luci/trunk/libs/ipkg/luasrc/model/ipkg.lua:5655,5736,5748,5769,5902-5903,6024-6025
+END

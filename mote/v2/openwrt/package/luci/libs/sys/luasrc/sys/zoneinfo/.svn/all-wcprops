@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/5118/luci/branches/luci-0.9/libs/sys/luasrc/sys/zoneinfo
+END
+tzoffset.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/5118/luci/branches/luci-0.9/libs/sys/luasrc/sys/zoneinfo/tzoffset.lua
+END
+tzdata.lua
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/5118/luci/branches/luci-0.9/libs/sys/luasrc/sys/zoneinfo/tzdata.lua
+END

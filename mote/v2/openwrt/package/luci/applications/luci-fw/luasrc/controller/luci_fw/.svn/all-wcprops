@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-fw/luasrc/controller/luci_fw
+END
+luci_fw.lua
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-fw/luasrc/controller/luci_fw/luci_fw.lua
+END

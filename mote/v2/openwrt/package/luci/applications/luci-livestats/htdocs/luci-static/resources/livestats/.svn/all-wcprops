@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-livestats/htdocs/luci-static/resources/livestats
+END
+GraphRPC.js
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-livestats/htdocs/luci-static/resources/livestats/GraphRPC.js
+END
+PlotKit.js
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-livestats/htdocs/luci-static/resources/livestats/PlotKit.js
+END
+MochiKit.js
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-livestats/htdocs/luci-static/resources/livestats/MochiKit.js
+END
+ExCanvas.js
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-livestats/htdocs/luci-static/resources/livestats/ExCanvas.js
+END
+JsonRpc.js
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-livestats/htdocs/luci-static/resources/livestats/JsonRpc.js
+END
+Legend.js
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-livestats/htdocs/luci-static/resources/livestats/Legend.js
+END

@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/bindings
+END
+generate_interface.pl
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/bindings/generate_interface.pl
+END
+Config.in
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/bindings/Config.in
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/bindings/Makefile
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/bindings/README
+END
+generate_SWIG_interface.pl
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/bindings/generate_SWIG_interface.pl
+END

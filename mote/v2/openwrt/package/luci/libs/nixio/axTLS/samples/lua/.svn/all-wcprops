@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/samples/lua
+END
+axssl.lua
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/samples/lua/axssl.lua
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/samples/lua/Makefile
+END

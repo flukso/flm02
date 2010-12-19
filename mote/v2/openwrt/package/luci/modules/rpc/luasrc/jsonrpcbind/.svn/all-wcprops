@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4830/luci/branches/luci-0.9/modules/rpc/luasrc/jsonrpcbind
+END
+uci.lua
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/4830/luci/branches/luci-0.9/modules/rpc/luasrc/jsonrpcbind/uci.lua
+END
+uvl.lua
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/4830/luci/branches/luci-0.9/modules/rpc/luasrc/jsonrpcbind/uvl.lua
+END
