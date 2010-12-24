@@ -46,6 +46,9 @@ patch -p0 < $REPO_PATH/patches/900-disable_console.patch
 patch -p0 < $REPO_PATH/patches/910-set_ttyS0_baud_to_115200.patch
 
 # and then build the Fluksometer firmware...
+echo 
+echo =================================================================================
 echo To compile this custom backfire build for Flukso, just type: make -j8
 echo Use at least as many jobs as the number of cores available on your build machine.
-
+echo =================================================================================
+echo 
