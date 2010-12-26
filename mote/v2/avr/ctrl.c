@@ -22,12 +22,15 @@
 #include "global.h"
 #include "buffer.h"
 #include "ctrl.h"
+#include "encode.h"
 
 cBuffer ctrlRxBuffer; // ctrl receive buffer
 cBuffer ctrlTxBuffer; // ctrl transmit buffer
 
 static char ctrlRxData[CTRL_RX_BUFFER_SIZE];
 static char ctrlTxData[CTRL_TX_BUFFER_SIZE];
+
+extern uint8_t phy_to_log[];
 
 void ctrlInit(void)
 {
@@ -94,6 +97,11 @@ uint8_t ctrlGetFromRxBuffer(uint8_t* data)
 	}
 }
 
+void ctrlFlushReceiveBuffer(void)
+{
+	ctrlRxBuffer.datalength = 0;
+}
+
 void ctrlRxToTxLoop(void)
 {
 	uint8_t data;
@@ -101,4 +109,56 @@ void ctrlRxToTxLoop(void)
 	while (ctrlGetFromRxBuffer(&data)) {
 		ctrlAddToTxBuffer(data);
 	}
+}
+
+void ctrlDecode(void)
+{
+	uint8_t cmd[2];
+
+	if (ctrlGetFromRxBuffer(cmd) && ctrlGetFromRxBuffer(cmd+1)) {
+		ctrlAddToTxBuffer(cmd[0]);
+		ctrlAddToTxBuffer(cmd[1]);
+
+		switch (cmd[0]) {
+		case 'g':
+			ctrlCmdGet(cmd[1]);
+			break;
+		case 's':
+			ctrlCmdSet(cmd[1]);
+			break;
+		case 'c':
+			if (cmd[1] == 't') ctrlCmdCommit();
+			break;
+		}
+
+		ctrlAddToTxBuffer('.');
+	}
+
+	ctrlFlushReceiveBuffer();
+}
+
+void ctrlCmdGet(uint8_t cmd)
+{
+	uint8_t i;
+	uint16_t hex;
+
+	switch (cmd) {
+	case 'p':
+		for (i = 0 ; i < MAX_SENSORS; i++) {
+			hex = btoh(phy_to_log[i]);
+			ctrlAddToTxBuffer((uint8_t)(hex >> 8));
+			ctrlAddToTxBuffer((uint8_t)hex);
+		}
+		break;
+	}
+}
+
+void ctrlCmdSet(uint8_t cmd)
+{
+	/* TODO */
+}
+
+void ctrlCmdCommit(void)
+{
+	/* TODO */
 }

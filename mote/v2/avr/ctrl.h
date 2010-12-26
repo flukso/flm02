@@ -87,7 +87,18 @@ uint8_t ctrlAddToRxBuffer(uint8_t data);
 uint8_t ctrlGetFromRxBuffer(uint8_t* data);
 
 /**
+ * Flush the ctrl Rx buffer.
+ *
+ */
+void ctrlFlushReceiveBuffer(void);
+
+/**
  * Loop all bytes from the ctrl Rx to Tx buffer.
  *
  */
-void ctrlRxToTxLoop(void); 
+void ctrlRxToTxLoop(void);
+
+void ctrlDecode(void);
+void ctrlCmdGet(uint8_t cmd);
+void ctrlCmdSet(uint8_t cmd);
+void ctrlCmdCommit(void);

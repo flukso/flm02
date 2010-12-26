@@ -67,11 +67,11 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = basiciotest
+TARGET = main
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c buffer.c uart.c spi.c ctrl.c
+SRC = $(TARGET).c buffer.c uart.c spi.c ctrl.c encode.c
 
 
 # List Assembler source files here.
