@@ -155,7 +155,17 @@ void ctrlCmdGet(uint8_t cmd)
 
 void ctrlCmdSet(uint8_t cmd)
 {
-	/* TODO */
+	uint8_t i, high_hex, low_hex;
+
+	switch (cmd) {
+	case 'p':
+		for (i = 0 ; i < MAX_SENSORS; i++) {
+			ctrlGetFromRxBuffer(&high_hex);
+			ctrlGetFromRxBuffer(&low_hex);
+			phy_to_log[i] = htob(((uint16_t)high_hex << 8) + low_hex);
+		}
+		break;
+	}
 }
 
 void ctrlCmdCommit(void)
