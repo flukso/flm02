@@ -94,10 +94,8 @@ ISR(SPI_STC_vect)
 		}
 		else {
 			if (ctrlGetFromTxBuffer(&tx)) {
-				if (tx == SPI_END_OF_MESSAGE) {
-					received_from_spi(tx);
-					return;
-				}
+				received_from_spi(tx);
+				return;
 			}
 			else {
 				received_from_spi(SPI_FORWARD_TO_UART_PORT);
@@ -134,16 +132,17 @@ ISR(SPI_STC_vect)
 		default:
 			if (spi_status & HIGH_HEX) {
 				rx = htob(((uint16_t)high_hex << 8) + spi_rx);
-
-				if (spi_status & TO_FROM_UART) {
-					uartAddToTxBuffer(rx);
-				}
-				else {
-					ctrlAddToRxBuffer(rx);
-				}
+				uartAddToTxBuffer(rx);
 			}
 			else {
-				high_hex = spi_rx;
+				if (spi_status & TO_FROM_UART) {
+					high_hex = spi_rx;
+				}
+				else {
+					ctrlAddToRxBuffer(spi_rx);
+					return;
+				}
+
 			}
 			// toggle the HEX bit in spi_status
 			spi_status ^= HIGH_HEX;
