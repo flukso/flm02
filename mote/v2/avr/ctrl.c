@@ -19,7 +19,10 @@
 //
 // $Id$
 
+#include <avr/eeprom.h>
+
 #include "global.h"
+#include "main.h"
 #include "buffer.h"
 #include "ctrl.h"
 #include "encode.h"
@@ -30,7 +33,14 @@ cBuffer ctrlTxBuffer; // ctrl transmit buffer
 static char ctrlRxData[CTRL_RX_BUFFER_SIZE];
 static char ctrlTxData[CTRL_TX_BUFFER_SIZE];
 
-extern uint8_t phy_to_log[];
+extern volatile struct event_struct EEMEM EEPROM_event;
+extern volatile struct event_struct event;
+
+extern uint8_t EEMEM EEPROM_phy_to_log[MAX_SENSORS];
+extern uint8_t phy_to_log[MAX_SENSORS];
+
+extern volatile struct sensor_struct EEMEM EEPROM_sensor[MAX_SENSORS];
+extern volatile struct sensor_struct sensor[MAX_SENSORS];
 
 void ctrlInit(void)
 {
@@ -170,5 +180,9 @@ void ctrlCmdSet(uint8_t cmd)
 
 void ctrlCmdCommit(void)
 {
-	/* TODO */
+	cli();
+	eeprom_write_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
+	eeprom_write_block((const void*)&phy_to_log, (void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
+	eeprom_write_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
+	sei();
 }
