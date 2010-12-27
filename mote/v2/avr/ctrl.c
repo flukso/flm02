@@ -93,12 +93,12 @@ uint8_t ctrlAddToRxBuffer(uint8_t data)
 	return bufferAddToEnd(&ctrlRxBuffer, data);
 }
 
-uint8_t ctrlGetFromRxBuffer(uint8_t* data)
+uint8_t ctrlGetFromRxBuffer(uint8_t* pdata)
 {
 	// make sure we have data in the Rx buffer
 	if(ctrlRxBuffer.datalength) {
 		// get byte from beginning of buffer
-		*data = bufferGetFromFront(&ctrlRxBuffer);
+		*pdata = bufferGetFromFront(&ctrlRxBuffer);
 		return TRUE;
 	}
 	else {
@@ -110,6 +110,79 @@ uint8_t ctrlGetFromRxBuffer(uint8_t* data)
 void ctrlFlushReceiveBuffer(void)
 {
 	ctrlRxBuffer.datalength = 0;
+}
+
+uint8_t ctrlReadCharFromRxBuffer(uint8_t* pdata)
+{
+	uint8_t high_hex, low_hex;
+
+	if (ctrlGetFromRxBuffer(&high_hex) && ctrlGetFromRxBuffer(&low_hex)) {
+		*pdata = htob(((uint16_t)high_hex << 8) + low_hex);
+		return TRUE;
+	}
+	else {
+		return FALSE;
+	}	
+
+}
+
+uint8_t ctrlReadShortFromRxBuffer(uint16_t* pdata) 
+{
+	uint8_t high_char, low_char;
+
+	if(ctrlReadCharFromRxBuffer(&high_char) && ctrlReadCharFromRxBuffer(&low_char)) {
+		*pdata = ((uint16_t)high_char << 8) + low_char;
+		return TRUE;
+	}
+	else {
+		return FALSE;
+	}
+}
+
+uint8_t ctrlReadLongFromRxBuffer(uint32_t* pdata) 
+{
+	uint16_t high_short, low_short;
+
+	if(ctrlReadShortFromRxBuffer(&high_short) && ctrlReadShortFromRxBuffer(&low_short)) {
+		*pdata = ((uint32_t)high_short << 16) + low_short;
+		return TRUE;
+	}
+	else {
+		return FALSE;
+	}
+}
+
+uint8_t ctrlWriteCharToTxBuffer(uint8_t data)
+{
+	uint16_t hex;
+
+	hex = btoh(data);
+	if (ctrlAddToTxBuffer((uint8_t)(hex >> 8)) && ctrlAddToTxBuffer((uint8_t)hex)) {
+		return TRUE;
+	}
+	else {
+		return FALSE;
+	}
+}
+
+uint8_t ctrlWriteShortToTxBuffer(uint16_t data)
+{
+	if (ctrlWriteCharToTxBuffer((uint8_t)(data >> 8)) && ctrlWriteCharToTxBuffer((uint8_t)data)) {
+		return TRUE;
+	}
+	else {
+		return FALSE;
+	}
+}
+
+uint8_t ctrlWriteLongToTxBuffer(uint32_t data)
+{
+	if (ctrlWriteShortToTxBuffer((uint16_t)(data >> 16)) && ctrlWriteShortToTxBuffer((uint16_t)data)) {
+		return TRUE;
+	}
+	else {
+		return FALSE;
+	}
 }
 
 void ctrlRxToTxLoop(void)
@@ -150,14 +223,11 @@ void ctrlDecode(void)
 void ctrlCmdGet(uint8_t cmd)
 {
 	uint8_t i;
-	uint16_t hex;
 
 	switch (cmd) {
 	case 'p':
 		for (i = 0 ; i < MAX_SENSORS; i++) {
-			hex = btoh(phy_to_log[i]);
-			ctrlAddToTxBuffer((uint8_t)(hex >> 8));
-			ctrlAddToTxBuffer((uint8_t)hex);
+			ctrlWriteCharToTxBuffer(phy_to_log[i]);
 		}
 		break;
 	}
@@ -165,14 +235,12 @@ void ctrlCmdGet(uint8_t cmd)
 
 void ctrlCmdSet(uint8_t cmd)
 {
-	uint8_t i, high_hex, low_hex;
+	uint8_t i;
 
 	switch (cmd) {
 	case 'p':
 		for (i = 0 ; i < MAX_SENSORS; i++) {
-			ctrlGetFromRxBuffer(&high_hex);
-			ctrlGetFromRxBuffer(&low_hex);
-			phy_to_log[i] = htob(((uint16_t)high_hex << 8) + low_hex);
+			ctrlReadCharFromRxBuffer(&phy_to_log[i]);
 		}
 		break;
 	}
