@@ -230,6 +230,11 @@ void ctrlCmdGet(uint8_t cmd)
 			ctrlWriteCharToTxBuffer(phy_to_log[i]);
 		}
 		break;
+
+	case 'v':
+		ctrlReadCharFromRxBuffer(&i);
+		ctrlWriteLongToTxBuffer(sensor[i].value);
+		break;
 	}
 }
 
@@ -242,6 +247,10 @@ void ctrlCmdSet(uint8_t cmd)
 		for (i = 0 ; i < MAX_SENSORS; i++) {
 			ctrlReadCharFromRxBuffer(&phy_to_log[i]);
 		}
+		break;
+	case 'v':
+		ctrlReadCharFromRxBuffer(&i);
+		ctrlReadLongFromRxBuffer((uint32_t *)&sensor[i].value);
 		break;
 	}
 }
