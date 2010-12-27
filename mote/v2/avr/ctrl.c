@@ -223,6 +223,7 @@ void ctrlDecode(void)
 void ctrlCmdGet(uint8_t cmd)
 {
 	uint8_t i;
+	uint32_t tmp32;
 
 	switch (cmd) {
 	case 'p':
@@ -233,7 +234,12 @@ void ctrlCmdGet(uint8_t cmd)
 
 	case 'v':
 		ctrlReadCharFromRxBuffer(&i);
-		ctrlWriteLongToTxBuffer(sensor[i].value);
+
+		cli();
+		tmp32 = sensor[i].value;
+		sei();
+
+		ctrlWriteLongToTxBuffer(tmp32);
 		break;
 
 	case 'm':
@@ -253,31 +259,53 @@ void ctrlCmdGet(uint8_t cmd)
 
 void ctrlCmdSet(uint8_t cmd)
 {
-	uint8_t i;
+	uint8_t i, tmp8;
+	uint16_t tmp16;
+	uint32_t tmp32;
 
 	switch (cmd) {
 	case 'p':
 		for (i = 0 ; i < MAX_SENSORS; i++) {
-			ctrlReadCharFromRxBuffer(&phy_to_log[i]);
+			ctrlReadCharFromRxBuffer(&tmp8);
+
+			cli();
+			phy_to_log[i] = tmp8;
+			sei();
 		}
 		break;
 
 	case 'v':
 		ctrlReadCharFromRxBuffer(&i);
-		ctrlReadLongFromRxBuffer((uint32_t *)&sensor[i].value);
+		ctrlReadLongFromRxBuffer(&tmp32);
+
+		cli();
+		sensor[i].value = tmp32;
+		sei();
 		break;
 
 	case 'm':
 		ctrlReadCharFromRxBuffer(&i);
-		ctrlReadShortFromRxBuffer((uint16_t *)&sensor[i].meterconst);
+		ctrlReadShortFromRxBuffer(&tmp16);
+
+		cli();
+		sensor[i].meterconst = tmp16;	
+		sei();
 		break;
 
 	case 'w':
-		ctrlReadShortFromRxBuffer((uint16_t *)&event.wdt);
+		ctrlReadShortFromRxBuffer(&tmp16);
+
+		cli();
+		event.wdt = tmp16;
+		sei();
 		break;
 
 	case 'b':
-		ctrlReadShortFromRxBuffer((uint16_t *)&event.brown_out);
+		ctrlReadShortFromRxBuffer(&tmp16);
+
+		cli();
+		event.brown_out = tmp16;
+		sei();
 		break;
 	}
 }
