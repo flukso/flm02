@@ -235,6 +235,11 @@ void ctrlCmdGet(uint8_t cmd)
 		ctrlReadCharFromRxBuffer(&i);
 		ctrlWriteLongToTxBuffer(sensor[i].value);
 		break;
+
+	case 'm':
+		ctrlReadCharFromRxBuffer(&i);
+		ctrlWriteShortToTxBuffer(sensor[i].meterconst);
+		break;
 	}
 }
 
@@ -251,6 +256,10 @@ void ctrlCmdSet(uint8_t cmd)
 	case 'v':
 		ctrlReadCharFromRxBuffer(&i);
 		ctrlReadLongFromRxBuffer((uint32_t *)&sensor[i].value);
+		break;
+	case 'm':
+		ctrlReadCharFromRxBuffer(&i);
+		ctrlReadShortFromRxBuffer((uint16_t *)&sensor[i].meterconst);
 		break;
 	}
 }
