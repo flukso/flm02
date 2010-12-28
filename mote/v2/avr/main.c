@@ -32,22 +32,9 @@
 #include "global.h"
 #include "encode.h"
 
-#define NO_OP_1		1
-#define NO_OP_2		2
-#define START_TX	4
-#define TRANSMIT        8
-#define HIGH_HEX	16
-#define TO_FROM_UART	32
-#define NEW_CTRL_MSG	64
+volatile uint8_t spi_status, spi_high_hex;
 
-#define SPI_END_OF_TX			0x00
-#define SPI_END_OF_MESSAGE		'.'
-#define SPI_FORWARD_TO_UART_PORT	'u'
-#define SPI_FORWARD_TO_CTRL_PORT	'l' // 'l'ocal port
-
-volatile uint8_t spi_status, high_hex;
-
-uint8_t EEMEM first_EEPROM_byte_not_used_to_protect_from_brownout_corruption = 0x00;
+uint8_t EEMEM first_EEPROM_byte_not_used_to_protect_from_brownout_corruption = 0xab;
 
 volatile struct event_struct EEMEM EEPROM_event = {0, 0};
 volatile struct event_struct event;
@@ -58,37 +45,39 @@ uint8_t phy_to_log[MAX_SENSORS];
 volatile struct sensor_struct EEMEM EEPROM_sensor[MAX_SENSORS];
 volatile struct sensor_struct sensor[MAX_SENSORS];
 
+volatile struct state_struct state[MAX_SENSORS];
+
 ISR(SPI_STC_vect)
 {
 	uint8_t spi_rx, rx, tx; 
 	uint16_t spi_tx;
 
 	// the SPI is double-buffered, requiring two NO_OPs when switching from Tx to Rx
-	if (spi_status & (NO_OP_1 | NO_OP_2)) {
+	if (spi_status & (SPI_NO_OP_1 | SPI_NO_OP_2)) {
 		spi_status--;
 		return;
 	}
 
 	// do we have to transmit the first byte?
-	if (spi_status & START_TX) {
+	if (spi_status & SPI_START_TX) {
 		received_from_spi(SPI_FORWARD_TO_CTRL_PORT);
-		spi_status &= ~START_TX;
+		spi_status &= ~SPI_START_TX;
 		return;
 	}
 
 	// are we in Tx mode?
-	if (spi_status & TRANSMIT) {
-		if (spi_status & HIGH_HEX) {
-			received_from_spi(high_hex);
-			spi_status &= ~HIGH_HEX;
+	if (spi_status & SPI_TRANSMIT) {
+		if (spi_status & SPI_HIGH_HEX) {
+			received_from_spi(spi_high_hex);
+			spi_status &= ~SPI_HIGH_HEX;
 			return;
 		}
 
-		if (spi_status & TO_FROM_UART) {
+		if (spi_status & SPI_TO_FROM_UART) {
 			if (!uartReceiveByte(&tx)) {
 				received_from_spi(SPI_END_OF_TX);
-				spi_status &= ~TRANSMIT;
-				spi_status |= NO_OP_2;
+				spi_status &= ~SPI_TRANSMIT;
+				spi_status |= SPI_NO_OP_2;
 				return;
 			}
 		}
@@ -99,14 +88,14 @@ ISR(SPI_STC_vect)
 			}
 			else {
 				received_from_spi(SPI_FORWARD_TO_UART_PORT);
-				spi_status |= TO_FROM_UART;
+				spi_status |= SPI_TO_FROM_UART;
 				return;
 			}
 		}
 
 		spi_tx = btoh(tx);
-		high_hex = (uint8_t)spi_tx;
-		spi_status |= HIGH_HEX;
+		spi_high_hex = (uint8_t)spi_tx;
+		spi_status |= SPI_HIGH_HEX;
 		received_from_spi((uint8_t)(spi_tx >> 8));
 		return;
 	}
@@ -114,29 +103,29 @@ ISR(SPI_STC_vect)
 	// we're in Rx mode
 	switch (spi_rx = received_from_spi(0x00)) {
 		case SPI_END_OF_TX:
-			spi_status |= TRANSMIT | START_TX; 
-			spi_status &= ~(HIGH_HEX | TO_FROM_UART);
+			spi_status |= SPI_TRANSMIT | SPI_START_TX; 
+			spi_status &= ~(SPI_HIGH_HEX | SPI_TO_FROM_UART);
 			break;
 		case SPI_END_OF_MESSAGE:
-			if (!(spi_status & TO_FROM_UART)) {
+			if (!(spi_status & SPI_TO_FROM_UART)) {
 				ctrlAddToRxBuffer(spi_rx);
-				spi_status |= NEW_CTRL_MSG;
+				spi_status |= SPI_NEW_CTRL_MSG;
 			}
 			break;
 		case SPI_FORWARD_TO_UART_PORT:
-			spi_status |= TO_FROM_UART;
+			spi_status |= SPI_TO_FROM_UART;
 			break;
 		case SPI_FORWARD_TO_CTRL_PORT:
-			spi_status &= ~TO_FROM_UART;
+			spi_status &= ~SPI_TO_FROM_UART;
 			break;
 		default:
-			if (spi_status & HIGH_HEX) {
-				rx = htob(((uint16_t)high_hex << 8) + spi_rx);
+			if (spi_status & SPI_HIGH_HEX) {
+				rx = htob(((uint16_t)spi_high_hex << 8) + spi_rx);
 				uartAddToTxBuffer(rx);
 			}
 			else {
-				if (spi_status & TO_FROM_UART) {
-					high_hex = spi_rx;
+				if (spi_status & SPI_TO_FROM_UART) {
+					spi_high_hex = spi_rx;
 				}
 				else {
 					ctrlAddToRxBuffer(spi_rx);
@@ -145,7 +134,7 @@ ISR(SPI_STC_vect)
 
 			}
 			// toggle the HEX bit in spi_status
-			spi_status ^= HIGH_HEX;
+			spi_status ^= SPI_HIGH_HEX;
 	}
 }
 
@@ -248,10 +237,10 @@ int main(void)
 
 
 	for(;;) {
-		if (spi_status & NEW_CTRL_MSG) {
+		if (spi_status & SPI_NEW_CTRL_MSG) {
 			//ctrlRxToTxLoop();
 			ctrlDecode();
-			spi_status &= ~NEW_CTRL_MSG;
+			spi_status &= ~SPI_NEW_CTRL_MSG;
 		}
 		
 		// toggle the LED=PB0 pin

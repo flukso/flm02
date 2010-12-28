@@ -232,11 +232,11 @@ void ctrlCmdGet(uint8_t cmd)
 		}
 		break;
 
-	case 'v':
+	case 'c':
 		ctrlReadCharFromRxBuffer(&i);
 
 		cli();
-		tmp32 = sensor[i].value;
+		tmp32 = sensor[i].counter;
 		sei();
 
 		ctrlWriteLongToTxBuffer(tmp32);
@@ -274,12 +274,12 @@ void ctrlCmdSet(uint8_t cmd)
 		}
 		break;
 
-	case 'v':
+	case 'c':
 		ctrlReadCharFromRxBuffer(&i);
 		ctrlReadLongFromRxBuffer(&tmp32);
 
 		cli();
-		sensor[i].value = tmp32;
+		sensor[i].counter = tmp32;
 		sei();
 		break;
 
