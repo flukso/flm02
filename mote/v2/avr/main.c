@@ -19,6 +19,8 @@
 //
 // $Id$
 
+#include <stdlib.h>
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/eeprom.h>
@@ -46,6 +48,11 @@ volatile struct sensor_struct EEMEM EEPROM_sensor[MAX_SENSORS];
 volatile struct sensor_struct sensor[MAX_SENSORS];
 
 volatile struct state_struct state[MAX_SENSORS];
+
+volatile uint8_t muxn = 0;
+volatile uint16_t timer = 0;
+
+volatile struct time_struct time = {0, 0};
 
 ISR(SPI_STC_vect)
 {
@@ -140,7 +147,39 @@ ISR(SPI_STC_vect)
 
 ISR(TIMER1_COMPA_vect)
 {
-	/* void */
+	uint8_t muxn_l = phy_to_log[muxn];
+	
+	MacU16X16to32(state[muxn_l].nano, sensor[muxn_l].meterconst, ADC);
+
+	if (state[muxn_l].nano > WATT) {
+		sensor[muxn_l].counter++;
+
+		state[muxn_l].flags |= STATE_PULSE;
+		state[muxn_l].nano -= WATT;
+		state[muxn_l].pulse_count++;
+	}
+
+	if ((timer == SECOND) && (muxn == muxn_l)) {
+		state[muxn].nano_start = state[muxn].nano_end;
+		state[muxn].nano_end = state[muxn].nano;
+		state[muxn].pulse_count_final = state[muxn].pulse_count;
+		state[muxn].pulse_count = 0;
+		state[muxn].flags |= STATE_POWER_CALC;
+	}
+
+	/* Cycle through the available ADC input channels (0/1/2). */
+	muxn++;
+	if (!(muxn %= 3)) timer++;
+	if (timer > SECOND) timer = 0;
+
+	/* In order to map this to 1000Hz (=ms) we have to skip every second interrupt. */
+	if (!time.skip) time.ms++ ;
+	time.skip ^= 1;
+
+	ADMUX &= 0xF8;
+	ADMUX |= muxn;
+	/* Start a new ADC conversion. */
+	ADCSRA |= (1<<ADSC);
 }
 
 ISR(ANALOG_COMP_vect)
@@ -216,8 +255,43 @@ void setup_analog_comparator(void)
 	ACSR |= (1<<ACBG) | (1<<ACIE) | (1<<ACIS1) | (1<<ACIS0);
 }
 
+void calculate_power(struct state_struct *pstate)
+{
+	int32_t rest, power = 0;
+	uint8_t pulse_count;
+
+	cli();
+	rest = pstate->nano_end - pstate->nano_start;
+	pulse_count = pstate->pulse_count_final;
+	sei();
+
+	// Since the AVR has no dedicated floating-point hardware, we need 
+	// to resort to fixed-point calculations for converting nWh/s to W.
+	// 1W = 10^6/3.6 nWh/s
+	// value[watt] = 3.6/10^6 * rest[nWh/s]
+	// value[watt] = 3.6/10^6 * 65536 * (rest[nWh/s] / 65536)
+	// value[watt] = 3.6/10^6 * 65536 * 262144 / 262144 * (rest[nWh/s] / 65536)
+	// value[watt] = 61847.53 / 262144 * (rest[nWh/s] / 65536)
+	// We round the constant down to 61847 to prevent 'underflow' in the
+	// consecutive else statement.
+	// The error introduced in the fixed-point rounding equals 8.6*10^-6.
+	MacU16X16to32(power, (uint16_t)(labs(rest)/65536), 61847);
+	power /= 262144;
+
+	if (rest >= 0) {
+		power += pulse_count*3600;
+	}
+	else {
+		power = pulse_count*3600 - power;
+	}
+
+	pstate->power = power;
+}
+
 int main(void)
 {
+	uint8_t i;
+
 	// RS-485: Configure PD5=DE as output pin with low as default
 	DDRD |= (1<<DDD5);
 	// set high to transmit
@@ -242,7 +316,15 @@ int main(void)
 			ctrlDecode();
 			spi_status &= ~SPI_NEW_CTRL_MSG;
 		}
-		
+
+		for (i = 0; i < 3; i++) {
+			if (state[i].flags & STATE_POWER_CALC) {
+				calculate_power((struct state_struct *)&state[i]);
+				state[i].flags &= ~STATE_POWER_CALC;
+				state[i].flags |= STATE_POWER;
+			}
+		}
+
 		// toggle the LED=PB0 pin
 		_delay_ms(50);
 		 DDRB ^= (1<<PB0);

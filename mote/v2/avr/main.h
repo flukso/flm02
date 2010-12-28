@@ -21,9 +21,13 @@ struct sensor_struct {
 	uint16_t meterconst;
 };
 
-#define STATE_PULSE  = 1
-#define STATE_TOGGLE = 2
-#define STATE_POWER  = 4
+# define WATT 1000000000
+# define SECOND 666 // 667Hz - 1
+
+#define STATE_PULSE		1
+#define STATE_SKIP		2
+#define STATE_POWER_CALC	4
+#define STATE_POWER		8
 
 struct state_struct {
 	uint8_t  flags;
@@ -36,6 +40,11 @@ struct state_struct {
 
 	uint32_t power;
 	uint32_t timestamp;
+};
+
+struct time_struct {
+	uint8_t	 skip;
+	uint32_t ms;
 };
 
 /* 

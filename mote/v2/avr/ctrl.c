@@ -42,6 +42,8 @@ extern uint8_t phy_to_log[MAX_SENSORS];
 extern volatile struct sensor_struct EEMEM EEPROM_sensor[MAX_SENSORS];
 extern volatile struct sensor_struct sensor[MAX_SENSORS];
 
+extern volatile struct state_struct state[MAX_SENSORS];
+
 void ctrlInit(void)
 {
 	// initialize the CTRL receive buffer
@@ -223,7 +225,7 @@ void ctrlDecode(void)
 void ctrlCmdGet(uint8_t cmd)
 {
 	uint8_t i;
-	uint32_t tmp32;
+	uint32_t tmp32, tmp32_bis;
 
 	switch (cmd) {
 	case 'p':
@@ -253,6 +255,24 @@ void ctrlCmdGet(uint8_t cmd)
 
 	case 'b':
 		ctrlWriteShortToTxBuffer(event.brown_out);
+		break;
+
+	case 'd':
+		for (i = 0 ; i < MAX_SENSORS; i++) {
+			if (state[i].flags & (STATE_PULSE | STATE_POWER)) {
+				ctrlWriteCharToTxBuffer(i);
+
+				cli();
+				tmp32 = sensor[i].counter;
+				tmp32_bis = (i < 3) ? state[i].power : state[i].timestamp;
+				sei();
+
+				ctrlWriteLongToTxBuffer(tmp32);
+				ctrlWriteLongToTxBuffer(tmp32_bis);
+
+				state[i].flags &= ~(STATE_PULSE | STATE_POWER);
+			}
+		}
 		break;
 	}
 }
