@@ -38,6 +38,9 @@ volatile uint8_t spi_status, spi_high_hex;
 
 uint8_t EEMEM first_EEPROM_byte_not_used_to_protect_from_brownout_corruption = 0xab;
 
+uint16_t EEMEM EEPROM_version = 210;
+uint16_t version;
+
 volatile struct event_struct EEMEM EEPROM_event = {0, 0};
 volatile struct event_struct event;
 
@@ -228,6 +231,7 @@ ISR(ANALOG_COMP_vect)
 
 void setup_datastructs(void)
 {
+	eeprom_read_block((void*)&version, (const void*)&EEPROM_version, sizeof(version));
 	eeprom_read_block((void*)&event, (const void*)&EEPROM_event, sizeof(event));
 	eeprom_read_block((void*)&phy_to_log, (const void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
 	eeprom_read_block((void*)&sensor, (const void*)&EEPROM_sensor, sizeof(sensor));

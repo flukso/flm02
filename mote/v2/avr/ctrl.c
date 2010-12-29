@@ -33,6 +33,9 @@ cBuffer ctrlTxBuffer; // ctrl transmit buffer
 static char ctrlRxData[CTRL_RX_BUFFER_SIZE];
 static char ctrlTxData[CTRL_TX_BUFFER_SIZE];
 
+extern uint16_t EEMEM EEPROM_version;
+extern uint16_t version;
+
 extern volatile struct event_struct EEMEM EEPROM_event;
 extern volatile struct event_struct event;
 
@@ -225,7 +228,7 @@ void ctrlDecode(void)
 			break;
 
 		default:
-			ctrlAddToTxBuffer('e');
+			ctrlAddToTxBuffer('z');
 		}
 
 		ctrlAddToTxBuffer('.');
@@ -240,6 +243,10 @@ void ctrlCmdGet(uint8_t cmd)
 	uint32_t tmp32, tmp32_bis;
 
 	switch (cmd) {
+	case 'v':
+		ctrlWriteShortToTxBuffer(version);
+		break;
+
 	case 'p':
 		for (i = 0 ; i < MAX_SENSORS; i++) {
 			ctrlWriteCharToTxBuffer(phy_to_log[i]);
@@ -288,7 +295,7 @@ void ctrlCmdGet(uint8_t cmd)
 		break;
 
 	default:
-		ctrlAddToTxBuffer('e');
+		ctrlAddToTxBuffer('z');
 	}
 }
 
@@ -299,6 +306,14 @@ void ctrlCmdSet(uint8_t cmd)
 	uint32_t tmp32;
 
 	switch (cmd) {
+	case 'v':
+		ctrlReadShortFromRxBuffer(&tmp16);
+
+		cli();
+		version = tmp16;
+		sei();
+		break;
+
 	case 'p':
 		for (i = 0 ; i < MAX_SENSORS; i++) {
 			ctrlReadCharFromRxBuffer(&tmp8);
@@ -344,13 +359,14 @@ void ctrlCmdSet(uint8_t cmd)
 		break;
 
 	default:
-		ctrlAddToTxBuffer('e');
+		ctrlAddToTxBuffer('z');
 	}
 }
 
 void ctrlCmdCommit(void)
 {
 	cli();
+	eeprom_write_block((const void*)&version, (void*)&EEPROM_version, sizeof(version));
 	eeprom_write_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
 	eeprom_write_block((const void*)&phy_to_log, (void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
 	eeprom_write_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
