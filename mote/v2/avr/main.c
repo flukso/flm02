@@ -223,6 +223,18 @@ void setup_pulse_input(void)
 	EIMSK = (1<<INT0) | (1<<INT1);
 }
 
+void setup_adc(void)
+{
+	// disable digital input cicuitry on ADCx pins to reduce leakage current
+	DIDR0 |= (1<<ADC5D) | (1<<ADC4D) | (1<<ADC3D) | (1<<ADC2D) | (1<<ADC1D) | (1<<ADC0D);
+
+	// select VBG as reference for ADC
+	ADMUX |= (1<<REFS1) | (1<<REFS0);
+	// ADC prescaler set to 32 => 3686.4kHz / 32 = 115.2kHz (DS p.258)
+	ADCSRA |= (1<<ADPS2) | (1<<ADPS0);
+	// enable ADC and start a first ADC conversion
+	ADCSRA |= (1<<ADEN) | (1<<ADSC);
+}
 
 void setup_timer1(void)
 {
@@ -298,10 +310,11 @@ int main(void)
 	//PORTD |= (1<<PD5);
 
 	setup_datastructs();
+	setup_adc();
 	setup_timer1();
 	setup_pulse_input();
 	setup_analog_comparator();
-		
+	
 	// initialize the CTRL buffers
 	ctrlInit();
 	// initialize the UART hardware and buffers
