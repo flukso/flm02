@@ -215,12 +215,17 @@ void ctrlDecode(void)
 		case 'g':
 			ctrlCmdGet(cmd[1]);
 			break;
+ 
 		case 's':
 			ctrlCmdSet(cmd[1]);
 			break;
+
 		case 'c':
 			if (cmd[1] == 't') ctrlCmdCommit();
 			break;
+
+		default:
+			ctrlAddToTxBuffer('e');
 		}
 
 		ctrlAddToTxBuffer('.');
@@ -281,6 +286,9 @@ void ctrlCmdGet(uint8_t cmd)
 			}
 		}
 		break;
+
+	default:
+		ctrlAddToTxBuffer('e');
 	}
 }
 
@@ -334,6 +342,9 @@ void ctrlCmdSet(uint8_t cmd)
 		event.brown_out = tmp16;
 		sei();
 		break;
+
+	default:
+		ctrlAddToTxBuffer('e');
 	}
 }
 
