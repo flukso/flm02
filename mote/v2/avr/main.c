@@ -280,14 +280,17 @@ void calculate_power(struct state_struct *pstate)
 	// Since the AVR has no dedicated floating-point hardware, we need 
 	// to resort to fixed-point calculations for converting nWh/s to W.
 	// 1W = 10^6/3.6 nWh/s
-	// value[watt] = 3.6/10^6 * rest[nWh/s]
-	// value[watt] = 3.6/10^6 * 65536 * (rest[nWh/s] / 65536)
-	// value[watt] = 3.6/10^6 * 65536 * 262144 / 262144 * (rest[nWh/s] / 65536)
-	// value[watt] = 61847.53 / 262144 * (rest[nWh/s] / 65536)
-	// We round the constant down to 61847 to prevent 'underflow' in the
+	// power[watt] = 3.6/10^6 * rest[nWh/s]
+	// power[watt] = 3.6/10^6 * 65536 * (rest[nWh/s] / 65536)
+	// power[watt] = 3.6/10^6 * 65536 * 262144 / 262144 * (rest[nWh/s] / 65536)
+	// power[watt] = 61847.53 / 262144 * (rest[nWh/s] / 65536)
+	// We have to correct for only using 666 samples iso 2000/3, so:
+	// power[watt] = 61847.53 * 1/666 * 2000/3 / 262144 * (rest[nWh/s] / 65536)
+	// power[watt] = 61909.44 / 262144 * (rest[nWh/s] / 65536)
+	// We round the constant down to 61909 to prevent 'underflow' in the
 	// consecutive else statement.
-	// The error introduced in the fixed-point rounding equals 8.6*10^-6.
-	MacU16X16to32(power, (uint16_t)(labs(rest)/65536), 61847);
+	// The error introduced in the fixed-point rounding equals 7.1*10^-6.
+	MacU16X16to32(power, (uint16_t)(labs(rest)/65536), 61909);
 	power /= 262144;
 
 	if (rest >= 0) {

@@ -22,7 +22,7 @@ struct sensor_struct {
 };
 
 # define WATT 1000000000
-# define SECOND 666 // 667Hz - 1
+# define SECOND 665 // 666Hz - 1
 
 #define STATE_PULSE		1
 #define STATE_SKIP		2
