@@ -79,3 +79,10 @@ asm volatile ( \
 	"r2", "r4", "r5" \
 )
 
+void register_pulse(volatile struct sensor_struct *psensor, volatile struct state_struct *pstate);
+void setup_datastructs(void);
+void setup_pulse_input(void);
+void setup_adc(void);
+void setup_timer1(void);
+void setup_analog_comparator(void);
+void calculate_power(volatile struct state_struct *pstate);

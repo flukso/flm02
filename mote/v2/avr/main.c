@@ -145,6 +145,27 @@ ISR(SPI_STC_vect)
 	}
 }
 
+ISR(INT0_vect)
+{
+	uint8_t muxn_l = phy_to_log[3];
+
+	register_pulse(&sensor[muxn_l], &state[muxn_l]);
+}
+
+ISR(INT1_vect)
+{
+	uint8_t muxn_l = phy_to_log[4];
+
+	register_pulse(&sensor[muxn_l], &state[muxn_l]);
+}
+
+void register_pulse(volatile struct sensor_struct *psensor, volatile struct state_struct *pstate)
+{
+	psensor->counter += psensor->meterconst;
+	pstate->flags |= STATE_PULSE;
+	pstate->timestamp = time.ms;
+}
+
 ISR(TIMER1_COMPA_vect)
 {
 	uint8_t muxn_l = phy_to_log[muxn];
@@ -267,7 +288,7 @@ void setup_analog_comparator(void)
 	ACSR |= (1<<ACBG) | (1<<ACIE) | (1<<ACIS1) | (1<<ACIS0);
 }
 
-void calculate_power(struct state_struct *pstate)
+void calculate_power(volatile struct state_struct *pstate)
 {
 	int32_t rest, power = 0;
 	uint8_t pulse_count;
@@ -335,7 +356,7 @@ int main(void)
 
 		for (i = 0; i < 3; i++) {
 			if (state[i].flags & STATE_POWER_CALC) {
-				calculate_power((struct state_struct *)&state[i]);
+				calculate_power(&state[i]);
 				state[i].flags &= ~STATE_POWER_CALC;
 				state[i].flags |= STATE_POWER;
 			}
