@@ -109,9 +109,14 @@ uint8_t ctrlGetFromRxBuffer(uint8_t* pdata)
 	}
 }
 
-void ctrlFlushReceiveBuffer(void)
+void ctrlFlushRxBuffer(void)
 {
 	ctrlRxBuffer.datalength = 0;
+}
+
+void ctrlFlushTxBuffer(void)
+{
+	ctrlTxBuffer.datalength = 0;
 }
 
 uint8_t ctrlReadCharFromRxBuffer(uint8_t* pdata)
@@ -200,6 +205,8 @@ void ctrlDecode(void)
 {
 	uint8_t cmd[2];
 
+	ctrlFlushTxBuffer();
+
 	if (ctrlGetFromRxBuffer(cmd) && ctrlGetFromRxBuffer(cmd+1)) {
 		ctrlAddToTxBuffer(cmd[0]);
 		ctrlAddToTxBuffer(cmd[1]);
@@ -219,7 +226,7 @@ void ctrlDecode(void)
 		ctrlAddToTxBuffer('.');
 	}
 
-	ctrlFlushReceiveBuffer();
+	ctrlFlushRxBuffer();
 }
 
 void ctrlCmdGet(uint8_t cmd)

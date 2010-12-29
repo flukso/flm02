@@ -90,7 +90,13 @@ uint8_t ctrlGetFromRxBuffer(uint8_t* data);
  * Flush the ctrl Rx buffer.
  *
  */
-void ctrlFlushReceiveBuffer(void);
+void ctrlFlushRxBuffer(void);
+
+/**
+ * Flush the ctrl Tx buffer.
+ *
+ */
+void ctrlFlushTxBuffer(void);
 
 /**
  * Loop all bytes from the ctrl Rx to Tx buffer.
@@ -98,7 +104,32 @@ void ctrlFlushReceiveBuffer(void);
  */
 void ctrlRxToTxLoop(void);
 
+/**
+ * Decode the message in the ctrl Rx buffer and dispatch to either ctrlCmdGet,
+ * ctrlCmdSet or ctrlCmdCommit.
+ *
+ */
 void ctrlDecode(void);
+
+/**
+ * Execute the get command with parameters present in the ctrl Rx buffer.
+ * The command's reply is written to the ctrl Tx buffer.
+ *
+ * @param cmd  get command issued
+ */
 void ctrlCmdGet(uint8_t cmd);
+
+/**
+ * Execute the set command with parameters present in the ctrl Rx buffer.
+ * The command's reply is written to the ctrl Tx buffer. In case of a set
+ * command this will typically only be the two-letter command ID issued.
+ *
+ * @param cmd  set command issued
+ */
 void ctrlCmdSet(uint8_t cmd);
+
+/**
+ * Commit all previous changes by writing the datastructures to EEPROM.
+ *
+ */
 void ctrlCmdCommit(void);
