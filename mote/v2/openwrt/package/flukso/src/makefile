@@ -5,7 +5,7 @@
 #     gnu89 = c89 plus GCC extensions
 #     c99   = ISO C99 standard (not yet fully implemented)
 #     gnu99 = c99 plus GCC extensions
-CSTANDARD = -std=gnu89
+CSTANDARD = -std=gnu99
 
 all: luad.o
 ifeq ($(OPENWRT_BUILD),1)
