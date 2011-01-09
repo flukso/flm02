@@ -3,7 +3,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=flukso
-PKG_VERSION:=2.0
+PKG_VERSION:=2.0-alpha
 PKG_RELEASE:=1
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
@@ -11,10 +11,12 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 include $(INCLUDE_DIR)/package.mk
 
 define Package/flukso
-  SECTION:=utils
-  CATEGORY:=Utilities
-  DEPENDS:=+libdaemon +ntpclient +liblua +luci-nixio +rrdtool1
-  TITLE:=Flukso - community metering
+	SECTION:=utils
+	CATEGORY:=Utilities
+	DEPENDS:=+libdaemon +ntpclient +liblua +luci-nixio +rrdtool1
+	TITLE:=Flukso - community metering
+	URL:=http://www.flukso.net
+	MAINTAINER:=Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
 endef
 
 define Package/flukso/description
@@ -32,10 +34,12 @@ define Package/flukso/install
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/dbg.lua $(1)/usr/lib/lua/
 	$(INSTALL_DIR) $(1)/usr/lib/lua/rrd
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rrd/*.lua $(1)/usr/lib/lua/rrd/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/*.lua $(1)/usr/lib/lua/flukso/
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/luad $(1)/usr/sbin/
-	$(LN) /usr/sbin/luad $(1)/usr/sbin/spid
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/spi/spid.lua $(1)/usr/sbin/
+	$(LN) /usr/sbin/luad $(1)/usr/sbin/fluksod
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fluksod.lua $(1)/usr/sbin/
 endef
 
 $(eval $(call BuildPackage,flukso))
