@@ -31,27 +31,6 @@ local getfenv, setmetatable, tonumber =
 module (...)
 local modenv = getfenv()
 
--- private
-local function dow_crc(sequence, crc)
-	crc = crc or 0x00
-
-	local r1 = { 0x00, 0x5e, 0xbc, 0xe2, 0x61, 0x3f, 0xdd, 0x83,
-                     0xc2, 0x9c, 0x7e, 0x20, 0xa3, 0xfd, 0x1f, 0x41 }
-
-	local r2 = { 0x00, 0x9d, 0x23, 0xbe, 0x46, 0xdb, 0x65, 0xf8,
-                     0x8c, 0x11, 0xaf, 0x32, 0xca, 0x57, 0xe9, 0x74 }
-
-	local first_char = sequence:sub(1, 1)
-
-	if first_char ~= '' then
-		local i = nixio.bit.band(nixio.bit.bxor(first_char:byte(), crc), 0xff)
-		crc = nixio.bit.bxor(r1[nixio.bit.band(i, 0xf) + 1], r2[nixio.bit.rshift(i, 4) + 1])
-		return dow_crc(sequence:sub(2, -1), crc)
-	else
-		return nixio.bin.hexlify(string.char(crc))
-	end
-end
-
 --- Create a new spi message object.
 --
 -- Attributes:
@@ -153,7 +132,7 @@ function rx(msg, cdev)
 		msg.received.crc = msg.received.l:sub(-2, -1)
 		msg.received.l   = msg.received.l:sub(1, -3)
 
-		if dow_crc(msg.received.l) ~= msg.received.crc then
+		if nixio.bin.dow_crc(msg.received.l) ~= tonumber(BinDecHex.Hex2Dec(msg.received.crc)) then
 			--> TODO implement crc error counter
 			msg.received.l = ''
 		end
