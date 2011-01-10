@@ -20,13 +20,12 @@
 ]]--
 
 local nixio = require 'nixio'
-local BinDecHex = require 'flukso.BinDecHex'
 
 local os, table, string =
       os, table, string
 
-local getfenv, setmetatable, tonumber =
-      getfenv, setmetatable, tonumber
+local getfenv, setmetatable =
+      getfenv, setmetatable
 
 module (...)
 local modenv = getfenv()
@@ -132,7 +131,7 @@ function rx(msg, cdev)
 		msg.received.crc = msg.received.l:sub(-2, -1)
 		msg.received.l   = msg.received.l:sub(1, -3)
 
-		if nixio.bin.dow_crc(msg.received.l) ~= tonumber(BinDecHex.Hex2Dec(msg.received.crc)) then
+		if nixio.bin.dow_crc(msg.received.l) ~= nixio.bin.hextonum(msg.received.crc) then
 			--> TODO implement crc error counter
 			msg.received.l = ''
 		end
@@ -152,11 +151,11 @@ function decode(msg)
 		if msg.parsed[1] == 'gd' then
 			for i = 1, msg.decoded.largs:len() / 18 do
 				msg.decoded[(i-1)*3 + 1] =
-					tonumber(BinDecHex.Hex2Dec(msg.decoded.largs:sub((i-1)*18 +  1, (i-1)*18 +  2)))
+					nixio.bin.hextonum(msg.decoded.largs:sub((i-1)*18 +  1, (i-1)*18 +  2))
 				msg.decoded[(i-1)*3 + 2] =
-					tonumber(BinDecHex.Hex2Dec(msg.decoded.largs:sub((i-1)*18 +  3, (i-1)*18 + 10)))
+					nixio.bin.hextonum(msg.decoded.largs:sub((i-1)*18 +  3, (i-1)*18 + 10))
 				msg.decoded[(i-1)*3 + 3] =
-					tonumber(BinDecHex.Hex2Dec(msg.decoded.largs:sub((i-1)*18 + 11, (i-1)*18 + 18)))
+					nixio.bin.hextonum(msg.decoded.largs:sub((i-1)*18 + 11, (i-1)*18 + 18))
 			end
 		elseif msg.parsed[1] == 'gv' then
 

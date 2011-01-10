@@ -343,6 +343,60 @@ static int nixio_bin_b64decode(lua_State *L) {
 	return 1;
 }
 
+static int nixio_bin_hextonum(lua_State *L) {
+	size_t len;
+	uint32_t number = 0;
+	const char *hex = luaL_checklstring(L, 1, &len);
+
+	if (!((len == 2) | (len == 4) | (len == 8))) {
+		errno = EINVAL;
+		return nixio__perror(L);
+	}
+
+	for (size_t i = 0; i < len; i++) {
+		char c = hex[i];
+		number <<= 4; /* make room to shift-in next nibble */
+
+		if (c >= '0' && c <= '9') {
+			number |= c - '0';
+		}
+		else if (c >= 'a' && c <= 'f') {
+			number |= c - 'a' + 10;
+		}
+		else if (c >= 'A' && c <= 'F') {
+			number |= c - 'A' + 10;
+		}
+		else {
+			errno = EINVAL;
+			return nixio__perror(L);
+		}
+
+	}
+
+	nixio__pushnumber(L, number);
+	return 1;
+}
+
+static int nixio_bin_numtohex(lua_State *L) {
+	char hex[8];
+	uint32_t number = nixio__checknumber(L, 1);
+	size_t len = luaL_optinteger(L, 2, 4); /* default 4 bytes hex encoding */
+
+	if (!((len == 1) | (len == 2) | (len == 4))) {
+		errno = EINVAL;
+		return nixio__perror(L);
+	}
+
+	size_t lenout = len * 2;
+	for (size_t i = 0; i < lenout; i++) {
+		hex[lenout - 1 - i] = nixio__bin2hex[(number & 0x0f)];
+		number >>= 4;
+	}
+
+	lua_pushlstring(L, hex, lenout);
+	return 1;
+}
+
 /* module table */
 static const luaL_reg R[] = {
 	{"hexlify",		nixio_bin_hexlify},
@@ -351,6 +405,8 @@ static const luaL_reg R[] = {
 	{"dow_crc",		nixio_bin_dow_crc},
 	{"b64encode",		nixio_bin_b64encode},
 	{"b64decode",		nixio_bin_b64decode},
+	{"hextonum",		nixio_bin_hextonum},
+	{"numtohex",		nixio_bin_numtohex},
 	{NULL,			NULL}
 };
 
