@@ -110,21 +110,8 @@ function tx(msg, cdev)
 end
 
 function rx(msg, cdev)
-	local sequence = {}
-
-	for char in function() return cdev:read(1) end do
-		if char ~= '\0' then
-			table.insert(sequence, char)
-		else
-        	        -- one more read to let the AVR send a second 0x00
-			-- after which the AVR's state machine toggles to read mode
-			cdev:read(1)
-			break
-		end
-	end
-
 	msg.received = {}
-	msg.received.raw = table.concat(sequence)
+	msg.received.raw = cdev:spiread()
 	msg.received.l, msg.received.u = msg.received.raw:match('^l(%w*)%.?u(%w*)%.?$')
 
 	if msg.received.l ~= '' and msg.received.l:sub(1, 2) == msg.parsed[1] then
