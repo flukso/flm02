@@ -115,8 +115,9 @@ CSTANDARD = -std=gnu99
 # Place -D or -U options here
 CDEFS = -DF_CPU=$(F_CPU)UL  
 
-# Enable debugging mode
-#CDEFS += -DDBG=1
+# Debugging mode
+DBG = 0
+CDEFS += -D DBG=$(DBG)
 
 # uncomment and adapt these line if you want different UART library buffer size
 CDEFS += -DUART_RX_BUFFER_SIZE=64

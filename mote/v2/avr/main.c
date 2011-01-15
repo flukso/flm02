@@ -27,6 +27,7 @@
 
 #include <util/delay.h>
 
+#include "debug.h"
 #include "main.h"
 #include "uart.h"
 #include "spi.h"
@@ -36,10 +37,10 @@
 
 volatile uint8_t spi_status, spi_high_hex;
 
-uint8_t EEMEM first_EEPROM_byte_not_used_to_protect_from_brownout_corruption = 0xab;
+uint8_t EEMEM first_EEPROM_byte_not_used_to_protect_from_brownout_corruption = 0xbe;
 
-uint16_t EEMEM EEPROM_version = 210;
-uint16_t version;
+uint8_t EEMEM EEPROM_version[2] = {2, 1};
+uint8_t version[2];
 
 volatile struct event_struct EEMEM EEPROM_event = {0, 0};
 volatile struct event_struct event;
@@ -61,6 +62,8 @@ ISR(SPI_STC_vect)
 {
 	uint8_t spi_rx, rx, tx; 
 	uint16_t spi_tx;
+
+	DBG_ISR_BEGIN
 
 	// the SPI is double-buffered, requiring two NO_OPs when switching from Tx to Rx
 	if (spi_status & (SPI_NO_OP_1 | SPI_NO_OP_2)) {
@@ -146,6 +149,8 @@ ISR(SPI_STC_vect)
 			// toggle the HEX bit in spi_status
 			spi_status ^= SPI_HIGH_HEX;
 	}
+
+        DBG_ISR_END
 }
 
 ISR(INT0_vect)
@@ -173,6 +178,8 @@ ISR(TIMER1_COMPA_vect)
 {
 	uint8_t muxn_l = phy_to_log[muxn];
 	
+	DBG_ISR_BEGIN
+
 	MacU16X16to32(state[muxn_l].nano, sensor[muxn_l].meterconst, ADC);
 
 	if (state[muxn_l].nano > WATT) {
@@ -204,6 +211,8 @@ ISR(TIMER1_COMPA_vect)
 	ADMUX |= muxn;
 	/* Start a new ADC conversion. */
 	ADCSRA |= (1<<ADSC);
+
+	DBG_ISR_END
 }
 
 ISR(ANALOG_COMP_vect)
@@ -235,6 +244,12 @@ void setup_datastructs(void)
 	eeprom_read_block((void*)&event, (const void*)&EEPROM_event, sizeof(event));
 	eeprom_read_block((void*)&phy_to_log, (const void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
 	eeprom_read_block((void*)&sensor, (const void*)&EEPROM_sensor, sizeof(sensor));
+}
+
+void setup_led(void)
+{
+	// set LED pin (PB0) as output pin
+	DDRB |= (1<<DDB0);
 }
 
 void setup_pulse_input(void)
@@ -271,12 +286,8 @@ void setup_timer1(void)
 	TCCR1B |= 1<<WGM12;
 	// Enable output compare match interrupt for timer1 (DS p.136)
 	TIMSK1 |= (1<<OCIE1A);
-#if DBG > 0
-	// Set PB1=OC1A as output pin
-	DDRB |= (1<<DDB1);
-	// Toggle pin OC1A=PB1 on compare match
-	TCCR1A |= 1<<COM1A0;
-#endif
+
+	DBG_OC1A_TOGGLE
 }
 
 void setup_analog_comparator(void)
@@ -338,6 +349,7 @@ int main(void)
 	//PORTD |= (1<<PD5);
 
 	setup_datastructs();
+	setup_led();
 	setup_adc();
 	setup_timer1();
 	setup_pulse_input();
@@ -365,10 +377,6 @@ int main(void)
 				state[i].flags |= STATE_POWER;
 			}
 		}
-
-		// toggle the LED=PB0 pin
-		_delay_ms(50);
-		 DDRB ^= (1<<PB0);
 	}
 
 	return 0;
