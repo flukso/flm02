@@ -71,7 +71,7 @@ TARGET = main
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c buffer.c uart.c spi.c ctrl.c encode.c
+SRC = $(TARGET).c buffer.c uart.c spi.c ctrl.c
 
 
 # List Assembler source files here.
@@ -118,6 +118,9 @@ CDEFS = -DF_CPU=$(F_CPU)UL
 # Debugging mode
 DBG = 0
 CDEFS += -D DBG=$(DBG)
+
+# Warn when a function marked for inlining could not be substituted
+CDEFS += -Winline
 
 # uncomment and adapt these line if you want different UART library buffer size
 CDEFS += -DUART_RX_BUFFER_SIZE=64
