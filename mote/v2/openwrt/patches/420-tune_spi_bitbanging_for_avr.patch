@@ -1,0 +1,59 @@
+--- a/drivers/spi/spi_gpio.c	2010-12-14 01:02:26.673204002 +0100
++++ b/drivers/spi/spi_gpio.c	2011-01-15 00:26:44.437652996 +0100
+@@ -158,7 +158,9 @@
+ static u32 spi_gpio_txrx_word_mode0(struct spi_device *spi,
+ 		unsigned nsecs, u32 word, u8 bits)
+ {
+-	return bitbang_txrx_be_cpha0(spi, nsecs, 0, word, bits);
++	/* shift out a byte in 165us, then pause for 335us */
++	ndelay(335);
++	return bitbang_txrx_be_cpha0(spi, 5, 0, word, 8);
+ }
+ 
+ static u32 spi_gpio_txrx_word_mode1(struct spi_device *spi,
+--- a/drivers/spi/spi_bitbang.c	2009-12-04 07:00:07.000000000 +0100
++++ b/drivers/spi/spi_bitbang.c	2011-01-15 00:45:44.257653000 +0100
+@@ -75,13 +75,28 @@
+ 	while (likely(count > 0)) {
+ 		u8		word = 0;
+ 
+-		if (tx)
++		if (unlikely(tx))
+ 			word = *tx++;
+ 		word = txrx_word(spi, ns, word, bits);
+-		if (rx)
++		if (likely(rx)) {
++			/* If we receive a 0x00, fetch one extra byte to sync
++                           the state machine, then break out of the while loop. */
++			if (unlikely(!word)) {
++				txrx_word(spi, ns, 0x00, bits); /* discard */
++				break;
++			}
++
+ 			*rx++ = word;
++		}
+ 		count -= 1;
+ 	}
++
++	if (unlikely(tx)) {
++		/* Signal the end of tx by sending two 0x00's. */
++		txrx_word(spi, ns, 0x00, bits);
++		txrx_word(spi, ns, 0x00, bits);
++	}
++
+ 	return t->len - count;
+ }
+ 
+@@ -346,12 +361,6 @@
+ 			}
+ 			if (status > 0)
+ 				m->actual_length += status;
+-			if (status != t->len) {
+-				/* always report some kind of error */
+-				if (status >= 0)
+-					status = -EREMOTEIO;
+-				break;
+-			}
+ 			status = 0;
+ 
+ 			/* protocol tweaks before next transfer */
