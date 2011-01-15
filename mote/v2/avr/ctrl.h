@@ -105,6 +105,14 @@ void ctrlFlushTxBuffer(void);
 void ctrlRxToTxLoop(void);
 
 /**
+ * Calculate the CRC-8 checksum over the bytes in the buffer.
+ *
+ * @param buffer  pointer to the buffer containing the data
+ * @return        CRC-8 checksum
+ */
+uint8_t ctrlCalcCrc8(cBuffer* buffer);
+
+/**
  * Decode the message in the ctrl Rx buffer and dispatch to either ctrlCmdGet,
  * ctrlCmdSet or ctrlCmdCommit.
  *

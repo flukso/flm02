@@ -20,6 +20,7 @@
 // $Id$
 
 #include <avr/eeprom.h>
+#include <util/crc16.h>
 
 #include "global.h"
 #include "main.h"
@@ -204,9 +205,19 @@ void ctrlRxToTxLoop(void)
 	}
 }
 
+uint8_t ctrlCalcCrc8(cBuffer* buffer)
+{
+	uint8_t i, crc = 0;
+
+	for (i = 0; i < buffer->datalength; i++) {
+		crc = _crc_ibutton_update(crc, bufferGetAtIndex(buffer, i));
+	}
+	return crc;
+}
+
 void ctrlDecode(void)
 {
-	uint8_t cmd[2];
+	uint8_t cmd[2], crc;
 
 	ctrlFlushTxBuffer();
 
@@ -230,6 +241,9 @@ void ctrlDecode(void)
 		default:
 			ctrlAddToTxBuffer('z');
 		}
+
+		crc = ctrlCalcCrc8(&ctrlTxBuffer);
+		ctrlWriteCharToTxBuffer(crc);
 
 		ctrlAddToTxBuffer('.');
 	}
