@@ -30,6 +30,8 @@ local getfenv, setmetatable =
 module (...)
 local modenv = getfenv()
 
+local SPI_MAX_READ_BYTES = 256
+
 --- Create a new spi message object.
 --
 -- Attributes:
@@ -103,16 +105,18 @@ end
 
 function tx(msg, cdev)
 	if msg.to == 'ctrl' or msg.to == 'delta' then
-		cdev:write('l' .. msg.encoded .. '.\0\0')
+		cdev:write('l' .. msg.encoded .. '.')
 	elseif msg.to == 'uart' then
-		cdev:write('u' .. msg.encoded .. '\0\0')
+		cdev:write('u' .. msg.encoded)
 	end
 end
 
 function rx(msg, cdev)
 	msg.received = {}
-	msg.received.raw = cdev:spiread()
+	msg.received.raw = cdev:read(SPI_MAX_READ_BYTES)
 	msg.received.l, msg.received.u = msg.received.raw:match('^l(%w*)%.?u(%w*)%.?$')
+	-- protect against nil values when match should fail
+	msg.received.l, msg.received.u = msg.received.l or '', msg.received.u or ''
 
 	if msg.received.l ~= '' and msg.received.l:sub(1, 2) == msg.parsed[1] then
 		msg.received.crc = msg.received.l:sub(-2, -1)
