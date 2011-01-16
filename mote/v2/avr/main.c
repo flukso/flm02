@@ -63,11 +63,12 @@ ISR(SPI_STC_vect)
 	uint8_t spi_rx, rx, tx; 
 	uint16_t spi_tx;
 
-	DBG_ISR_BEGIN
+	DBG_ISR_BEGIN();
 
 	// the SPI is double-buffered, requiring two NO_OPs when switching from Tx to Rx
 	if (spi_status & (SPI_NO_OP_1 | SPI_NO_OP_2)) {
 		spi_status--;
+		DBG_LED_ON();
 		return;
 	}
 
@@ -127,9 +128,11 @@ ISR(SPI_STC_vect)
 			break;
 		case SPI_FORWARD_TO_UART_PORT:
 			spi_status |= SPI_TO_FROM_UART;
+			DBG_LED_OFF();
 			break;
 		case SPI_FORWARD_TO_CTRL_PORT:
 			spi_status &= ~SPI_TO_FROM_UART;
+			DBG_LED_OFF();
 			break;
 		default:
 			if (spi_status & SPI_HIGH_HEX) {
@@ -150,7 +153,7 @@ ISR(SPI_STC_vect)
 			spi_status ^= SPI_HIGH_HEX;
 	}
 
-        DBG_ISR_END
+        DBG_ISR_END();
 }
 
 ISR(INT0_vect)
@@ -178,7 +181,7 @@ ISR(TIMER1_COMPA_vect)
 {
 	uint8_t muxn_l = phy_to_log[muxn];
 	
-	DBG_ISR_BEGIN
+	DBG_ISR_BEGIN();
 
 	MacU16X16to32(state[muxn_l].nano, sensor[muxn_l].meterconst, ADC);
 
@@ -212,7 +215,7 @@ ISR(TIMER1_COMPA_vect)
 	/* Start a new ADC conversion. */
 	ADCSRA |= (1<<ADSC);
 
-	DBG_ISR_END
+	DBG_ISR_END();
 }
 
 ISR(ANALOG_COMP_vect)
@@ -287,7 +290,7 @@ void setup_timer1(void)
 	// Enable output compare match interrupt for timer1 (DS p.136)
 	TIMSK1 |= (1<<OCIE1A);
 
-	DBG_OC1A_TOGGLE
+	DBG_OC1A_TOGGLE();
 }
 
 void setup_analog_comparator(void)
