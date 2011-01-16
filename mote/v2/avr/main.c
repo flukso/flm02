@@ -181,7 +181,7 @@ ISR(TIMER1_COMPA_vect)
 {
 	uint8_t muxn_l = phy_to_log[muxn];
 	
-//	DBG_ISR_BEGIN();
+	DBG_ISR_BEGIN();
 
 	MacU16X16to32(state[muxn_l].nano, sensor[muxn_l].meterconst, ADC);
 
@@ -215,7 +215,7 @@ ISR(TIMER1_COMPA_vect)
 	/* Start a new ADC conversion. */
 	ADCSRA |= (1<<ADSC);
 
-//	DBG_ISR_END();
+	DBG_ISR_END();
 }
 
 ISR(ANALOG_COMP_vect)
