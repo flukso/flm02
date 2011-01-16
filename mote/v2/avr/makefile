@@ -122,6 +122,9 @@ CDEFS += -D DBG=$(DBG)
 # Warn when a function marked for inlining could not be substituted
 CDEFS += -Winline
 
+# Inline all 'simple-enough' functions (seems to be done by default in -Os)
+CDEFS += -finline-functions
+
 # uncomment and adapt these line if you want different UART library buffer size
 CDEFS += -DUART_RX_BUFFER_SIZE=64
 CDEFS += -DUART_TX_BUFFER_SIZE=64

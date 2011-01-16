@@ -37,16 +37,16 @@ static char ctrlTxData[CTRL_TX_BUFFER_SIZE];
 extern uint16_t EEMEM EEPROM_version;
 extern uint16_t version;
 
-extern volatile struct event_struct EEMEM EEPROM_event;
-extern volatile struct event_struct event;
+extern struct event_struct EEMEM EEPROM_event;
+extern struct event_struct event;
 
 extern uint8_t EEMEM EEPROM_phy_to_log[MAX_SENSORS];
 extern uint8_t phy_to_log[MAX_SENSORS];
 
-extern volatile struct sensor_struct EEMEM EEPROM_sensor[MAX_SENSORS];
-extern volatile struct sensor_struct sensor[MAX_SENSORS];
+extern struct sensor_struct EEMEM EEPROM_sensor[MAX_SENSORS];
+extern struct sensor_struct sensor[MAX_SENSORS];
 
-extern volatile struct state_struct state[MAX_SENSORS];
+extern struct state_struct state[MAX_SENSORS];
 
 void ctrlInit(void)
 {
@@ -253,7 +253,7 @@ void ctrlDecode(void)
 
 void ctrlCmdGet(uint8_t cmd)
 {
-	uint8_t i;
+	uint8_t i = 0;
 	uint32_t tmp32, tmp32_bis;
 
 	switch (cmd) {
@@ -315,9 +315,9 @@ void ctrlCmdGet(uint8_t cmd)
 
 void ctrlCmdSet(uint8_t cmd)
 {
-	uint8_t i, tmp8;
-	uint16_t tmp16;
-	uint32_t tmp32;
+	uint8_t i = 0, tmp8 = 0;
+	uint16_t tmp16 = 0;
+	uint32_t tmp32 = 0;
 
 	switch (cmd) {
 	case 'v':

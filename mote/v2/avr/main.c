@@ -35,28 +35,29 @@
 #include "global.h"
 #include "encode.h"
 
-volatile uint8_t spi_status, spi_high_hex;
+register uint8_t spi_status asm("r7");
+uint8_t spi_high_hex;
 
 uint8_t EEMEM first_EEPROM_byte_not_used_to_protect_from_brownout_corruption = 0xbe;
 
 uint8_t EEMEM EEPROM_version[2] = {2, 1};
 uint8_t version[2];
 
-volatile struct event_struct EEMEM EEPROM_event = {0, 0};
-volatile struct event_struct event;
+struct event_struct EEMEM EEPROM_event = {0, 0};
+struct event_struct event;
 
 uint8_t EEMEM EEPROM_phy_to_log[MAX_SENSORS] = {0, 1, 2, 3, 4, 5};
 uint8_t phy_to_log[MAX_SENSORS];
 
-volatile struct sensor_struct EEMEM EEPROM_sensor[MAX_SENSORS];
-volatile struct sensor_struct sensor[MAX_SENSORS];
+struct sensor_struct EEMEM EEPROM_sensor[MAX_SENSORS];
+struct sensor_struct sensor[MAX_SENSORS];
 
-volatile struct state_struct state[MAX_SENSORS];
+struct state_struct state[MAX_SENSORS];
 
-volatile uint8_t muxn = 0;
-volatile uint16_t timer = 0;
+uint8_t muxn = 0;
+uint16_t timer = 0;
 
-volatile struct time_struct time = {0, 0};
+struct time_struct time = {0, 0};
 
 ISR(SPI_STC_vect)
 {
@@ -68,14 +69,14 @@ ISR(SPI_STC_vect)
 	if (spi_status & (SPI_NO_OP_1 | SPI_NO_OP_2)) {
 		spi_status--;
 		DBG_LED_ON();
-		return;
+		goto finish;
 	}
 
 	// do we have to transmit the first byte?
 	if (spi_status & SPI_START_TX) {
 		received_from_spi(SPI_FORWARD_TO_CTRL_PORT);
 		spi_status &= ~SPI_START_TX;
-		return;
+		goto finish;
 	}
 
 	// are we in Tx mode?
@@ -83,7 +84,7 @@ ISR(SPI_STC_vect)
 		if (spi_status & SPI_HIGH_HEX) {
 			received_from_spi(spi_high_hex); /* actually low hex ! */
 			spi_status &= ~SPI_HIGH_HEX;
-			return;
+			goto finish;
 		}
 
 		if (spi_status & SPI_TO_FROM_UART) {
@@ -91,25 +92,25 @@ ISR(SPI_STC_vect)
 				received_from_spi(SPI_END_OF_TX);
 				spi_status &= ~SPI_TRANSMIT;
 				spi_status |= SPI_NO_OP_2;
-				return;
+				goto finish;
 			}
 		}
 		else {
 			if (ctrlGetFromTxBuffer(&tx)) {
 				received_from_spi(tx);
-				return;
+				goto finish;
 			}
 			else {
 				received_from_spi(SPI_FORWARD_TO_UART_PORT);
 				spi_status |= SPI_TO_FROM_UART;
-				return;
+				goto finish;
 			}
 		}
 
 		btoh(tx, &spi_tx, (uint8_t *)&spi_high_hex); /* actually low hex ! */
 		spi_status |= SPI_HIGH_HEX;
 		received_from_spi(spi_tx);
-		return;
+		goto finish;
 	}
 
 	// we're in Rx mode
@@ -143,7 +144,7 @@ ISR(SPI_STC_vect)
 				}
 				else {
 					ctrlAddToRxBuffer(spi_rx);
-					return;
+					goto finish;
 				}
 
 			}
@@ -151,7 +152,8 @@ ISR(SPI_STC_vect)
 			spi_status ^= SPI_HIGH_HEX;
 	}
 
-        DBG_ISR_END();
+finish:
+	DBG_ISR_END();
 }
 
 ISR(INT0_vect)
@@ -179,7 +181,7 @@ ISR(TIMER1_COMPA_vect)
 {
 	uint8_t muxn_l = phy_to_log[muxn];
 	
-	DBG_ISR_BEGIN();
+//	DBG_ISR_BEGIN();
 
 	MacU16X16to32(state[muxn_l].nano, sensor[muxn_l].meterconst, ADC);
 
@@ -213,7 +215,7 @@ ISR(TIMER1_COMPA_vect)
 	/* Start a new ADC conversion. */
 	ADCSRA |= (1<<ADSC);
 
-	DBG_ISR_END();
+//	DBG_ISR_END();
 }
 
 ISR(ANALOG_COMP_vect)
@@ -366,7 +368,6 @@ int main(void)
 
 	for(;;) {
 		if (spi_status & SPI_NEW_CTRL_MSG) {
-			//ctrlRxToTxLoop();
 			ctrlDecode();
 			spi_status &= ~SPI_NEW_CTRL_MSG;
 		}
