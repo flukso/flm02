@@ -128,7 +128,7 @@ uint8_t ctrlReadCharFromRxBuffer(uint8_t* pdata)
 	uint8_t high_hex, low_hex;
 
 	if (ctrlGetFromRxBuffer(&high_hex) && ctrlGetFromRxBuffer(&low_hex)) {
-		*pdata = htob(((uint16_t)high_hex << 8) + low_hex);
+		htob(high_hex, low_hex, pdata);
 		return TRUE;
 	}
 	else {
@@ -165,10 +165,10 @@ uint8_t ctrlReadLongFromRxBuffer(uint32_t* pdata)
 
 uint8_t ctrlWriteCharToTxBuffer(uint8_t data)
 {
-	uint16_t hex;
+	uint8_t high_hex, low_hex;
 
-	hex = btoh(data);
-	if (ctrlAddToTxBuffer((uint8_t)(hex >> 8)) && ctrlAddToTxBuffer((uint8_t)hex)) {
+	btoh(data, &high_hex, &low_hex);
+	if (ctrlAddToTxBuffer(high_hex) && ctrlAddToTxBuffer(low_hex)) {
 		return TRUE;
 	}
 	else {

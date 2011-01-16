@@ -60,8 +60,7 @@ volatile struct time_struct time = {0, 0};
 
 ISR(SPI_STC_vect)
 {
-	uint8_t spi_rx, rx, tx; 
-	uint16_t spi_tx;
+	uint8_t spi_rx, spi_tx, rx, tx; 
 
 	DBG_ISR_BEGIN();
 
@@ -82,7 +81,7 @@ ISR(SPI_STC_vect)
 	// are we in Tx mode?
 	if (spi_status & SPI_TRANSMIT) {
 		if (spi_status & SPI_HIGH_HEX) {
-			received_from_spi(spi_high_hex);
+			received_from_spi(spi_high_hex); /* actually low hex ! */
 			spi_status &= ~SPI_HIGH_HEX;
 			return;
 		}
@@ -107,10 +106,9 @@ ISR(SPI_STC_vect)
 			}
 		}
 
-		spi_tx = btoh(tx);
-		spi_high_hex = (uint8_t)spi_tx;
+		btoh(tx, &spi_tx, (uint8_t *)&spi_high_hex); /* actually low hex ! */
 		spi_status |= SPI_HIGH_HEX;
-		received_from_spi((uint8_t)(spi_tx >> 8));
+		received_from_spi(spi_tx);
 		return;
 	}
 
@@ -136,7 +134,7 @@ ISR(SPI_STC_vect)
 			break;
 		default:
 			if (spi_status & SPI_HIGH_HEX) {
-				rx = htob(((uint16_t)spi_high_hex << 8) + spi_rx);
+				htob(spi_high_hex, spi_rx, &rx);
 				uartAddToTxBuffer(rx);
 			}
 			else {
