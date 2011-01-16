@@ -40,8 +40,9 @@ uint8_t spi_high_hex;
 
 uint8_t EEMEM first_EEPROM_byte_not_used_to_protect_from_brownout_corruption = 0xbe;
 
-uint8_t EEMEM EEPROM_version[2] = {2, 1};
-uint8_t version[2];
+struct version_struct EEMEM EEPROM_version =
+	{HW_VERSION_MAJOR, HW_VERSION_MINOR, SW_VERSION_MAJOR, SW_VERSION_MINOR};
+struct version_struct version;
 
 struct event_struct EEMEM EEPROM_event = {0, 0};
 struct event_struct event;

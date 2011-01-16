@@ -1,3 +1,10 @@
+struct version_struct {
+	uint16_t hw_major;
+	uint8_t  hw_minor;
+	uint8_t  sw_major;
+	uint8_t  sw_minor;
+};
+
 #define SPI_NO_OP_1		1
 #define SPI_NO_OP_2		2
 #define SPI_START_TX		4

@@ -49,6 +49,11 @@
 # To rebuild project do "make clean" then "make all".
 #----------------------------------------------------------------------------
 
+# Sensor board versioning:
+HW_VERSION_MAJOR = 2
+HW_VERSION_MINOR = 0
+SW_VERSION_MAJOR = 1
+SW_VERSION_MINOR = 0
 
 # MCU name
 MCU = atmega168
@@ -124,6 +129,13 @@ CDEFS += -Winline
 
 # Inline all 'simple-enough' functions (seems to be done by default in -Os)
 CDEFS += -finline-functions
+
+# Sensor board ID
+CDEFS += -DBOARD_ID=$(BOARD_ID)
+
+# Sensor board hw/sw major/minor version
+CDEFS += -DHW_VERSION_MAJOR=$(HW_VERSION_MAJOR) -DHW_VERSION_MINOR=$(HW_VERSION_MINOR)
+CDEFS += -DSW_VERSION_MAJOR=$(SW_VERSION_MAJOR) -DSW_VERSION_MINOR=$(SW_VERSION_MINOR)
 
 # uncomment and adapt these line if you want different UART library buffer size
 CDEFS += -DUART_RX_BUFFER_SIZE=64

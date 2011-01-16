@@ -34,8 +34,8 @@ cBuffer ctrlTxBuffer; // ctrl transmit buffer
 static char ctrlRxData[CTRL_RX_BUFFER_SIZE];
 static char ctrlTxData[CTRL_TX_BUFFER_SIZE];
 
-extern uint16_t EEMEM EEPROM_version;
-extern uint16_t version;
+extern struct version_struct EEMEM EEPROM_version;
+extern struct version_struct version;
 
 extern struct event_struct EEMEM EEPROM_event;
 extern struct event_struct event;
@@ -257,8 +257,14 @@ void ctrlCmdGet(uint8_t cmd)
 	uint32_t tmp32, tmp32_bis;
 
 	switch (cmd) {
-	case 'v':
-		ctrlWriteShortToTxBuffer(version);
+	case 'h':
+		ctrlWriteShortToTxBuffer(version.hw_major);
+		ctrlWriteCharToTxBuffer(version.hw_minor);
+		break;
+
+	case 's':
+		ctrlWriteCharToTxBuffer(version.sw_major);
+		ctrlWriteCharToTxBuffer(version.sw_minor);
 		break;
 
 	case 'p':
@@ -315,18 +321,29 @@ void ctrlCmdGet(uint8_t cmd)
 
 void ctrlCmdSet(uint8_t cmd)
 {
-	uint8_t i = 0, tmp8 = 0;
+	uint8_t i = 0, tmp8 = 0, tmp8_bis = 0;
 	uint16_t tmp16 = 0;
 	uint32_t tmp32 = 0;
 
 	switch (cmd) {
-	case 'v':
+	case 'h':
 		ctrlReadShortFromRxBuffer(&tmp16);
+		ctrlReadCharFromRxBuffer(&tmp8);
 
 		cli();
-		version = tmp16;
+		version.hw_major = tmp16;
+		version.hw_minor = tmp8;
 		sei();
 		break;
+
+	case 's':
+		ctrlReadCharFromRxBuffer(&tmp8);
+		ctrlReadCharFromRxBuffer(&tmp8_bis);
+
+		cli();
+		version.sw_major = tmp8;
+		version.sw_minor = tmp8_bis;
+		sei();
 
 	case 'p':
 		for (i = 0 ; i < MAX_SENSORS; i++) {
