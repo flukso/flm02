@@ -226,20 +226,17 @@ void ctrlDecode(void)
 		ctrlAddToTxBuffer(cmd[1]);
 
 		switch (cmd[0]) {
-		case 'g':
+		case 'g':	/* get */
 			ctrlCmdGet(cmd[1]);
 			break;
  
-		case 's':
+		case 's':	/* set */
 			ctrlCmdSet(cmd[1]);
 			break;
 
-		case 'c':
+		case 'c':	/* commit */
 			if (cmd[1] == 't') ctrlCmdCommit();
 			break;
-
-		default:
-			ctrlAddToTxBuffer('z');
 		}
 
 		crc = ctrlCalcCrc8(&ctrlTxBuffer);
@@ -257,23 +254,23 @@ void ctrlCmdGet(uint8_t cmd)
 	uint32_t tmp32, tmp32_bis;
 
 	switch (cmd) {
-	case 'h':
+	case 'h':		/* hardware {major,minor} version */
 		ctrlWriteShortToTxBuffer(version.hw_major);
 		ctrlWriteCharToTxBuffer(version.hw_minor);
 		break;
 
-	case 's':
+	case 's':		/* software {major,minor} version */
 		ctrlWriteCharToTxBuffer(version.sw_major);
 		ctrlWriteCharToTxBuffer(version.sw_minor);
 		break;
 
-	case 'p':
+	case 'p':		/* phy-to-logical mapping */
 		for (i = 0 ; i < MAX_SENSORS; i++) {
 			ctrlWriteCharToTxBuffer(phy_to_log[i]);
 		}
 		break;
 
-	case 'c':
+	case 'c':		/* sensor counter value */
 		ctrlReadCharFromRxBuffer(&i);
 
 		cli();
@@ -283,20 +280,20 @@ void ctrlCmdGet(uint8_t cmd)
 		ctrlWriteLongToTxBuffer(tmp32);
 		break;
 
-	case 'm':
+	case 'm':		/* sensor meterconstant */
 		ctrlReadCharFromRxBuffer(&i);
 		ctrlWriteShortToTxBuffer(sensor[i].meterconst);
 		break;
 
-	case 'w':
+	case 'w':		/* watchdog counter */
 		ctrlWriteShortToTxBuffer(event.wdt);
 		break;
 
-	case 'b':
+	case 'b':		/* brown-out counter */
 		ctrlWriteShortToTxBuffer(event.brown_out);
 		break;
 
-	case 'd':
+	case 'd':		/* delta: all changes since last gd */
 		for (i = 0 ; i < MAX_SENSORS; i++) {
 			if (state[i].flags & (STATE_PULSE | STATE_POWER)) {
 				ctrlWriteCharToTxBuffer(i);
@@ -313,9 +310,6 @@ void ctrlCmdGet(uint8_t cmd)
 			}
 		}
 		break;
-
-	default:
-		ctrlAddToTxBuffer('z');
 	}
 }
 
@@ -326,7 +320,7 @@ void ctrlCmdSet(uint8_t cmd)
 	uint32_t tmp32 = 0;
 
 	switch (cmd) {
-	case 'h':
+	case 'h':		/* hardware {major,minor} version */
 		ctrlReadShortFromRxBuffer(&tmp16);
 		ctrlReadCharFromRxBuffer(&tmp8);
 
@@ -336,7 +330,7 @@ void ctrlCmdSet(uint8_t cmd)
 		sei();
 		break;
 
-	case 's':
+	case 's':		/* software {major,minor} version */
 		ctrlReadCharFromRxBuffer(&tmp8);
 		ctrlReadCharFromRxBuffer(&tmp8_bis);
 
@@ -345,7 +339,7 @@ void ctrlCmdSet(uint8_t cmd)
 		version.sw_minor = tmp8_bis;
 		sei();
 
-	case 'p':
+	case 'p':		/* phy-to-logical mapping */
 		for (i = 0 ; i < MAX_SENSORS; i++) {
 			ctrlReadCharFromRxBuffer(&tmp8);
 
@@ -355,7 +349,7 @@ void ctrlCmdSet(uint8_t cmd)
 		}
 		break;
 
-	case 'c':
+	case 'c':		/* sensor counter value */
 		ctrlReadCharFromRxBuffer(&i);
 		ctrlReadLongFromRxBuffer(&tmp32);
 
@@ -364,7 +358,7 @@ void ctrlCmdSet(uint8_t cmd)
 		sei();
 		break;
 
-	case 'm':
+	case 'm':		/* sensor meterconstant */
 		ctrlReadCharFromRxBuffer(&i);
 		ctrlReadShortFromRxBuffer(&tmp16);
 
@@ -373,7 +367,7 @@ void ctrlCmdSet(uint8_t cmd)
 		sei();
 		break;
 
-	case 'w':
+	case 'w':		/* watchdog counter */
 		ctrlReadShortFromRxBuffer(&tmp16);
 
 		cli();
@@ -381,16 +375,13 @@ void ctrlCmdSet(uint8_t cmd)
 		sei();
 		break;
 
-	case 'b':
+	case 'b':		/* brown-out counter */
 		ctrlReadShortFromRxBuffer(&tmp16);
 
 		cli();
 		event.brown_out = tmp16;
 		sei();
 		break;
-
-	default:
-		ctrlAddToTxBuffer('z');
 	}
 }
 
