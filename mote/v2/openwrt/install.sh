@@ -39,6 +39,7 @@ cp patches/300-set_AR2315_RESET_GPIO_to_6.patch $BACKFIRE_PATH/target/linux/athe
 cp patches/310-hotplug_button_jiffies_calc.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
 cp patches/400-spi_gpio_support.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
 cp patches/410-spi_gpio_enable_cs_line.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
+cp patches/420-tune_spi_bitbanging_for_avr.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
 
 # patch files of the OpenWRT build system
 cd $BACKFIRE_PATH
