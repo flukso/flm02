@@ -122,7 +122,6 @@ ISR(SPI_STC_vect)
 			break;
 		case SPI_END_OF_MESSAGE:
 			if (!(spi_status & SPI_TO_FROM_UART)) {
-				ctrlAddToRxBuffer(spi_rx);
 				spi_status |= SPI_NEW_CTRL_MSG;
 			}
 			break;

@@ -100,7 +100,7 @@ function encode(msg)
 
 	end
 
---> TODO msg.encoded = msg.encoded .. dow_crc(msg.encoded)
+	msg.encoded = msg.encoded .. nixio.bin.numtohex(nixio.bin.dow_crc(msg.encoded), 1)
 end
 
 function tx(msg, cdev)

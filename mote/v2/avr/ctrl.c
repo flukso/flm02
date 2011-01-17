@@ -205,13 +205,24 @@ void ctrlRxToTxLoop(void)
 	}
 }
 
-uint8_t ctrlCalcCrc8(cBuffer* buffer)
+uint8_t ctrlCalcCrc8(cBuffer* buffer, uint8_t chop)
 {
 	uint8_t i, crc = 0;
 
-	for (i = 0; i < buffer->datalength; i++) {
+	for (i = 0; i < buffer->datalength - chop; i++) {
 		crc = _crc_ibutton_update(crc, bufferGetAtIndex(buffer, i));
 	}
+	return crc;
+}
+
+uint8_t ctrlExtractCrc8fromMessage(cBuffer* buffer)
+{
+	uint8_t crc, high_hex, low_hex;
+
+	high_hex = bufferGetAtIndex(buffer, buffer->datalength - 2);
+	low_hex  = bufferGetAtIndex(buffer, buffer->datalength - 1);
+
+	htob(high_hex, low_hex, &crc);
 	return crc;
 }
 
@@ -221,7 +232,12 @@ void ctrlDecode(void)
 
 	ctrlFlushTxBuffer();
 
-	if (ctrlGetFromRxBuffer(cmd) && ctrlGetFromRxBuffer(cmd+1)) {
+	crc = ctrlExtractCrc8fromMessage(&ctrlRxBuffer);
+	if (ctrlCalcCrc8(&ctrlRxBuffer, 2) != crc) {
+		ctrlAddToTxBuffer('z');
+		ctrlAddToTxBuffer('z');
+	}
+	else if (ctrlGetFromRxBuffer(cmd) && ctrlGetFromRxBuffer(cmd+1)) {
 		ctrlAddToTxBuffer(cmd[0]);
 		ctrlAddToTxBuffer(cmd[1]);
 
@@ -238,12 +254,16 @@ void ctrlDecode(void)
 			if (cmd[1] == 't') ctrlCmdCommit();
 			break;
 		}
-
-		crc = ctrlCalcCrc8(&ctrlTxBuffer);
-		ctrlWriteCharToTxBuffer(crc);
-
-		ctrlAddToTxBuffer('.');
 	}
+	else {
+		ctrlAddToTxBuffer('z');
+		ctrlAddToTxBuffer('y');
+	}
+
+	crc = ctrlCalcCrc8(&ctrlTxBuffer, 0);
+	ctrlWriteCharToTxBuffer(crc);
+
+	ctrlAddToTxBuffer('.');
 
 	ctrlFlushRxBuffer();
 }

@@ -108,9 +108,19 @@ void ctrlRxToTxLoop(void);
  * Calculate the CRC-8 checksum over the bytes in the buffer.
  *
  * @param buffer  pointer to the buffer containing the data
+ * @param chop    chop number of bytes from end of buffer for crc calc
  * @return        CRC-8 checksum
  */
-uint8_t ctrlCalcCrc8(cBuffer* buffer);
+uint8_t ctrlCalcCrc8(cBuffer* buffer, uint8_t chop);
+
+
+/**
+ * Extract the CRC-8 checksum out of the message in the buffer.
+ *
+ * @param buffer  pointer to the buffer containing the message
+ * @return        CRC-8 checksum
+ */
+uint8_t ctrlExtractCrc8fromMessage(cBuffer* buffer);
 
 /**
  * Decode the message in the ctrl Rx buffer and dispatch to either ctrlCmdGet,
