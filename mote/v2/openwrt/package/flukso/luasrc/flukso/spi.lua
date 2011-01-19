@@ -37,10 +37,10 @@ local SPI_MAX_READ_BYTES = 256
 -- Attributes:
 -- { to = ctrl | delta | uart
 --   body = <string>
---   parsed = { <command>, <arg1>, <arg2>, ... }
+--   parsed = { 'cmd' = <command>, 1 = <arg1>, 2 = <arg2>, ... }
 --   encoded = <string>
 --   received = { raw = <string>, l = <string>, crc = <string>, u = <string> }
---   decoded = { l = ..., u = ... }
+--   decoded = { args = <string>, cmd = <string>, 1 = <arg1>, 2= <arg2>, ..., u = <string> }
 --   reply = <string>
 -- }
 --
@@ -54,7 +54,7 @@ end
 function parse(msg)
 	msg.parsed = {}
 
-	msg.parsed[1] = msg.body:match('^%l%l')
+	msg.parsed.cmd = msg.body:match('^%l%l')
 	for arg in msg.body:gmatch('%d+') do
 		msg.parsed[#msg.parsed + 1] = arg
 	end
@@ -68,33 +68,33 @@ function encode(msg)
 		return
 	end
 
-	if msg.parsed[1] == 'gd' then
-		msg.encoded = msg.parsed[1]
-	elseif msg.parsed[1] == 'gv' then
+	if msg.parsed.cmd == 'gd' then
+		msg.encoded = msg.parsed.cmd
+	elseif msg.parsed.cmd == 'gv' then
 
-	elseif msg.parsed[1] == 'gp' then
+	elseif msg.parsed.cmd == 'gp' then
         
-	elseif msg.parsed[1] == 'gc' then
+	elseif msg.parsed.cmd == 'gc' then
         
-	elseif msg.parsed[1] == 'gm' then
+	elseif msg.parsed.cmd == 'gm' then
 
-	elseif msg.parsed[1] == 'gw' then
+	elseif msg.parsed.cmd == 'gw' then
 
-	elseif msg.parsed[1] == 'gb' then
+	elseif msg.parsed.cmd == 'gb' then
 
-	elseif msg.parsed[1] == 'sv' then
+	elseif msg.parsed.cmd == 'sv' then
 
-	elseif msg.parsed[1] == 'sp' then
+	elseif msg.parsed.cmd == 'sp' then
 
-	elseif msg.parsed[1] == 'sc' then
+	elseif msg.parsed.cmd == 'sc' then
 
-	elseif msg.parsed[1] == 'sm' then
+	elseif msg.parsed.cmd == 'sm' then
 
-	elseif msg.parsed[1] == 'sw' then
+	elseif msg.parsed.cmd == 'sw' then
 
-	elseif msg.parsed[1] == 'sb' then
+	elseif msg.parsed.cmd == 'sb' then
 
-	elseif msg.parsed[1] == 'ct' then
+	elseif msg.parsed.cmd == 'ct' then
 
 	else
 
@@ -116,15 +116,20 @@ function rx(msg, cdev)
 	msg.received.raw = cdev:read(SPI_MAX_READ_BYTES)
 	msg.received.l, msg.received.u = msg.received.raw:match('^l(%w*)%.?u(%w*)%.?$')
 	-- protect against nil values when match should fail
+	-- TODO error handling when no reply due to:
+	--        * sensor board not operational
+	--        * state machine not synced
 	msg.received.l, msg.received.u = msg.received.l or '', msg.received.u or ''
 
-	if msg.received.l ~= '' and msg.received.l:sub(1, 2) == msg.parsed[1] then
+	if msg.received.l ~= '' then
 		msg.received.crc = msg.received.l:sub(-2, -1)
-		msg.received.l   = msg.received.l:sub(1, -3)
+		msg.received.l   = msg.received.l:sub( 1, -3)
 
 		if nixio.bin.dow_crc(msg.received.l) ~= nixio.bin.hextonum(msg.received.crc) then
-			--> TODO implement crc error counter
+			--> TODO implement near-end crc error counter
 			msg.received.l = ''
+		else
+			
 		end
 	end
 end
@@ -137,43 +142,46 @@ function decode(msg)
 	end
 
 	if msg.received.l ~= '' then
-		msg.decoded.largs = msg.received.l:sub(3, -1)
+		msg.decoded.cmd  = msg.received.l:sub(1,  2)
+		msg.decoded.args = msg.received.l:sub(3, -1)
 
-		if msg.parsed[1] == 'gd' then
-			for i = 1, msg.decoded.largs:len() / 18 do
+		if msg.decoded.cmd == 'gd' then
+			for i = 1, msg.decoded.args:len() / 18 do
 				msg.decoded[(i-1)*3 + 1] =
-					nixio.bin.hextonum(msg.decoded.largs:sub((i-1)*18 +  1, (i-1)*18 +  2))
+					nixio.bin.hextonum(msg.decoded.args:sub((i-1)*18 +  1, (i-1)*18 +  2))
 				msg.decoded[(i-1)*3 + 2] =
-					nixio.bin.hextonum(msg.decoded.largs:sub((i-1)*18 +  3, (i-1)*18 + 10))
+					nixio.bin.hextonum(msg.decoded.args:sub((i-1)*18 +  3, (i-1)*18 + 10))
 				msg.decoded[(i-1)*3 + 3] =
-					nixio.bin.hextonum(msg.decoded.largs:sub((i-1)*18 + 11, (i-1)*18 + 18))
+					nixio.bin.hextonum(msg.decoded.args:sub((i-1)*18 + 11, (i-1)*18 + 18))
 			end
-		elseif msg.parsed[1] == 'gv' then
+		elseif msg.parsed.cmd == 'gv' then
 
-		elseif msg.parsed[1] == 'gp' then
+		elseif msg.parsed.cmd == 'gp' then
 
-		elseif msg.parsed[1] == 'gc' then
+		elseif msg.parsed.cmd == 'gc' then
 
-		elseif msg.parsed[1] == 'gm' then
+		elseif msg.parsed.cmd == 'gm' then
 
-		elseif msg.parsed[1] == 'gw' then
+		elseif msg.parsed.cmd == 'gw' then
 
-		elseif msg.parsed[1] == 'gb' then
+		elseif msg.parsed.cmd == 'gb' then
 
-		elseif msg.parsed[1] == 'sv' then
+		elseif msg.parsed.cmd == 'sv' then
 
-		elseif msg.parsed[1] == 'sp' then
+		elseif msg.parsed.cmd == 'sp' then
 
-		elseif msg.parsed[1] == 'sc' then
+		elseif msg.parsed.cmd == 'sc' then
 
-		elseif msg.parsed[1] == 'sm' then
+		elseif msg.parsed.cmd == 'sm' then
 
-		elseif msg.parsed[1] == 'sw' then
+		elseif msg.parsed.cmd == 'sw' then
 
-		elseif msg.parsed[1] == 'sb' then
+		elseif msg.parsed.cmd == 'sb' then
 
-		elseif msg.parsed[1] == 'ct' then
+		elseif msg.parsed.cmd == 'ct' then
 
+		elseif msg.decoded.cmd == 'zz' then
+			--> TODO implement far-end crc error counter
 		end
 	end
 end

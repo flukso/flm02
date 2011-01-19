@@ -223,68 +223,6 @@ static int nixio_file_read(lua_State *L) {
 	}
 }
 
-static int nixio_file_spi_read(lua_State *L) {
-	int fd = nixio__checkfd(L, 1);
-	char buffer[NIXIO_BUFFERSIZE];
-	int readc;
-	size_t len;
-	char last = 0;
-
-	for (size_t i = 0; i < NIXIO_BUFFERSIZE; i++) {
-		do {
-			readc = read(fd, buffer + i, 1);
-		} while (readc == -1 && errno == EINTR);
-
-		if (readc < 0) {
-			return nixio__perror(L);
-		}
-
-		if (last) {
-			break;
-		}
-
-		if (buffer[i] == 0x00) {
-			len = i;
-			last = 1; /* one last pass through the for loop to sync the state machine */
-
-		}
-	}
-
-/* REVISIT: a read on spidev doens't work for numbytes > 1 */
-
-/*	for (size_t i = 0; i < NIXIO_BUFFERSIZE; i += 2) {
-		do {
-			readc = read(fd, buffer + i, 2);
-		} while (readc == -1 && errno == EINTR);
-
-		if (readc < 0) {
-			return nixio__perror(L);
-		}
-
-		if (buffer[i + 1] == 0x00) {
-			len = i;
-
-			if (buffer[i] != 0x00) {
-				len = i + 1;
-
-				do {
-					readc = read(fd, buffer + i + 2, 1);
-				} while (readc == -1 && errno == EINTR);
-
-				if (readc < 0) {
-					return nixio__perror(L);
-				}
-			}
-
-			break;
-		}
-			
-	}
-*/
-
-	lua_pushlstring(L, buffer, len);
-	return 1;
-}
 
 static int nixio_file_seek(lua_State *L) {
 	int fd = nixio__checkfd(L, 1);
@@ -412,7 +350,6 @@ static int nixio_file__tostring(lua_State *L) {
 static const luaL_reg M[] = {
 	{"write",		nixio_file_write},
 	{"read",		nixio_file_read},
-	{"spiread",		nixio_file_spi_read},
 	{"tell",		nixio_file_tell},
 	{"seek",		nixio_file_seek},
 	{"stat",		nixio_file_stat},
@@ -428,7 +365,7 @@ static const luaL_reg M[] = {
 static const luaL_reg R[] = {
 	{"dup",			nixio_dup},
 	{"open",		nixio_open},
-	{"open_flags",		nixio_open_flags},
+	{"open_flags",	nixio_open_flags},
 	{"pipe",		nixio_pipe},
 	{NULL,			NULL}
 };

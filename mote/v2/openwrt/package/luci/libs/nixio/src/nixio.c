@@ -142,6 +142,7 @@ NIXIO_API int luaopen_nixio(lua_State *L) {
 	nixio_open_bin(L);
 	nixio_open_fs(L);
 	nixio_open_user(L);
+	nixio_open_spi(L);
 
 #ifndef NO_TLS
 	nixio_open_tls_crypto(L);

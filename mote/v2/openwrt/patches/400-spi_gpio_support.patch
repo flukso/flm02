@@ -41,7 +41,7 @@
 +	.modalias        = "spidev",
 +	.controller_data = (void *) SPI_GPIO_NO_CHIPSELECT,
 +	.mode            = SPI_MODE_0,
-+	.max_speed_hz    = 16000000,   /* 16kHz */
++	.max_speed_hz    = 1000000,   /* 1Mhz max, but the bitbanged spi doesn't clock faster than 572kHz */
 +	.bus_num         = 0,
 +},
 +};

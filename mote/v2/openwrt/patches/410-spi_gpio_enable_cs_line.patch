@@ -15,5 +15,5 @@
 -	.controller_data = (void *) SPI_GPIO_NO_CHIPSELECT,
 +	.controller_data = (void *) SPI_GPIO_CS,
  	.mode            = SPI_MODE_0,
- 	.max_speed_hz    = 10000000,   /* 10kHz */
+ 	.max_speed_hz    = 1000000,   /* 1Mhz max, but the bitbanged spi doesn't clock faster than 572kHz */
  	.bus_num         = 0,

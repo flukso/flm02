@@ -72,7 +72,7 @@ while true do
 			msg:rx(spidev)
 			msg:decode()
 			--> dbg.vardump(msg)
-			delta.fdout:write(msg.parsed[1] .. ' ' .. table.concat(msg.decoded, ' ') .. '\n')
+			delta.fdout:write(msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ') .. '\n')
 		end
 	end
 end
