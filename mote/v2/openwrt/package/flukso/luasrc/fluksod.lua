@@ -2,7 +2,7 @@
 
 --[[
     
-    fluksod.lua - Lua part of fluksod
+    fluksod.lua - Lua part of the Flukso daemon
 
     Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
 
@@ -21,30 +21,37 @@
 
 ]]--
 
-require 'dbg'
-require 'nixio'
-require 'nixio.fs'
-local spi = require 'flukso.spi'
+local dbg   = require 'dbg'
+local spi   = require 'flukso.spi'
+local nixio = require 'nixio'
+nixio.fs    = require 'nixio.fs'
 
-DAEMON      = os.getenv('DAEMON') or 'fluksod'
-DAEMON_PATH = os.getenv('DAEMON_PATH') or '/var/run/' .. DAEMON
+local SPI_DEV			= '/dev/spidev0.0'
+local SPI_MAX_CLK_SPEED_HZ	= 10e6
+local SPI_MIN_BYTE_DELAY_US	= 250
+local SPI_TX_RX_DELAY_NS	= 10e7
+local POLL_TIMEOUT_MS		= 100
 
-O_RDWR_NONBLOCK = nixio.open_flags('rdwr', 'nonblock')
-POLLIN          = nixio.poll_flags('in')
+local DAEMON 			= os.getenv('DAEMON') or 'fluksod'
+local DAEMON_PATH 		= os.getenv('DAEMON_PATH') or '/var/run/' .. DAEMON
+
+local O_RDWR_NONBLOCK		= nixio.open_flags('rdwr', 'nonblock')
+local POLLIN          		= nixio.poll_flags('in')
+
 
 function mkfifos(input)
 	local path = string.format('%s/%s/', DAEMON_PATH, input) 
 
 	nixio.fs.mkdirr(path)
-	nixio.fs.unlink(path .. 'in')  --> clean up mess from previous run
-	nixio.fs.unlink(path .. 'out') --> idem
+	nixio.fs.unlink(path .. 'in')  -- clean up mess from previous run
+	nixio.fs.unlink(path .. 'out') -- idem
 	nixio.fs.mkfifo(path .. 'in', '644')
 	nixio.fs.mkfifo(path .. 'out', '644')
 
 	local fdin  = nixio.open(path .. 'in', O_RDWR_NONBLOCK)
 	local fdout = nixio.open(path .. 'out', O_RDWR_NONBLOCK)
 
-	return { fd      = fdin, --> need this entry for nixio.poll
+	return { fd      = fdin, -- need this entry for nixio.poll
                  fdin    = fdin,
                  fdout   = fdout,
                  events  = POLLIN,
@@ -58,21 +65,49 @@ local delta = mkfifos('delta')
 
 local fds = { uart, ctrl, delta }
 
-local spidev = nixio.open('/dev/spidev0.0', O_RDWR_NONBLOCK)
+local spidev = nixio.open(SPI_DEV, O_RDWR_NONBLOCK)
+nixio.spi.setspeed(spidev, SPI_MAX_CLK_SPEED_HZ, SPI_MIN_BYTE_DELAY_US)
 
 while true do
-	if nixio.poll(fds, -1) then
-		if delta.revents == POLLIN then
-			--> TODO flush the delta fd after each POLLIN
-			local msg = spi.new_msg('delta', delta.line())
+	local msg
+	local poll = nixio.poll(fds, POLL_TIMEOUT_MS)
+
+	if poll == 0 then -- poll timed out, so time to 'poll' the spi bus
+		msg = spi.new_msg('', '')
+	elseif poll > 0 then
+		if ctrl.revents == POLLIN then
+			msg = spi.new_msg('ctrl', ctrl.line())
 			msg:parse()
-			msg:encode()
-			msg:tx(spidev)
-			nixio.nanosleep(0, 10e7) --> 10ms
-			msg:rx(spidev)
-			msg:decode()
-			--> dbg.vardump(msg)
-			delta.fdout:write(msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ') .. '\n')
+
+		elseif delta.revents == POLLIN then
+			-- TODO flush the delta fd after each POLLIN
+			msg = spi.new_msg('delta', delta.line())
+			msg:parse()
+
+		elseif uart.revents == POLLIN then
+			msg = spi.new_msg('uart', uart.line())
+		end
+
+		msg:encode()
+		msg:tx(spidev)
+		nixio.nanosleep(0, SPI_TX_RX_DELAY_NS)
+	end
+
+	if poll >= 0 then
+		msg:rx(spidev)
+		local dispatch = msg:decode()
+		-- dbg.vardump(msg)
+
+		if dispatch.ctrl then
+			ctrl.fdout:write(dispatch.ctrl .. '\n')
+		end
+
+		if dispatch.delta then
+			delta.fdout:write(dispatch.delta .. '\n')
+		end
+
+		if dispatch.uart then
+			uart.fdout:write(dispatch.uart .. '\n')
 		end
 	end
 end

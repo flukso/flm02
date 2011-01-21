@@ -169,13 +169,10 @@ static int nixio_poll(lua_State *L) {
 
 	status = poll(fds, (nfds_t)len, timeout);
 
-	if (status == 0) {
+	if (status <= 0) {
 		free(fds);
-		lua_pushboolean(L, 0);
+		lua_pushinteger(L, status);
 		return 1;
-	} else if (status < 0) {
-		free(fds);
-		return nixio__perror(L);
 	}
 
 	for (i = 0; i < len; i++) {
