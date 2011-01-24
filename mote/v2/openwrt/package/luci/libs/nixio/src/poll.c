@@ -195,8 +195,57 @@ static int nixio_poll(lua_State *L) {
 
 #ifdef __linux__
 
+#include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/timerfd.h>
+
+static int nixio_timerfd(lua_State *L) {
+	struct itimerspec its;
+
+	its.it_value.tv_sec = (time_t)luaL_optinteger(L, 1, 0);
+	its.it_value.tv_nsec = (long)luaL_optinteger(L, 2, 0);
+
+	its.it_interval.tv_sec = (time_t)luaL_optinteger(L, 3, 0);
+	its.it_interval.tv_nsec = (long)luaL_optinteger(L, 4, 0);
+
+	/* Create a timer object and associated fd */
+	int fd = timerfd_create(CLOCK_REALTIME, 0);
+
+	if (fd == -1) {
+		return nixio__perror(L);
+	}
+
+	/* Workaround for TFD_NONBLOCK 'invalid argument' in uClibc*/
+	int flags;
+	flags = fcntl(fd, F_GETFL);
+	if (flags == -1)
+		return nixio__perror(L);
+	flags |= O_NONBLOCK;
+	if(fcntl(fd, F_SETFL, flags) == -1)
+		return nixio__perror(L);
+
+	/* Arm the timer */
+	if (timerfd_settime(fd, 0, &its ,NULL) == -1) {
+		close(fd);
+		return nixio__perror(L);
+	}
+
+	/* Create a userdatum for fd */
+	int *udata = lua_newuserdata(L, sizeof(int));
+	if (!udata) {
+		close(fd);
+		return luaL_error(L, "out of memory");
+	}
+
+	*udata = fd;
+
+	luaL_getmetatable(L, NIXIO_FILE_META);
+	lua_setmetatable(L, -2);
+
+	return 1;
+}
+
 #include <signal.h>
 #include <sys/signalfd.h>
 
@@ -263,6 +312,7 @@ static int nixio_setitimerfd(lua_State *L) {
 /* module table */
 static const luaL_reg R[] = {
 #ifdef __linux__
+	{"timerfd",	nixio_timerfd},
 	{"setitimerfd",	nixio_setitimerfd},
 #endif
 	{"gettimeofday", nixio_gettimeofday},
