@@ -223,6 +223,8 @@ static int nixio_file_read(lua_State *L) {
 	}
 }
 
+#ifdef __linux__
+
 static int nixio_file_numexp(lua_State *L) {
 	int fd = nixio__checkfd(L, 1);
 	uint64_t numexp;
@@ -239,6 +241,8 @@ static int nixio_file_numexp(lua_State *L) {
 		return 1;
 	}
 }
+
+#endif
 
 static int nixio_file_seek(lua_State *L) {
 	int fd = nixio__checkfd(L, 1);
@@ -366,7 +370,9 @@ static int nixio_file__tostring(lua_State *L) {
 static const luaL_reg M[] = {
 	{"write",		nixio_file_write},
 	{"read",		nixio_file_read},
+#ifdef __linux__
 	{"numexp",		nixio_file_numexp},
+#endif
 	{"tell",		nixio_file_tell},
 	{"seek",		nixio_file_seek},
 	{"stat",		nixio_file_stat},
