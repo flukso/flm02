@@ -159,7 +159,7 @@ function decode(msg)
 					nixio.bin.hextonum(msg.decoded.args:sub((i-1)*18 + 11, (i-1)*18 + 18))
 			end
 
-			msg.decoded.delta = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
+			msg.decoded.delta = os.time() .. ' ' .. table.concat(msg.decoded, ' ')
 		elseif msg.decoded.cmd == 'gv' then
 
 		elseif msg.decoded.cmd == 'gp' then
