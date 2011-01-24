@@ -193,8 +193,78 @@ static int nixio_poll(lua_State *L) {
 	return 2;
 }
 
+#ifdef __linux__
+
+#include <unistd.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/signalfd.h>
+
+static int nixio_setitimerfd(lua_State *L) {
+	struct itimerval itv;
+
+	itv.it_value.tv_sec = (time_t)luaL_optinteger(L, 1, 0);
+	itv.it_value.tv_usec = (suseconds_t)luaL_optinteger(L, 2, 0);
+
+	itv.it_interval.tv_sec = (time_t)luaL_optinteger(L, 3, 0);
+	itv.it_interval.tv_usec = (suseconds_t)luaL_optinteger(L, 4, 0);
+
+	sigset_t sigmask, sigmask_old;
+
+	/* Initialize a signal mask containing SIGALRM */
+	sigemptyset(&sigmask);
+	sigaddset(&sigmask, SIGALRM);
+
+	/* Block SIGALRM */
+	if(sigprocmask(SIG_BLOCK, &sigmask, &sigmask_old) == -1) {
+		return nixio__perror(L);
+	}
+
+	/* Signals in sigmask are delivered synchronously though an fd */
+	int fd = signalfd(-1, &sigmask, 0);
+
+	if(fd == -1) {
+		sigprocmask(SIG_BLOCK, &sigmask_old, NULL);
+		return nixio__perror(L);
+	}
+
+	/* Set the signal fd non-blocking */
+	int flags;
+	flags = fcntl(fd, F_GETFL);
+	if (flags == -1)
+		return nixio__perror(L);
+	flags |= O_NONBLOCK;
+	if(fcntl(fd, F_SETFL, flags) == -1)
+		return nixio__perror(L);
+
+	/* Enable the (interval) timer */	
+	if (setitimer(ITIMER_REAL, &itv, NULL) == -1) {
+		close(fd);
+		sigprocmask(SIG_BLOCK, &sigmask_old, NULL);
+		return nixio__perror(L);
+	}
+
+	/* Create a userdatum for fd */
+	int *udata = lua_newuserdata(L, sizeof(int));
+	if (!udata) {
+		return luaL_error(L, "out of memory");
+	}
+
+	*udata = fd;
+
+	luaL_getmetatable(L, NIXIO_FILE_META);
+	lua_setmetatable(L, -2);
+
+	return 1;
+}
+
+#endif
+
 /* module table */
 static const luaL_reg R[] = {
+#ifdef __linux__
+	{"setitimerfd",	nixio_setitimerfd},
+#endif
 	{"gettimeofday", nixio_gettimeofday},
 	{"nanosleep",	nixio_nanosleep},
 	{"poll",		nixio_poll},
