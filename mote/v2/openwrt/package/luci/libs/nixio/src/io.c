@@ -121,7 +121,7 @@ static int nixio_sock__recvfrom(lua_State *L, int from) {
 	char buffer[NIXIO_BUFFERSIZE];
 	struct sockaddr_storage addrobj;
 	struct sockaddr_un addrobj_un;
-	struct sockaddr *addr;
+	struct sockaddr *addr = NULL;
 	socklen_t alen;
 	uint req = luaL_checkinteger(L, 2);
 	int readc;
@@ -177,6 +177,8 @@ static int nixio_sock__recvfrom(lua_State *L, int from) {
 			return 2;
 		}
 #endif
+		else
+			return 1;
 	}
 }
 

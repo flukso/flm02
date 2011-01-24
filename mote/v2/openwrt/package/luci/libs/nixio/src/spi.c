@@ -48,7 +48,7 @@ static int nixio_spi_read(lua_State *L) {
 	int fd = nixio__checkfd(L, 1);
 	char buffer[NIXIO_BUFFERSIZE];
 	int readc;
-	size_t len;
+	size_t len =0;
 	char last = 0;
 
 	for (size_t i = 0; i < NIXIO_BUFFERSIZE; i++) {
