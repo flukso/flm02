@@ -32,6 +32,12 @@ local SPI_MIN_BYTE_DELAY_US	= 250
 local SPI_TX_RX_DELAY_NS	= 10e7
 local POLL_TIMEOUT_MS		= 100
 
+local TIMERFD_ENABLE		= 1
+local TIMERFD_SEC		= 1
+local TIMERFD_NS		= 0
+
+local GET_DELTA			= 'gd'
+
 local DAEMON 			= os.getenv('DAEMON') or 'fluksod'
 local DAEMON_PATH 		= os.getenv('DAEMON_PATH') or '/var/run/' .. DAEMON
 
@@ -63,6 +69,10 @@ local uart  = mkfifos('uart')
 local ctrl  = mkfifos('ctrl')
 local delta = mkfifos('delta')
 
+if TIMERFD_ENABLE == 1 then
+	delta.fd = nixio.timerfd(TIMERFD_SEC, TIMERFD_NS, TIMERFD_SEC, TIMERFD_NS)
+end
+
 local fds = { uart, ctrl, delta }
 
 local spidev = nixio.open(SPI_DEV, O_RDWR_NONBLOCK)
@@ -81,8 +91,13 @@ while true do
 			msg:parse()
 
 		elseif delta.revents == POLLIN then
-			-- TODO flush the delta fd after each POLLIN
-			msg = spi.new_msg('delta', delta.line())
+			if TIMERFD_ENABLE == 1 then
+				delta.fd:numexp() -- reset the numexp counter
+			else
+				delta.line()
+			end
+
+			msg = spi.new_msg('delta', GET_DELTA)
 			msg:parse()
 
 		elseif uart.revents == POLLIN then
