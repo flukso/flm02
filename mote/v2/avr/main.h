@@ -5,13 +5,13 @@ struct version_struct {
 	uint8_t  sw_minor;
 };
 
-#define SPI_NO_OP_1		1
-#define SPI_NO_OP_2		2
-#define SPI_START_TX		4
-#define SPI_TRANSMIT		8
-#define SPI_HIGH_HEX		16
-#define SPI_TO_FROM_UART	32
-#define SPI_NEW_CTRL_MSG	64
+#define SPI_NO_OP_1		0x01
+#define SPI_NO_OP_2		0x02
+#define SPI_START_TX		0x04
+#define SPI_TRANSMIT		0x08
+#define SPI_HIGH_HEX		0x10
+#define SPI_TO_FROM_UART	0x20
+#define SPI_NEW_CTRL_MSG	0x40
 
 #define SPI_END_OF_TX			0x00
 #define SPI_END_OF_MESSAGE		'.'
