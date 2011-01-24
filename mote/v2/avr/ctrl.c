@@ -297,11 +297,13 @@ void ctrlCmdGet(uint8_t cmd)
 		tmp32 = sensor[i].counter;
 		sei();
 
+		ctrlWriteCharToTxBuffer(i);
 		ctrlWriteLongToTxBuffer(tmp32);
 		break;
 
 	case 'm':		/* sensor meterconstant */
 		ctrlReadCharFromRxBuffer(&i);
+		ctrlWriteCharToTxBuffer(i);
 		ctrlWriteShortToTxBuffer(sensor[i].meterconst);
 		break;
 
@@ -335,29 +337,26 @@ void ctrlCmdGet(uint8_t cmd)
 
 void ctrlCmdSet(uint8_t cmd)
 {
-	uint8_t i = 0, tmp8 = 0, tmp8_bis = 0;
+	uint8_t i = 0, tmp8 = 0;
 	uint16_t tmp16 = 0;
 	uint32_t tmp32 = 0;
 
 	switch (cmd) {
 	case 'h':		/* hardware {major,minor} version */
-		ctrlReadShortFromRxBuffer(&tmp16);
-		ctrlReadCharFromRxBuffer(&tmp8);
+		ctrlReadShortFromRxBuffer(&version.hw_major);
+		ctrlReadCharFromRxBuffer(&version.hw_minor);
 
-		cli();
-		version.hw_major = tmp16;
-		version.hw_minor = tmp8;
-		sei();
+		ctrlWriteShortToTxBuffer(version.hw_major);
+		ctrlWriteCharToTxBuffer(version.hw_minor);
 		break;
 
 	case 's':		/* software {major,minor} version */
-		ctrlReadCharFromRxBuffer(&tmp8);
-		ctrlReadCharFromRxBuffer(&tmp8_bis);
+		ctrlReadCharFromRxBuffer(&version.sw_major);
+		ctrlReadCharFromRxBuffer(&version.sw_minor);
 
-		cli();
-		version.sw_major = tmp8;
-		version.sw_minor = tmp8_bis;
-		sei();
+		ctrlWriteCharToTxBuffer(version.sw_major);
+		ctrlWriteCharToTxBuffer(version.sw_minor);
+		break;
 
 	case 'p':		/* phy-to-logical mapping */
 		for (i = 0 ; i < MAX_SENSORS; i++) {
@@ -366,6 +365,8 @@ void ctrlCmdSet(uint8_t cmd)
 			cli();
 			phy_to_log[i] = tmp8;
 			sei();
+
+			ctrlWriteCharToTxBuffer(phy_to_log[i]);
 		}
 		break;
 
@@ -376,6 +377,9 @@ void ctrlCmdSet(uint8_t cmd)
 		cli();
 		sensor[i].counter = tmp32;
 		sei();
+
+		ctrlWriteCharToTxBuffer(i);
+		ctrlWriteLongToTxBuffer(tmp32);
 		break;
 
 	case 'm':		/* sensor meterconstant */
@@ -385,6 +389,9 @@ void ctrlCmdSet(uint8_t cmd)
 		cli();
 		sensor[i].meterconst = tmp16;	
 		sei();
+
+		ctrlWriteCharToTxBuffer(i);
+		ctrlWriteShortToTxBuffer(sensor[i].meterconst);
 		break;
 
 	case 'w':		/* watchdog counter */
@@ -393,6 +400,8 @@ void ctrlCmdSet(uint8_t cmd)
 		cli();
 		event.wdt = tmp16;
 		sei();
+
+		ctrlWriteShortToTxBuffer(event.wdt);
 		break;
 
 	case 'b':		/* brown-out counter */
@@ -401,6 +410,8 @@ void ctrlCmdSet(uint8_t cmd)
 		cli();
 		event.brown_out = tmp16;
 		sei();
+
+		ctrlWriteShortToTxBuffer(event.brown_out);
 		break;
 	}
 }
