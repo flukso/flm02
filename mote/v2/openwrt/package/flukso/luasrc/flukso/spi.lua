@@ -24,11 +24,13 @@ local nixio = require 'nixio'
 local os, table, string =
       os, table, string
 
-local getfenv, setmetatable =
-      getfenv, setmetatable
+local getfenv, setmetatable, tonumber =
+      getfenv, setmetatable, tonumber
 
 module (...)
 local modenv = getfenv()
+
+local MAX_SENSORS = 6
 
 local SPI_END_OF_MESSAGE	= '.'
 local SPI_FORWARD_TO_UART_PORT	= 'u'
@@ -60,45 +62,65 @@ function parse(msg)
 
 	msg.parsed.cmd = msg.body:match('^%l%l')
 	for arg in msg.body:gmatch('%d+') do
-		msg.parsed[#msg.parsed + 1] = arg
+		msg.parsed[#msg.parsed + 1] = tonumber(arg) -- returns nil when string does not contain a number
 	end
-
-	--> TODO: more detailed command syntax checking
 end
 
 function encode(msg)
+	local numtohex = nixio.bin.numtohex
+
+	local noarg_cmd = { gd = true, gh = true, gs = true, gp = true, gw = true, gb = true, ct = true }
+
+	local function argcheck(argc)
+		if argc ~= #msg.parsed then
+			return false
+		else
+			return true
+		end
+	end
+
 	if msg.to == 'uart' then
 		msg.encoded = nixio.bin.hexlify(msg.body or '')
 		return
 	end
 
-	if msg.parsed.cmd == 'gd' then
+	if noarg_cmd[msg.parsed.cmd] then
 		msg.encoded = msg.parsed.cmd
-	elseif msg.parsed.cmd == 'gv' then
 
-	elseif msg.parsed.cmd == 'gp' then
-        
-	elseif msg.parsed.cmd == 'gc' then
-        
-	elseif msg.parsed.cmd == 'gm' then
+	elseif msg.parsed.cmd == 'gc' and argcheck(1) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
 
-	elseif msg.parsed.cmd == 'gw' then
+	elseif msg.parsed.cmd == 'gm' and argcheck(1) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
 
-	elseif msg.parsed.cmd == 'gb' then
+	elseif msg.parsed.cmd == 'sh' and argcheck(2) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 2)
+                                             .. numtohex(msg.parsed[2], 1)
 
-	elseif msg.parsed.cmd == 'sv' then
+	elseif msg.parsed.cmd == 'ss' and argcheck(2) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
+                                             .. numtohex(msg.parsed[2], 1)
 
-	elseif msg.parsed.cmd == 'sp' then
+	elseif msg.parsed.cmd == 'sp' and argcheck(6) then
+		msg.encoded = msg.parsed.cmd
 
-	elseif msg.parsed.cmd == 'sc' then
+		for i = 1, MAX_SENSORS do
+			msg.encoded = msg.encoded .. numtohex(msg.parsed[i], 1)
+		end
 
-	elseif msg.parsed.cmd == 'sm' then
+	elseif msg.parsed.cmd == 'sc' and argcheck(2) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
+                                             .. numtohex(msg.parsed[2], 4)
 
-	elseif msg.parsed.cmd == 'sw' then
+	elseif msg.parsed.cmd == 'sm' and argcheck(2) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
+                                             .. numtohex(msg.parsed[2], 2)
 
-	elseif msg.parsed.cmd == 'sb' then
+	elseif msg.parsed.cmd == 'sw' and argcheck(1) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 2)
 
-	elseif msg.parsed.cmd == 'ct' then
+	elseif msg.parsed.cmd == 'sb' and argcheck(1) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 2)
 
 	else
 		return
@@ -118,6 +140,8 @@ function tx(msg, cdev)
 end
 
 function rx(msg, cdev)
+	local hextonum = nixio.bin.hextonum
+
 	msg.received = {}
 	msg.received.raw = cdev:read(SPI_MAX_READ_BYTES)
 
@@ -133,7 +157,7 @@ function rx(msg, cdev)
 		msg.received.crc = msg.received.l:sub(-2, -1)
 		msg.received.l   = msg.received.l:sub( 1, -3)
 
-		if nixio.bin.dow_crc(msg.received.l) ~= nixio.bin.hextonum(msg.received.crc) then
+		if nixio.bin.dow_crc(msg.received.l) ~= hextonum(msg.received.crc) then
 			--> TODO implement near-end crc error counter
 			msg.received.l = nil
 		end
@@ -141,6 +165,8 @@ function rx(msg, cdev)
 end
 
 function decode(msg)
+	local hextonum = nixio.bin.hextonum
+
 	msg.decoded = {}
 
 	if msg.received.u then
@@ -154,39 +180,58 @@ function decode(msg)
 		if msg.decoded.cmd == 'gd' then
 			for i = 1, msg.decoded.args:len() / 18 do
 				msg.decoded[(i-1)*3 + 1] =
-					nixio.bin.hextonum(msg.decoded.args:sub((i-1)*18 +  1, (i-1)*18 +  2))
+					hextonum(msg.decoded.args:sub((i-1)*18 +  1, (i-1)*18 +  2))
 				msg.decoded[(i-1)*3 + 2] =
-					nixio.bin.hextonum(msg.decoded.args:sub((i-1)*18 +  3, (i-1)*18 + 10))
+					hextonum(msg.decoded.args:sub((i-1)*18 +  3, (i-1)*18 + 10))
 				msg.decoded[(i-1)*3 + 3] =
-					nixio.bin.hextonum(msg.decoded.args:sub((i-1)*18 + 11, (i-1)*18 + 18))
+					hextonum(msg.decoded.args:sub((i-1)*18 + 11, (i-1)*18 + 18))
 			end
 
 			msg.decoded.delta = os.time() .. ' ' .. table.concat(msg.decoded, ' ')
-		elseif msg.decoded.cmd == 'gv' then
 
-		elseif msg.decoded.cmd == 'gp' then
+		elseif msg.decoded.cmd == 'gh' or msg.decoded.cmd == 'sh' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 4))
+			msg.decoded[2] = hextonum(msg.decoded.args:sub(5, 6))
 
-		elseif msg.decoded.cmd == 'gc' then
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 
-		elseif msg.decoded.cmd == 'gm' then
+		elseif msg.decoded.cmd == 'gs' or msg.decoded.cmd == 'ss' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
+			msg.decoded[2] = hextonum(msg.decoded.args:sub(3, 4))
 
-		elseif msg.decoded.cmd == 'gw' then
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 
-		elseif msg.decoded.cmd == 'gb' then
+		elseif msg.decoded.cmd == 'gp' or msg.decoded.cmd == 'sp' then
+			for i = 1, MAX_SENSORS do
+				msg.decoded[i] = hextonum(msg.decoded.args:sub(i*2 - 1, i*2))
+			end
 
-		elseif msg.decoded.cmd == 'sv' then
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 
-		elseif msg.decoded.cmd == 'sp' then
+		elseif msg.decoded.cmd == 'gc' or msg.decoded.cmd == 'sc' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
+			msg.decoded[2] = hextonum(msg.decoded.args:sub(3, 10))
 
-		elseif msg.decoded.cmd == 'sc' then
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 
-		elseif msg.decoded.cmd == 'sm' then
+		elseif msg.decoded.cmd == 'gm' or msg.decoded.cmd == 'sm' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
+			msg.decoded[2] = hextonum(msg.decoded.args:sub(3, 6))
 
-		elseif msg.decoded.cmd == 'sw' then
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 
-		elseif msg.decoded.cmd == 'sb' then
+		elseif msg.decoded.cmd == 'gw' or msg.decoded.cmd == 'sw' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 4))
+
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
+
+		elseif msg.decoded.cmd == 'gb' or msg.decoded.cmd == 'sb' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 4))
+
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 
 		elseif msg.decoded.cmd == 'ct' then
+			msg.decoded.ctrl = msg.decoded.cmd
 
 		elseif msg.decoded.cmd == 'zz' then
 			--> TODO implement far-end crc error counter
