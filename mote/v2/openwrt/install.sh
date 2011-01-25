@@ -34,6 +34,9 @@ $BACKFIRE_PATH/scripts/feeds install -a -p flukso
 cp .config $BACKFIRE_PATH
 cp -r files $BACKFIRE_PATH
 
+# add patches to the toolchain
+cp patches/990-add_timerfd_support.patch $BACKFIRE_PATH/toolchain/uClibc/patches-0.9.30.1
+
 # add patches to the linux atheros target
 cp patches/300-set_AR2315_RESET_GPIO_to_6.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
 cp patches/310-hotplug_button_jiffies_calc.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
