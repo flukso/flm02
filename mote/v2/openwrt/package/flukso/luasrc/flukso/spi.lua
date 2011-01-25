@@ -126,6 +126,8 @@ function rx(msg, cdev)
 	end
 
 	msg.received.l, msg.received.u = msg.received.raw:match('^l(%w*)%.?u(%w*)%.?$')
+	if msg.received.l == '' then msg.received.l = nil end
+	if msg.received.u == '' then msg.received.u = nil end
 
 	if msg.received.l then
 		msg.received.crc = msg.received.l:sub(-2, -1)
