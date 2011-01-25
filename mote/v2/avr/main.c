@@ -158,16 +158,24 @@ finish:
 
 ISR(INT0_vect)
 {
+	DBG_ISR_BEGIN();
+
 	uint8_t muxn_l = phy_to_log[3];
 
 	register_pulse(&sensor[muxn_l], &state[muxn_l]);
+
+	DBG_ISR_END();
 }
 
 ISR(INT1_vect)
 {
+	DBG_ISR_BEGIN();
+
 	uint8_t muxn_l = phy_to_log[4];
 
 	register_pulse(&sensor[muxn_l], &state[muxn_l]);
+
+	DBG_ISR_END();
 }
 
 void register_pulse(volatile struct sensor_struct *psensor, volatile struct state_struct *pstate)
@@ -179,10 +187,10 @@ void register_pulse(volatile struct sensor_struct *psensor, volatile struct stat
 
 ISR(TIMER1_COMPA_vect)
 {
-	uint8_t muxn_l = phy_to_log[muxn];
-	
 	DBG_ISR_BEGIN();
 
+	uint8_t muxn_l = phy_to_log[muxn];
+	
 	MacU16X16to32(state[muxn_l].nano, sensor[muxn_l].meterconst, ADC);
 
 	if (state[muxn_l].nano > WATT) {
