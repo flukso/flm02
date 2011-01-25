@@ -26,7 +26,7 @@ local spi   = require 'flukso.spi'
 local nixio = require 'nixio'
 nixio.fs    = require 'nixio.fs'
 
-local DEBUG			= 0
+local DEBUG			= (arg[1] == '-d')
 
 local SPI_DEV			= '/dev/spidev0.0'
 local SPI_MAX_CLK_SPEED_HZ	= 10e6
@@ -114,7 +114,7 @@ while true do
 	if poll >= 0 then
 		msg:rx(spidev)
 		local dispatch = msg:decode()
-		if DEBUG == 1 then dbg.vardump(msg) end
+		if DEBUG then dbg.vardump(msg) end
 
 		if dispatch.ctrl then
 			ctrl.fdout:write(dispatch.ctrl .. '\n')
