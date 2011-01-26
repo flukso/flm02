@@ -87,6 +87,9 @@ function encode(msg)
 	if noarg_cmd[msg.parsed.cmd] then
 		msg.encoded = msg.parsed.cmd
 
+	elseif msg.parsed.cmd == 'ge' and argcheck(1) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
+
 	elseif msg.parsed.cmd == 'gc' and argcheck(1) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
 
@@ -98,6 +101,10 @@ function encode(msg)
                                              .. numtohex(msg.parsed[2], 1)
 
 	elseif msg.parsed.cmd == 'ss' and argcheck(2) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
+                                             .. numtohex(msg.parsed[2], 1)
+
+	elseif msg.parsed.cmd == 'se' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
                                              .. numtohex(msg.parsed[2], 1)
 
@@ -177,7 +184,7 @@ function decode(msg)
 		msg.decoded.cmd  = msg.received.l:sub(1,  2)
 		msg.decoded.args = msg.received.l:sub(3, -1)
 
-		if msg.decoded.cmd == 'gd' then
+		if msg.decoded.cmd == 'gd' and msg.decoded.args ~= '' then
 			for i = 1, msg.decoded.args:len() / 18 do
 				msg.decoded[(i-1)*3 + 1] =
 					hextonum(msg.decoded.args:sub((i-1)*18 +  1, (i-1)*18 +  2))
@@ -196,6 +203,12 @@ function decode(msg)
 			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 
 		elseif msg.decoded.cmd == 'gs' or msg.decoded.cmd == 'ss' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
+			msg.decoded[2] = hextonum(msg.decoded.args:sub(3, 4))
+
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
+
+		elseif msg.decoded.cmd == 'ge' or msg.decoded.cmd == 'se' then
 			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
 			msg.decoded[2] = hextonum(msg.decoded.args:sub(3, 4))
 

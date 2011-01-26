@@ -40,6 +40,9 @@ extern struct version_struct version;
 extern struct event_struct EEMEM EEPROM_event;
 extern struct event_struct event;
 
+extern uint8_t EEMEM EEPROM_enabled;
+extern uint8_t enabled;
+
 extern uint8_t EEMEM EEPROM_phy_to_log[MAX_SENSORS];
 extern uint8_t phy_to_log[MAX_SENSORS];
 
@@ -284,6 +287,12 @@ void ctrlCmdGet(uint8_t cmd)
 		ctrlWriteCharToTxBuffer(version.sw_minor);
 		break;
 
+	case 'e':		/* port enabled | disabled */
+		ctrlReadCharFromRxBuffer(&i);
+		ctrlWriteCharToTxBuffer(i);
+		ctrlWriteCharToTxBuffer((enabled >> i) & 0x01);
+		break;
+
 	case 'p':		/* phy-to-logical mapping */
 		for (i = 0 ; i < MAX_SENSORS; i++) {
 			ctrlWriteCharToTxBuffer(phy_to_log[i]);
@@ -358,6 +367,21 @@ void ctrlCmdSet(uint8_t cmd)
 		ctrlWriteCharToTxBuffer(version.sw_minor);
 		break;
 
+	case 'e':		/* port enabled | disabled */
+		ctrlReadCharFromRxBuffer(&i);
+		ctrlReadCharFromRxBuffer(&tmp8);
+
+		if (tmp8) {
+			enabled |= (1 << i);
+		}
+		else {
+			enabled &= ~(1 << i);
+		}
+
+		ctrlWriteCharToTxBuffer(i);
+		ctrlWriteCharToTxBuffer((enabled >> i) & 0x01);
+		break;
+
 	case 'p':		/* phy-to-logical mapping */
 		for (i = 0 ; i < MAX_SENSORS; i++) {
 			ctrlReadCharFromRxBuffer(&tmp8);
@@ -421,6 +445,7 @@ void ctrlCmdCommit(void)
 	cli();
 	eeprom_write_block((const void*)&version, (void*)&EEPROM_version, sizeof(version));
 	eeprom_write_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
+	eeprom_write_block((const void*)&enabled, (void*)&EEPROM_enabled, sizeof(enabled));
 	eeprom_write_block((const void*)&phy_to_log, (void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
 	eeprom_write_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
 	sei();

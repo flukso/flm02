@@ -47,6 +47,9 @@ struct version_struct version;
 struct event_struct EEMEM EEPROM_event = {0, 0};
 struct event_struct event;
 
+uint8_t EEMEM EEPROM_enabled = DISABLE_ALL_SENSORS;
+uint8_t enabled;
+
 uint8_t EEMEM EEPROM_phy_to_log[MAX_SENSORS] = {0, 1, 2, 3, 4, 5};
 uint8_t phy_to_log[MAX_SENSORS];
 
@@ -160,9 +163,10 @@ ISR(INT0_vect)
 {
 	DBG_ISR_BEGIN();
 
-	uint8_t muxn_l = phy_to_log[3];
+	uint8_t muxn_l = phy_to_log[PORT_PULSE_1];
 
-	register_pulse(&sensor[muxn_l], &state[muxn_l]);
+	if (enabled & (1 << PORT_PULSE_1))
+		register_pulse(&sensor[muxn_l], &state[muxn_l]);
 
 	DBG_ISR_END();
 }
@@ -171,9 +175,10 @@ ISR(INT1_vect)
 {
 	DBG_ISR_BEGIN();
 
-	uint8_t muxn_l = phy_to_log[4];
+	uint8_t muxn_l = phy_to_log[PORT_PULSE_2];
 
-	register_pulse(&sensor[muxn_l], &state[muxn_l]);
+	if (enabled & (1 << PORT_PULSE_2))
+		register_pulse(&sensor[muxn_l], &state[muxn_l]);
 
 	DBG_ISR_END();
 }
@@ -189,24 +194,26 @@ ISR(TIMER1_COMPA_vect)
 {
 	DBG_ISR_BEGIN();
 
-	uint8_t muxn_l = phy_to_log[muxn];
-	
-	MacU16X16to32(state[muxn_l].nano, sensor[muxn_l].meterconst, ADC);
+	if (enabled & (1 << muxn)) {
+		uint8_t muxn_l = phy_to_log[muxn];
 
-	if (state[muxn_l].nano > WATT) {
-		sensor[muxn_l].counter++;
+		MacU16X16to32(state[muxn_l].nano, sensor[muxn_l].meterconst, ADC);
 
-		state[muxn_l].flags |= STATE_PULSE;
-		state[muxn_l].nano -= WATT;
-		state[muxn_l].pulse_count++;
-	}
+		if (state[muxn_l].nano > WATT) {
+			sensor[muxn_l].counter++;
 
-	if ((timer == SECOND) && (muxn == muxn_l)) {
-		state[muxn].nano_start = state[muxn].nano_end;
-		state[muxn].nano_end = state[muxn].nano;
-		state[muxn].pulse_count_final = state[muxn].pulse_count;
-		state[muxn].pulse_count = 0;
-		state[muxn].flags |= STATE_POWER_CALC;
+			state[muxn_l].flags |= STATE_PULSE;
+			state[muxn_l].nano -= WATT;
+			state[muxn_l].pulse_count++;
+		}
+
+		if ((timer == SECOND) && !(state[muxn_l].flags & STATE_POWER_CALC)) {
+			state[muxn_l].nano_start = state[muxn_l].nano_end;
+			state[muxn_l].nano_end = state[muxn_l].nano;
+			state[muxn_l].pulse_count_final = state[muxn_l].pulse_count;
+			state[muxn_l].pulse_count = 0;
+			state[muxn_l].flags |= STATE_POWER_CALC;
+		}
 	}
 
 	/* Cycle through the available ADC input channels (0/1/2). */
@@ -253,6 +260,7 @@ void setup_datastructs(void)
 {
 	eeprom_read_block((void*)&version, (const void*)&EEPROM_version, sizeof(version));
 	eeprom_read_block((void*)&event, (const void*)&EEPROM_event, sizeof(event));
+	eeprom_read_block((void*)&enabled, (const void*)&EEPROM_enabled, sizeof(enabled));
 	eeprom_read_block((void*)&phy_to_log, (const void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
 	eeprom_read_block((void*)&sensor, (const void*)&EEPROM_sensor, sizeof(sensor));
 }

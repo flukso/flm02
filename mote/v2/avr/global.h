@@ -40,5 +40,7 @@
 #define CYCLES_PER_US ((F_CPU+500000)/1000000) 	// cpu cycles per microsecond
 
 #define MAX_SENSORS 6
+#define ENABLE_ALL_SENSORS ((1 << MAX_SENSORS) - 1)
+#define DISABLE_ALL_SENSORS 0x00
 
 #endif

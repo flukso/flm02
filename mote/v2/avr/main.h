@@ -5,6 +5,9 @@ struct version_struct {
 	uint8_t  sw_minor;
 };
 
+#define PORT_PULSE_1		3
+#define PORT_PULSE_2		4
+
 #define SPI_NO_OP_1		0x01
 #define SPI_NO_OP_2		0x02
 #define SPI_START_TX		0x04
