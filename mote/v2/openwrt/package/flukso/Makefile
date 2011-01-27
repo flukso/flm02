@@ -27,9 +27,12 @@ define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
 	$(CP) ./src/* $(PKG_BUILD_DIR)/
 	$(CP) ./luasrc/* $(PKG_BUILD_DIR)/
+	$(CP) ./config/* $(PKG_BUILD_DIR)/
 endef
 
 define Package/flukso/install
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso.uci $(1)/etc/config/flukso
 	$(INSTALL_DIR) $(1)/usr/lib/lua
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/dbg.lua $(1)/usr/lib/lua/
 	$(INSTALL_DIR) $(1)/usr/lib/lua/rrd
@@ -40,6 +43,8 @@ define Package/flukso/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/luad $(1)/usr/sbin/
 	$(LN) /usr/sbin/luad $(1)/usr/sbin/fluksod
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fluksod.lua $(1)/usr/sbin/
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fsync.lua $(1)/usr/bin/fsync
 endef
 
 $(eval $(call BuildPackage,flukso))
