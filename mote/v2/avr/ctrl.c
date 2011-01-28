@@ -287,7 +287,7 @@ void ctrlCmdGet(uint8_t cmd)
 		ctrlWriteCharToTxBuffer(version.sw_minor);
 		break;
 
-	case 'e':		/* port enabled | disabled */
+	case 'e':		/* sensor enabled | disabled */
 		ctrlReadCharFromRxBuffer(&i);
 
 		if (i < MAX_SENSORS) {
@@ -340,12 +340,11 @@ void ctrlCmdGet(uint8_t cmd)
 				cli();
 				tmp32 = sensor[i].counter;
 				tmp32_bis = (i < 3) ? state[i].power : state[i].timestamp;
+				state[i].flags &= ~(STATE_PULSE | STATE_POWER);
 				sei();
 
 				ctrlWriteLongToTxBuffer(tmp32);
 				ctrlWriteLongToTxBuffer(tmp32_bis);
-
-				state[i].flags &= ~(STATE_PULSE | STATE_POWER);
 			}
 		}
 		break;
@@ -375,7 +374,7 @@ void ctrlCmdSet(uint8_t cmd)
 		ctrlWriteCharToTxBuffer(version.sw_minor);
 		break;
 
-	case 'e':		/* port enabled | disabled */
+	case 'e':		/* sensor enabled | disabled */
 		ctrlReadCharFromRxBuffer(&i);
 
 		if (i < MAX_SENSORS) {

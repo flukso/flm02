@@ -39,8 +39,14 @@
 
 #define CYCLES_PER_US ((F_CPU+500000)/1000000) 	// cpu cycles per microsecond
 
+#define DISABLE_PORT 0xff
+
 #define MAX_SENSORS 6
 #define ENABLE_ALL_SENSORS ((1 << MAX_SENSORS) - 1)
 #define DISABLE_ALL_SENSORS 0x00
+
+/* 0xff is the default sensor id for non-assigned ports and is disabled by default
+   a further check is done against the 'enabled' bitfield */
+#define ENABLED(x) (x != 0xff) && (enabled & (1 << x))
 
 #endif

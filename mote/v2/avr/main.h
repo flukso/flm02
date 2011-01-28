@@ -34,10 +34,11 @@ struct sensor_struct {
 # define WATT 1000000000
 # define SECOND 665 // 666Hz - 1
 
-#define STATE_PULSE		1
-#define STATE_SKIP		2
-#define STATE_POWER_CALC	4
-#define STATE_POWER		8
+#define STATE_PULSE		0x01
+#define STATE_SKIP		0x02
+#define STATE_POWER_LOCK	0x04
+#define STATE_POWER_CALC	0x08
+#define STATE_POWER		0x10
 
 struct state_struct {
 	uint8_t  flags;

@@ -50,13 +50,14 @@ struct event_struct event;
 uint8_t EEMEM EEPROM_enabled = DISABLE_ALL_SENSORS;
 uint8_t enabled;
 
-uint8_t EEMEM EEPROM_phy_to_log[MAX_SENSORS] = {0, 1, 2, 3, 4, 5};
+uint8_t EEMEM EEPROM_phy_to_log[MAX_SENSORS] =
+	{DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT};
 uint8_t phy_to_log[MAX_SENSORS];
 
 struct sensor_struct EEMEM EEPROM_sensor[MAX_SENSORS];
-struct sensor_struct sensor[MAX_SENSORS];
+volatile struct sensor_struct sensor[MAX_SENSORS];
 
-struct state_struct state[MAX_SENSORS];
+volatile struct state_struct state[MAX_SENSORS];
 
 uint8_t muxn = 0;
 uint16_t timer = 0;
@@ -163,10 +164,10 @@ ISR(INT0_vect)
 {
 	DBG_ISR_BEGIN();
 
-	uint8_t muxn_l = phy_to_log[PORT_PULSE_1];
+	uint8_t sensor_id = phy_to_log[PORT_PULSE_1];
 
-	if (enabled & (1 << PORT_PULSE_1))
-		register_pulse(&sensor[muxn_l], &state[muxn_l]);
+	if (ENABLED(sensor_id))
+		register_pulse(&sensor[sensor_id], &state[sensor_id]);
 
 	DBG_ISR_END();
 }
@@ -175,10 +176,10 @@ ISR(INT1_vect)
 {
 	DBG_ISR_BEGIN();
 
-	uint8_t muxn_l = phy_to_log[PORT_PULSE_2];
+	uint8_t sensor_id = phy_to_log[PORT_PULSE_2];
 
-	if (enabled & (1 << PORT_PULSE_2))
-		register_pulse(&sensor[muxn_l], &state[muxn_l]);
+	if (ENABLED(sensor_id))
+		register_pulse(&sensor[sensor_id], &state[sensor_id]);
 
 	DBG_ISR_END();
 }
@@ -194,25 +195,30 @@ ISR(TIMER1_COMPA_vect)
 {
 	DBG_ISR_BEGIN();
 
-	if (enabled & (1 << muxn)) {
-		uint8_t muxn_l = phy_to_log[muxn];
+	uint8_t sensor_id = phy_to_log[muxn];
 
-		MacU16X16to32(state[muxn_l].nano, sensor[muxn_l].meterconst, ADC);
+	if (ENABLED(sensor_id)) {
+		/*  clear the power calculation lock when starting a new 1sec cycle */
+		if (timer == 0)
+			state[sensor_id].flags &= ~STATE_POWER_LOCK;
 
-		if (state[muxn_l].nano > WATT) {
-			sensor[muxn_l].counter++;
 
-			state[muxn_l].flags |= STATE_PULSE;
-			state[muxn_l].nano -= WATT;
-			state[muxn_l].pulse_count++;
+		MacU16X16to32(state[sensor_id].nano, sensor[sensor_id].meterconst, ADC);
+
+		if (state[sensor_id].nano > WATT) {
+			sensor[sensor_id].counter++;
+
+			state[sensor_id].flags |= STATE_PULSE;
+			state[sensor_id].nano -= WATT;
+			state[sensor_id].pulse_count++;
 		}
 
-		if ((timer == SECOND) && !(state[muxn_l].flags & STATE_POWER_CALC)) {
-			state[muxn_l].nano_start = state[muxn_l].nano_end;
-			state[muxn_l].nano_end = state[muxn_l].nano;
-			state[muxn_l].pulse_count_final = state[muxn_l].pulse_count;
-			state[muxn_l].pulse_count = 0;
-			state[muxn_l].flags |= STATE_POWER_CALC;
+		if ((timer == SECOND) && !(state[sensor_id].flags & STATE_POWER_LOCK)) {
+			state[sensor_id].nano_start = state[sensor_id].nano_end;
+			state[sensor_id].nano_end = state[sensor_id].nano;
+			state[sensor_id].pulse_count_final = state[sensor_id].pulse_count;
+			state[sensor_id].pulse_count = 0;
+			state[sensor_id].flags |= STATE_POWER_CALC | STATE_POWER_LOCK;
 		}
 	}
 
