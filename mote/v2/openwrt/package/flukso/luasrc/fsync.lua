@@ -46,7 +46,7 @@ ctrl.fd = ctrl.fdout -- need this entry for nixio.poll
 ctrl.line = ctrl.fdout:linesource()
 
 if ctrl.fdin == nil or ctrl.fdout == nil then
-	print('Unable to open the ctrl fifos.')
+	print('Error. Unable to open the ctrl fifos.')
 	print('Exiting...')
 	os.exit(1)
 end
@@ -63,10 +63,10 @@ local function send(ctrl, cmd)
 		local poll, errno, errmsg = nixio.poll({ ctrl }, POLL_TIMEOUT_MS)
 
 		if poll < 0 then
-			print('Poll failed with error message: ' .. errmsg)
+			print('Error. Poll failed with error message: ' .. errmsg)
 
 		elseif poll == 0 then
-			print('Poll timed out after ' .. POLL_TIMEOUT_MS .. 'ms')
+			print('Error. Poll timed out after ' .. POLL_TIMEOUT_MS .. 'ms')
 
 		elseif poll > 0 then
 			reply = ctrl.line()
@@ -117,11 +117,11 @@ local hw_major, hw_minor = send(ctrl, GET_HW_VERSION):match(GET_HW_VERSION_R)
 if hw_major ~= flukso.main.hw_major or hw_minor > flukso.main.hw_minor then
 	print(string.format('Hardware check (major: %s, minor: %s) .. nok', hw_major, hw_minor))
 	if hw_major ~= flukso.main.hw_major then
-		print('Major version does not match.')
+		print('Error. Major version does not match.')
 	end
 
 	if hw_minor > flukso.main.hw_minor then
-		print('Sensor board minor version is not supported by this package.')
+		print('Error. Sensor board minor version is not supported by this package.')
 	end
 
 	if HW_CHECK_OVERRIDE then
