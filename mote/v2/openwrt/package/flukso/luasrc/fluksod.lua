@@ -26,6 +26,8 @@ local spi   = require 'flukso.spi'
 local nixio = require 'nixio'
 nixio.fs    = require 'nixio.fs'
 
+local arg = arg or {} -- needed when this code is not loaded via the interpreter
+
 local DEBUG			= (arg[1] == '-d')
 
 local SPI_DEV			= '/dev/spidev0.0'
