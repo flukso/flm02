@@ -289,8 +289,11 @@ void ctrlCmdGet(uint8_t cmd)
 
 	case 'e':		/* port enabled | disabled */
 		ctrlReadCharFromRxBuffer(&i);
-		ctrlWriteCharToTxBuffer(i);
-		ctrlWriteCharToTxBuffer((enabled >> i) & 0x01);
+
+		if (i < MAX_SENSORS) {
+			ctrlWriteCharToTxBuffer(i);
+			ctrlWriteCharToTxBuffer((enabled >> i) & 0x01);
+		}
 		break;
 
 	case 'p':		/* phy-to-logical mapping */
@@ -374,17 +377,20 @@ void ctrlCmdSet(uint8_t cmd)
 
 	case 'e':		/* port enabled | disabled */
 		ctrlReadCharFromRxBuffer(&i);
-		ctrlReadCharFromRxBuffer(&tmp8);
 
-		if (tmp8) {
-			enabled |= (1 << i);
-		}
-		else {
-			enabled &= ~(1 << i);
-		}
+		if (i < MAX_SENSORS) {
+			ctrlReadCharFromRxBuffer(&tmp8);
 
-		ctrlWriteCharToTxBuffer(i);
-		ctrlWriteCharToTxBuffer((enabled >> i) & 0x01);
+			if (tmp8) {
+				enabled |= (1 << i);
+			}
+			else {
+				enabled &= ~(1 << i);
+			}
+
+			ctrlWriteCharToTxBuffer(i);
+			ctrlWriteCharToTxBuffer((enabled >> i) & 0x01);
+		}
 		break;
 
 	case 'p':		/* phy-to-logical mapping */
