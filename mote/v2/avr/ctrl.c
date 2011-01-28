@@ -339,7 +339,7 @@ void ctrlCmdGet(uint8_t cmd)
 
 				cli();
 				tmp32 = sensor[i].counter;
-				tmp32_bis = (i < 3) ? state[i].power : state[i].timestamp;
+				tmp32_bis = (i < MAX_ANALOG_SENSORS) ? state[i].power : state[i].timestamp;
 				state[i].flags &= ~(STATE_PULSE | STATE_POWER);
 				sei();
 

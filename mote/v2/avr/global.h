@@ -42,6 +42,8 @@
 #define DISABLE_PORT 0xff
 
 #define MAX_SENSORS 6
+#define MAX_ANALOG_SENSORS 3
+
 #define ENABLE_ALL_SENSORS ((1 << MAX_SENSORS) - 1)
 #define DISABLE_ALL_SENSORS 0x00
 

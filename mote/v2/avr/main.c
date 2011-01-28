@@ -394,7 +394,7 @@ int main(void)
 			spi_status &= ~SPI_NEW_CTRL_MSG;
 		}
 
-		for (i = 0; i < MAX_SENSORS; i++) {
+		for (i = 0; i < MAX_ANALOG_SENSORS; i++) {
 			if (state[i].flags & STATE_POWER_CALC) {
 				calculate_power(&state[i]);
 				state[i].flags &= ~STATE_POWER_CALC;

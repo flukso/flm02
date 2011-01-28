@@ -101,15 +101,16 @@ local flukso = uci:get_all('flukso')
 
 local HW_CHECK_OVERRIDE = (arg[1] == '-f')
 
-local MAX_SENSORS	= tonumber(flukso.main.max_sensors)
-local METERCONST_FACTOR	= 0.449
+local MAX_SENSORS	 = tonumber(flukso.main.max_sensors)
+local MAX_ANALOG_SENSORS = tonumber(flukso.main.max_analog_sensors)
+local METERCONST_FACTOR	 = 0.449
 
-local GET_HW_VERSION	= 'gh'
-local GET_HW_VERSION_R	= '^gh%s+(%d+)%s+(%d+)$'
-local SET_ENABLE	= 'se %d %d'
-local SET_PHY_TO_LOG	= 'sp' -- with [1..MAX_SENSORS] arguments
-local SET_METERCONST	= 'sm %d %d'
-local SET_COUNTER	= 'sc %d %d'
+local GET_HW_VERSION	 = 'gh'
+local GET_HW_VERSION_R	 = '^gh%s+(%d+)%s+(%d+)$'
+local SET_ENABLE	 = 'se %d %d'
+local SET_PHY_TO_LOG	 = 'sp' -- with [1..MAX_SENSORS] arguments
+local SET_METERCONST	 = 'sm %d %d'
+local SET_COUNTER	 = 'sc %d %d'
 
 -- check hardware version
 local hw_major, hw_minor = send(ctrl, GET_HW_VERSION):match(GET_HW_VERSION_R)
@@ -145,14 +146,20 @@ local phy_to_log = {}
 
 for i = 1, MAX_SENSORS do
 	if flukso[tostring(i)] ~= nil then
+		if flukso[tostring(i)]['type'] == 'analog' and i > MAX_ANALOG_SENSORS then
+			print(string.format('Error. Analog sensor %s should be less than or equal to max_analog_sensors (%s)', i, MAX_ANALOG_SENSORS))
+			os.exit(4)
+		end
+
 		local ports = flukso[tostring(i)].port or {}
 
 		for j = 1, #ports do
-			if tonumber(ports[j]) <= MAX_SENSORS then
-				phy_to_log[toc(tonumber(ports[j]))] = toc(i)
-			else
+			if tonumber(ports[j]) > MAX_SENSORS then
 				print(string.format('Error. Port numbering in sensor %s should be less than or equal to max_sensors (%s)', i, MAX_SENSORS))
-				os.exit(4)
+				os.exit(5)
+
+			else
+				phy_to_log[toc(tonumber(ports[j]))] = toc(i)
 			end
 		end
 	end
