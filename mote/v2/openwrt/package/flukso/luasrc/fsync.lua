@@ -144,9 +144,7 @@ end
 local phy_to_log = {}
 
 for i = 1, MAX_SENSORS do
-	local set = { analog = true, pulse = true }
-
-	if flukso[tostring(i)] ~= nil and set[flukso[tostring(i)]['type']] then
+	if flukso[tostring(i)] ~= nil then
 		local ports = flukso[tostring(i)].port or {}
 
 		for j = 1, #ports do
@@ -160,6 +158,7 @@ for i = 1, MAX_SENSORS do
 	end
 end
 
+-- ports that are not in use are mapped to sensor id 0xff
 for i = 0, MAX_SENSORS - 1 do
 	if not phy_to_log[i] then
 		phy_to_log[i] = 0xff
@@ -202,15 +201,11 @@ if flukso.main.reset_counters == '1' then
 	uci:commit('flukso')
 end
 
--- enable configured ports
+-- enable configured sensors
 for i = 1, MAX_SENSORS do
 	if flukso[tostring(i)] ~= nil and flukso[tostring(i)].enable == '1' then
-		local ports = flukso[tostring(i)].port or {}
-
-		for j = 1, #ports do
-			cmd = string.format(SET_ENABLE, toc(tonumber(ports[j])), 1)
-			send(ctrl, cmd)
-		end
+		cmd = string.format(SET_ENABLE, toc(i), 1)
+		send(ctrl, cmd)
 	end
 end
 
