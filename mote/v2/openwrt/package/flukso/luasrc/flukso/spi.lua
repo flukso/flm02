@@ -24,8 +24,8 @@ local nixio = require 'nixio'
 local os, table, string =
       os, table, string
 
-local getfenv, setmetatable, tonumber =
-      getfenv, setmetatable, tonumber
+local getfenv, setmetatable, tonumber, type =
+      getfenv, setmetatable, tonumber, type
 
 module (...)
 local modenv = getfenv()
@@ -60,9 +60,11 @@ end
 function parse(msg)
 	msg.parsed = {}
 
-	msg.parsed.cmd = msg.body:match('^%l%l')
-	for arg in msg.body:gmatch('%d+') do
-		msg.parsed[#msg.parsed + 1] = tonumber(arg) -- returns nil when string does not contain a number
+	if(msg.body) then
+		msg.parsed.cmd = msg.body:match('^%l%l') or ''
+		for arg in msg.body:gmatch('%d+') do
+			msg.parsed[#msg.parsed + 1] = tonumber(arg) -- returns nil when string does not contain a number
+		end
 	end
 end
 
@@ -75,8 +77,14 @@ function encode(msg)
 		if argc ~= #msg.parsed then
 			return false
 		else
-			return true
+			for i = 1, #msg.parsed do
+				if type(msg.parsed[i]) ~= 'number' then
+					return false
+				end
+			end
 		end
+
+		return true
 	end
 
 	if msg.to == 'uart' then
