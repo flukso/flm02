@@ -302,18 +302,23 @@ void ctrlCmdGet(uint8_t cmd)
 	case 'c':		/* sensor counter value */
 		ctrlReadCharFromRxBuffer(&i);
 
-		cli();
-		tmp32 = sensor[i].counter;
-		sei();
+		if (i < MAX_SENSORS) {
+			cli();
+			tmp32 = sensor[i].counter;
+			sei();
 
-		ctrlWriteCharToTxBuffer(i);
-		ctrlWriteLongToTxBuffer(tmp32);
+			ctrlWriteCharToTxBuffer(i);
+			ctrlWriteLongToTxBuffer(tmp32);
+		}
 		break;
 
 	case 'm':		/* sensor meterconstant */
 		ctrlReadCharFromRxBuffer(&i);
-		ctrlWriteCharToTxBuffer(i);
-		ctrlWriteShortToTxBuffer(sensor[i].meterconst);
+
+		if (i < MAX_SENSORS) {
+			ctrlWriteCharToTxBuffer(i);
+			ctrlWriteShortToTxBuffer(sensor[i].meterconst);
+		}
 		break;
 
 	case 'w':		/* watchdog counter */
@@ -396,26 +401,32 @@ void ctrlCmdSet(uint8_t cmd)
 
 	case 'c':		/* sensor counter value */
 		ctrlReadCharFromRxBuffer(&i);
-		ctrlReadLongFromRxBuffer(&tmp32);
 
-		cli();
-		sensor[i].counter = tmp32;
-		sei();
+		if (i < MAX_SENSORS) {
+			ctrlReadLongFromRxBuffer(&tmp32);
 
-		ctrlWriteCharToTxBuffer(i);
-		ctrlWriteLongToTxBuffer(tmp32);
+			cli();
+			sensor[i].counter = tmp32;
+			sei();
+
+			ctrlWriteCharToTxBuffer(i);
+			ctrlWriteLongToTxBuffer(tmp32);
+		}
 		break;
 
 	case 'm':		/* sensor meterconstant */
 		ctrlReadCharFromRxBuffer(&i);
-		ctrlReadShortFromRxBuffer(&tmp16);
 
-		cli();
-		sensor[i].meterconst = tmp16;	
-		sei();
+		if (i < MAX_SENSORS) {
+			ctrlReadShortFromRxBuffer(&tmp16);
 
-		ctrlWriteCharToTxBuffer(i);
-		ctrlWriteShortToTxBuffer(sensor[i].meterconst);
+			cli();
+			sensor[i].meterconst = tmp16;	
+			sei();
+
+			ctrlWriteCharToTxBuffer(i);
+			ctrlWriteShortToTxBuffer(sensor[i].meterconst);
+		}
 		break;
 
 	case 'w':		/* watchdog counter */
