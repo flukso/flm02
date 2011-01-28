@@ -150,7 +150,12 @@ for i = 1, MAX_SENSORS do
 		local ports = flukso[tostring(i)].port or {}
 
 		for j = 1, #ports do
-			phy_to_log[toc(tonumber(ports[j]))] = toc(i)
+			if tonumber(ports[j]) <= MAX_SENSORS then
+				phy_to_log[toc(tonumber(ports[j]))] = toc(i)
+			else
+				print(string.format('Error. Port numbering in sensor %s should be less than or equal to max_sensors (%s)', i, MAX_SENSORS))
+				os.exit(4)
+			end
 		end
 	end
 end
