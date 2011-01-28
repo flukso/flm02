@@ -199,7 +199,7 @@ end
 
 -- enable configured ports
 for i = 1, MAX_SENSORS do
-	if flukso[tostring(i)] ~= nil then
+	if flukso[tostring(i)] ~= nil and flukso[tostring(i)].enable == '1' then
 		local ports = flukso[tostring(i)].port or {}
 
 		for j = 1, #ports do

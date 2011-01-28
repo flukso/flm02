@@ -21,6 +21,7 @@ config sensor 1
 	list port 1
 	option voltage 230
 	option current 50
+	option enable 1
 
 config sensor 2
 	option id 0123456789abcdef0123456789abcde2
@@ -28,6 +29,7 @@ config sensor 2
 	list port 2
 	option voltage 230
 	option current 50
+	option enable 1
 
 config sensor 3
 	option id 0123456789abcdef0123456789abcde3
@@ -35,19 +37,23 @@ config sensor 3
 	list port 3
 	option voltage 230
 	option current 50
+	option enable 1
 
 config sensor 4
 	option id 0123456789abcdef0123456789abcde4
 	option type pulse
 	list port 4
 	option constant 1
+	option enable 1
 
 config sensor 5
 	option id 0123456789abcdef0123456789abcde5
 	option type pulse
 	list port 5
 	option constant 1
+	option enable 1
 
 config sensor 6
 	option type uart
 	list port 6
+	option enable 1
