@@ -28,7 +28,7 @@ local nixio = require 'nixio'
 nixio.fs    = require 'nixio.fs'
 local uci   = require 'luci.model.uci'.cursor()
 
-local CTRL_PATH		= '/var/run/fluksod/ctrl'
+local CTRL_PATH		= '/var/run/spid/ctrl'
 local CTRL_PATH_IN	= CTRL_PATH .. '/in'
 local CTRL_PATH_OUT	= CTRL_PATH .. '/out'
 
@@ -42,14 +42,14 @@ local ctrl = { fdin    = nixio.open(CTRL_PATH_IN, O_RDWR_NONBLOCK),
                events  = POLLIN,
                revents = 0 }
 
-ctrl.fd = ctrl.fdout -- need this entry for nixio.poll
-ctrl.line = ctrl.fdout:linesource()
-
 if ctrl.fdin == nil or ctrl.fdout == nil then
 	print('Error. Unable to open the ctrl fifos.')
 	print('Exiting...')
 	os.exit(1)
 end
+
+ctrl.fd = ctrl.fdout -- need this entry for nixio.poll
+ctrl.line = ctrl.fdout:linesource()
 
 -- TODO acquire an exclusive lock on the ctrl fifos or exit
 

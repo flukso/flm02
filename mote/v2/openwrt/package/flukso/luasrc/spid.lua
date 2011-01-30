@@ -2,7 +2,7 @@
 
 --[[
     
-    fluksod.lua - Lua part of the Flukso daemon
+    spid.lua - Lua part of the Flukso daemon
 
     Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
 
@@ -42,7 +42,7 @@ local TIMERFD_NS		= 0
 
 local GET_DELTA			= 'gd'
 
-local DAEMON 			= os.getenv('DAEMON') or 'fluksod'
+local DAEMON 			= os.getenv('DAEMON') or 'spid'
 local DAEMON_PATH 		= os.getenv('DAEMON_PATH') or '/var/run/' .. DAEMON
 
 local O_RDWR_NONBLOCK		= nixio.open_flags('rdwr', 'nonblock')
@@ -53,8 +53,8 @@ function mkfifos(input)
 	local path = string.format('%s/%s/', DAEMON_PATH, input) 
 
 	nixio.fs.mkdirr(path)
-	nixio.fs.unlink(path .. 'in')  -- clean up mess from previous run
-	nixio.fs.unlink(path .. 'out') -- idem
+--	nixio.fs.unlink(path .. 'in')  -- clean up mess from previous run
+--	nixio.fs.unlink(path .. 'out') -- idem
 	nixio.fs.mkfifo(path .. 'in', '644')
 	nixio.fs.mkfifo(path .. 'out', '644')
 
