@@ -41,6 +41,8 @@ local DELTA_PATH_OUT	= DELTA_PATH .. '/out'
 
 local O_RDWR		= nixio.open_flags('rdwr')
 local O_RDWR_NONBLOCK   = nixio.open_flags('rdwr', 'nonblock')
+local O_RDWR_CREAT	= nixio.open_flags('rdwr', 'creat')
+
 local POLLIN            = nixio.poll_flags('in')
 
 -- parse and load /etc/config/flukso
@@ -49,6 +51,17 @@ local WAN_ENABLED	= true
 local WAN_INTERVAL	= 300
 local LAN_ENABLED	= true
 local TIMESTAMP_MIN	= 1234567890
+
+local WAN_FILTER = { [1] = {}, [2] = {}, [3] = {} }
+WAN_FILTER[1].span	= 60
+WAN_FILTER[1].offset	= 0
+WAN_FILTER[2].span	= 900
+WAN_FILTER[2].offset	= 7200
+WAN_FILTER[3].span	= 86400
+WAN_FILTER[3].offset	= 172800
+
+local LAN_POLISH_CUTOFF	= 60
+local LAN_PUBLISH_PATH	= DAEMON_PATH .. '/sensor'
 
 function dispatch(wan_child, lan_child)
 	return coroutine.create(function()
@@ -135,6 +148,37 @@ function wan_buffer(child)
 	end)
 end
 
+function filter(child, span, offset)
+	return coroutine.create(function(measurements)
+		while true do
+			measurements:filter(span, offset)
+			coroutine.resume(child, measurements)
+			measurements = coroutine.yield()
+		end
+	end)
+end
+
+
+function send(child)  -- TODO fill in dummy send
+	return coroutine.create(function(measurements)
+		while true do
+			-- measurements:clear()
+			coroutine.resume(child, measurements)
+			measurements = coroutine.yield()
+		end
+	end)
+end
+
+function gc(child)
+	return coroutine.create(function(measurements)
+		while true do
+			collectgarbage() -- force a complete garbage collection cycle
+			coroutine.resume(child, measurements)
+			measurements = coroutine.yield()
+		end
+	end)
+end
+
 function lan_buffer(child)
 	return coroutine.create(function(sensor_id, timestamp, power, counter, msec)
 		local measurements = data.new()
@@ -179,6 +223,43 @@ function lan_buffer(child)
 	end)
 end
 
+function polish(child, cutoff)
+	return coroutine.create(function(measurements)
+		while true do
+			measurements:fill()
+			measurements:truncate(cutoff)
+			coroutine.resume(child, measurements)
+			measurements = coroutine.yield()
+		end
+	end)
+end
+
+function publish(child, dir)
+	return coroutine.create(function(measurements)
+		nixio.fs.mkdirr(dir)
+
+		for file in nixio.fs.dir(dir) do
+			nixio.fs.unlink(file)
+		end
+
+		while true do
+			local measurements_json = measurements:json_encode()
+
+			for sensor_id, json in pairs(measurements_json) do
+				local file = dir .. '/' .. sensor_id
+				
+				nixio.fs.unlink(file)
+				fd = nixio.open(file, O_RDWR_CREAT)
+				fd:write(json)
+				fd:close()
+			end
+
+			coroutine.resume(child, measurements)
+			measurements = coroutine.yield()
+		end
+	end)
+end
+
 function debug(child)
 	return coroutine.create(function(measurements)
 		while true do
@@ -197,12 +278,26 @@ end
 
 local wan_chain =
 	wan_buffer(
-		debug(nil)
+		filter(
+			filter(
+				filter(
+					send(
+						gc(
+							debug(nil)
+						)
+					)
+				, WAN_FILTER[3].span, WAN_FILTER[3].offset)
+			, WAN_FILTER[2].span, WAN_FILTER[2].offset)
+		, WAN_FILTER[1].span, WAN_FILTER[1].offset)
 	)
 
 local lan_chain =
 	lan_buffer(
-		debug(nil)
+		polish(
+			publish(
+				debug(nil)
+			, LAN_PUBLISH_PATH)
+		, LAN_POLISH_CUTOFF)
 	)
 
 local chain = dispatch(wan_chain, lan_chain)
