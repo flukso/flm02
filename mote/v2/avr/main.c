@@ -386,7 +386,7 @@ int main(void)
 	// initialize the UART hardware and buffers
 	uartInit();
 	// initialize the SPI in slave mode
-	setup_spi(SPI_MODE_0, SPI_MSB, SPI_INTERRUPT, SPI_SLAVE);
+	setup_spi(SPI_MODE_2, SPI_MSB, SPI_INTERRUPT, SPI_SLAVE);
 
 
 	for(;;) {
