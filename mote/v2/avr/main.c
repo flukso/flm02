@@ -241,25 +241,16 @@ ISR(TIMER1_COMPA_vect)
 
 ISR(ANALOG_COMP_vect)
 {
-	uint8_t i;
+	disable_led();
 
-	PORTB |= (1<<PB0);
+	eeprom_write_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
+	eeprom_write_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
 
-	//disable uC sections to consume less power while writing to EEPROM
-	//disable UART Tx and Rx:
-	UCSR0B &= ~((1<<RXEN0) | (1<<TXEN0));
-	//disable ADC:
-	ADCSRA &= ~(1<<ADEN);
+//	uint8_t i;
+//	for (i=0; i<128; i++)
+//		eeprom_write_byte((uint8_t *)i, i); 			
 
-	for (i=0; i<128; i++)
-		eeprom_write_byte((uint8_t *)i, i); 			
-
-	//enable UART Tx and Rx:
-	UCSR0B |= (1<<RXEN0) | (1<<TXEN0);
-	// enable ADC and start a first ADC conversion
-	ADCSRA |= (1<<ADEN) | (1<<ADSC);
-
-	PORTB &= ~(1<<PB0);
+	setup_led();
 }
 
 void setup_datastructs(void)
@@ -273,8 +264,18 @@ void setup_datastructs(void)
 
 void setup_led(void)
 {
+	// set output low (= LED enabled)
+	PORTB &= ~(1<<PB0);
 	// set LED pin (PB0) as output pin
 	DDRB |= (1<<DDB0);
+}
+
+void disable_led(void)
+{
+	// set LED pin (PB0) as input pin
+	DDRB &= ~(1<<DDB0);
+	// disable pull-up
+	PORTB &= ~(1<<PB0);
 }
 
 void setup_pulse_input(void)

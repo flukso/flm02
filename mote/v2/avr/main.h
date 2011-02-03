@@ -91,6 +91,8 @@ asm volatile ( \
 )
 
 void register_pulse(volatile struct sensor_struct *psensor, volatile struct state_struct *pstate);
+void setup_led(void);
+void disable_led(void);
 void setup_datastructs(void);
 void setup_pulse_input(void);
 void setup_adc(void);
