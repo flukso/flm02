@@ -82,7 +82,9 @@ function dispatch(wan_child, lan_child)
 		end
 
 		for line in delta.fdout:linesource() do
-			print(line)
+			if DEBUG then
+				print(line)
+			end
 
 			local timestamp, data = line:match('^(%d+)%s+([%d%s]+)$')
 			timestamp = tonumber(timestamp)
@@ -106,7 +108,7 @@ function dispatch(wan_child, lan_child)
 						coroutine.resume(lan_child, sensor_id, timestamp, extra)
 
 					elseif sensor_type == 'pulse' then
-						coroutine.resume(lan_child, sensor_id, timestamp, nil, counter, extra)
+						coroutine.resume(lan_child, sensor_id, timestamp, false, counter, extra)
 					end
 				end
 				-- check in the e branch whether the counter has increased, if not then discard
@@ -199,9 +201,10 @@ function lan_buffer(child)
 
 			if timestamp > TIMESTAMP_MIN and timestamp > (previous[sensor_id].timestamp or 0) then
 				if not power then  -- we're dealing pulse message so first calculate power
-					if previous[sensor_id].msec and msec > prev[sensor_id].msec then
+					if previous[sensor_id].msec and msec > previous[sensor_id].msec then
 						power = math.floor(diff(previous[sensor_id].counter, counter) /
                         	                                   diff(previous[sensor_id].msec, msec) * 3.6 * 10^6 + 0.5)
+
 					end
 
 					-- if msec decreased, just update the value in the table
@@ -210,8 +213,10 @@ function lan_buffer(child)
 					previous[sensor_id].counter = counter
 				end
 
-				measurements:add(sensor_id, timestamp, power)
-				previous[sensor_id].timestamp = timestamp
+				if power then
+					measurements:add(sensor_id, timestamp, power)
+					previous[sensor_id].timestamp = timestamp
+				end
 			end
 
 			if next(measurements) then  --checking whether table is not empty
