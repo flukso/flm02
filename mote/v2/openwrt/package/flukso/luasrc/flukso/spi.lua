@@ -154,6 +154,14 @@ function tx(msg, cdev)
 	end
 end
 
+function wait(msg, short, long)
+	if msg.parsed.cmd and msg.parsed.cmd == 'ct' then
+		nixio.nanosleep(0, long)
+	else
+		nixio.nanosleep(0, short)
+	end
+end
+
 function rx(msg, cdev)
 	local hextonum = nixio.bin.hextonum
 

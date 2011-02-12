@@ -111,7 +111,7 @@ while true do
 
 		msg:encode()
 		msg:tx(spidev)
-		nixio.nanosleep(0, SPI_TX_RX_DELAY_NS)
+		msg:wait(SPI_TX_RX_DELAY_NS, SPI_CT_DELAY_NS)
 	end
 
 	if poll >= 0 then

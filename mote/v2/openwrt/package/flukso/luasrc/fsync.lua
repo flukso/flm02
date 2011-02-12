@@ -111,6 +111,7 @@ local SET_ENABLE	 = 'se %d %d'
 local SET_PHY_TO_LOG	 = 'sp' -- with [1..MAX_SENSORS] arguments
 local SET_METERCONST	 = 'sm %d %d'
 local SET_COUNTER	 = 'sc %d %d'
+local COMMIT		 = 'ct'
 
 -- check hardware version
 local hw_major, hw_minor = send(ctrl, GET_HW_VERSION):match(GET_HW_VERSION_R)
@@ -215,6 +216,10 @@ for i = 1, MAX_SENSORS do
 		send(ctrl, cmd)
 	end
 end
+
+-- commit changes
+send(ctrl, COMMIT)
+
 
 -- clean up
 ctrl.fdin:close()
