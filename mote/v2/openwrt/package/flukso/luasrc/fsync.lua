@@ -3,7 +3,7 @@
 --[[
     
     fsync.lua - synchronize /etc/config/flukso settings with the sensor board
-                via the fluksod ctrl fifos
+                via the spid ctrl fifos
 
     Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
 
