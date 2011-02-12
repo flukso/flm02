@@ -82,7 +82,7 @@ local fds = { uart, ctrl, delta }
 
 local spidev = nixio.open(SPI_DEV, O_RDWR_NONBLOCK)
 nixio.spi.setspeed(spidev, SPI_MAX_CLK_SPEED_HZ, SPI_MIN_BYTE_DELAY_US)
-spidev:lock('lock')
+spidev:lock('lock') -- blocks until it can place a write lock on the spidev device
 
 while true do
 	local msg
