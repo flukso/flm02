@@ -33,7 +33,7 @@ local DEBUG			= (arg[1] == '-d')
 local SPI_DEV			= '/dev/spidev0.0'
 local SPI_MAX_CLK_SPEED_HZ	= 1e6
 local SPI_MIN_BYTE_DELAY_US	= 250
-local SPI_TX_RX_DELAY_NS	= 1e7
+local SPI_TX_RX_DELAY_NS	= 2e7
 local SPI_CT_DELAY_NS		= 5e8
 local POLL_TIMEOUT_MS		= 100
 
