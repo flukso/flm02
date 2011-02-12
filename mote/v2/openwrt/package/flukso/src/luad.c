@@ -36,6 +36,9 @@
 
 #define DAEMON_VARRUN "/var/run"
 
+#define SUP_ALLOWED_RESTARTS 10
+#define SUP_MAX_SECONDS 60
+
 #include <pwd.h>
 #include <grp.h>
 #include <unistd.h>
@@ -44,6 +47,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/unistd.h>
@@ -63,6 +67,42 @@
 #include <lua5.1/lualib.h>
 #include <lua5.1/lauxlib.h>
 #endif
+
+struct restart_s {
+	int i;
+	time_t time[SUP_ALLOWED_RESTARTS];
+};
+
+static void restart_init(struct restart_s *restart) {
+	restart->i = 0;
+
+	int i;
+	for (i = 0; i < SUP_ALLOWED_RESTARTS; i++) {
+		restart->time[i] = 0;
+	}
+}
+
+static void restart_add(struct restart_s *restart, time_t new_restart) {
+	restart->time[restart->i++] = new_restart;
+	restart->i %= SUP_ALLOWED_RESTARTS;
+}
+
+static int restart_max(struct restart_s *restart) {
+	int i, total;
+
+	for (i = 0; i < SUP_ALLOWED_RESTARTS; i++) {
+		if (restart->time[i] > time(NULL) - SUP_MAX_SECONDS) {
+			total++;
+		}
+	}
+
+	if (total == SUP_ALLOWED_RESTARTS) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
 
 static void sigterm(int signo)
 {
@@ -292,19 +332,34 @@ int main(int argc, char *argv[])
         	daemon_retval_send(0);
         	daemon_log(LOG_INFO, "Sucessfully started with DEAMON=%s and DAEMON_PATH=%s", daemon_log_ident, runtime_path);
 
-		/* Create a new Lua environment */
-		L = luaL_newstate();
-		/* And load the standard libraries into the Lua environment */
-		luaL_openlibs(L);
 		/* Derive the Lua daemon path from the C daemon one */
 		asprintf(&luad_path, "%s%s", (const char *)argv[0], ".lua");
-		/* Tunnel through the wormhole into Lua neverland. This call should never return. */
-		if (luaL_dofile(L, (const char *)luad_path)) {
-			daemon_log(LOG_ERR, "Lua returned with error message: %s", lua_tostring(L,-1));
-		}
-		/* Clean up the Lua state */
-		lua_close(L);
 
+		/* Erlang-style supervisor */
+		struct restart_s restart;
+		restart_init(&restart);
+
+		while(1) {
+			/* Stop when allowed number of restarts have occurred in specified time window */
+			if (restart_max(&restart)) {
+				daemon_log(LOG_ERR, "%d restarts within a %d sec window", SUP_ALLOWED_RESTARTS, SUP_MAX_SECONDS);
+				break;
+			}
+
+			/* Create a new Lua environment */
+			L = luaL_newstate();
+			/* And load the standard libraries into the Lua environment */
+			luaL_openlibs(L);
+			/* Tunnel through the wormhole into Lua neverland. This call should never return. */
+			if (luaL_dofile(L, (const char *)luad_path)) {
+				daemon_log(LOG_ERR, "%s", lua_tostring(L,-1));
+			}
+			/* Clean up the Lua state */
+			lua_close(L);
+			/* Wait for one second before restarting the Lua daemon */
+			sleep(1);
+			restart_add(&restart, time(NULL));
+		}
 
 		/* Do a cleanup */
 finish:
