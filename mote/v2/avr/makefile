@@ -314,6 +314,7 @@ OBJDUMP = avr-objdump
 SIZE = avr-size
 NM = avr-nm
 AVRDUDE = avrdude
+AVRDUDE_R = fdude
 REMOVE = rm -f
 COPY = cp
 WINSHELL = cmd
@@ -413,7 +414,7 @@ program: $(TARGET).hex $(TARGET).eep
 # Program the device remotely.
 rprogram: $(TARGET).hex $(TARGET).eep
 	@scp $(TARGET).hex $(TARGET).eep root@192.168.255.1:/tmp
-	@ssh root@192.168.255.1 "cd /tmp; $(AVRDUDE) $(AVRDUDE_FLAGS_R) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)"
+	@ssh root@192.168.255.1 "cd /tmp; $(AVRDUDE_R) $(AVRDUDE_FLAGS_R) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)"
 
 
 # Generate avr-gdb config/init file which does the following:
