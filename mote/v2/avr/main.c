@@ -243,6 +243,8 @@ ISR(ANALOG_COMP_vect)
 {
 	disable_led();
 
+	event.brown_out++;
+
 	eeprom_write_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
 	eeprom_write_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
 
