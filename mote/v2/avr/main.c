@@ -241,6 +241,9 @@ ISR(TIMER1_COMPA_vect)
 
 ISR(ANALOG_COMP_vect)
 {
+	if (!(ACSR & (1 << ACO)))
+		return;
+	
 	disable_led();
 
 	event.brown_out++;
