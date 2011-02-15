@@ -239,11 +239,8 @@ ISR(TIMER1_COMPA_vect)
 	DBG_ISR_END();
 }
 
-ISR(ANALOG_COMP_vect)
+ISR(TIMER1_CAPT_vect)
 {
-	if (!(ACSR & (1 << ACO)))
-		return;
-	
 	disable_led();
 
 	event.brown_out++;
@@ -318,6 +315,12 @@ void setup_timer1(void)
 	// Enable output compare match interrupt for timer1 (DS p.136)
 	TIMSK1 |= (1<<OCIE1A);
 
+	
+	// Activate the input capture noise canceler and trigger the IC on a positive edge (DS p.133)
+	TCCR1B |= (1<<ICNC1) | (1<<ICES1);
+	// Enable input capture interrupt (DS p.136)
+	TIMSK1 |= (1<<ICIE1);
+
 	DBG_OC1A_TOGGLE();
 }
 
@@ -330,8 +333,8 @@ void setup_analog_comparator(void)
 	DIDR1 |= (1<<AIN1D) | (1<<AIN0D);
 
 	// comparing AIN1 (Vcc/4.4) to bandgap reference (1.1V)
-	// bandgap select | AC interrupt enable | AC interrupt on rising edge (DS p.243)
-	ACSR |= (1<<ACBG) | (1<<ACIE) | (1<<ACIS1) | (1<<ACIS0);
+	// select bandgap reference and enable input capture function in timer1 (DS p.244 & 116)
+	ACSR |= (1<<ACBG) | (1<<ACIC);
 }
 
 void calculate_power(volatile struct state_struct *pstate)
@@ -382,9 +385,9 @@ int main(void)
 	setup_datastructs();
 	setup_led();
 	setup_adc();
-	setup_timer1();
 	setup_pulse_input();
 	setup_analog_comparator();
+	setup_timer1();
 	
 	// initialize the CTRL buffers
 	ctrlInit();
