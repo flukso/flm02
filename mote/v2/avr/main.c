@@ -245,8 +245,8 @@ ISR(TIMER1_CAPT_vect)
 
 	event.brown_out++;
 
-	eeprom_write_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
-	eeprom_write_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
+	eeprom_update_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
+	eeprom_update_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
 
 //	uint8_t i;
 //	for (i=0; i<128; i++)

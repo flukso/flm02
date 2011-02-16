@@ -459,10 +459,10 @@ void ctrlCmdSet(uint8_t cmd)
 void ctrlCmdCommit(void)
 {
 	cli();
-	eeprom_write_block((const void*)&version, (void*)&EEPROM_version, sizeof(version));
-	eeprom_write_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
-	eeprom_write_block((const void*)&enabled, (void*)&EEPROM_enabled, sizeof(enabled));
-	eeprom_write_block((const void*)&phy_to_log, (void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
-	eeprom_write_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
+	eeprom_update_block((const void*)&version, (void*)&EEPROM_version, sizeof(version));
+	eeprom_update_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
+	eeprom_update_block((const void*)&enabled, (void*)&EEPROM_enabled, sizeof(enabled));
+	eeprom_update_block((const void*)&phy_to_log, (void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
+	eeprom_update_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
 	sei();
 }
