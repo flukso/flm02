@@ -132,7 +132,7 @@ function wan_buffer(child)
 
 			if timestamp > TIMESTAMP_MIN
 				and timestamp > (previous[sensor_id].timestamp or 0)
-				and counter > (previous[sensor_id].counter or 0) 
+				and counter ~= (previous[sensor_id].counter or 0) 
 				then
 
 				measurements:add(sensor_id, timestamp, counter)
