@@ -24,6 +24,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/eeprom.h>
+#include <avr/power.h>
 
 #include <util/delay.h>
 
@@ -243,14 +244,23 @@ ISR(TIMER1_CAPT_vect)
 {
 	disable_led();
 
+	// throttle the cpu clock to draw less amps
+	clock_prescale_set(clock_div_16);
+
 	event.brown_out++;
 
+#ifdef DBG > 0 
+	uint8_t i;
+
+	for (i=0; i<128; i++)
+		eeprom_write_byte((uint8_t *)(i + 0x0100), i); 			
+#else
 	eeprom_update_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
 	eeprom_update_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
+#endif
 
-//	uint8_t i;
-//	for (i=0; i<128; i++)
-//		eeprom_write_byte((uint8_t *)i, i); 			
+	// restore the original clock setting
+	clock_prescale_set(clock_div_1);
 
 	setup_led();
 }
