@@ -245,6 +245,7 @@ ISR(TIMER1_CAPT_vect)
 	disable_led();
 
 	// throttle the cpu clock to draw less amps
+	// raises the number of bytes that can be written to EEPROM from 43 to 48
 	clock_prescale_set(clock_div_16);
 
 	event.brown_out++;
@@ -389,6 +390,8 @@ int main(void)
 {
 	uint8_t i;
 
+	cli();
+
 	// RS-485: Configure PD5=DE as output pin with low as default
 	DDRD |= (1<<DDD5);
 	// set high to transmit
@@ -407,6 +410,8 @@ int main(void)
 	uartInit();
 	// initialize the SPI in slave mode
 	setup_spi(SPI_MODE_2, SPI_MSB, SPI_INTERRUPT, SPI_SLAVE);
+
+	sei();
 
 
 	for(;;) {
