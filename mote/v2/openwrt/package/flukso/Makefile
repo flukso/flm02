@@ -28,9 +28,19 @@ define Build/Prepare
 	$(CP) ./src/* $(PKG_BUILD_DIR)/
 	$(CP) ./luasrc/* $(PKG_BUILD_DIR)/
 	$(CP) ./config/* $(PKG_BUILD_DIR)/
+	$(CP) -r ./files $(PKG_BUILD_DIR)/
 endef
 
+FLUKSO_COMMIT:=$(shell git rev-parse HEAD | awk '{print substr($$0,1,16)}')
+
 define Package/flukso/install
+	$(INSTALL_DIR) $(1)/etc
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/files/etc/banner $(1)/etc/banner
+	
+	$(SED) 's,$$$$R,$(REVISION),g' $(1)/etc/banner
+	$(SED) 's,$$$$F,$(PKG_VERSION)-$(PKG_RELEASE),g' $(1)/etc/banner
+	$(SED) 's,$$$$G,$(FLUKSO_COMMIT),g' $(1)/etc/banner
+
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso.uci $(1)/etc/config/flukso
 	$(INSTALL_DIR) $(1)/etc/init.d
