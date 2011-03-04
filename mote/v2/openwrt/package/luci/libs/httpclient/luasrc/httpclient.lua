@@ -138,6 +138,13 @@ function request_raw(uri, options)
 	
 	if pr == "https" then
 		local tls = options.tls_context or nixio.tls()
+		local tls_context_set_verify = options.tls_context_set_verify or "none"
+
+		if tls_context_set_verify == "peer" then
+			tls:set_verify("peer")
+			tls:set_verify_locations("/etc/ssl/certs/flukso.ca.crt")
+		end
+
 		sock = tls:create(sock)
 		local stat, code, error = sock:connect()
 		if not stat then
