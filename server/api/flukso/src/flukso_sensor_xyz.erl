@@ -2,8 +2,14 @@
 %% @copyright 2009-2010 flukso.net
 %% @doc Flukso webmachine_resource.
 
--module(flukso_resource).
--export([init/1, allowed_methods/2, malformed_request/2, is_authorized/2, content_types_provided/2, to_json/2]).
+-module(flukso_sensor_xyz).
+-export([init/1,
+         allowed_methods/2,
+         malformed_request/2,
+         is_authorized/2,
+         content_types_provided/2,
+         to_json/2,
+         process_post/2]).
 
 -include_lib("webmachine/include/webmachine.hrl").
 
@@ -19,10 +25,32 @@
 init([]) -> 
     {ok, undefined}.
 
-allowed_methods(ReqData, State) ->
-    {['GET'], ReqData, State}.
+% debugging
+%init(Config) ->
+%   {{trace, "/tmp"}, Config}.
 
-malformed_request(ReqData, _State) ->
+allowed_methods(ReqData, State) ->
+    {['POST', 'GET'], ReqData, State}.
+
+malformed_request(ReqData, State) ->
+    case wrq:method(ReqData) of
+        'POST' -> malformed_POST(ReqData, State);
+        'GET'  -> malformed_GET(ReqData, State)
+    end.
+
+malformed_POST(ReqData, _State) ->
+    {_Version, ValidVersion} = check_version(wrq:get_req_header("X-Version", ReqData), wrq:get_qs_value("version", ReqData)),
+    {RrdSensor, ValidSensor} = check_sensor(wrq:path_info(sensor, ReqData)),
+
+    State = #state{rrdSensor = RrdSensor},
+
+    {case {ValidVersion, ValidSensor} of
+        {true, true} -> false;
+        _ -> true
+     end,
+    ReqData, State}.
+
+malformed_GET(ReqData, _State) ->
     {_Version, ValidVersion} = check_version(wrq:get_req_header("X-Version", ReqData), wrq:get_qs_value("version", ReqData)),
     {RrdSensor, ValidSensor} = check_sensor(wrq:path_info(sensor, ReqData)),
     {RrdStart, RrdEnd, RrdResolution, ValidTime} = check_time(wrq:get_qs_value("interval", ReqData), wrq:get_qs_value("start", ReqData), wrq:get_qs_value("end", ReqData), wrq:get_qs_value("resolution", ReqData)),
@@ -44,7 +72,16 @@ malformed_request(ReqData, _State) ->
      end, 
     ReqData, State}.
 
-is_authorized(ReqData, #state{rrdSensor = RrdSensor, token = Token} = State) ->
+is_authorized(ReqData, State) ->
+    case wrq:method(ReqData) of
+        'POST' -> is_auth_POST(ReqData, State);
+        'GET'  -> is_auth_GET(ReqData, State)
+    end.
+
+is_auth_POST(ReqData, State) ->
+    {true, ReqData, State}.
+
+is_auth_GET(ReqData, #state{rrdSensor = RrdSensor, token = Token} = State) ->
     {data, Result} = mysql:execute(pool, permissions, [RrdSensor, Token]),
 
     {case mysql:get_result_rows(Result) of
@@ -54,7 +91,7 @@ is_authorized(ReqData, #state{rrdSensor = RrdSensor, token = Token} = State) ->
     ReqData, State}.
 
 content_types_provided(ReqData, State) -> 
-    {[{"application/json", to_json}], ReqData, State}.
+        {[{"application/json", to_json}], ReqData, State}.
 
 to_json(ReqData, #state{rrdSensor = RrdSensor, rrdStart = RrdStart, rrdEnd = RrdEnd, rrdResolution = RrdResolution, rrdFactor = RrdFactor, jsonpCallback = JsonpCallback} = State) -> 
     case wrq:get_qs_value("interval", ReqData) of
@@ -79,6 +116,24 @@ to_json(ReqData, #state{rrdSensor = RrdSensor, rrdStart = RrdStart, rrdEnd = Rrd
         {error, _Reason} ->
             {{halt, 404}, ReqData, State}
     end.
+
+process_post(ReqData, #state{rrdSensor = RrdSensor} = State) ->
+    Path = "var/data/base/",
+
+    {struct, JsonData} = mochijson2:decode(wrq:req_body(ReqData)),
+    Measurements = proplists:get_value(<<"measurements">>, JsonData),
+    RrdData = [[integer_to_list(Time), ":", integer_to_list(Counter), " "] || [Time, Counter] <- Measurements],
+
+%debugging: io:format("~s~n", [[Path, [RrdSensor|".rrd"], " ", RrdData]]),
+    
+    case erlrrd:update([Path, [RrdSensor|".rrd"], " ", RrdData]) of
+        {ok, _RrdResponse} -> RrdResponse = "ok";
+        {error, RrdResponse} -> true
+    end,
+
+    JsonResponse = mochijson2:encode({struct, [{<<"response">>, list_to_binary(RrdResponse)}]}),
+
+    {true , wrq:set_resp_body(JsonResponse, ReqData), State}.
 
 %% checks
 check_version(undefined, undefined) ->
