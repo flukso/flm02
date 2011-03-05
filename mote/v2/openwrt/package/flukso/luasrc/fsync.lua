@@ -113,6 +113,9 @@ local SET_METERCONST	 = 'sm %d %d'
 local SET_COUNTER	 = 'sc %d %d'
 local COMMIT		 = 'ct'
 
+local API_PATH		 = '/www/sensor/'
+local CGI_SCRIPT	 = '/usr/bin/restful'
+
 -- check hardware version
 local hw_major, hw_minor = send(ctrl, GET_HW_VERSION):match(GET_HW_VERSION_R)
 
@@ -220,9 +223,26 @@ end
 -- commit changes
 send(ctrl, COMMIT)
 
-
--- clean up
+-- clean up ctrl port fd's
 ctrl.fdin:close()
 ctrl.fdout:close()
+
+
+-- make sure /www/sensor exists
+nixio.fs.mkdirr(API_PATH)
+
+-- clean up old symlinks
+for symlink in nixio.fs.dir(API_PATH) do
+	nixio.fs.unlink(API_PATH .. symlink)
+end
+
+-- generate new symlinks
+for i = 1, MAX_SENSORS do
+	local sensor_id = flukso[tostring(i)].id
+	if sensor_id then
+		nixio.fs.symlink(CGI_SCRIPT, API_PATH .. sensor_id)
+		print(string.format('ln -s %s %s%s .. ok', CGI_SCRIPT, API_PATH, sensor_id))
+	end
+end
 
 print(arg[0] .. ' completed successfully. Bye!')
