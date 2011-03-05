@@ -238,10 +238,13 @@ end
 
 -- generate new symlinks
 for i = 1, MAX_SENSORS do
-	local sensor_id = flukso[tostring(i)].id
-	if sensor_id then
-		nixio.fs.symlink(CGI_SCRIPT, API_PATH .. sensor_id)
-		print(string.format('ln -s %s %s%s .. ok', CGI_SCRIPT, API_PATH, sensor_id))
+	if flukso[tostring(i)] ~= nil and flukso[tostring(i)].enable == '1' then
+		local sensor_id = flukso[tostring(i)].id
+
+		if sensor_id then
+			nixio.fs.symlink(CGI_SCRIPT, API_PATH .. sensor_id)
+			print(string.format('ln -s %s %s%s .. ok', CGI_SCRIPT, API_PATH, sensor_id))
+		end
 	end
 end
 
