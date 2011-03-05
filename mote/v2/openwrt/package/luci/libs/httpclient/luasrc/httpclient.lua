@@ -146,9 +146,9 @@ function request_raw(uri, options)
 		end
 
 		sock = tls:create(sock)
-		local stat, code, error = sock:connect()
+		local stat, code, err = sock:connect()
 		if not stat then
-			return stat, code, error
+			return stat, code, err
 		end
 	end
 
@@ -216,11 +216,11 @@ function request_raw(uri, options)
 	
 	-- Create source and fetch response
 	local linesrc = sock:linesource()
-	local line, code, error = linesrc()
+	local line, code, err = linesrc()
 	
 	if not line then
 		sock:close()
-		return nil, code, error
+		return nil, code, err
 	end
 	
 	local protocol, status, msg = line:match("^([%w./]+) ([0-9]+) (.*)")
