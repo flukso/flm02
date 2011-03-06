@@ -33,6 +33,7 @@ local CTRL_PATH_IN	= CTRL_PATH .. '/in'
 local CTRL_PATH_OUT	= CTRL_PATH .. '/out'
 
 local O_RDWR_NONBLOCK	= nixio.open_flags('rdwr', 'nonblock')
+local O_RDWR_CREAT	= nixio.open_flags('rdwr', 'creat')
 local POLLIN		= nixio.poll_flags('in')
 local POLL_TIMEOUT_MS	= 1000
 local MAX_TRIES         = 5
@@ -115,6 +116,7 @@ local COMMIT		 = 'ct'
 
 local API_PATH		 = '/www/sensor/'
 local CGI_SCRIPT	 = '/usr/bin/restful'
+local AVAHI_PATH	 = '/etc/avahi/services/flukso.service'
 
 -- check hardware version
 local hw_major, hw_minor = send(ctrl, GET_HW_VERSION):match(GET_HW_VERSION_R)
@@ -246,6 +248,47 @@ for i = 1, MAX_SENSORS do
 			print(string.format('ln -s %s %s%s .. ok', CGI_SCRIPT, API_PATH, sensor_id))
 		end
 	end
+end
+
+-- generate a new flukso.service for avahi
+avahi = { head = {}, body = {}, tail = {} }
+
+avahi.head[1] = '<?xml version="1.0" standalone="no"?><!--*-nxml-*-->'
+avahi.head[2] = '<!DOCTYPE service-group SYSTEM "avahi-service.dtd">'
+avahi.head[3] = '<service-group>'
+avahi.head[4] = ' <name replace-wildcards="yes">Flukso RESTful API on %h</name>'
+avahi.head[5] = '  <service>'
+avahi.head[6] = '    <type>_flukso._tcp</type>'
+avahi.head[7] = '    <port>8080</port>'
+
+for i = 1, MAX_SENSORS do
+	if flukso[tostring(i)] ~= nil and flukso[tostring(i)].enable == '1' and flukso[tostring(i)].id then
+		avahi.body[#avahi.body + 1] = string.format('    <txt-record>id%d=%s</txt-record>' , i, flukso[tostring(i)].id)
+	end
+end
+
+avahi.tail[1] = '    <txt-record>path=/sensor</txt-record>'
+avahi.tail[2] = '    <txt-record>version=1.0</txt-record>'
+avahi.tail[3] = '  </service>'
+avahi.tail[4] = '</service-group>'
+
+-- remove the old flukso.service
+nixio.fs.unlink(AVAHI_PATH)
+
+-- generate the new one
+fd = nixio.open(AVAHI_PATH, O_RDWR_CREAT)
+print(string.format('generating a new %s', AVAHI_PATH))
+
+for i = 1, #avahi.head do
+	fd:write(avahi.head[i] .. '\n')
+end
+
+for i = 1, #avahi.body do
+	fd:write(avahi.body[i] .. '\n')
+end
+
+for i = 1, #avahi.tail do
+	fd:write(avahi.tail[i] .. '\n')
 end
 
 print(arg[0] .. ' completed successfully. Bye!')
