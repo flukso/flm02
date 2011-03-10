@@ -8,16 +8,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=avahi
-PKG_VERSION:=0.6.25
+PKG_VERSION:=0.6.29
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://avahi.org/download/
-PKG_MD5SUM:=a83155a6e29e3988f07e5eea3287b21e
+PKG_MD5SUM:=bb9d326770689610d1dbaceab5a787fc
 
 PKG_BUILD_DEPENDS:=libexpat libdaemon libgdbm intltool/host
 
-PKG_FIXUP:=libtool
+PKG_FIXUP:=autoreconf
+PKG_REMOVE_FILES:=autogen.sh
+
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
 
@@ -112,6 +114,7 @@ CONFIGURE_ARGS+= \
 	--disable-qt3 \
 	--disable-qt4 \
 	--disable-gtk \
+	--disable-gtk3 \
 	--disable-dbus \
 	--with-xml=expat \
 	--disable-dbm \
@@ -145,12 +148,7 @@ CONFIGURE_ARGS+= \
 endif
 
 CONFIGURE_VARS+= \
-	CFLAGS="$$$$CFLAGS -DNDEBUG" \
-
-define Build/Configure
-	( cd $(PKG_BUILD_DIR); aclocal; libtoolize; autoreconf; );
-	$(call Build/Configure/Default)
-endef
+	CFLAGS="$$$$CFLAGS -DNDEBUG -DDISABLE_SYSTEMD" \
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include

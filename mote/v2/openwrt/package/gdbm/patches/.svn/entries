@@ -2,7 +2,7 @@
 
 dir
 25991
-svn://svn.openwrt.org/openwrt/packages/libs/gdbm
+svn://svn.openwrt.org/openwrt/packages/libs/gdbm/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -26,21 +26,17 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
-Makefile
+100-fix-build-with-libtool2.patch
 file
 
 
 
 
-2011-03-10T08:42:05.404744Z
-d0da7a248f1fcfd4267cb9a186117fcd
+2011-03-10T08:42:05.396744Z
+918f070e59ed3d97f2736b8cc7e245c4
 2010-12-11T00:11:36.903438Z
 24467
 jow
-has-props
 
 
 
@@ -61,5 +57,6 @@ has-props
 
 
 
-1196
+
+1197
 

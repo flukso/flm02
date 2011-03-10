@@ -1,14 +1,14 @@
 10
 
 dir
-22525
+25991
 svn://svn.openwrt.org/openwrt/packages/net/ntpclient
 svn://svn.openwrt.org/openwrt
 
 
 
-2010-01-14T19:02:19.230463Z
-19134
+2011-01-23T19:30:59.389530Z
+25077
 jow
 
 
@@ -38,10 +38,10 @@ file
 
 
 
-2010-07-24T18:00:00.008391Z
-c4e1830bfd3ec47c1e4bd089dcf56c7f
-2010-01-14T19:02:19.230463Z
-19134
+2011-03-10T08:55:51.312744Z
+c7db83ba17c6c351e3d9606d8f865feb
+2011-01-23T19:30:59.389530Z
+25077
 jow
 has-props
 
@@ -64,5 +64,5 @@ has-props
 
 
 
-1310
+1374
 
