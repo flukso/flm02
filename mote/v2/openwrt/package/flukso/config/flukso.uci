@@ -55,6 +55,7 @@ config sensor 5
 	option enable 1
 
 config sensor 6
+	option id 0123456789abcdef0123456789abcde6
 	option type uart
 	list port 6
 	option enable 1
