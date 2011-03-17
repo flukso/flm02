@@ -643,6 +643,13 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
       $blocks['fluksonians']['pages'] = '<front>\nlogger/\nlogger/*';
       $blocks['fluksonians']['cache'] = BLOCK_NO_CACHE;
 
+      $blocks['sensors']['info'] = t('Sensors');
+      $blocks['sensors']['status'] = TRUE;
+      $blocks['sensors']['region'] = 'content';
+      $blocks['sensors']['weight'] = 1;
+      $blocks['sensors']['pages'] = '<front>\nlogger/\nlogger/*';
+      $blocks['sensors']['cache'] = BLOCK_NO_CACHE;
+
       $blocks['unit']['info'] = t('Unit');
       $blocks['unit']['status'] = TRUE;
       $blocks['unit']['region'] = 'right';
@@ -665,6 +672,10 @@ function logger_block($op = 'list', $delta = 0, $edit = array()) {
 
       if ($delta == 'fluksonians' && user_access('logger')) {
         $block['content'] = drupal_get_form('_logger_fluksonians_form');
+      }
+
+      elseif ($delta == 'sensors' && user_access('logger')) {
+        $block['content'] = drupal_get_form('_logger_sensors_form');
       }
 
       elseif ($delta == 'unit' && user_access('logger') && strrpos(' ' . $_GET['q'] . '/electricity', 'logger/electricity')) {
@@ -802,6 +813,69 @@ as' => TRUE)) .' '. l($fluksonian->name, 'user/'. $fluksonian->uid, array('alias
     '#type' => 'item',
     //'#title' => t('Title'),
     '#value' => theme('table', array(), $rows),
+  );
+
+  return $form;
+}
+
+/**
+ * Generates the sensors block form.
+ */
+function _logger_sensors_form() {
+  function unix_to_userlocaltime($unix) {
+    global $user;
+    $unix_local = gmdate('r', $unix + $user->timezone);
+    return substr($unix_local, 0, strlen($unix_local) - 6);
+  }
+
+  global $user;
+  $destination = drupal_get_destination();
+
+  if (strrpos(' ' . $_GET['q'] . '/electricity', 'logger/electricity')) {
+    $type = 'electricity';
+  }
+  else {
+    $type = 'water';
+  }
+
+  $sensors = db_query("SELECT meter, access, function, value, chart 
+                       FROM {logger_meters}
+                       WHERE uid = %d and type = '%s'", $user->uid, $type);
+
+  $i = 0;
+  $rows = array();
+  $row = array();
+
+  while ($sensor = db_fetch_object($sensors)) {
+    if ($sensor->chart) {
+      $row[] = l('[x]', 'logger/sensor/remove/' . $sensor->meter, array('attributes' => array('title' => "remove ". $sensor->function . " from the chart"), 'query' => $destination, 'alias' => TRUE));
+    }
+    else {
+      $row[] = l('[+]', 'logger/sensor/add/' . $sensor->meter, array('attributes' => array('title' => "add ". $sensor->function . " to the chart"), 'query' => $destination, 'alias' => TRUE));
+    }
+
+    $row[] = $sensor->function;
+    $row[] = $sensor->meter;
+    $row[] = unix_to_userlocaltime($sensor->access);
+    $row[] = $sensor->value;
+
+    $rows[] = $row;
+    $row = array();
+
+    $i++;
+  }
+
+  $form['sensors'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Sensors'),
+    '#description' => t('Select the sensors you wish to add to [+] or remove from [x] the chart.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['sensors']['list'] = array(
+    '#type' => 'item',
+    //'#title' => t('Title'),
+    '#value' => theme('table', array(t('Chart'), t('Function'), t('Sensor'), t('Last Reporting'), t('Counter')), $rows),
   );
 
   return $form;
