@@ -845,37 +845,50 @@ function _logger_sensors_form() {
   $i = 0;
   $rows = array();
   $row = array();
+  $defaults = array();
 
   while ($sensor = db_fetch_object($sensors)) {
-    if ($sensor->chart) {
-      $row[] = l('[x]', 'logger/sensor/remove/' . $sensor->meter, array('attributes' => array('title' => "remove ". $sensor->function . " from the chart"), 'query' => $destination, 'alias' => TRUE));
-    }
-    else {
-      $row[] = l('[+]', 'logger/sensor/add/' . $sensor->meter, array('attributes' => array('title' => "add ". $sensor->function . " to the chart"), 'query' => $destination, 'alias' => TRUE));
-    }
-
-    $row[] = $sensor->function;
-    $row[] = $sensor->meter;
-    $row[] = unix_to_userlocaltime($sensor->access);
-    $row[] = $sensor->value;
-
-    $rows[] = $row;
+    $row['function'] = $sensor->function;
+    $row['sensor'] = $sensor->meter;
+    $row['access'] = unix_to_userlocaltime($sensor->access);
+    $row['counter'] = $sensor->value;
+ 
+    $rows[$sensor->meter] = $row;
     $row = array();
+
+    if ($sensor->chart) {
+      $defaults[$sensor->meter] = TRUE;
+    }
 
     $i++;
   }
 
+  $header = array(
+    'function' => t('Function'),
+    'sensor' => t('Sensor'),
+    'access' => t('Last Reporting'),
+    'counter' => t('Counter'),
+  );
+
   $form['sensors'] = array(
     '#type' => 'fieldset',
     '#title' => t('Sensors'),
-    '#description' => t('Select the sensors you wish to add to [+] or remove from [x] the chart.'),
+    '#description' => t('Select the sensors you wish to add to the chart.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
   $form['sensors']['list'] = array(
-    '#type' => 'item',
-    //'#title' => t('Title'),
-    '#value' => theme('table', array(t('Chart'), t('Function'), t('Sensor'), t('Last Reporting'), t('Counter')), $rows),
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $rows,
+    '#multiple' => TRUE,
+    '#default_value' => $defaults,
+  );
+
+  $form['sensors']['submit'] = array
+  (
+    '#type' => 'submit',
+    '#value' => t('Update'),
   );
 
   return $form;
