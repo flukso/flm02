@@ -319,10 +319,18 @@ function _logger_dashboard($type, $function, $interval) {
                                        WHERE uid = %d AND type = '%s' AND function = '%s'
                                        ORDER BY created", $user->uid, $type, $function));
 
-  $result_me = db_query("SELECT meter, function
-	                 FROM {logger_meters}
-	                 WHERE uid = %d AND type = '%s'
-	                 ORDER BY function", $user->uid, $type);
+  if (in_array('pro', array_values($user->roles)))
+    $result_me = db_query("SELECT meter, function
+  	                   FROM {logger_meters}
+	                   WHERE uid = %d AND type = '%s' and chart = %d
+	                   ORDER BY function", $user->uid, $type, 1);
+
+  else
+    $result_me = db_query("SELECT meter, function
+  	                   FROM {logger_meters}
+	                   WHERE uid = %d AND type = '%s'
+	                   ORDER BY function", $user->uid, $type);
+
   $meter_me = db_fetch_object($result_me);
 
   $result_sub = db_query("SELECT u.name, lm.meter, lu.private
