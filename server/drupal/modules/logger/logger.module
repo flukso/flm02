@@ -858,7 +858,7 @@ function _logger_sensors_form() {
   while ($sensor = db_fetch_object($sensors)) {
     $row['function'] = $sensor->function;
     $row['sensor'] = $sensor->meter;
-    $row['access'] = unix_to_userlocaltime($sensor->access);
+    $row['access'] = '<div align="center">' . unix_to_userlocaltime($sensor->access) . '</div>';
     $row['counter'] = '<div align="right">' . $sensor->value . '</div>';
 
     $rows[$sensor->meter] = $row;
