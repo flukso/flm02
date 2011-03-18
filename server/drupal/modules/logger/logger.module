@@ -891,6 +891,7 @@ function _logger_sensors_form() {
     '#options' => $rows,
     '#multiple' => TRUE,
     '#default_value' => $defaults,
+    '#element_validate' => array('_logger_sensors_list_validate'),
   );
 
   $form['sensors']['submit'] = array
@@ -902,6 +903,11 @@ function _logger_sensors_form() {
   $form['#submit'][] = '_logger_sensors_submit';
 
   return $form;
+}
+
+function _logger_sensors_list_validate($element, &$form_state) {
+  if (count(array_filter($form_state['values']['list'])) > 5)
+    form_error($element, t('A maximum of five sensors can be plotted on a single chart.'));
 }
 
 function _logger_sensors_submit($form, &$form_state) {
