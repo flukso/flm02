@@ -859,7 +859,7 @@ function _logger_sensors_form() {
     $row['function'] = $sensor->function;
     $row['sensor'] = $sensor->meter;
     $row['access'] = unix_to_userlocaltime($sensor->access);
-    $row['counter'] = $sensor->value;
+    $row['counter'] = str_repeat('0', 10 - strlen($sensor->value)) . $sensor->value;
  
     $rows[$sensor->meter] = $row;
     $row = array();
