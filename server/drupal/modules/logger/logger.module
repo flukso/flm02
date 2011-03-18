@@ -891,7 +891,18 @@ function _logger_sensors_form() {
     '#value' => t('Update'),
   );
 
+  $form['#submit'][] = '_logger_sensors_submit';
+
   return $form;
+}
+
+function _logger_sensors_submit($form, &$form_state) {
+  foreach ($form_state['values']['list'] as $sensor => $chart) {
+    if ($chart)
+      db_query("UPDATE {logger_meters} SET chart = %d WHERE meter = '%s'", 1, $sensor);
+    else
+      db_query("UPDATE {logger_meters} SET chart = %d WHERE meter = '%s'", 0, $sensor);
+  }
 }
 
 /**
