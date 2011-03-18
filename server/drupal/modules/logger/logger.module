@@ -803,8 +803,7 @@ function _logger_fluksonians_form() {
       $subscription = db_fetch_object($subscriptions);
     }
     else {
-      $row[] = l('[+]', 'logger/add/'. $fluksonian->uid, array('attributes' => array('title' => "subscribe to ". $fluksonian->name ."'s stream"), 'query' => $destination, 'ali
-as' => TRUE)) .' '. l($fluksonian->name, 'user/'. $fluksonian->uid, array('alias' => FALSE));
+      $row[] = l('[+]', 'logger/add/'. $fluksonian->uid, array('attributes' => array('title' => "subscribe to ". $fluksonian->name ."'s stream"), 'query' => $destination, 'alias' => TRUE)) .' '. l($fluksonian->name, 'user/'. $fluksonian->uid, array('alias' => FALSE));
     }
     $i++;
   }
@@ -826,18 +825,23 @@ as' => TRUE)) .' '. l($fluksonian->name, 'user/'. $fluksonian->uid, array('alias
   return $form;
 }
 
+function _unix_to_userlocaltime($unix) {
+  global $user;
+  $unix_local = gmdate('r', $unix + $user->timezone);
+  return substr($unix_local, 0, strlen($unix_local) - 6);
+}
+
+function _unix_to_userlocaldate($unix) {
+  global $user;
+  $unix_local = gmdate('Ymd', $unix + $user->timezone);
+  return $unix_local;
+}
+
 /**
  * Generates the sensors block form.
  */
 function _logger_sensors_form() {
-  function unix_to_userlocaltime($unix) {
-    global $user;
-    $unix_local = gmdate('r', $unix + $user->timezone);
-    return substr($unix_local, 0, strlen($unix_local) - 6);
-  }
-
   global $user;
-  $destination = drupal_get_destination();
 
   if (strrpos(' ' . $_GET['q'] . '/electricity', 'logger/electricity')) {
     $type = 'electricity';
@@ -850,6 +854,8 @@ function _logger_sensors_form() {
                        FROM {logger_meters}
                        WHERE uid = %d and type = '%s'", $user->uid, $type);
 
+  $path = _logger_sensors_list_save($type);
+
   $i = 0;
   $rows = array();
   $row = array();
@@ -858,7 +864,7 @@ function _logger_sensors_form() {
   while ($sensor = db_fetch_object($sensors)) {
     $row['function'] = $sensor->function;
     $row['sensor'] = $sensor->meter;
-    $row['access'] = '<div align="center">' . unix_to_userlocaltime($sensor->access) . '</div>';
+    $row['access'] = '<div align="center">' . _unix_to_userlocaltime($sensor->access) . '</div>';
     $row['counter'] = '<div align="right">' . $sensor->value . '</div>';
 
     $rows[$sensor->meter] = $row;
@@ -878,10 +884,14 @@ function _logger_sensors_form() {
     'counter' => t('Counter'),
   );
 
+  $description = 'Select the sensors you wish to add to the chart. ';
+  $description .= l('Click here', $path, array('attributes' => array('alias' => TRUE)));
+  $description .= ' to export the table in csv format.';
+
   $form['sensors'] = array(
     '#type' => 'fieldset',
     '#title' => t('Sensors'),
-    '#description' => t('Select the sensors you wish to add to the chart.'),
+    '#description' => $description,
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
@@ -900,7 +910,7 @@ function _logger_sensors_form() {
     '#value' => t('Update'),
   );
 
-  $form['#submit'][] = '_logger_sensors_submit';
+  $form['#submit'][] = '_logger_sensors_list_submit';
 
   return $form;
 }
@@ -910,13 +920,48 @@ function _logger_sensors_list_validate($element, &$form_state) {
     form_error($element, t('A maximum of five sensors can be plotted on a single chart.'));
 }
 
-function _logger_sensors_submit($form, &$form_state) {
+function _logger_sensors_list_submit($form, &$form_state) {
   foreach ($form_state['values']['list'] as $sensor => $chart) {
     if ($chart)
       db_query("UPDATE {logger_meters} SET chart = %d WHERE meter = '%s'", 1, $sensor);
     else
       db_query("UPDATE {logger_meters} SET chart = %d WHERE meter = '%s'", 0, $sensor);
   }
+}
+
+function _logger_sensors_list_save($type) {
+  global $user;
+
+  $sensors = db_query("SELECT meter, access, function, value, chart 
+                       FROM {logger_meters}
+                       WHERE uid = %d and type = '%s'", $user->uid, $type);
+
+  $i = 0;
+  $rows = array();
+  $row = array();
+
+  $rows[] = 'function;sensor;access;counter';
+
+  while ($sensor = db_fetch_object($sensors)) {
+    $row[] = $sensor->function;
+    $row[] = $sensor->meter;
+    $row[] = _unix_to_userlocaltime($sensor->access);
+    $row[] = $sensor->value;
+
+    $rows[] = implode($row, ';');
+    $row = array();
+    $i++;
+  }
+
+  $output = implode($rows, PHP_EOL);
+  $name = implode(array(_unix_to_userlocaldate(time()), $type, md5(uniqid())), '-');
+  $path = drupal_get_path('module', 'logger') . '/graphs/list/' . $name . '.csv';
+
+  $fd = fopen($path, 'w');
+  fwrite($fd, $output);
+  fclose($fd);
+
+  return $path; 
 }
 
 /**
@@ -953,4 +998,5 @@ function logger_cron() {
   exec('rm sites/all/modules/logger/graphs/month/*');
   exec('rm sites/all/modules/logger/graphs/year/*');
   exec('rm sites/all/modules/logger/graphs/night/*');
+  exec('rm sites/all/modules/logger/graphs/list/*');
 }
