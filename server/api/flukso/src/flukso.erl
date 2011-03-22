@@ -16,7 +16,8 @@ ensure_started(App) ->
     end.
 
 mysql_prepare() ->
-    mysql:prepare(permissions, <<"SELECT permissions FROM logger_tokens WHERE meter = ? AND token = ?">>).
+    mysql:prepare(permissions, <<"SELECT permissions FROM logger_tokens WHERE meter = ? AND token = ?">>),
+    mysql:prepare(device_key, <<"SELECT sha FROM logger_devices WHERE device = ?">>).
 
 %% @spec start_link() -> {ok,Pid::pid()}
 %% @doc Starts the app for inclusion in a supervisor tree
