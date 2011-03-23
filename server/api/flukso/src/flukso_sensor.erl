@@ -26,9 +26,7 @@
          process_post/2]).
 
 -include_lib("webmachine/include/webmachine.hrl").
-
--record(state,
-        {rrdSensor}).
+-include("flukso.hrl").
 
 init([]) -> 
     {ok, undefined}.
@@ -75,12 +73,12 @@ process_post(ReqData, State) ->
     {struct, JsonData} = mochijson2:decode(wrq:req_body(ReqData)),
     {struct, Measurements} = proplists:get_value(<<"measurements">>, JsonData),
     Ids = proplists:get_keys(Measurements),
-    RrdResponse = [update(RrdSensor, proplists:get_value(RrdSensor, Measurements)) || RrdSensor <- Ids],
+    RrdResponse = [update_rrd(RrdSensor, proplists:get_value(RrdSensor, Measurements)) || RrdSensor <- Ids],
 
     JsonResponse = mochijson2:encode({struct, [{<<"response">>, {struct, RrdResponse}}]}),
     {true , wrq:set_resp_body(JsonResponse, ReqData), State}.
 
-update(RrdSensor, TimeSeries) ->
+update_rrd(RrdSensor, TimeSeries) ->
     Path = "var/data/base/",
     RrdData = [[integer_to_list(Time), ":", integer_to_list(Counter), " "] || [Time, Counter] <- TimeSeries],
 
@@ -90,32 +88,3 @@ update(RrdSensor, TimeSeries) ->
         {ok, _RrdResponse} -> {RrdSensor, <<"ok">>};
         {error, RrdResponse} -> {RrdSensor, list_to_binary(RrdResponse)}
     end.
-
-
-%% checks
-check_version(undefined, undefined) ->
-    {false, false};
-check_version(Version, undefined) ->
-    case Version of
-        "1.0" -> {Version, true};
-        _ -> {false, false}
-    end;
-check_version(undefined, Version) ->
-    check_version(Version, undefined);
-check_version(_, _) ->
-    {false, false}.
-
-check_sensor(Sensor) ->
-    case re:run(Sensor, "[0-9a-f]+", []) of 
-        {match, [{0,32}]} -> {Sensor, true};
-        _ -> {false, false}
-    end.
-
-check_token(undefined, undefined) ->
-    {false, false};
-check_token(Token, undefined) ->
-    check_sensor(Token);
-check_token(undefined, Token) ->
-    check_sensor(Token);
-check_token(_, _) ->
-    {false, false}.
