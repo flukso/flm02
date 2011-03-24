@@ -3,7 +3,5 @@
 
 # set the wifi led pin (=GPIO 7) direction to output
 gpioctl dirout 7
-# set rw permissions for spidev
-chmod 666 /dev/spidev0.0
 
 exit 0
