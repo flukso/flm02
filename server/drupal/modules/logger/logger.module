@@ -319,7 +319,7 @@ function _logger_dashboard($type, $function, $interval) {
                                        WHERE uid = %d AND type = '%s' AND function = '%s'
                                        ORDER BY created", $user->uid, $type, $function));
 
-  if (in_array('pro', array_values($user->roles)))
+  if (is_array($user->roles) && in_array('pro', array_values($user->roles)))
     $result_me = db_query("SELECT meter, function
   	                   FROM {logger_meters}
 	                   WHERE uid = %d AND type = '%s' and chart = %d

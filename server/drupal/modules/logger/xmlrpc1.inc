@@ -155,7 +155,7 @@ function _logger_authenticate_hmac_sha1($auth, $message) {
     return TRUE;
   }
   else {
-    watchdog_xmlrpc('logger.auth', 'HMAC-SHA1 authentication failed for device: %device', array('%device' => $auth['device']), WATCHDOG_ERROR);
+    // watchdog_xmlrpc('logger.auth', 'HMAC-SHA1 authentication failed for device: %device', array('%device' => $auth['device']), WATCHDOG_ERROR);
     return FALSE;
   }
 }
