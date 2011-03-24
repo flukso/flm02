@@ -3,14 +3,42 @@
 
 START=98
 
-start()	{
+load_config()
+{
+        uci set system.@system[0].key=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11000)) -n 16 /dev/mtd6)
+        uci set system.@system[0].device=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 16 /dev/mtd6)
+        uci set system.@system[0].hostname=flukso-$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 3 /dev/mtd6)
+
+        for i in `seq 6`;
+        do
+                ADDRESS=0x110$((i+2))0
+                uci set flukso.$i.id=$(hexdump -v -e '1/1 "%.2x"' -s $((ADDRESS)) -n 16 /dev/mtd6)
+        done
+
+	uci set system.@system[0].firstboot='0'
+        uci commit
+
+        logger 'configuring flukso device and sensor ids'
+}
+
+
+start()
+{
+	FIRSTBOOT=$(uci get system.@system[0].firstboot)
+
+	if [ $FIRSTBOOT -eq '1' ]
+	then
+		load_config
+	fi
+
 	chmod 666 /dev/spidev0.0
 
 	/usr/sbin/spid
 	/usr/sbin/fluksod
 }
 
-stop() {
+stop()
+{
 	/usr/sbin/fluksod -k
 	/usr/sbin/spid -k
 
