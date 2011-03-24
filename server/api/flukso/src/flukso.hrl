@@ -39,8 +39,11 @@ check_version(_, _) ->
     {false, false}.
 
 check_sensor(Sensor) ->
-    case re:run(Sensor, "[0-9a-f]+", []) of 
-        {match, [{0,32}]} -> {Sensor, true};
+    check_32hex(Sensor).
+
+check_32hex(String) ->
+    case re:run(String, "[0-9a-f]+", []) of 
+        {match, [{0,32}]} -> {String, true};
         _ -> {false, false}
     end.
 
@@ -91,9 +94,9 @@ check_unit(Unit) ->
 check_token(undefined, undefined) ->
     {false, false};
 check_token(Token, undefined) ->
-    check_sensor(Token);
+    check_32hex(Token);
 check_token(undefined, Token) ->
-    check_sensor(Token);
+    check_32hex(Token);
 check_token(_, _) ->
     {false, false}.
 
