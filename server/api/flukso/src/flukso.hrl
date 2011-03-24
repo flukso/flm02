@@ -26,15 +26,18 @@
          jsonpCallback}).
 
 %% checks
-check_version(undefined, undefined) ->
-    {false, false};
-check_version(Version, undefined) ->
+check_version(Version) ->
     case Version of
         "1.0" -> {Version, true};
         _ -> {false, false}
-    end;
+    end.
+
+check_version(undefined, undefined) ->
+    {false, false};
+check_version(Version, undefined) ->
+    check_version(Version);
 check_version(undefined, Version) ->
-    check_version(Version, undefined);
+    check_version(Version);
 check_version(_, _) ->
     {false, false}.
 

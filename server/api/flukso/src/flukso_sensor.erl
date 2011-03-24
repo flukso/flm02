@@ -39,11 +39,12 @@ allowed_methods(ReqData, State) ->
     {['POST'], ReqData, State}.
 
 malformed_request(ReqData, State) ->
-    {_Version, ValidVersion} = check_version(wrq:get_req_header("X-Version", ReqData), wrq:get_qs_value("version", ReqData)),
-% TODO: check validity of X-Device and X-Digest headers
+    {_Version, ValidVersion} = check_version(wrq:get_req_header("X-Version", ReqData)),
+    {_Device, ValidDevice} = check_32hex(wrq:get_req_header("X-Device", ReqData)),
+    {_Digest, ValidDigest} = check_32hex(wrq:get_req_header("X-Digest", ReqData)),
 
-    {case {ValidVersion} of
-        {true} -> false;
+    {case {ValidVersion, ValidDevice, ValidDigest} of
+        {true, true, true} -> false;
         _ -> true
      end,
     ReqData, State}.
