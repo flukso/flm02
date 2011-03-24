@@ -16,6 +16,14 @@
 %%%
 %% @doc Common record definitions and helper functions for the Flukso API. 
 
+-define(MINUTE,     60).
+-define(QUARTER,   900).
+-define(HOUR,     3600).
+-define(DAY,     86400).
+-define(WEEK,   604800).
+-define(MONTH, 2419200).
+-define(YEAR, 31536000).
+
 -record(state,
         {rrdSensor,
          rrdStart,
@@ -136,14 +144,14 @@ default_resolution(Interval) ->
     end.
 
 time_to_seconds(Time) ->
-    Times = [{"minute", 60},
-             {"15min", 900},
-             {"hour", 3600},
-             {"day", 86400},
-             {"week", 604800},
-             {"month", 2419200},
-             {"year", 31536000},
-             {"night", 2419200}],
+    Times = [{"minute", ?MINUTE},
+             {"15min", ?QUARTER},
+             {"hour", ?HOUR},
+             {"day", ?DAY},
+             {"week", ?WEEK},
+             {"month", ?MONTH},
+             {"year", ?YEAR},
+             {"night", ?MONTH}],
 
     case lists:keyfind(Time, 1, Times) of
         false -> false;
