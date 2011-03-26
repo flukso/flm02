@@ -47,13 +47,17 @@ malformed_request(ReqData, State) ->
     end.
 
 malformed_POST(ReqData, _State) ->
-    {_Version, ValidVersion} = check_version(wrq:get_req_header("X-Version", ReqData), wrq:get_qs_value("version", ReqData)),
+    {_Version, ValidVersion} = check_version(wrq:get_req_header("X-Version", ReqData)),
     {RrdSensor, ValidSensor} = check_sensor(wrq:path_info(sensor, ReqData)),
+    {Device, ValidDevice} = check_device(wrq:get_req_header("X-Device", ReqData)),
+    {Digest, ValidDigest} = check_digest(wrq:get_req_header("X-Digest", ReqData)),
 
-    State = #state{rrdSensor = RrdSensor},
+    State = #state{rrdSensor = RrdSensor,
+                   device = Device,
+                   digest = Digest},
 
-    {case {ValidVersion, ValidSensor} of
-        {true, true} -> false;
+    {case {ValidVersion, ValidSensor, ValidDevice, ValidDigest} of
+        {true, true, true, true} -> false;
         _ -> true
      end,
     ReqData, State}.
@@ -86,8 +90,18 @@ is_authorized(ReqData, State) ->
         'GET'  -> is_auth_GET(ReqData, State)
     end.
 
-is_auth_POST(ReqData, State) ->
-    {true, ReqData, State}.
+is_auth_POST(ReqData, #state{device = Device, digest = ClientDigest} = State) ->
+    {data, Result} = mysql:execute(pool, device_key, [Device]),
+    [[Key]] = mysql:get_result_rows(Result),
+    Data = wrq:req_body(ReqData),
+    <<X:160/big-unsigned-integer>> = crypto:sha_mac(Key, Data),
+    ServerDigest = lists:flatten(io_lib:format("~40.16.0b", [X])),
+
+    {case ServerDigest of
+        ClientDigest -> true;
+        _WrongDigest -> "access refused"
+     end,
+     ReqData, State}.
 
 is_auth_GET(ReqData, #state{rrdSensor = RrdSensor, token = Token} = State) ->
     {data, Result} = mysql:execute(pool, permissions, [RrdSensor, Token]),
@@ -125,5 +139,21 @@ to_json(ReqData, #state{rrdSensor = RrdSensor, rrdStart = RrdStart, rrdEnd = Rrd
             {{halt, 404}, ReqData, State}
     end.
 
+% JSON: {"measurements":[[<ts1>,<value1>],...,[<tsn>,<valuen>]]}
+% Mochijson2: {struct,[{<<"measurements">>,[[<ts11>,<value11>],...,[<ts1m>,<value1m>]]}]}
 process_post(ReqData, #state{rrdSensor = RrdSensor} = State) ->
-    {true , ReqData, State}.
+    Path = "var/data/base/",
+
+    {struct, JsonData} = mochijson2:decode(wrq:req_body(ReqData)),
+    Measurements = proplists:get_value(<<"measurements">>, JsonData),
+    RrdData = [[integer_to_list(Time), ":", integer_to_list(Counter), " "] || [Time, Counter] <- Measurements],
+
+%debugging: io:format("~s~n", [[Path, [RrdSensor|".rrd"], " ", RrdData]]),
+    
+    case erlrrd:update([Path, [RrdSensor|".rrd"], " ", RrdData]) of
+        {ok, _RrdResponse} -> RrdResponse = "ok";
+        {error, RrdResponse} -> true
+    end,
+
+    JsonResponse = mochijson2:encode({struct, [{<<"response">>, list_to_binary(RrdResponse)}]}),
+    {true , wrq:set_resp_body(JsonResponse, ReqData), State}.

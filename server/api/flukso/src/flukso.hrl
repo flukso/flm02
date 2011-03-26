@@ -31,6 +31,8 @@
          rrdResolution,
          rrdFactor,
          token,
+         device,
+         digest,
          jsonpCallback}).
 
 %% checks
