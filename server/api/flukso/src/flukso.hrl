@@ -50,11 +50,26 @@ check_version(_, _) ->
     {false, false}.
 
 check_sensor(Sensor) ->
-    check_32hex(Sensor).
+    check_hex(Sensor, 32).
 
-check_32hex(String) ->
+check_token(undefined, undefined) ->
+    {false, false};
+check_token(Token, undefined) ->
+    check_hex(Token, 32);
+check_token(undefined, Token) ->
+    check_hex(Token, 32);
+check_token(_, _) ->
+    {false, false}.
+
+check_digest(Digest) ->
+    check_hex(Digest, 40).
+
+check_device(Device) ->
+    check_hex(Device, 32).
+
+check_hex(String, Length) ->
     case re:run(String, "[0-9a-f]+", []) of 
-        {match, [{0,32}]} -> {String, true};
+        {match, [{0, Length}]} -> {String, true};
         _ -> {false, false}
     end.
 
@@ -101,15 +116,6 @@ check_unit(Unit) ->
         false -> {false, false};
         {_Unit, RrdFactor} -> {RrdFactor, true}
     end.
-
-check_token(undefined, undefined) ->
-    {false, false};
-check_token(Token, undefined) ->
-    check_32hex(Token);
-check_token(undefined, Token) ->
-    check_32hex(Token);
-check_token(_, _) ->
-    {false, false}.
 
 check_jsonp_callback(undefined) ->
     {undefined, true};

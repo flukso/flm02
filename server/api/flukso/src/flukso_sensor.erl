@@ -40,8 +40,8 @@ allowed_methods(ReqData, State) ->
 
 malformed_request(ReqData, State) ->
     {_Version, ValidVersion} = check_version(wrq:get_req_header("X-Version", ReqData)),
-    {_Device, ValidDevice} = check_32hex(wrq:get_req_header("X-Device", ReqData)),
-    {_Digest, ValidDigest} = check_32hex(wrq:get_req_header("X-Digest", ReqData)),
+    {_Device, ValidDevice} = check_device(wrq:get_req_header("X-Device", ReqData)),
+    {_Digest, ValidDigest} = check_digest(wrq:get_req_header("X-Digest", ReqData)),
 
     {case {ValidVersion, ValidDevice, ValidDigest} of
         {true, true, true} -> false;
