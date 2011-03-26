@@ -18,6 +18,8 @@ local nixio = require "nixio"
 local ltn12 = require "luci.ltn12"
 local util = require "luci.util"
 local table = require "table"
+local coroutine = require "coroutine"
+local string = require "string"
 local http = require "luci.http.protocol"
 local date = require "luci.http.protocol.date"
 
@@ -102,10 +104,46 @@ function request_to_source(uri, options)
 	end
 end
 
+function create_persistent()
+	return coroutine.wrap(function(uri, options)
+		local status, response, buffer, sock
+
+		while true do
+			local output = {}
+			status, response, buffer, sock = request_raw(uri, options, sock)
+
+			if not status then
+				uri, options = coroutine.yield(nil, response, buffer)
+
+			elseif status ~= 200 and status ~= 206 then
+				uri, options = coroutine.yield(nil, status, response)
+
+			else
+				local content_length = tonumber(response.headers["Content-Length"])
+				local bytes_read = 0
+
+				if content_length > 0 then
+					local source = ltn12.source.cat(ltn12.source.string(buffer), sock:blocksource())
+					local sink = ltn12.sink.table(output)
+
+					while bytes_read < content_length do
+						ltn12.pump.step(source, sink)
+						bytes_read = bytes_read + output[#output]:len()
+					end
+
+					uri, options = coroutine.yield(table.concat(output))
+				else
+					uri, options = coroutine.yield("")
+				end
+			end
+		end
+	end)
+end
+
 --
 -- GET HTTP-resource
 --
-function request_raw(uri, options)
+function request_raw(uri, options, sock)
 	options = options or {}
 	local pr, host, port, path = uri:match("(%w+)://([%w-.]+):?([0-9]*)(.*)")
 	if not host then
@@ -127,22 +165,28 @@ function request_raw(uri, options)
 	if headers.Connection == nil then
 		headers.Connection = "close"
 	end
-	
-	local sock, code, msg = nixio.connect(host, port)
+
+	-- in case of a persistent connection, the sock object will be passed as arg to request_raw
 	if not sock then
-		return nil, code, msg
+		local code, msg
+		sock, code, msg = nixio.connect(host, port)
+
+		if not sock then
+			return nil, code, msg
+		end
 	end
-	
+
 	sock:setsockopt("socket", "sndtimeo", options.sndtimeo or 15)
 	sock:setsockopt("socket", "rcvtimeo", options.rcvtimeo or 15)
-	
-	if pr == "https" then
+
+	-- if tls_socket, then we're dealing with a persistent tls connection so skip this part	
+	if pr == "https" and not sock:is_tls_socket() then
 		local tls = options.tls_context or nixio.tls()
 		local tls_context_set_verify = options.tls_context_set_verify or "none"
 
 		if tls_context_set_verify == "peer" then
 			tls:set_verify("peer")
-			tls:set_verify_locations("/etc/ssl/certs/flukso.ca.crt")
+			tls:set_verify_locations(options.cacert)
 		end
 
 		sock = tls:create(sock)
