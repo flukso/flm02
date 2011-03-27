@@ -137,8 +137,8 @@ to_json(ReqData, #state{rrdSensor = RrdSensor, rrdStart = RrdStart, rrdEnd = Rrd
             {{halt, 404}, ReqData, State}
     end.
 
-% JSON: {"measurements":[[<ts1>,<value1>],...,[<tsn>,<valuen>]]}
-% Mochijson2: {struct,[{<<"measurements">>,[[<ts11>,<value11>],...,[<ts1m>,<value1m>]]}]}
+% JSON: {"measurements":[[<TS1>,<VALUE1>],...,[<TSn>,<VALUEn>]]}
+% Mochijson2: {struct,[{<<"measurements">>,[[<TS1>,<VALUE1>],...,[<TSn>,<VALUEn>]]}]}
 process_post(ReqData, #state{rrdSensor = RrdSensor} = State) ->
     Path = "var/data/base/",
 
