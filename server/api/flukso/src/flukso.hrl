@@ -16,6 +16,9 @@
 %%%
 %% @doc Common record definitions and helper functions for the Flukso API. 
 
+-define(BASE_PATH, "var/data/base/").
+-define(NIGHT_PATH, "var/data/night/").
+
 -define(MINUTE,     60).
 -define(QUARTER,   900).
 -define(HOUR,     3600).
