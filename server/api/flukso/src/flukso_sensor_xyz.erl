@@ -90,8 +90,8 @@ is_authorized(ReqData, State) ->
         'GET'  -> is_auth_GET(ReqData, State)
     end.
 
-is_auth_POST(ReqData, #state{device = Device, digest = ClientDigest} = State) ->
-    {data, Result} = mysql:execute(pool, device_key, [Device]),
+is_auth_POST(ReqData, #state{rrdSensor = Sensor, digest = ClientDigest} = State) ->
+    {data, Result} = mysql:execute(pool, device_key, [Sensor]),
     [[Key]] = mysql:get_result_rows(Result),
     Data = wrq:req_body(ReqData),
     <<X:160/big-unsigned-integer>> = crypto:sha_mac(Key, Data),
