@@ -66,9 +66,6 @@ check_token(_, _) ->
 check_digest(Digest) ->
     check_hex(Digest, 40).
 
-check_device(Device) ->
-    check_hex(Device, 32).
-
 check_hex(String, Length) ->
     case re:run(String, "[0-9a-f]+", []) of 
         {match, [{0, Length}]} -> {String, true};

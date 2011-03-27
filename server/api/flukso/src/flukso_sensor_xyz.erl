@@ -49,15 +49,13 @@ malformed_request(ReqData, State) ->
 malformed_POST(ReqData, _State) ->
     {_Version, ValidVersion} = check_version(wrq:get_req_header("X-Version", ReqData)),
     {RrdSensor, ValidSensor} = check_sensor(wrq:path_info(sensor, ReqData)),
-    {Device, ValidDevice} = check_device(wrq:get_req_header("X-Device", ReqData)),
     {Digest, ValidDigest} = check_digest(wrq:get_req_header("X-Digest", ReqData)),
 
     State = #state{rrdSensor = RrdSensor,
-                   device = Device,
                    digest = Digest},
 
-    {case {ValidVersion, ValidSensor, ValidDevice, ValidDigest} of
-        {true, true, true, true} -> false;
+    {case {ValidVersion, ValidSensor, ValidDigest} of
+        {true, true, true} -> false;
         _ -> true
      end,
     ReqData, State}.
