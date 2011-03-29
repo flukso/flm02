@@ -176,8 +176,11 @@ time_to_seconds(Time) ->
 -define(INFO,      6).
 -define(DEBUG,     7).
 
+% logging severity threshold
+-define(LOGLEVEL, 7).
+
 % log to Drupal's watchdog table
-logger(Uid, Type, Message, Severity, ReqData) ->
+logger(Uid, Type, Message, Severity, ReqData) when Severity =< ?LOGLEVEL ->
     mysql:execute(pool, watchdog,
         [Uid,
          Type,
@@ -187,7 +190,9 @@ logger(Uid, Type, Message, Severity, ReqData) ->
          list_to_binary(wrq:raw_path(ReqData)),
          list_to_binary(wrq:peer(ReqData)),
          unix_time()
-        ]).
+        ]);
+logger(_Uid, _Type, _Message, _Severity, _ReqData) ->
+    true.
 
 % erlrrd wrappers
 rrd_fetch(Path, RrdSensor, RrdStart, RrdEnd, RrdResolution) ->
