@@ -53,9 +53,13 @@ function add(M, meter, timestamp, value)
 	M[meter][timestamp] = value
 end
 
-function clear(M)
-	for meter in pairs(M) do
+function clear(M, meter)
+	if meter then
 		M[meter] = nil
+	else -- clear all
+		for meter in pairs(M) do
+			M[meter] = nil
+		end
 	end
 end
 
