@@ -165,3 +165,26 @@ time_to_seconds(Time) ->
         false -> false;
         {_Time, TimeSec} -> TimeSec
     end.
+
+% severity levels
+-define(EMERGENCY, 0).
+-define(ALERT,     1).
+-define(CRITICAL,  2).
+-define(ERROR,     3).
+-define(WARNING,   4).
+-define(NOTICE,    5).
+-define(INFO,      6).
+-define(DEBUG,     7).
+
+% log to Drupal's watchdog table
+logger(Uid, Type, Message, Severity, ReqData) ->
+    mysql:execute(pool, watchdog,
+        [Uid,
+         Type,
+         Message,
+         <<"a:0:{}">>,
+         Severity,
+         list_to_binary(wrq:raw_path(ReqData)),
+         list_to_binary(wrq:peer(ReqData)),
+         unix_time()
+        ]).

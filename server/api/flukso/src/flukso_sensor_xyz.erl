@@ -153,17 +153,17 @@ process_post(ReqData, #state{rrdSensor = RrdSensor} = State) ->
     case erlrrd:update([?BASE_PATH, [RrdSensor|".rrd"], " ", RrdData]) of
         {ok, _RrdResponse} ->
             RrdResponse = "ok",
-            NewMidnight = update_night(RrdSensor, Uid, Midnight, LastTimestamp),
+            NewMidnight = update_night(RrdSensor, Uid, Midnight, LastTimestamp, ReqData),
             mysql:execute(pool, sensor_update, [unix_time(), NewMidnight, LastValue, RrdSensor]);
 
         {error, RrdResponse} ->
-            true
+            logger(Uid, <<"rrdupdate.base">>, list_to_binary(RrdResponse), ?ERROR, ReqData)
     end,
 
     JsonResponse = mochijson2:encode({struct, [{<<"response">>, list_to_binary(RrdResponse)}]}),
     {true , wrq:set_resp_body(JsonResponse, ReqData), State}.
 
-update_night(RrdSensor, Uid, Midnight, LastTimestamp) when LastTimestamp > Midnight + 6 * ?HOUR ->
+update_night(RrdSensor, Uid, Midnight, LastTimestamp, ReqData) when LastTimestamp > Midnight + 6 * ?HOUR ->
     LastMidnight = calculate_midnight(unix_time(), Uid),
 
     case erlrrd:fetch(erlrrd:c([[?BASE_PATH, [RrdSensor|".rrd"]], "AVERAGE", ["-s ", integer_to_list(LastMidnight + 2 * ?HOUR)], ["-e ", integer_to_list(LastMidnight + 5 * ?HOUR)], ["-r ", integer_to_list(?QUARTER)]])) of
@@ -175,12 +175,12 @@ update_night(RrdSensor, Uid, Midnight, LastTimestamp) when LastTimestamp > Midni
 %debugging: io:format("~s~n", [[?NIGHT_PATH, [RrdSensor|".rrd"], " ", integer_to_list(LastMidnight + 5 * ?HOUR), ":", float_to_list(NightAverage)]]),
 
             erlrrd:update([?NIGHT_PATH, [RrdSensor|".rrd"], " ", integer_to_list(LastMidnight + 5 * ?HOUR), ":", float_to_list(NightAverage)]);
-        {error, _Reason} ->
-            true
+        {error, Reason} ->
+            logger(Uid, <<"rrdupdate.night">>, list_to_binary(Reason), ?ERROR, ReqData)
     end,
 
     LastMidnight + ?DAY;
-update_night(_RrdSensor, _Uid, Midnight, _LastTimestamp) ->
+update_night(_RrdSensor, _Uid, Midnight, _LastTimestamp, _ReqData) ->
     Midnight.
 
 calculate_midnight(Timestamp, Uid) ->
