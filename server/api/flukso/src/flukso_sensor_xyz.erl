@@ -174,7 +174,14 @@ update_night(RrdSensor, Uid, Midnight, LastTimestamp, ReqData) when LastTimestam
             NightAverage = lists:foldl(fun(X, Sum) -> X / 12 + Sum end, 0, Datapoints),
             RrdData = [integer_to_list(LastMidnight + 5 * ?HOUR), ":", float_to_list(NightAverage)],
 
-            rrd_update(?NIGHT_PATH, RrdSensor, RrdData);
+            case rrd_update(?NIGHT_PATH, RrdSensor, RrdData) of
+                {ok, _Response} ->
+                     logger(Uid, <<"rrdupdate.night">>, <<"Successful update of night rrd.">>, ?INFO, ReqData);
+
+                {error, Reason} ->
+                     logger(Uid, <<"rrdupdate.night">>, list_to_binary(Reason), ?ERROR, ReqData)
+            end;
+
         {error, Reason} ->
             logger(Uid, <<"rrdupdate.night">>, list_to_binary(Reason), ?ERROR, ReqData)
     end,
