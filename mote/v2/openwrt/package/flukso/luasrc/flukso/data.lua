@@ -45,26 +45,26 @@ function new()
 	return setmetatable({}, {__index = modenv})
 end
 
-function add(M, meter, timestamp, value)
-	if not M[meter] then
-		M[meter] = {}
+function add(M, sensor, timestamp, value)
+	if not M[sensor] then
+		M[sensor] = {}
 	end
 
-	M[meter][timestamp] = value
+	M[sensor][timestamp] = value
 end
 
-function clear(M, meter)
-	if meter then
-		M[meter] = nil
+function clear(M, sensor)
+	if sensor then
+		M[sensor] = nil
 	else -- clear all
-		for meter in pairs(M) do
-			M[meter] = nil
+		for sensor in pairs(M) do
+			M[sensor] = nil
 		end
 	end
 end
 
 function filter(M, span, offset)
-	for meter, T in pairs(M) do
+	for sensor, T in pairs(M) do
 		local H = timestamps(T)
 		local i = 2
 		while not (H[i+1] == nil or H[i] > os.time()-offset) do
@@ -81,7 +81,7 @@ function filter(M, span, offset)
 end
 
 function truncate(M, cutoff)
-	for meter, T in pairs(M) do
+	for sensor, T in pairs(M) do
 		local H = timestamps(T)
 
 		for i = H[1], os.time() - cutoff do
@@ -91,7 +91,7 @@ function truncate(M, cutoff)
 end
 
 function fill(M)
-	for meter, T in pairs(M) do
+	for sensor, T in pairs(M) do
 		local H = timestamps(T)
 
 		for i = H[#H]-1, H[1]+1, -1 do
@@ -109,7 +109,7 @@ end
 function json_encode(M)
 	local J = {}
 
-	for meter, T in pairs(M) do
+	for sensor, T in pairs(M) do
 		local H = timestamps(T)
 		local SB = {'['} -- use a string buffer for building up the JSON string
 
@@ -119,7 +119,7 @@ function json_encode(M)
 
 		SB[#SB] = SB[#SB]:sub(1, -2) -- remove the trialing comma from the last entry
 		SB[#SB+1] = ']'
-		J[meter] = table.concat(SB)
+		J[sensor] = table.concat(SB)
 	end
 
 	return J
