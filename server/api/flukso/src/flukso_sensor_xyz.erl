@@ -121,7 +121,7 @@ to_json(ReqData, #state{rrdSensor = RrdSensor, rrdStart = RrdStart, rrdEnd = Rrd
 
 %% debugging: io:format("~s~n", [erlrrd:c([[Path, [RrdSensor|".rrd"]], "AVERAGE", ["-s ", RrdStart], ["-e ", RrdEnd], ["-r ", RrdResolution]])]),
 
-    case erlrrd:fetch(erlrrd:c([[Path, [RrdSensor|".rrd"]], "AVERAGE", ["-s ", RrdStart], ["-e ", RrdEnd], ["-r ", RrdResolution]])) of
+    case rrd_fetch(Path, RrdSensor, RrdStart, RrdEnd, RrdResolution) of
         {ok, Response} ->
             Filtered = [re:split(X, "[:][ ]", [{return,list}]) || [X] <- Response, string:str(X, ":") == 11],
             Datapoints = [[list_to_integer(X), round(list_to_float(Y) * RrdFactor)] || [X, Y] <- Filtered, string:len(Y) /= 3],
@@ -148,9 +148,7 @@ process_post(ReqData, #state{rrdSensor = RrdSensor} = State) ->
     {data, Result} = mysql:execute(pool, sensor_props, [RrdSensor]),
     [[Uid, _Device, Midnight]] = mysql:get_result_rows(Result),
 
-%debugging: io:format("~s~n", [[Path, [RrdSensor|".rrd"], " ", RrdData]]),
-    
-    case erlrrd:update([?BASE_PATH, [RrdSensor|".rrd"], " ", RrdData]) of
+    case rrd_update(?BASE_PATH, RrdSensor, RrdData) of    
         {ok, _RrdResponse} ->
             RrdResponse = "ok",
             NewMidnight = update_night(RrdSensor, Uid, Midnight, LastTimestamp, ReqData),
@@ -165,16 +163,18 @@ process_post(ReqData, #state{rrdSensor = RrdSensor} = State) ->
 
 update_night(RrdSensor, Uid, Midnight, LastTimestamp, ReqData) when LastTimestamp > Midnight + 6 * ?HOUR ->
     LastMidnight = calculate_midnight(unix_time(), Uid),
+    RrdStart = integer_to_list(LastMidnight + 2 * ?HOUR),
+    RrdEnd = integer_to_list(LastMidnight + 5 * ?HOUR),
+    RrdResolution = integer_to_list(?QUARTER),
 
-    case erlrrd:fetch(erlrrd:c([[?BASE_PATH, [RrdSensor|".rrd"]], "AVERAGE", ["-s ", integer_to_list(LastMidnight + 2 * ?HOUR)], ["-e ", integer_to_list(LastMidnight + 5 * ?HOUR)], ["-r ", integer_to_list(?QUARTER)]])) of
+    case rrd_fetch(?BASE_PATH, RrdSensor, RrdStart, RrdEnd, RrdResolution) of
         {ok, Response} ->
             Filtered = [re:split(X, "[:][ ]", [{return,list}]) || [X] <- Response, string:str(X, ":") == 11],
             Datapoints = [list_to_float(Y) || [_X, Y] <- Filtered, string:len(Y) /= 3],
             NightAverage = lists:foldl(fun(X, Sum) -> X / 12 + Sum end, 0, Datapoints),
+            RrdData = [integer_to_list(LastMidnight + 5 * ?HOUR), ":", float_to_list(NightAverage)],
 
-%debugging: io:format("~s~n", [[?NIGHT_PATH, [RrdSensor|".rrd"], " ", integer_to_list(LastMidnight + 5 * ?HOUR), ":", float_to_list(NightAverage)]]),
-
-            erlrrd:update([?NIGHT_PATH, [RrdSensor|".rrd"], " ", integer_to_list(LastMidnight + 5 * ?HOUR), ":", float_to_list(NightAverage)]);
+            rrd_update(?NIGHT_PATH, RrdSensor, RrdData);
         {error, Reason} ->
             logger(Uid, <<"rrdupdate.night">>, list_to_binary(Reason), ?ERROR, ReqData)
     end,
@@ -187,7 +187,6 @@ calculate_midnight(Timestamp, Uid) ->
     {data, Result} = mysql:execute(pool, timezone, [Uid]),
     [[TimezoneChar8]] = mysql:get_result_rows(Result),
     Timezone = list_to_integer(binary_to_list(TimezoneChar8)),
-
     closest_midnight(trunc(Timestamp/?DAY + 1) * ?DAY - Timezone, Timestamp).
 
 closest_midnight(ProposedMidnight, Timestamp) when ProposedMidnight > Timestamp ->

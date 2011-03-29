@@ -188,3 +188,10 @@ logger(Uid, Type, Message, Severity, ReqData) ->
          list_to_binary(wrq:peer(ReqData)),
          unix_time()
         ]).
+
+% erlrrd wrappers
+rrd_fetch(Path, RrdSensor, RrdStart, RrdEnd, RrdResolution) ->
+    erlrrd:fetch(erlrrd:c([[Path, [RrdSensor|".rrd"]], "AVERAGE", ["-s ", RrdStart], ["-e ", RrdEnd], ["-r ", RrdResolution]])).
+
+rrd_update(Path, RrdSensor, RrdData) ->
+    erlrrd:update([Path, [RrdSensor|".rrd"], " ", RrdData]).
