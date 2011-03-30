@@ -90,23 +90,29 @@ is_authorized(ReqData, State) ->
 
 is_auth_POST(ReqData, #state{rrdSensor = Sensor, digest = ClientDigest} = State) ->
     {data, Result} = mysql:execute(pool, device_key, [Sensor]),
-    [[Key]] = mysql:get_result_rows(Result),
-    Data = wrq:req_body(ReqData),
-    <<X:160/big-unsigned-integer>> = crypto:sha_mac(Key, Data),
-    ServerDigest = lists:flatten(io_lib:format("~40.16.0b", [X])),
 
-    {case ServerDigest of
-        ClientDigest -> true;
-        _WrongDigest -> "access refused"
-     end,
-     ReqData, State}.
+    case mysql:get_result_rows(Result) of
+        [[Key]] ->
+            Data = wrq:req_body(ReqData),
+            <<X:160/big-unsigned-integer>> = crypto:sha_mac(Key, Data),
+            ServerDigest = lists:flatten(io_lib:format("~40.16.0b", [X])),
+
+            {case ServerDigest of
+                 ClientDigest -> true;
+                 _WrongDigest -> "Incorrect digest"
+             end,
+             ReqData, State};
+
+        _NoKey ->
+            {"Device key has not been provisioned", ReqData, State}
+    end.
 
 is_auth_GET(ReqData, #state{rrdSensor = RrdSensor, token = Token} = State) ->
     {data, Result} = mysql:execute(pool, permissions, [RrdSensor, Token]),
 
     {case mysql:get_result_rows(Result) of
         [[62]] -> true;
-        _Permission -> "access refused" 
+        _Permission -> "Access refused" 
     end,
     ReqData, State}.
 
