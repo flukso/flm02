@@ -53,6 +53,16 @@ function add(M, sensor, timestamp, value)
 	M[sensor][timestamp] = value
 end
 
+function get_sensors(M)
+	local S = {}
+
+	for sensor in pairs(M) do
+		S[#S+1] = sensor
+	end
+
+	return S
+end
+
 function clear(M, sensor)
 	if sensor then
 		M[sensor] = nil
