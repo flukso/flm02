@@ -27,7 +27,6 @@ local nixio      = require 'nixio'
 nixio.fs         = require 'nixio.fs'
 local uci        = require 'luci.model.uci'.cursor()
 local httpclient = require 'luci.httpclient'
-local opkg       = require 'luci.model.ipkg'
 local data       = require 'flukso.data'
 
 local arg = arg or {} -- needed when this code is not loaded via the interpreter
@@ -68,8 +67,8 @@ local WAN_KEY		= '0123456789abcdef0123456789abcdef'
 uci:foreach('system', 'system', function(x) WAN_KEY = x.key end) -- quirky but it works
 
 -- https headers
-local FLUKSO_OPKG_INFO  = opkg.info('flukso')
-local FLUKSO_VERSION    = FLUKSO_OPKG_INFO.flukso.Version
+local FLUKSO_VERSION    = '000'
+uci:foreach('system', 'system', function(x) FLUKSO_VERSION = x.version end) -- quirky but it works, again
 
 local USER_AGENT        = 'Fluksometer v' .. FLUKSO_VERSION
 local CACERT		= '/etc/ssl/certs/flukso.ca.crt'
