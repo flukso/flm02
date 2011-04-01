@@ -152,7 +152,7 @@ local phy_to_log = {}
 
 for i = 1, MAX_SENSORS do
 	if flukso[tostring(i)] ~= nil then
-		if flukso[tostring(i)]['type'] == 'analog' and i > MAX_ANALOG_SENSORS then
+		if flukso[tostring(i)]['class'] == 'analog' and i > MAX_ANALOG_SENSORS then
 			print(string.format('Error. Analog sensor %s should be less than or equal to max_analog_sensors (%s)', i, MAX_ANALOG_SENSORS))
 			os.exit(4)
 		end
@@ -188,12 +188,12 @@ for i = 1, MAX_SENSORS do
 	if flukso[tostring(i)] == nil then
 		cmd = string.format(SET_METERCONST, toc(i), 0)
 
-	elseif flukso[tostring(i)]['type'] == 'analog' then
+	elseif flukso[tostring(i)]['class'] == 'analog' then
 		local voltage = tonumber(flukso[tostring(i)].voltage)
 		local current = tonumber(flukso[tostring(i)].current)
 		cmd = string.format(SET_METERCONST, toc(i), math.floor(METERCONST_FACTOR * voltage * current))
 
-	elseif flukso[tostring(i)]['type'] == 'pulse'then
+	elseif flukso[tostring(i)]['class'] == 'pulse'then
 		local meterconst = tonumber(flukso[tostring(i)].constant)
 		cmd = string.format(SET_METERCONST, toc(i), meterconst)
 	else
