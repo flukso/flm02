@@ -32,6 +32,8 @@ local data       = require 'flukso.data'
 local arg = arg or {} -- needed when this code is not loaded via the interpreter
 
 local DEBUG		= (arg[1] == '-d')
+local LOGMASK		= 'debug'
+nixio.setlogmask(LOGMASK)
 
 local DAEMON 		= os.getenv('DAEMON') or 'fluksod'
 local DAEMON_PATH 	= os.getenv('DAEMON_PATH') or '/var/run/' .. DAEMON
@@ -83,13 +85,15 @@ function dispatch(wan_child, lan_child)
                                 fdout = nixio.open(DELTA_PATH_OUT, O_RDWR) }
 
 		if delta.fdin == nil or delta.fdout == nil then
-			-- TODO output to syslog
-			print('Error. Unable to open the delta fifos.')
-			print('Exiting...')
+			nixio.syslog('alert', 'cannot open the delta fifos')
 			os.exit(1)
 		end
 
-		-- TODO acquire an exclusive lock on the delta fifos or exit
+		-- acquire an exclusive lock on the delta fifos or exit
+		if not (delta.fdin:lock('tlock') and delta.fdout:lock('tlock')) then
+			nixio.syslog('alert', 'detected a lock on the delta fifos')
+			os.exit(2)
+		end
 
 		local function tolua(num)
 			return num + 1

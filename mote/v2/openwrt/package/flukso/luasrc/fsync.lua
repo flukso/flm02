@@ -49,10 +49,15 @@ if ctrl.fdin == nil or ctrl.fdout == nil then
 	os.exit(1)
 end
 
+-- acquire an exclusive lock on the ctrl fifos or exit
+if not (ctrl.fdin:lock('tlock') and ctrl.fdout:lock('tlock')) then
+	print('Error. Detected a lock on one of the ctrl fifos.')
+	print('Exiting...')
+	os.exit(1)
+end
+
 ctrl.fd = ctrl.fdout -- need this entry for nixio.poll
 ctrl.line = ctrl.fdout:linesource()
-
--- TODO acquire an exclusive lock on the ctrl fifos or exit
 
 
 local function send(ctrl, cmd)
