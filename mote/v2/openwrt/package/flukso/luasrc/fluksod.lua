@@ -157,6 +157,8 @@ function wan_buffer(child)
 				and counter ~= (previous[sensor_id].counter or 0) 
 				then
 
+				nixio.syslog('info', string.format('received pulse %s:%s:%s', sensor_id, timestamp, counter))
+	
 				measurements:add(sensor_id, timestamp, counter)
 				previous[sensor_id].timestamp = timestamp
 				previous[sensor_id].counter = counter
