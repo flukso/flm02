@@ -250,7 +250,7 @@ ISR(TIMER1_CAPT_vect)
 
 	event.brown_out++;
 
-#ifdef DBG > 0 
+#if DBG > 0 
 	uint8_t i;
 
 	for (i=0; i<128; i++)
