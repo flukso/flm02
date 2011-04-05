@@ -131,9 +131,9 @@ function create_persistent()
 						bytes_read = bytes_read + output[#output]:len()
 					end
 
-					uri, options = coroutine.yield(table.concat(output))
+					uri, options = coroutine.yield(table.concat(output), status, response)
 				else
-					uri, options = coroutine.yield("")
+					uri, options = coroutine.yield("", status, response)
 				end
 			end
 		end

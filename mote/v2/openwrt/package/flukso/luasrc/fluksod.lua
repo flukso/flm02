@@ -219,10 +219,12 @@ function send(child)
 				hash:update(options.body)
 				options.headers['X-Digest'] = hash:final()
 
-				local response, code, msg = http_persist(WAN_BASE_URL .. sensor_id,  options)
+				local url = WAN_BASE_URL .. sensor_id
+				local response, code, meta = http_persist(url, options)
+
+				nixio.syslog('info', string.format('%s %s: %s', options.method, url, code))
 
 				if response then
-					-- TODO send response string to syslog
 					measurements:clear(sensor_id)
 				end
 			end
