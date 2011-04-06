@@ -141,7 +141,7 @@ end
 function wan_buffer(child)
 	return coroutine.create(function(sensor_id, timestamp, counter)
 		local measurements = data.new()
-		local threshold = timestamp + WAN_INTERVAL
+		local threshold = os.time() + WAN_INTERVAL
 		local previous = {}
 
 		while true do
@@ -166,7 +166,7 @@ function wan_buffer(child)
 
 			if timestamp > threshold and next(measurements) then  --checking whether table is not empty
 				coroutine.resume(child, measurements)
-				threshold = timestamp + WAN_INTERVAL
+				threshold = os.time() + WAN_INTERVAL
 			end
 
 			sensor_id, timestamp, counter = coroutine.yield()
