@@ -27,6 +27,14 @@
 function logger_drush_command() {
   $items = array();
 
+  $items['logger-load-nodes'] = array(
+    'callback'    => '_logger_load_nodes',
+    'description' => 'Load nodes from a csv file into the database.',
+    'arguments'   => array(
+      'file'      => 'Path of the csv file.',
+    ),   
+  );
+
   $items['logger create node'] = array(
     'callback'    => '_logger_create_node',
     'description' => 'Create a new sensor node entry.',
@@ -78,8 +86,133 @@ function logger_drush_command() {
 }
 
 /**
- * Drush command callbacks.
+ * Drush command callback for logger-load-nodes.
+ *
+ * @param $file      The absolute path of the to-be-loaded csv file containing following columns:
+ *                   serial;device;key;sensor_hw;sensor1;sensor2;sensor3;sensor4;sensor5;sensor6
+ * @see logger_drush_command
  */
+function _logger_load_nodes($file) {
+  $fh = fopen($file, "r");
+
+  /* discard the first line containing column names */
+  fgets($fh);
+
+  while ($line = fgets($fh)) {
+    $row = explode(";", $line);
+    $row = str_replace("\n", "", $row);
+
+    $created = time();
+
+    _logger_load_device($row, $created);
+    _logger_load_sensors($row, $created);
+  }
+
+  if (!drush_get_error()) {
+    $message = 'Successfully created all device/sensor/token/rrd entries.';
+    drush_log(dt($message, array(), 'ok'));
+  }
+}
+
+/**
+ * Loads a device entry into the {logger_devices} database table.
+ *
+ * @param $row       An array containing a single row from the csv file.
+ * @param $created   The entry ceation time.
+ * @see _logger_load_nodes
+ */
+function _logger_load_device($row, $created) {
+  $serial    = (int)substr($row[0], 2, 9);  /* FL01234567 */
+  $device    = $row[1];
+  $key       = $row[2];
+  $sensor_hw = (int)$row[3];
+
+  $sql = "INSERT INTO {logger_devices}
+            (serial, device, sha, created, sensor)
+          VALUES
+            (%d, '%s', '%s', %d, %d)";
+
+  $result = db_query($sql, $serial, $device, $key, $created, $sensor_hw); 
+
+  if (!$result) {
+    $error = 'An error occured when creating a device entry for @device.';
+    drush_set_error('LOGGER_INSERT_DEVICE', dt($error, array('@device' => $device)));
+  }
+}
+
+/**
+ * Loads all sensors of a single device into the {logger_meters} database table,
+ * loads a token for each sensor in {logger_tokens} and creates the base/night rrds.
+ *
+ * @param $row       An array containing a single row from the csv file.
+ * @param $created   The entry ceation time.
+ * @see _logger_load_nodes
+ */
+function _logger_load_sensors($row, $created) {
+  $permissions = 62;
+  $device = $row[1];
+
+  for ($i = 1; $i < 7; $i++) {
+    $sensor = $row[$i + 3];
+
+    _logger_load_sensor($i, $sensor, $device, $created);
+
+    $token  = md5(uniqid(rand(), TRUE));
+    _logger_load_token($token, $sensor, $permissions);
+
+    module_load_include('inc', 'logger', 'logger.rrd');
+    logger_rrd_base_create($sensor);
+    logger_rrd_night_create($sensor);
+  }
+}
+
+/**
+ * Loads a single sensor entry into the {logger_meters} database table.
+ *
+ * @param $serial    The device serial number.
+ * @param $sensor    The 32-hex sensor id.
+ * @param $device    the 32-hex device id.
+ * @param $created   The entry ceation time.
+ * @see _logger_load_sensors
+ */
+function _logger_load_sensor($serial, $sensor, $device, $created) {
+  $sql = "INSERT INTO {logger_meters}
+            (serial, meter, device, created)
+          VALUES
+            (%d, '%s', '%s', %d)";
+
+  $result = db_query($sql, $serial, $sensor, $device, $created);
+
+  if (!$result) {
+    $error = 'An error occured when creating an entry for sensor @sensor.';
+    drush_set_error('LOGGER_INSERT_SENSOR', dt($error, array('@sensor' => $sensor)));
+  }
+}
+
+/**
+ * Loads a single token entry into the {logger_tokens} database table.
+ *
+ * @param $token       The 32-hex token.
+ * @param $sensor      The 32-hex sensor id.
+ * @param $permissions A permission bitmap, defaulting to 62.
+ * @see _logger_load_sensors
+ */
+function _logger_load_token($token, $sensor, $permissions) {
+  $sql = "INSERT INTO {logger_tokens}
+            (token, meter, permissions)
+          VALUES
+            ('%s', '%s', %d)";
+
+  $token  = md5(uniqid(rand(), TRUE));
+
+  $result = db_query($sql, $token, $sensor, $permissions);
+
+  if (!$result) {
+    $error = 'An error occured when creating a token entry for sensor @sensor.';
+    drush_set_error('LOGGER_INSERT_TOKEN', dt($error, array('@sensor' => $sensor)));
+  }
+}
+
 function _logger_create_node($serial, $country ="", $uid = 0) {
   // guard against duplicating entries for the same S/N
   $count = db_result(db_query("SELECT COUNT(device) FROM {logger_devices} WHERE serial = %d", $serial));
