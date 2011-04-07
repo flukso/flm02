@@ -118,7 +118,6 @@ function dispatch(wan_child, lan_child)
 
 				-- resume both branches
 				if WAN_ENABLED then
-					-- TODO send incoming pulses to syslog
 					coroutine.resume(wan_child, sensor_id, timestamp, counter)
 				end
 
@@ -130,9 +129,6 @@ function dispatch(wan_child, lan_child)
 						coroutine.resume(lan_child, sensor_id, timestamp, false, counter, extra)
 					end
 				end
-				-- check in the e branch whether the counter has increased, if not then discard
-				-- chech in both branches whether timestamp has increased
-				-- or do we override??
 			end 
 		end
 	end)
