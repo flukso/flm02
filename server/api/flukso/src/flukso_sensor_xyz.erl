@@ -177,7 +177,7 @@ update_night(RrdSensor, Uid, Midnight, LastTimestamp, ReqData) when LastTimestam
         {ok, Response} ->
             Filtered = [re:split(X, "[:][ ]", [{return,list}]) || [X] <- Response, string:str(X, ":") == 11],
             Datapoints = [list_to_float(Y) || [_X, Y] <- Filtered, string:len(Y) /= 3],
-            NightAverage = lists:foldl(fun(X, Sum) -> X / 12 + Sum end, 0, Datapoints),
+            NightAverage = lists:foldl(fun(X, Sum) -> X / 12 + Sum end, 0.0, Datapoints),
             RrdData = [integer_to_list(LastMidnight + 5 * ?HOUR), ":", float_to_list(NightAverage)],
 
             case rrd_update(?NIGHT_PATH, RrdSensor, RrdData) of
