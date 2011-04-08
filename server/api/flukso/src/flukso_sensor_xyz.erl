@@ -198,8 +198,14 @@ update_night(_RrdSensor, _Uid, Midnight, _LastTimestamp, _ReqData) ->
 
 calculate_midnight(Timestamp, Uid) ->
     {data, Result} = mysql:execute(pool, timezone, [Uid]),
-    [[TimezoneChar8]] = mysql:get_result_rows(Result),
-    Timezone = list_to_integer(binary_to_list(TimezoneChar8)),
+
+    case mysql:get_result_rows(Result) of
+       [[undefined]] ->
+           Timezone = 0;
+       [[TimezoneChar8]] ->
+           Timezone = list_to_integer(binary_to_list(TimezoneChar8))
+    end,
+
     closest_midnight(trunc(Timestamp/?DAY + 1) * ?DAY - Timezone, Timestamp).
 
 closest_midnight(ProposedMidnight, Timestamp) when ProposedMidnight > Timestamp ->
