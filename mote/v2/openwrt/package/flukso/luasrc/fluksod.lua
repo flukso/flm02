@@ -209,19 +209,28 @@ function send(child)
 				end
 
 				options.body = '{"measurements":' .. measurements_json[sensor_id] .. '}'
-				options.headers["Content-Length"] = tostring(#options.body)
+				options.headers['Content-Length'] = tostring(#options.body)
 				
 				local hash = nixio.crypto.hmac('sha1', WAN_KEY)
 				hash:update(options.body)
 				options.headers['X-Digest'] = hash:final()
 
 				local url = WAN_BASE_URL .. sensor_id
-				local response, code, meta = http_persist(url, options)
+				local response, code, call_info = http_persist(url, options)
 
 				nixio.syslog('info', string.format('%s %s: %s', options.method, url, code))
 
+				-- flush the sensor's measurement buffer in case of a successful HTTP POST
 				if response then
 					measurements:clear(sensor_id)
+				elseif type(call_info) == 'string' then
+					nixio.syslog('err', call_info)
+				elseif type(call_info) == 'table'  then
+					local auth_error = call_info.headers['WWW-Authenticate']
+
+					if auth_error then
+						nixio.syslog('err', string.format('WWW-Authenticate: %s', auth_error))
+					end
 				end
 			end
 
