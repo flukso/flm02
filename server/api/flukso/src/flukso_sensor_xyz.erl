@@ -104,7 +104,7 @@ is_auth_POST(ReqData, #state{rrdSensor = Sensor, digest = ClientDigest} = State)
              ReqData, State};
 
         _NoKey ->
-            {"Device key has not been provisioned", ReqData, State}
+            {"No proper provisioning for this sensor", ReqData, State}
     end.
 
 is_auth_GET(ReqData, #state{rrdSensor = RrdSensor, token = Token} = State) ->
