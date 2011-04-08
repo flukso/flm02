@@ -153,7 +153,7 @@ function wan_buffer(child)
 				and counter ~= (previous[sensor_id].counter or 0) 
 				then
 
-				nixio.syslog('info', string.format('received pulse %s:%s:%s', sensor_id, timestamp, counter))
+				nixio.syslog('info', string.format('processed pulse %s:%s:%s', sensor_id, timestamp, counter))
 	
 				measurements:add(sensor_id, timestamp, counter)
 				previous[sensor_id].timestamp = timestamp
@@ -218,12 +218,20 @@ function send(child)
 				local url = WAN_BASE_URL .. sensor_id
 				local response, code, call_info = http_persist(url, options)
 
-				nixio.syslog('info', string.format('%s %s: %s', options.method, url, code))
+				local level
 
 				-- flush the sensor's measurement buffer in case of a successful HTTP POST
-				if response then
+				if code == 200 then
 					measurements:clear(sensor_id)
-				elseif type(call_info) == 'string' then
+					level = 'info'
+				else
+					level = 'err'
+				end
+
+				nixio.syslog(level, string.format('%s %s: %s', options.method, url, code))
+
+				-- if available, send additional error info to the syslog
+				if type(call_info) == 'string' then
 					nixio.syslog('err', call_info)
 				elseif type(call_info) == 'table'  then
 					local auth_error = call_info.headers['WWW-Authenticate']
