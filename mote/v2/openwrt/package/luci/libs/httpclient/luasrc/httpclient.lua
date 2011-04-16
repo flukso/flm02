@@ -187,6 +187,8 @@ function request_raw(uri, options, sock)
 		if tls_context_set_verify == "peer" then
 			tls:set_verify("peer")
 			tls:set_verify_locations(options.cacert)
+		elseif tls_context_set_verify == "none" then
+			tls:set_verify("none")
 		end
 
 		sock = tls:create(sock)
