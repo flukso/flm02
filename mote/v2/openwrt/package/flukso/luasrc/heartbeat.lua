@@ -122,7 +122,7 @@ end
 
 -- verify the reply's digest
 hash = nixio.crypto.hmac('sha1', WAN_KEY)
-hash:update(response)
+hash:update(response_json)
 if call_info.headers['X-Digest'] ~= hash:final() then
 	nixio.syslog('err', 'Incorrect digest in the heartbeat reply. Discard response.')
 	os.exit(3)
