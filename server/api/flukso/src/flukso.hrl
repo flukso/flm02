@@ -57,6 +57,9 @@ check_version(_, _) ->
 check_sensor(Sensor) ->
     check_hex(Sensor, 32).
 
+check_device(Device) ->
+    check_hex(Device, 32).
+
 check_token(undefined, undefined) ->
     {false, false};
 check_token(Token, undefined) ->

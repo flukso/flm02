@@ -89,7 +89,7 @@ is_authorized(ReqData, State) ->
     end.
 
 is_auth_POST(ReqData, #state{rrdSensor = Sensor, digest = ClientDigest} = State) ->
-    {data, Result} = mysql:execute(pool, device_key, [Sensor]),
+    {data, Result} = mysql:execute(pool, sensor_key, [Sensor]),
 
     case mysql:get_result_rows(Result) of
         [[Key]] ->
