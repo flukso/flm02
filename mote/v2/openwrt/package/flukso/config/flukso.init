@@ -35,10 +35,22 @@ start()
 
 	/usr/sbin/spid
 	/usr/sbin/fluksod
+
+	HEARTBEAT=/usr/bin/heartbeat
+	FCHECK=/usr/bin/fcheck
+	MINUTE=$(date '+%M')
+
+	# Tell the server we've had a reset
+	$HEARTBEAT 1 >&- 2>&- <&-
+
+	# Configure cron
+	echo -e "$MINUTE * * * * $HEARTBEAT 0\n*/15 * * * * [ \$($FCHECK; echo \$?) -ne 0 ] && reboot" | crontab -
 }
 
 stop()
 {
+	crontab -r
+
 	/usr/sbin/fluksod -k
 	/usr/sbin/spid -k
 
