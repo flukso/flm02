@@ -32,6 +32,20 @@ static int nixio_gettimeofday(lua_State *L) {
 	return 2;
 }
 
+static int nixio_settimeofday(lua_State *L) {
+	struct timeval tv;
+	tv.tv_sec = luaL_optint(L, 1, 0);
+	tv.tv_usec = luaL_optint(L, 2, 0);
+
+	int status = settimeofday(&tv, NULL);
+
+	if (!status) {
+		lua_pushboolean(L, 1);
+		return 1;
+	} else {
+		return nixio__perror(L);
+	}
+}
 
 /**
  * nanosleep()
@@ -316,6 +330,7 @@ static const luaL_reg R[] = {
 	{"setitimerfd",	nixio_setitimerfd},
 #endif
 	{"gettimeofday", nixio_gettimeofday},
+	{"settimeofday", nixio_settimeofday},
 	{"nanosleep",	nixio_nanosleep},
 	{"poll",		nixio_poll},
 	{"poll_flags",	nixio_poll_flags},
