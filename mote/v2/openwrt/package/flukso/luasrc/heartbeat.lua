@@ -132,9 +132,17 @@ if call_info.headers['X-Digest'] ~= hash:final() then
 	os.exit(3)
 end
 
--- check whether we have to reset or upgrade
 local response = luci.json.decode(response_json)
 
+-- use heartbeat return timestamp to sync time in case ntpclient doesn't get the job done
+local TIMESTAMP_MIN = 1234567890
+local TIMESTAMP	= tonumber(response.timestamp)
+
+if os.time() < TIMESTAMP_MIN then
+	nixio.settimeofday(TIMESTAMP)
+end
+
+-- check whether we have to reset or upgrade
 if response.upgrade == monitor.version then
 	os.execute('reboot')
 elseif response.upgrade > monitor.version then
