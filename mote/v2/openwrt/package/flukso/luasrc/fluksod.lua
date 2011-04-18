@@ -29,10 +29,13 @@ local uci        = require 'luci.model.uci'.cursor()
 local httpclient = require 'luci.httpclient'
 local data       = require 'flukso.data'
 
+-- parse and load /etc/config/flukso
+local FLUKSO		= uci:get_all('flukso')
+
 local arg = arg or {} -- needed when this code is not loaded via the interpreter
 
 local DEBUG		= (arg[1] == '-d')
-local LOGMASK		= 'debug'
+local LOGMASK		= FLUKSO.daemon.logmask or 'info'
 nixio.setlogmask(LOGMASK)
 
 local DAEMON 		= os.getenv('DAEMON') or 'fluksod'
@@ -48,14 +51,13 @@ local O_RDWR_CREAT	= nixio.open_flags('rdwr', 'creat')
 
 local POLLIN            = nixio.poll_flags('in')
 
--- parse and load /etc/config/flukso
-local FLUKSO		= uci:get_all('flukso')
-local WAN_ENABLED	= true
-local WAN_INTERVAL	= 300
-local LAN_ENABLED	= true
-local TIMESTAMP_MIN	= 1234567890
-
 -- set WAN parameters
+local WAN_ENABLED	= true
+if tonumber(FLUKSO.daemon.enable_wan_branch) == 0 then WAN_ENABLED = false end
+
+local TIMESTAMP_MIN	= 1234567890
+local WAN_INTERVAL	= 300
+
 local WAN_FILTER = { [1] = {}, [2] = {}, [3] = {} }
 WAN_FILTER[1].span	= 60
 WAN_FILTER[1].offset	= 0
@@ -64,7 +66,7 @@ WAN_FILTER[2].offset	= 7200
 WAN_FILTER[3].span	= 86400
 WAN_FILTER[3].offset	= 172800
 
-local WAN_BASE_URL	= 'https://api.flukso.net/sensor/'
+local WAN_BASE_URL	= FLUKSO.daemon.wan_base_url .. 'sensor/'
 local WAN_KEY		= '0123456789abcdef0123456789abcdef'
 uci:foreach('system', 'system', function(x) WAN_KEY = x.key end) -- quirky but it works
 
@@ -73,9 +75,12 @@ local FLUKSO_VERSION    = '000'
 uci:foreach('system', 'system', function(x) FLUKSO_VERSION = x.version end) -- quirky but it works, again
 
 local USER_AGENT        = 'Fluksometer v' .. FLUKSO_VERSION
-local CACERT		= '/etc/ssl/certs/flukso.ca.crt'
+local CACERT		= FLUKSO.daemon.cacert
 
 -- set LAN parameters
+local LAN_ENABLED	= true
+if tonumber(FLUKSO.daemon.enable_lan_branch) == 0 then LAN_ENABLED = false end
+
 local LAN_POLISH_CUTOFF	= 60
 local LAN_PUBLISH_PATH	= DAEMON_PATH .. '/sensor'
 

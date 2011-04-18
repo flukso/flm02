@@ -7,6 +7,14 @@ config settings main
 	option max_analog_sensors 3
 	option reset_counters 0
 
+config settings daemon
+	option logmask info
+	option enable_wan_branch 1
+	option enable_lan_branch 1
+	option wan_base_url https://api.flukso.net/
+	option upgrade_url http://www.flukso.net/files/upgrade/
+	option cacert /etc/ssl/certs/flukso.ca.crt
+
 ### sensor config options
 # config sensor <1..6>
 #	option id <uuid>

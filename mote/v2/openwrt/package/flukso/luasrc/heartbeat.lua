@@ -36,22 +36,26 @@ luci.sys         = require 'luci.sys'
 luci.json        = require 'luci.json'
 local httpclient = require 'luci.httpclient'
 
+
+-- parse and load /etc/config/flukso
+local FLUKSO		= uci:get_all('flukso')
+
 -- WAN settings
-local WAN_BASE_URL	= 'https://api.flukso.net/device/'
+local WAN_BASE_URL	= FLUKSO.daemon.wan_base_url .. 'device/'
 local WAN_KEY		= '0123456789abcdef0123456789abcdef'
 uci:foreach('system', 'system', function(x) WAN_KEY = x.key end) -- quirky but it works
 
 local DEVICE		= '0123456789abcdef0123456789abcdef'
 uci:foreach('system', 'system', function(x) DEVICE = x.device end)
 
-local UPGRADE_URL	= 'http://www.flukso.net/files/upgrade/'
+local UPGRADE_URL	= FLUKSO.daemon.upgrade_url
 
 -- https header helpers
 local FLUKSO_VERSION	= '000'
 uci:foreach('system', 'system', function(x) FLUKSO_VERSION = x.version end)
 
 local USER_AGENT	= 'Fluksometer v' .. FLUKSO_VERSION
-local CACERT		= '/etc/ssl/certs/flukso.ca.crt'
+local CACERT		= FLUKSO.daemon.cacert
 
 -- collect relevant monitoring points
 function collect_mp()
