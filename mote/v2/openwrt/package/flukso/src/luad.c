@@ -339,13 +339,7 @@ int main(int argc, char *argv[])
 		struct restart_s restart;
 		restart_init(&restart);
 
-		while(1) {
-			/* Stop when allowed number of restarts have occurred in specified time window */
-			if (restart_max(&restart)) {
-				daemon_log(LOG_ERR, "%d restarts within a %d sec window", SUP_ALLOWED_RESTARTS, SUP_MAX_SECONDS);
-				break;
-			}
-
+		do {
 			/* Create a new Lua environment */
 			L = luaL_newstate();
 			/* And load the standard libraries into the Lua environment */
@@ -356,11 +350,17 @@ int main(int argc, char *argv[])
 			}
 			/* Clean up the Lua state */
 			lua_close(L);
-			/* Wait for one second before restarting the Lua daemon */
-			sleep(1);
-			restart_add(&restart, time(NULL));
-		}
 
+			/* Wait for one second before restarting the Lua daemon */
+			restart_add(&restart, time(NULL));
+			sleep(1);
+
+		} while (!restart_max(&restart));
+
+		/* Stop when allowed number of restarts have occurred in specified time window */
+		daemon_log(LOG_ERR, "%d restarts within a %d sec window", SUP_ALLOWED_RESTARTS, SUP_MAX_SECONDS);
+
+	
 		/* Do a cleanup */
 finish:
 		daemon_log(LOG_INFO, "Exiting...");
