@@ -5,6 +5,7 @@ config system
         option key       00112233445566778899aabbccddeeff
         option version   210
 	option firstboot 1
+	option cronloglevel 1
 
 config button
 	option button   reset

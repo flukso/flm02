@@ -44,6 +44,10 @@ cp patches/400-spi_gpio_support.patch $BACKFIRE_PATH/target/linux/atheros/patche
 cp patches/410-spi_gpio_enable_cs_line.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
 cp patches/420-tune_spi_bitbanging_for_avr.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
 
+# backport loglevel fix to busybox v1.15.3-2
+# see: https://bugs.busybox.net/show_bug.cgi?id=681
+cp patches/920-fix_crond_loglevel.patch $BACKFIRE_PATH/package/busybox/patches
+
 # patch files of the OpenWRT build system
 cd $BACKFIRE_PATH
 patch -p0 < $REPO_PATH/patches/900-disable_console.patch
