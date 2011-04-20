@@ -6,6 +6,7 @@ config settings main
 	option max_sensors 6
 	option max_analog_sensors 3
 	option reset_counters 0
+	option phase 1
 
 config settings daemon
 	option logmask info
