@@ -32,4 +32,12 @@ div.di_wifi a {
 	background-image: url(icons/wifi.png);
 }
 
+div.di_syslog a {
+	background-image: url(icons/syslog.png);
+}
+
+div.di_sensor a {
+	background-image: url(icons/sensor.png);
+}
+
 }
