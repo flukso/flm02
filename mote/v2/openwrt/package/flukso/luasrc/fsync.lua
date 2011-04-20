@@ -38,6 +38,21 @@ local POLLIN		= nixio.poll_flags('in')
 local POLL_TIMEOUT_MS	= 1000
 local MAX_TRIES         = 5
 
+local function exit(code)
+	nixio.openlog('fsync', 'pid')
+
+	local level
+
+	if code == 0 then
+		level = 'info'
+	else
+		level = 'err'
+	end
+
+	nixio.syslog(level, string.format('fync exited with code: %d', code))
+	os.exit(code)
+end
+
 local ctrl = { fdin    = nixio.open(CTRL_PATH_IN, O_RDWR_NONBLOCK),
                fdout   = nixio.open(CTRL_PATH_OUT, O_RDWR_NONBLOCK),
                events  = POLLIN,
@@ -46,14 +61,14 @@ local ctrl = { fdin    = nixio.open(CTRL_PATH_IN, O_RDWR_NONBLOCK),
 if ctrl.fdin == nil or ctrl.fdout == nil then
 	print('Error. Unable to open the ctrl fifos.')
 	print('Exiting...')
-	os.exit(1)
+	exit(1)
 end
 
 -- acquire an exclusive lock on the ctrl fifos or exit
 if not (ctrl.fdin:lock('tlock') and ctrl.fdout:lock('tlock')) then
 	print('Error. Detected a lock on one of the ctrl fifos.')
 	print('Exiting...')
-	os.exit(1)
+	exit(1)
 end
 
 ctrl.fd = ctrl.fdout -- need this entry for nixio.poll
@@ -94,7 +109,7 @@ local function send(ctrl, cmd)
 	end
 
 	print(MAX_TRIES .. ' write attempts failed. Exiting ...')
-	os.exit(2) 
+	exit(2) 
 end
 
 local function toc(num)
@@ -140,7 +155,7 @@ if hw_major ~= flukso.main.hw_major or hw_minor > flukso.main.hw_minor then
 		print('Overridden. Good luck!')
 	else
 		print('Use -f to override this check at your own peril.')
-		os.exit(3)
+		exit(3)
 	end
 else
 	print(string.format('Hardware check (major: %s, minor: %s) .. ok', hw_major, hw_minor))
@@ -159,7 +174,7 @@ for i = 1, MAX_SENSORS do
 	if flukso[tostring(i)] ~= nil then
 		if flukso[tostring(i)]['class'] == 'analog' and i > MAX_ANALOG_SENSORS then
 			print(string.format('Error. Analog sensor %s should be less than or equal to max_analog_sensors (%s)', i, MAX_ANALOG_SENSORS))
-			os.exit(4)
+			exit(4)
 		end
 
 		local ports = flukso[tostring(i)].port or {}
@@ -167,7 +182,7 @@ for i = 1, MAX_SENSORS do
 		for j = 1, #ports do
 			if tonumber(ports[j]) > MAX_SENSORS then
 				print(string.format('Error. Port numbering in sensor %s should be less than or equal to max_sensors (%s)', i, MAX_SENSORS))
-				os.exit(5)
+				exit(5)
 
 			else
 				phy_to_log[toc(tonumber(ports[j]))] = toc(i)
@@ -297,3 +312,4 @@ for i = 1, #avahi.tail do
 end
 
 print(arg[0] .. ' completed successfully. Bye!')
+exit(0)
