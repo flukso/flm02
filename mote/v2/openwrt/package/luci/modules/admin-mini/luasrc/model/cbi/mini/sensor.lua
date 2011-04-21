@@ -43,6 +43,9 @@ function phase:validate(value, section)
 		uci:set_list("flukso", "1", "port", { "1", "2", "3" })
 		uci:delete  ("flukso", "2", "port")
 		uci:delete  ("flukso", "3", "port")
+
+		uci:set("flukso", "2", "enable", "0")
+		uci:set("flukso", "3", "enable", "0")
 	end
 
 	uci:commit("flukso")
