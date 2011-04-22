@@ -209,12 +209,12 @@ for i = 1, MAX_SENSORS do
 		cmd = string.format(SET_METERCONST, toc(i), 0)
 
 	elseif flukso[tostring(i)]['class'] == 'analog' then
-		local voltage = tonumber(flukso[tostring(i)].voltage)
-		local current = tonumber(flukso[tostring(i)].current)
+		local voltage = tonumber(flukso[tostring(i)].voltage or "0")
+		local current = tonumber(flukso[tostring(i)].current or "0")
 		cmd = string.format(SET_METERCONST, toc(i), math.floor(METERCONST_FACTOR * voltage * current))
 
 	elseif flukso[tostring(i)]['class'] == 'pulse'then
-		local meterconst = tonumber(flukso[tostring(i)].constant)
+		local meterconst = tonumber(flukso[tostring(i)].constant or "0")
 		cmd = string.format(SET_METERCONST, toc(i), meterconst)
 	else
 		cmd = string.format(SET_METERCONST, toc(i), 0)
