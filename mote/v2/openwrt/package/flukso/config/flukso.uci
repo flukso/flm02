@@ -20,6 +20,7 @@ config settings daemon
 # config sensor <1..6>
 #	option id <uuid>
 #	option class <analog|pulse|uart>
+#	option type <electricity|water>
 #	list port <1..6>
 #	option constant [<meterconstant>]
 #	option voltage [<volts>]
@@ -27,6 +28,7 @@ config settings daemon
 
 config sensor 1
 	option id 0123456789abcdef0123456789abcde1
+	option type electricity
 	option class analog
 	list port 1
 	option voltage 230
@@ -35,6 +37,7 @@ config sensor 1
 
 config sensor 2
 	option id 0123456789abcdef0123456789abcde2
+	option type electricity
 	option class analog
 	list port 2
 	option voltage 230
@@ -43,6 +46,7 @@ config sensor 2
 
 config sensor 3
 	option id 0123456789abcdef0123456789abcde3
+	option type electricity
 	option class analog
 	list port 3
 	option voltage 230
@@ -51,6 +55,7 @@ config sensor 3
 
 config sensor 4
 	option id 0123456789abcdef0123456789abcde4
+	option type electricity
 	option class pulse
 	list port 4
 	option constant 1
@@ -58,6 +63,7 @@ config sensor 4
 
 config sensor 5
 	option id 0123456789abcdef0123456789abcde5
+	option type electricity
 	option class pulse
 	list port 5
 	option constant 1
