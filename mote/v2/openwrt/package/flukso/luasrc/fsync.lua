@@ -28,16 +28,51 @@ local nixio = require 'nixio'
 nixio.fs    = require 'nixio.fs'
 local uci   = require 'luci.model.uci'.cursor()
 
-local CTRL_PATH		= '/var/run/spid/ctrl'
-local CTRL_PATH_IN	= CTRL_PATH .. '/in'
-local CTRL_PATH_OUT	= CTRL_PATH .. '/out'
+local HW_CHECK_OVERRIDE	 = (arg[1] == '-f')
 
-local O_RDWR_NONBLOCK	= nixio.open_flags('rdwr', 'nonblock')
-local O_RDWR_CREAT	= nixio.open_flags('rdwr', 'creat')
-local POLLIN		= nixio.poll_flags('in')
-local POLL_TIMEOUT_MS	= 1000
-local MAX_TRIES         = 5
+local CTRL_PATH		 = '/var/run/spid/ctrl'
+local CTRL_PATH_IN	 = CTRL_PATH .. '/in'
+local CTRL_PATH_OUT	 = CTRL_PATH .. '/out'
 
+local O_RDWR_NONBLOCK	 = nixio.open_flags('rdwr', 'nonblock')
+local O_RDWR_CREAT	 = nixio.open_flags('rdwr', 'creat')
+local POLLIN		 = nixio.poll_flags('in')
+local POLL_TIMEOUT_MS	 = 1000
+local MAX_TRIES		 = 5
+
+-- parse and load /etc/config/flukso
+local flukso = uci:get_all('flukso')
+
+local MAX_SENSORS	 = tonumber(flukso.main.max_sensors)
+local MAX_ANALOG_SENSORS = tonumber(flukso.main.max_analog_sensors)
+local RESET_COUNTERS	 = (flukso.main.reset_counters == '1')
+local SYNC_TO_SERVER	 = (flukso.daemon.enable_wan_branch == '1')
+
+local METERCONST_FACTOR	 = 0.449
+
+local GET_HW_VERSION	 = 'gh'
+local GET_HW_VERSION_R	 = '^gh%s+(%d+)%s+(%d+)$'
+local SET_ENABLE	 = 'se %d %d'
+local SET_PHY_TO_LOG	 = 'sp' -- with [1..MAX_SENSORS] arguments
+local SET_METERCONST	 = 'sm %d %d'
+local SET_COUNTER	 = 'sc %d %d'
+local COMMIT		 = 'ct'
+
+local API_PATH		 = '/www/sensor/'
+local CGI_SCRIPT	 = '/usr/bin/restful'
+local AVAHI_PATH	 = '/etc/avahi/services/flukso.service'
+
+
+--- Convert from Lua-style to c-style index.
+-- @param index		Lua-style index startng at 1
+-- @return 		C-style index starting at 0 
+local function toc(index)
+	return index - 1
+end
+
+--- Log exit status to syslog first, then exit.
+-- @param code  	exit status code
+-- @return		none 
 local function exit(code)
 	nixio.openlog('fsync', 'pid')
 
@@ -49,32 +84,49 @@ local function exit(code)
 		level = 'err'
 	end
 
-	nixio.syslog(level, string.format('fync exited with code: %d', code))
+	nixio.syslog(level, string.format('fsync exit status: %d', code))
 	os.exit(code)
 end
 
-local ctrl = { fdin    = nixio.open(CTRL_PATH_IN, O_RDWR_NONBLOCK),
-               fdout   = nixio.open(CTRL_PATH_OUT, O_RDWR_NONBLOCK),
-               events  = POLLIN,
-               revents = 0 }
+--- Create a pair of file descriptors [fd] to the spid control fifo's.
+-- @return		ctrl object containing the fd's, a line-based iterator and poll flags 
+local function ctrl_init()
+	local ctrl = { fdin    = nixio.open(CTRL_PATH_IN, O_RDWR_NONBLOCK),
+                       fdout   = nixio.open(CTRL_PATH_OUT, O_RDWR_NONBLOCK),
+                       events  = POLLIN,
+                       revents = 0 }
 
-if ctrl.fdin == nil or ctrl.fdout == nil then
-	print('Error. Unable to open the ctrl fifos.')
-	print('Exiting...')
-	exit(1)
+	if ctrl.fdin == nil or ctrl.fdout == nil then
+		print('Error. Unable to open the ctrl fifos.')
+		print('Exiting...')
+		exit(1)
+	end
+
+	-- acquire an exclusive lock on the ctrl fifos or exit
+	if not (ctrl.fdin:lock('tlock') and ctrl.fdout:lock('tlock')) then
+		print('Error. Detected a lock on one of the ctrl fifos.')
+		print('Exiting...')
+		exit(1)
+	end
+
+	ctrl.fd = ctrl.fdout -- need this entry for nixio.poll
+	ctrl.line = ctrl.fdout:linesource()
+
+	return ctrl
 end
 
--- acquire an exclusive lock on the ctrl fifos or exit
-if not (ctrl.fdin:lock('tlock') and ctrl.fdout:lock('tlock')) then
-	print('Error. Detected a lock on one of the ctrl fifos.')
-	print('Exiting...')
-	exit(1)
+--- Close the spid control fifo's.
+-- @param code  	ctrl object
+-- @return		none 
+local function ctrl_close(ctrl)
+	ctrl.fdin:close()
+	ctrl.fdout:close()
 end
 
-ctrl.fd = ctrl.fdout -- need this entry for nixio.poll
-ctrl.line = ctrl.fdout:linesource()
-
-
+--- Send a command to the control fifo.
+-- @param ctrl  	ctrl object
+-- @param cmd		command to send
+-- @return		none 
 local function send(ctrl, cmd)
 	while ctrl.line() do end -- flush the out fifo
 
@@ -112,119 +164,112 @@ local function send(ctrl, cmd)
 	exit(2) 
 end
 
-local function toc(num)
-	return num - 1
-end
+--- Check the sensor board hardware version.
+-- @param ctrl  	ctrl object
+-- @return		none 
+local function check_hw_version(ctrl) 
+	local hw_major, hw_minor = send(ctrl, GET_HW_VERSION):match(GET_HW_VERSION_R)
 
-
--- parse and load /etc/config/flukso
-local flukso = uci:get_all('flukso')
-
-local HW_CHECK_OVERRIDE = (arg[1] == '-f')
-
-local MAX_SENSORS	 = tonumber(flukso.main.max_sensors)
-local MAX_ANALOG_SENSORS = tonumber(flukso.main.max_analog_sensors)
-local METERCONST_FACTOR	 = 0.449
-
-local GET_HW_VERSION	 = 'gh'
-local GET_HW_VERSION_R	 = '^gh%s+(%d+)%s+(%d+)$'
-local SET_ENABLE	 = 'se %d %d'
-local SET_PHY_TO_LOG	 = 'sp' -- with [1..MAX_SENSORS] arguments
-local SET_METERCONST	 = 'sm %d %d'
-local SET_COUNTER	 = 'sc %d %d'
-local COMMIT		 = 'ct'
-
-local API_PATH		 = '/www/sensor/'
-local CGI_SCRIPT	 = '/usr/bin/restful'
-local AVAHI_PATH	 = '/etc/avahi/services/flukso.service'
-
--- check hardware version
-local hw_major, hw_minor = send(ctrl, GET_HW_VERSION):match(GET_HW_VERSION_R)
-
-if hw_major ~= flukso.main.hw_major or hw_minor > flukso.main.hw_minor then
-	print(string.format('Hardware check (major: %s, minor: %s) .. nok', hw_major, hw_minor))
-	if hw_major ~= flukso.main.hw_major then
-		print('Error. Major version does not match.')
-	end
-
-	if hw_minor > flukso.main.hw_minor then
-		print('Error. Sensor board minor version is not supported by this package.')
-	end
-
-	if HW_CHECK_OVERRIDE then
-		print('Overridden. Good luck!')
-	else
-		print('Use -f to override this check at your own peril.')
-		exit(3)
-	end
-else
-	print(string.format('Hardware check (major: %s, minor: %s) .. ok', hw_major, hw_minor))
-end
-
--- disable all ports
-for i = 1, MAX_SENSORS do
-	local cmd = string.format(SET_ENABLE, toc(i), 0)
-	send(ctrl, cmd)
-end
-
--- populate phy_to_log
-local phy_to_log = {}
-
-for i = 1, MAX_SENSORS do
-	if flukso[tostring(i)] ~= nil then
-		if flukso[tostring(i)]['class'] == 'analog' and i > MAX_ANALOG_SENSORS then
-			print(string.format('Error. Analog sensor %s should be less than or equal to max_analog_sensors (%s)', i, MAX_ANALOG_SENSORS))
-			exit(4)
+	if hw_major ~= flukso.main.hw_major or hw_minor > flukso.main.hw_minor then
+		print(string.format('Hardware check (major: %s, minor: %s) .. nok', hw_major, hw_minor))
+		if hw_major ~= flukso.main.hw_major then
+			print('Error. Major version does not match.')
 		end
 
-		local ports = flukso[tostring(i)].port or {}
+		if hw_minor > flukso.main.hw_minor then
+			print('Error. Sensor board minor version is not supported by this package.')
+		end
 
-		for j = 1, #ports do
-			if tonumber(ports[j]) > MAX_SENSORS then
-				print(string.format('Error. Port numbering in sensor %s should be less than or equal to max_sensors (%s)', i, MAX_SENSORS))
-				exit(5)
+		if HW_CHECK_OVERRIDE then
+			print('Overridden. Good luck!')
+		else
+			print('Use -f to override this check at your own peril.')
+			exit(3)
+		end
+	else
+		print(string.format('Hardware check (major: %s, minor: %s) .. ok', hw_major, hw_minor))
+	end
+end
 
-			else
-				phy_to_log[toc(tonumber(ports[j]))] = toc(i)
+--- Disable all sensors in the sensor board.
+-- @param ctrl  	ctrl object
+-- @return		none 
+local function disable_all_sensors(ctrl)
+	for i = 1, MAX_SENSORS do
+		local cmd = string.format(SET_ENABLE, toc(i), 0)
+		send(ctrl, cmd)
+	end
+end
+
+--- Populate the physical (port) to logical (sensor) map on the sensor board.
+-- @param ctrl  	ctrl object
+-- @return		none 
+local function set_phy_to_log(ctrl)
+	local phy_to_log = {}
+
+	for i = 1, MAX_SENSORS do
+		if flukso[tostring(i)] ~= nil then
+			if flukso[tostring(i)]['class'] == 'analog' and i > MAX_ANALOG_SENSORS then
+				print(string.format('Error. Analog sensor %s should be less than or equal to max_analog_sensors (%s)', i, MAX_ANALOG_SENSORS))
+				exit(4)
+			end
+
+			local ports = flukso[tostring(i)].port or {}
+
+			for j = 1, #ports do
+				if tonumber(ports[j]) > MAX_SENSORS then
+					print(string.format('Error. Port numbering in sensor %s should be less than or equal to max_sensors (%s)', i, MAX_SENSORS))
+					exit(5)
+
+				else
+					phy_to_log[toc(tonumber(ports[j]))] = toc(i)
+				end
 			end
 		end
 	end
+
+	-- ports that are not in use are mapped to sensor id 0xff
+	for i = 0, MAX_SENSORS - 1 do
+		if not phy_to_log[i] then
+			phy_to_log[i] = 0xff
+		end
+	end
+
+	local cmd = SET_PHY_TO_LOG .. ' ' .. table.concat(phy_to_log, ' ', 0)
+	send(ctrl, cmd)
 end
 
--- ports that are not in use are mapped to sensor id 0xff
-for i = 0, MAX_SENSORS - 1 do
-	if not phy_to_log[i] then
-		phy_to_log[i] = 0xff
+--- Populate each sensor's meterconstant on the sensor board.
+-- @param ctrl  	ctrl object
+-- @return		none 
+local function set_meterconst(ctrl)
+	for i = 1, MAX_SENSORS do
+		local cmd
+
+		if flukso[tostring(i)] == nil then
+			cmd = string.format(SET_METERCONST, toc(i), 0)
+
+		elseif flukso[tostring(i)]['class'] == 'analog' then
+			local voltage = tonumber(flukso[tostring(i)].voltage or "0")
+			local current = tonumber(flukso[tostring(i)].current or "0")
+			cmd = string.format(SET_METERCONST, toc(i), math.floor(METERCONST_FACTOR * voltage * current))
+
+		elseif flukso[tostring(i)]['class'] == 'pulse'then
+			local meterconst = tonumber(flukso[tostring(i)].constant or "0")
+			cmd = string.format(SET_METERCONST, toc(i), meterconst)
+
+		else
+			cmd = string.format(SET_METERCONST, toc(i), 0)
+		end
+
+		if cmd then send(ctrl,cmd) end
 	end
 end
 
-local cmd = SET_PHY_TO_LOG .. ' ' .. table.concat(phy_to_log, ' ', 0)
-send(ctrl, cmd)
-
--- populate meterconst
-for i = 1, MAX_SENSORS do
-	local cmd
-
-	if flukso[tostring(i)] == nil then
-		cmd = string.format(SET_METERCONST, toc(i), 0)
-
-	elseif flukso[tostring(i)]['class'] == 'analog' then
-		local voltage = tonumber(flukso[tostring(i)].voltage or "0")
-		local current = tonumber(flukso[tostring(i)].current or "0")
-		cmd = string.format(SET_METERCONST, toc(i), math.floor(METERCONST_FACTOR * voltage * current))
-
-	elseif flukso[tostring(i)]['class'] == 'pulse'then
-		local meterconst = tonumber(flukso[tostring(i)].constant or "0")
-		cmd = string.format(SET_METERCONST, toc(i), meterconst)
-	else
-		cmd = string.format(SET_METERCONST, toc(i), 0)
-	end
-
-	if cmd then send(ctrl,cmd) end
-end
-
--- populate counter if reset_counters is set
-if flukso.main.reset_counters == '1' then
+--- Reset each sensor's counter on the sensor board.
+-- @param ctrl  	ctrl object
+-- @return		none 
+local function reset_counters(ctrl)
 	for i = 1, MAX_SENSORS do
 		local cmd = string.format(SET_COUNTER, toc(i), 0)
 		send(ctrl, cmd)
@@ -234,82 +279,133 @@ if flukso.main.reset_counters == '1' then
 	uci:commit('flukso')
 end
 
--- enable configured sensors
-for i = 1, MAX_SENSORS do
-	if flukso[tostring(i)] ~= nil and flukso[tostring(i)].enable == '1' then
-		cmd = string.format(SET_ENABLE, toc(i), 1)
-		send(ctrl, cmd)
-	end
-end
-
--- commit changes
-send(ctrl, COMMIT)
-
--- clean up ctrl port fd's
-ctrl.fdin:close()
-ctrl.fdout:close()
-
-
--- make sure /www/sensor exists
-nixio.fs.mkdirr(API_PATH)
-
--- clean up old symlinks
-for symlink in nixio.fs.dir(API_PATH) do
-	nixio.fs.unlink(API_PATH .. symlink)
-end
-
--- generate new symlinks
-for i = 1, MAX_SENSORS do
-	if flukso[tostring(i)] ~= nil and flukso[tostring(i)].enable == '1' then
-		local sensor_id = flukso[tostring(i)].id
-
-		if sensor_id then
-			nixio.fs.symlink(CGI_SCRIPT, API_PATH .. sensor_id)
-			print(string.format('ln -s %s %s%s .. ok', CGI_SCRIPT, API_PATH, sensor_id))
+--- Activate the enabled sensors on the sensor board.
+-- @param ctrl  	ctrl object
+-- @return		none 
+local function enable_sensors(ctrl)
+	for i = 1, MAX_SENSORS do
+		if flukso[tostring(i)] ~= nil and flukso[tostring(i)].enable == '1' then
+			cmd = string.format(SET_ENABLE, toc(i), 1)
+			send(ctrl, cmd)
 		end
 	end
 end
 
--- generate a new flukso.service for avahi
-avahi = { head = {}, body = {}, tail = {} }
+--- Commit all changes on the sensor board.
+-- @param ctrl  	ctrl object
+-- @return		none 
+local function commit(ctrl)
+	send(ctrl, COMMIT)
+end
 
-avahi.head[1] = '<?xml version="1.0" standalone="no"?><!--*-nxml-*-->'
-avahi.head[2] = '<!DOCTYPE service-group SYSTEM "avahi-service.dtd">'
-avahi.head[3] = '<service-group>'
-avahi.head[4] = ' <name replace-wildcards="yes">Flukso RESTful API on %h</name>'
-avahi.head[5] = '  <service>'
-avahi.head[6] = '    <type>_flukso._tcp</type>'
-avahi.head[7] = '    <port>8080</port>'
 
-for i = 1, MAX_SENSORS do
-	if flukso[tostring(i)] ~= nil and flukso[tostring(i)].enable == '1' and flukso[tostring(i)].id then
-		avahi.body[#avahi.body + 1] = string.format('    <txt-record>id%d=%s</txt-record>' , i, flukso[tostring(i)].id)
+--- Map /sensor/xyz endpoints to the cgi script.
+-- @return		none 
+local function create_symlinks()
+	-- make sure /www/sensor exists
+	nixio.fs.mkdirr(API_PATH)
+
+	-- clean up old symlinks
+	for symlink in nixio.fs.dir(API_PATH) do
+		nixio.fs.unlink(API_PATH .. symlink)
+	end
+
+	-- generate new symlinks
+	for i = 1, MAX_SENSORS do
+		if flukso[tostring(i)] ~= nil
+			and flukso[tostring(i)].enable == '1'
+			and flukso[tostring(i)].id
+			and flukso[tostring(i)].class ~= 'uart'
+			then
+
+			local sensor_id = flukso[tostring(i)].id
+
+			if sensor_id then
+				nixio.fs.symlink(CGI_SCRIPT, API_PATH .. sensor_id)
+				print(string.format('ln -s %s %s%s .. ok', CGI_SCRIPT, API_PATH, sensor_id))
+			end
+		end
 	end
 end
 
-avahi.tail[1] = '    <txt-record>path=/sensor</txt-record>'
-avahi.tail[2] = '    <txt-record>version=1.0</txt-record>'
-avahi.tail[3] = '  </service>'
-avahi.tail[4] = '</service-group>'
+--- Generate a new flukso.service xml file for the avahi-daemon.
+-- @return		none 
+local function create_avahi_config()
+	avahi = { head = {}, body = {}, tail = {} }
 
--- remove the old flukso.service
-nixio.fs.unlink(AVAHI_PATH)
+	avahi.head[1] = '<?xml version="1.0" standalone="no"?><!--*-nxml-*-->'
+	avahi.head[2] = '<!DOCTYPE service-group SYSTEM "avahi-service.dtd">'
+	avahi.head[3] = '<service-group>'
+	avahi.head[4] = ' <name replace-wildcards="yes">Flukso RESTful API on %h</name>'
+	avahi.head[5] = '  <service>'
+	avahi.head[6] = '    <type>_flukso._tcp</type>'
+	avahi.head[7] = '    <port>8080</port>'
 
--- generate the new one
-fd = nixio.open(AVAHI_PATH, O_RDWR_CREAT)
-print(string.format('generating a new %s', AVAHI_PATH))
+	for i = 1, MAX_SENSORS do
+		if flukso[tostring(i)] ~= nil
+			and flukso[tostring(i)].enable == '1'
+			and flukso[tostring(i)].id
+			and flukso[tostring(i)].class ~= 'uart'
+			then
 
-for i = 1, #avahi.head do
-	fd:write(avahi.head[i] .. '\n')
+			avahi.body[#avahi.body + 1] = string.format('    <txt-record>id%d=%s</txt-record>' , i, flukso[tostring(i)].id)
+		end
+	end
+
+	avahi.tail[1] = '    <txt-record>path=/sensor</txt-record>'
+	avahi.tail[2] = '    <txt-record>version=1.0</txt-record>'
+	avahi.tail[3] = '  </service>'
+	avahi.tail[4] = '</service-group>'
+
+	-- remove the old flukso.service
+	nixio.fs.unlink(AVAHI_PATH)
+
+	-- generate the new one
+	fd = nixio.open(AVAHI_PATH, O_RDWR_CREAT)
+	print(string.format('generating a new %s', AVAHI_PATH))
+
+	for i = 1, #avahi.head do
+		fd:write(avahi.head[i] .. '\n')
+	end
+
+	for i = 1, #avahi.body do
+		fd:write(avahi.body[i] .. '\n')
+	end
+
+	for i = 1, #avahi.tail do
+		fd:write(avahi.tail[i] .. '\n')
+	end
 end
 
-for i = 1, #avahi.body do
-	fd:write(avahi.body[i] .. '\n')
+
+-- sync config to sensor board
+local ctrl = ctrl_init()
+
+check_hw_version(ctrl)
+disable_all_sensors(ctrl)
+set_phy_to_log(ctrl)
+set_meterconst(ctrl)
+
+if RESET_COUNTERS then
+	reset_counters(ctrl)
 end
 
-for i = 1, #avahi.tail do
-	fd:write(avahi.tail[i] .. '\n')
+enable_sensors(ctrl)
+commit(ctrl)
+
+ctrl_close(ctrl)
+
+
+-- sync config locally
+create_symlinks()
+create_avahi_config()
+
+
+-- sync config to server
+if SYNC_TO_SERVER then
+	-- TODO POST each sensor's parameters to the /sensor/xyz endpoint
 end
+
 
 print(arg[0] .. ' completed successfully. Bye!')
 exit(0)
