@@ -58,8 +58,25 @@ local Cursor = getmetatable(cursor())
 -- @param configlist		List of UCI configurations
 -- @param command			Don't apply only return the command
 function Cursor.apply(self, configlist, command)
+	-- filter out duplicates in a list
+	local function filter(list)
+		local set = {}
+
+		for _, element in ipairs(list) do
+			set[element] = true
+		end
+
+		list = {}
+
+		for key, _ in pairs(set) do
+			list[#list + 1] = key
+		end
+
+		return list
+	end
+
 	configlist = self:_affected(configlist)
-	local reloadcmd = "/sbin/luci-reload " .. table.concat(configlist, " ")
+	local reloadcmd = "/sbin/luci-reload " .. table.concat(filter(configlist), " ")
 
 	return command and reloadcmd or os.execute(reloadcmd .. " >/dev/null 2>&1")
 end
