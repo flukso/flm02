@@ -28,7 +28,20 @@ reload_init() {
 	}
 }
 
+avahi_stop() {
+	[ -s /var/run/avahi-daemon/pid ] && {
+		AVAHI=1
+		/etc/init.d/avahi-daemon stop
+	}
+}
+
+avahi_start() {
+	[ -n $AVAHI ] && /etc/init.d/avahi-daemon start
+}
+
+
 lock "/var/run/luci-reload"
+avahi_stop
 
 config_load ucitrack
 
@@ -36,5 +49,6 @@ for i in $*; do
 	config_foreach apply_config $i $i
 done
 
+avahi_start
 rm -f "/var/run/luci-reload-status"
 lock -u "/var/run/luci-reload"
