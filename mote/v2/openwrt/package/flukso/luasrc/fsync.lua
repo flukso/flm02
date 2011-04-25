@@ -69,7 +69,7 @@ local CGI_SCRIPT	 = '/usr/bin/restful'
 local AVAHI_PATH	 = '/etc/avahi/services/flukso.service'
 
 -- WAN settings
-local WAN_BASE_URL	 = flukso.daemon.wan_base_url .. 'device/'
+local WAN_BASE_URL	 = flukso.daemon.wan_base_url .. 'sensor/'
 local WAN_KEY		 = '0123456789abcdef0123456789abcdef'
 uci:foreach('system', 'system', function(x) WAN_KEY = x.key end) -- quirky but it works
 
@@ -448,7 +448,7 @@ local function phone_home()
 
 			local level
 
-			if code == 200 then
+			if code == 200 or code == 204 then
 				level = 'info'
 			else
 				level = 'err'
