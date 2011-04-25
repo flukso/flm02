@@ -143,11 +143,42 @@ to_json(ReqData, #state{rrdSensor = RrdSensor, rrdStart = RrdStart, rrdEnd = Rrd
             {{halt, 404}, ReqData, State}
     end.
 
+
+process_post(ReqData, State) ->
+    {struct, JsonData} = mochijson2:decode(wrq:req_body(ReqData)),
+    Payload = {proplists:get_value(<<"measurements">>, JsonData),
+               proplists:get_value(<<"config">>, JsonData)},
+
+    case Payload of
+        {undefined, undefined} ->
+            {false, ReqData, State};
+	{Measurements, undefined} ->
+            process_measurements(Measurements, ReqData, State);
+        {undefined, Config} ->
+            process_config(Config, ReqData, State);
+        {_Measurements, _Config} ->
+            {false, ReqData, State}
+    end.
+
+% JSON: {"config":{"type":"electricity","enable":0,"class":"analog","current":50,"voltage":230}}
+% Mochijson2: {struct,[{<<"config">>, {struct,[{<<"type">>,<<"electricity">>}, {<<"enable">>,0}, ... ]} }]}
+process_config({struct, Params}, ReqData, #state{rrdSensor = Sensor} = State) ->
+    Args = [proplists:get_value(<<"class">>,    Params),
+            proplists:get_value(<<"type">>,     Params),
+            proplists:get_value(<<"function">>, Params),
+            proplists:get_value(<<"voltage">>,  Params),
+            proplists:get_value(<<"current">>,  Params),
+            proplists:get_value(<<"constant">>, Params),
+            proplists:get_value(<<"enable">>,   Params),
+            Sensor],
+
+    {updated, _Result} = mysql:execute(pool, sensor_config, Args),
+
+    {true, ReqData, State}.
+
 % JSON: {"measurements":[[<TS1>,<VALUE1>],...,[<TSn>,<VALUEn>]]}
 % Mochijson2: {struct,[{<<"measurements">>,[[<TS1>,<VALUE1>],...,[<TSn>,<VALUEn>]]}]}
-process_post(ReqData, #state{rrdSensor = RrdSensor} = State) ->
-    {struct, JsonData} = mochijson2:decode(wrq:req_body(ReqData)),
-    Measurements = proplists:get_value(<<"measurements">>, JsonData),
+process_measurements(Measurements, ReqData, #state{rrdSensor = RrdSensor} = State) ->
     RrdData = [[integer_to_list(Time), ":", integer_to_list(Counter), " "] || [Time, Counter] <- Measurements],
     [LastTimestamp, LastValue] = lists:last(Measurements),
 

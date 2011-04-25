@@ -35,6 +35,7 @@ mysql_prepare() ->
     mysql:prepare(sensor_key, <<"SELECT sha FROM (logger_devices ld INNER JOIN logger_meters lm ON ld.device = lm.device) WHERE lm.meter = ?">>),
     mysql:prepare(sensor_props, <<"SELECT uid, device, night FROM logger_meters WHERE meter = ?">>),
     mysql:prepare(sensor_update, <<"UPDATE logger_meters SET access = ?, night = ?, value = ? WHERE meter = ?">>),
+    mysql:prepare(sensor_config, <<"UPDATE logger_meters SET class = ?, type = ?, function = ?, voltage = ?, current = ?, constant = ?, enabled = ? WHERE meter = ?">>),
     mysql:prepare(timezone, <<"SELECT timezone FROM users WHERE uid = ?">>),
     mysql:prepare(device_key, <<"SELECT sha FROM logger_devices WHERE device = ?">>),
     mysql:prepare(device_props, <<"SELECT sha, upgrade, resets FROM logger_devices WHERE device = ?">>),
