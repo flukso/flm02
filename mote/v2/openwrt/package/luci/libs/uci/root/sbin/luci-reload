@@ -41,7 +41,7 @@ avahi_start() {
 
 
 lock "/var/run/luci-reload"
-avahi_stop
+[ $1 != flukso ] && avahi_stop
 
 config_load ucitrack
 
@@ -49,6 +49,6 @@ for i in $*; do
 	config_foreach apply_config $i $i
 done
 
-avahi_start
+[ $1 != flukso ] && avahi_start
 rm -f "/var/run/luci-reload-status"
 lock -u "/var/run/luci-reload"
