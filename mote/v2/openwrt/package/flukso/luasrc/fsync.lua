@@ -23,10 +23,14 @@
 ]]--
 
 
-local dbg   = require 'dbg'
-local nixio = require 'nixio'
-nixio.fs    = require 'nixio.fs'
-local uci   = require 'luci.model.uci'.cursor()
+local dbg        = require 'dbg'
+local nixio      = require 'nixio'
+nixio.fs         = require 'nixio.fs'
+local uci        = require 'luci.model.uci'.cursor()
+local luci       = require 'luci'
+luci.json        = require 'luci.json'
+local httpclient = require 'luci.httpclient'
+
 
 local HW_CHECK_OVERRIDE	 = (arg[1] == '-f')
 
@@ -50,6 +54,7 @@ local SYNC_TO_SERVER	 = (flukso.daemon.enable_wan_branch == '1')
 
 local METERCONST_FACTOR	 = 0.449
 
+-- sensor board commands
 local GET_HW_VERSION	 = 'gh'
 local GET_HW_VERSION_R	 = '^gh%s+(%d+)%s+(%d+)$'
 local SET_ENABLE	 = 'se %d %d'
@@ -58,9 +63,22 @@ local SET_METERCONST	 = 'sm %d %d'
 local SET_COUNTER	 = 'sc %d %d'
 local COMMIT		 = 'ct'
 
+-- LAN settings
 local API_PATH		 = '/www/sensor/'
 local CGI_SCRIPT	 = '/usr/bin/restful'
 local AVAHI_PATH	 = '/etc/avahi/services/flukso.service'
+
+-- WAN settings
+local WAN_BASE_URL	 = flukso.daemon.wan_base_url .. 'device/'
+local WAN_KEY		 = '0123456789abcdef0123456789abcdef'
+uci:foreach('system', 'system', function(x) WAN_KEY = x.key end) -- quirky but it works
+
+-- https header helpers
+local FLUKSO_VERSION	 = '000'
+uci:foreach('system', 'system', function(x) FLUKSO_VERSION = x.version end)
+
+local USER_AGENT	 = 'Fluksometer v' .. FLUKSO_VERSION
+local CACERT		 = flukso.daemon.cacert
 
 
 --- Convert from Lua-style to c-style index.
@@ -74,8 +92,6 @@ end
 -- @param code  	exit status code
 -- @return		none 
 local function exit(code)
-	nixio.openlog('fsync', 'pid')
-
 	local level
 
 	if code == 0 then
@@ -377,6 +393,85 @@ local function create_avahi_config()
 	end
 end
 
+--- POST each sensor's parameters to the /sensor/xyz endpoint
+-- @return		none
+local function phone_home()
+	local function json_config(i) -- type(i) --> "string"
+		local config = {}
+
+		config["class"]    = flukso[i]["class"]
+		config["type"]     = flukso[i]["type"]
+		config["function"] = flukso[i]["function"]
+		config["voltage"]  = tonumber(flukso[i]["voltage"])
+		config["current"]  = tonumber(flukso[i]["current"])
+		config["constant"] = tonumber(flukso[i]["constant"])
+		config["enable"]   = tonumber(flukso[i]["enable"])
+
+		return luci.json.encode{ config = config }
+	end
+
+	local headers = {}
+	headers['Content-Type'] = 'application/json'
+	headers['X-Version'] = '1.0'
+	headers['User-Agent'] = USER_AGENT
+
+	local options = {}
+	options.sndtimeo = 5
+	options.rcvtimeo = 5
+
+	options.tls_context_set_verify = 'peer'
+	options.cacert = CACERT
+	options.method  = 'POST'
+	options.headers = headers
+
+	local http_persist = httpclient.create_persistent()
+
+	for i = 1, MAX_SENSORS do
+		if flukso[tostring(i)] ~= nil and flukso[tostring(i)].id then
+			local sensor_id = flukso[tostring(i)].id
+
+			if i ~= MAX_SENSORS then
+				options.headers['Connection'] = 'keep-alive'
+			else
+				options.headers['Connection'] = 'close'
+			end
+
+			options.body = json_config(tostring(i))
+			options.headers['Content-Length'] = tostring(#options.body)
+
+			local hash = nixio.crypto.hmac('sha1', WAN_KEY)
+			hash:update(options.body)
+			options.headers['X-Digest'] = hash:final()
+
+			local url = WAN_BASE_URL .. sensor_id
+			local response, code, call_info = http_persist(url, options)
+
+			local level
+
+			if code == 200 then
+				level = 'info'
+			else
+				level = 'err'
+			end
+
+			nixio.syslog(level, string.format('%s %s: %s', options.method, url, code))
+
+			-- if available, send additional error info to the syslog
+			if type(call_info) == 'string' then
+				nixio.syslog('err', call_info)
+			elseif type(call_info) == 'table'  then
+				local auth_error = call_info.headers['WWW-Authenticate']
+
+				if auth_error then
+					nixio.syslog('err', string.format('WWW-Authenticate: %s', auth_error))
+				end
+			end
+		end
+	end
+end
+
+-- open the connection to the syslog deamon, specifying our identity
+nixio.openlog('fsync', 'pid')
 
 -- sync config to sensor board
 local ctrl = ctrl_init()
@@ -401,9 +496,9 @@ create_symlinks()
 create_avahi_config()
 
 
--- sync config to server
+-- sync config with the server
 if SYNC_TO_SERVER then
-	-- TODO POST each sensor's parameters to the /sensor/xyz endpoint
+	phone_home()
 end
 
 
