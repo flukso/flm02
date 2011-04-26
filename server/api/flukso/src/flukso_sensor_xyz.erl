@@ -168,6 +168,7 @@ process_config({struct, Params}, ReqData, #state{rrdSensor = Sensor} = State) ->
             proplists:get_value(<<"function">>, Params),
             proplists:get_value(<<"voltage">>,  Params),
             proplists:get_value(<<"current">>,  Params),
+            proplists:get_value(<<"phase">>,    Params),
             proplists:get_value(<<"constant">>, Params),
             proplists:get_value(<<"enable">>,   Params),
             Sensor],
