@@ -407,6 +407,15 @@ local function phone_home()
 		config["constant"] = tonumber(flukso[i]["constant"])
 		config["enable"]   = tonumber(flukso[i]["enable"])
 
+		if config["class"] == "analog" then
+			local phase = tonumber(flukso.main.phase)
+
+			if phase == 1 or 
+			   phase == 3 and i == "1" then
+				config["phase"] = phase
+			end
+		end
+
 		return luci.json.encode{ config = config }
 	end
 
