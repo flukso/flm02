@@ -20,6 +20,7 @@ local util = require "luci.util"
 local table = require "table"
 local coroutine = require "coroutine"
 local string = require "string"
+local os = require "os"
 local http = require "luci.http.protocol"
 local date = require "luci.http.protocol.date"
 
@@ -106,19 +107,35 @@ end
 
 function create_persistent()
 	return coroutine.wrap(function(uri, options)
+		local function globe_on()
+			os.execute("gpioctl clear 5 > /dev/null")
+		end
+
+		local function globe_off()
+			os.execute("gpioctl set 5 > /dev/null")
+		end
+
 		local status, response, buffer, sock
 
 		while true do
 			local output = {}
+
+			globe_off()
 			status, response, buffer, sock = request_raw(uri, options, sock)
 
 			if not status then
 				uri, options = coroutine.yield(nil, response, buffer)
 
 			elseif status ~= 200 and status ~= 206 then
+				if status == 204 then
+					globe_on()
+				end
+	
 				uri, options = coroutine.yield(nil, status, response)
 
 			else
+				globe_on()
+
 				local content_length = tonumber(response.headers["Content-Length"])
 				local bytes_read = 0
 

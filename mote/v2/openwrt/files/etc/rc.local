@@ -1,6 +1,10 @@
 # Put your custom commands here that should be executed once
 # the system init finished. By default this file does nothing.
 
+# set the globe led pin (=GPIO 5) direction to output
+gpioctl dirout 5
+# turn the globe led pin off (inverted logic)
+gpioctl set 5
 # set the wifi led pin (=GPIO 7) direction to output
 gpioctl dirout 7
 
