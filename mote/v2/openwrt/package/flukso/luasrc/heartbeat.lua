@@ -41,6 +41,9 @@ local httpclient = require 'luci.httpclient'
 local FLUKSO		= uci:get_all('flukso')
 
 -- WAN settings
+local WAN_ENABLED	= true
+if tonumber(FLUKSO.daemon.enable_wan_branch) == 0 then WAN_ENABLED = false end
+
 local WAN_BASE_URL	= FLUKSO.daemon.wan_base_url .. 'device/'
 local WAN_KEY		= '0123456789abcdef0123456789abcdef'
 uci:foreach('system', 'system', function(x) WAN_KEY = x.key end) -- quirky but it works
@@ -67,6 +70,11 @@ function collect_mp()
 	system, model, monitor.memtotal, monitor.memcached, monitor.membuffers, monitor.memfree = luci.sys.sysinfo()
 
 	return monitor
+end
+
+-- terminate when WAN reporting is not set
+if not WAN_ENABLED then
+	os.exit(2)
 end
 
 -- open the connection to the syslog deamon, specifying our identity
@@ -121,7 +129,7 @@ else
 		end
 	end
 
-	os.exit(2)
+	os.exit(3)
 end
 
 -- verify the reply's digest
@@ -129,7 +137,7 @@ hash = nixio.crypto.hmac('sha1', WAN_KEY)
 hash:update(response_json)
 if call_info.headers['X-Digest'] ~= hash:final() then
 	nixio.syslog('err', 'Incorrect digest in the heartbeat reply. Discard response.')
-	os.exit(3)
+	os.exit(4)
 end
 
 local response = luci.json.decode(response_json)
