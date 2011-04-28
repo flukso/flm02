@@ -39,9 +39,21 @@ avahi_start() {
 	[ -n $AVAHI ] && /etc/init.d/avahi-daemon start
 }
 
+flukso_stop() {
+	[ -s /var/run/fluksod/pid ] && {
+		FLUKSO=1
+		/etc/init.d/flukso stop
+	}
+}
+
+flukso_start() {
+	[ -n $FLUKSO ] && /etc/init.d/flukso start
+}
+
 
 lock "/var/run/luci-reload"
 avahi_stop
+flukso_stop
 
 config_load ucitrack
 
@@ -49,6 +61,7 @@ for i in $*; do
 	config_foreach apply_config $i $i
 done
 
+flukso_start
 avahi_start
 rm -f "/var/run/luci-reload-status"
 lock -u "/var/run/luci-reload"
