@@ -28,7 +28,14 @@ local MAX_SENSORS = tonumber(FLUKSO.main.max_sensors)
 
 m = Map("flukso", translate("Sensor"), translate("Fluksometer sensor configuration"))
 
-s = m:section(NamedSection, "main", "settings", "general settings")
+s = m:section(NamedSection, "daemon", "settings", "service configuration")
+wan_enable = s:option(Flag, "enable_wan_branch", translate("wan_enable"))
+wan_enable.rmempty = false
+
+lan_enable = s:option(Flag, "enable_lan_branch", translate("lan_enable"))
+lan_enable.rmempty = false
+
+s = m:section(NamedSection, "main", "settings", "analog port configuration")
 phase = s:option(ListValue, "phase", translate("phase"))
 phase:value("1")
 phase:value("3")
