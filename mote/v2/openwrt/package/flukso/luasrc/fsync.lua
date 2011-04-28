@@ -50,7 +50,8 @@ local flukso = uci:get_all('flukso')
 local MAX_SENSORS	 = tonumber(flukso.main.max_sensors)
 local MAX_ANALOG_SENSORS = tonumber(flukso.main.max_analog_sensors)
 local RESET_COUNTERS	 = (flukso.main.reset_counters == '1')
-local SYNC_TO_SERVER	 = (flukso.daemon.enable_wan_branch == '1')
+local WAN_ENABLED	 = (flukso.daemon.enable_wan_branch == '1')
+local LAN_ENABLED	 = (flukso.daemon.enable_lan_branch == '1')
 
 local METERCONST_FACTOR	 = 0.449
 
@@ -314,17 +315,19 @@ local function commit(ctrl)
 	send(ctrl, COMMIT)
 end
 
+--- Remove all /sensor/xyz endpoint mappings to the cgi script.
+-- @return		none 
+local function remove_symlinks()
+	for symlink in nixio.fs.dir(API_PATH) do
+		nixio.fs.unlink(API_PATH .. symlink)
+	end
+end
 
 --- Map /sensor/xyz endpoints to the cgi script.
 -- @return		none 
 local function create_symlinks()
 	-- make sure /www/sensor exists
 	nixio.fs.mkdirr(API_PATH)
-
-	-- clean up old symlinks
-	for symlink in nixio.fs.dir(API_PATH) do
-		nixio.fs.unlink(API_PATH .. symlink)
-	end
 
 	-- generate new symlinks
 	for i = 1, MAX_SENSORS do
@@ -342,6 +345,12 @@ local function create_symlinks()
 			end
 		end
 	end
+end
+
+--- Remove the avahi-daemon flukso.service xml file.
+-- @return		none 
+local function remove_avahi_config()
+	nixio.fs.unlink(AVAHI_PATH)
 end
 
 --- Generate a new flukso.service xml file for the avahi-daemon.
@@ -373,10 +382,7 @@ local function create_avahi_config()
 	avahi.tail[3] = '  </service>'
 	avahi.tail[4] = '</service-group>'
 
-	-- remove the old flukso.service
-	nixio.fs.unlink(AVAHI_PATH)
-
-	-- generate the new one
+	-- generate the new flukso service
 	fd = nixio.open(AVAHI_PATH, O_RDWR_CREAT)
 	print(string.format('generating a new %s', AVAHI_PATH))
 
@@ -501,12 +507,16 @@ ctrl_close(ctrl)
 
 
 -- sync config locally
-create_symlinks()
-create_avahi_config()
+remove_symlinks()
+remove_avahi_config()
 
+if LAN_ENABLED then
+	create_symlinks()
+	create_avahi_config()
+end
 
 -- sync config with the server
-if SYNC_TO_SERVER then
+if WAN_ENABLED then
 	phone_home()
 end
 
