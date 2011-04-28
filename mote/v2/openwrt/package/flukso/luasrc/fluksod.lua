@@ -52,8 +52,7 @@ local O_RDWR_CREAT	= nixio.open_flags('rdwr', 'creat')
 local POLLIN            = nixio.poll_flags('in')
 
 -- set WAN parameters
-local WAN_ENABLED	= true
-if tonumber(FLUKSO.daemon.enable_wan_branch) == 0 then WAN_ENABLED = false end
+local WAN_ENABLED	= (FLUKSO.daemon.enable_wan_branch == '1')
 
 local TIMESTAMP_MIN	= 1234567890
 local WAN_INTERVAL	= 300
@@ -78,8 +77,7 @@ local USER_AGENT        = 'Fluksometer v' .. FLUKSO_VERSION
 local CACERT		= FLUKSO.daemon.cacert
 
 -- set LAN parameters
-local LAN_ENABLED	= true
-if tonumber(FLUKSO.daemon.enable_lan_branch) == 0 then LAN_ENABLED = false end
+local LAN_ENABLED	= (FLUKSO.daemon.enable_lan_branch == '1')
 
 local LAN_POLISH_CUTOFF	= 60
 local LAN_PUBLISH_PATH	= DAEMON_PATH .. '/sensor'

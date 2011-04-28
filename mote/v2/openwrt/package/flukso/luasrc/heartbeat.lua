@@ -41,8 +41,7 @@ local httpclient = require 'luci.httpclient'
 local FLUKSO		= uci:get_all('flukso')
 
 -- WAN settings
-local WAN_ENABLED	= true
-if tonumber(FLUKSO.daemon.enable_wan_branch) == 0 then WAN_ENABLED = false end
+local WAN_ENABLED	= (FLUKSO.daemon.enable_wan_branch == '1')
 
 local WAN_BASE_URL	= FLUKSO.daemon.wan_base_url .. 'device/'
 local WAN_KEY		= '0123456789abcdef0123456789abcdef'
