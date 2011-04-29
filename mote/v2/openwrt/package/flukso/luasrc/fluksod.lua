@@ -61,9 +61,9 @@ local WAN_FILTER = { [1] = {}, [2] = {}, [3] = {} }
 WAN_FILTER[1].span	= 60
 WAN_FILTER[1].offset	= 0
 WAN_FILTER[2].span	= 900
-WAN_FILTER[2].offset	= 7200
+WAN_FILTER[2].offset	= 3600
 WAN_FILTER[3].span	= 86400
-WAN_FILTER[3].offset	= 172800
+WAN_FILTER[3].offset	= 86400
 
 local WAN_BASE_URL	= FLUKSO.daemon.wan_base_url .. 'sensor/'
 local WAN_KEY		= '0123456789abcdef0123456789abcdef'
