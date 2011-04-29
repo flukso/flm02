@@ -412,10 +412,19 @@ program: $(TARGET).hex $(TARGET).eep
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
 
 # Program the device remotely.
+FLUKSO = /etc/init.d/flukso
+
 rprogram: $(TARGET).hex $(TARGET).eep
 	@scp $(TARGET).hex $(TARGET).eep root@192.168.255.1:/tmp
-	@ssh root@192.168.255.1 "cd /tmp; $(AVRDUDE_R) $(AVRDUDE_FLAGS_R) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)"
-
+	@ssh root@192.168.255.1 \
+	"echo +++ stopping the flukso daemon +++;" \
+	"$(FLUKSO) stop;" \
+	"cd /tmp;" \
+	"$(AVRDUDE_R) $(AVRDUDE_FLAGS_R) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM);" \
+	"sleep 1;" \
+	"echo;" \
+	"echo +++ starting the flukso daemon +++;" \
+	"$(FLUKSO) start <&- 2>&- >/dev/null"
 
 # Generate avr-gdb config/init file which does the following:
 #     define the reset signal, load the target file, connect to target, and set 
