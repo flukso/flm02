@@ -311,30 +311,20 @@ function lan_buffer(child)
 	end)
 end
 
-function polish(child, cutoff)
+function publish(child)
 	return coroutine.create(function(measurements)
-		while true do
-			measurements:fill()
-			measurements:truncate(cutoff)
-			coroutine.resume(child, measurements)
-			measurements = coroutine.yield()
-		end
-	end)
-end
+		nixio.fs.mkdirr(LAN_PUBLISH_PATH)
 
-function publish(child, dir)
-	return coroutine.create(function(measurements)
-		nixio.fs.mkdirr(dir)
-
-		for file in nixio.fs.dir(dir) do
+		for file in nixio.fs.dir(LAN_PUBLISH_PATH) do
 			nixio.fs.unlink(file)
 		end
 
 		while true do
+			measurements:polish(LAN_POLISH_CUTOFF)
 			local measurements_json = measurements:json_encode()
 
 			for sensor_id, json in pairs(measurements_json) do
-				local file = dir .. '/' .. sensor_id
+				local file = LAN_PUBLISH_PATH .. '/' .. sensor_id
 				
 				nixio.fs.unlink(file)
 				fd = nixio.open(file, O_RDWR_CREAT)
@@ -381,11 +371,9 @@ local wan_chain =
 
 local lan_chain =
 	lan_buffer(
-		polish(
-			publish(
-				debug(nil)
-			, LAN_PUBLISH_PATH)
-		, LAN_POLISH_CUTOFF)
+		publish(
+			debug(nil)
+		)
 	)
 
 local chain = dispatch(wan_chain, lan_chain)

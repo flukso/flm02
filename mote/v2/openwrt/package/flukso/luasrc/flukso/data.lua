@@ -90,28 +90,27 @@ function filter(M, span, offset)
 	end
 end
 
-function truncate(M, cutoff)
+function polish(M, cutoff)
+	local now = os.time()
+
 	for sensor, T in pairs(M) do
 		local H = timestamps(T)
 
-		for i = H[1], os.time() - cutoff do
-			T[i] = nil
-		end
-	end
-end
-
-function fill(M)
-	for sensor, T in pairs(M) do
-		local H = timestamps(T)
-
+		-- fill up the holes first
 		for i = H[#H]-1, H[1]+1, -1 do
 			if T[i] == nil or T[i] == '"nan"' then
 				T[i] = T[i+1]
 			end
 		end
 
-		for i = H[#H]+1, os.time() do
+		-- make sure the tail stretches up to 'now'
+		for i = H[#H]+1, now do
 			T[i] = '"nan"'
+		end
+
+		-- truncate the head
+		for i = H[1], now - cutoff do
+			T[i] = nil
 		end
 	end
 end
@@ -127,7 +126,7 @@ function json_encode(M)
 			SB[#SB+1] = '[' .. timestamp .. ',' .. T[timestamp]  .. '],'
 		end
 
-		SB[#SB] = SB[#SB]:sub(1, -2) -- remove the trialing comma from the last entry
+		SB[#SB] = SB[#SB]:sub(1, -2) -- remove the trailing comma from the last entry
 		SB[#SB+1] = ']'
 		J[sensor] = table.concat(SB)
 	end
