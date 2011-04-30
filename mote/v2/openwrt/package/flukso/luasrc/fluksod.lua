@@ -79,6 +79,7 @@ local CACERT		= FLUKSO.daemon.cacert
 -- set LAN parameters
 local LAN_ENABLED	= (FLUKSO.daemon.enable_lan_branch == '1')
 
+local LAN_INTERVAL	= 0
 local LAN_POLISH_CUTOFF	= 60
 local LAN_PUBLISH_PATH	= DAEMON_PATH .. '/sensor'
 
@@ -264,6 +265,7 @@ end
 function lan_buffer(child)
 	return coroutine.create(function(sensor_id, timestamp, power, counter, msec)
 		local measurements = data.new()
+		local threshold = os.time() + LAN_INTERVAL
 		local previous = {}
 
 		local function diff(x, y)  -- calculates y - x
@@ -299,8 +301,9 @@ function lan_buffer(child)
 				end
 			end
 
-			if next(measurements) then  --checking whether table is not empty
+			if timestamp > threshold and next(measurements) then  --checking whether table is not empty
 				coroutine.resume(child, measurements)
+				threshold = os.time() + LAN_INTERVAL
 			end
 
 			sensor_id, timestamp, power, counter, msec = coroutine.yield()
