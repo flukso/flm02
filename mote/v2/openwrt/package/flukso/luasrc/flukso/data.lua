@@ -117,7 +117,7 @@ function json_encode(M, entries)
 	local J = {}
 
 	if entries then
-		arr_size = 5*entries + 2
+		arr_size = 4*entries + 1
 	else
 		arr_size = 0
 	end
@@ -125,19 +125,18 @@ function json_encode(M, entries)
 	for sensor, T in pairs(M) do
 		local H = timestamps(T)
 
+		-- use a string buffer for building up the JSON string
 		local SB = table.create(arr_size, 0)                                              
-		SB[1] = '[' -- use a string buffer for building up the JSON string           
+		SB[1] = '[['
 
 		for k, timestamp in ipairs(H) do
-			SB[#SB+1] = '['
 			SB[#SB+1] = timestamp
 			SB[#SB+1] = ','
 			SB[#SB+1] = T[timestamp]
-			SB[#SB+1] = '],'
+			SB[#SB+1] = '],['
 		end
 
-		SB[#SB] = SB[#SB]:sub(1, -2) -- remove the trailing comma from the last entry
-		SB[#SB+1] = ']'
+		SB[#SB] = ']]'
 
 		J[sensor] = table.concat(SB)
 	end
