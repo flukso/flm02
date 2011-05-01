@@ -48,6 +48,11 @@ cp patches/420-tune_spi_bitbanging_for_avr.patch $BACKFIRE_PATH/target/linux/ath
 # see: https://bugs.busybox.net/show_bug.cgi?id=681
 cp patches/920-fix_crond_loglevel.patch $BACKFIRE_PATH/package/busybox/patches
 
+# patch the default OpenWRT Lua package
+rm $BACKFIRE_PATH/package/lua/patches/400-luaposix_5.1.4-embedded.patch
+rm $BACKFIRE_PATH/package/lua/patches/500-eglibc_config.patch
+cp patches/600-lua-tablecreate.patch $BACKFIRE_PATH/package/lua/patches
+
 # patch files of the OpenWRT build system
 cd $BACKFIRE_PATH
 patch -p0 < $REPO_PATH/patches/900-disable_console.patch
