@@ -90,9 +90,7 @@ function filter(M, span, offset)
 	end
 end
 
-function polish(M, cutoff)
-	local now = os.time()
-
+function polish(M, now, cutoff)
 	for sensor, T in pairs(M) do
 		local H = timestamps(T)
 
