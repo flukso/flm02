@@ -321,7 +321,7 @@ function publish(child)
 
 		while true do
 			measurements:polish(os.time(), LAN_POLISH_CUTOFF)
-			local measurements_json = measurements:json_encode()
+			local measurements_json = measurements:json_encode(LAN_POLISH_CUTOFF)
 
 			for sensor_id, json in pairs(measurements_json) do
 				local file = LAN_PUBLISH_PATH .. '/' .. sensor_id
