@@ -63,8 +63,12 @@ rm $BACKFIRE_PATH/package/base-files/files/etc/hotplug.d/iface/40-rdate
 
 # and then build the Fluksometer firmware...
 echo 
-echo =================================================================================
-echo To compile this custom backfire build for Flukso, just type: make -j8
-echo Use at least as many jobs as the number of cores available on your build machine.
-echo =================================================================================
+echo " ============================================================================ "
+echo " To compile this custom Backfire build for Flukso, just type: make -j8 in the "
+echo " installation path you selected. Use at least as many jobs as the number of   "
+echo " cores available on your build machine.                                       "
+echo
+echo " IMPORTANT: make sure your machine has a recent version (>= v4.3.4) of the    "
+echo " avr-gcc toolchain installed                                                  "
+echo " ============================================================================ "
 echo 
