@@ -1,4 +1,4 @@
-PO = default cbi admin-core sysauth wifi
+PO = default cbi admin-core sysauth wifi sensor
 PO_LANG = en
 
 include ../../build/config.mk

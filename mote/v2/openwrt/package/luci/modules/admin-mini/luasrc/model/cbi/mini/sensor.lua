@@ -26,19 +26,20 @@ local FLUKSO      = uci:get_all("flukso")
 local MAX_SENSORS = tonumber(FLUKSO.main.max_sensors)
 
 
-m = Map("flukso", translate("Sensor"), translate("Fluksometer sensor configuration"))
+m = Map("flukso", translate("flm_sensor"), translate("flm_sensor_settings"))
 
-s = m:section(NamedSection, "daemon", "settings", "service configuration")
-wan_enable = s:option(Flag, "enable_wan_branch", translate("wan_enable"))
+s = m:section(NamedSection, "daemon", "settings", translate("flm_service_config"))
+wan_enable = s:option(Flag, "enable_wan_branch", translate("flm_wan"))
 wan_enable.rmempty = false
 
-lan_enable = s:option(Flag, "enable_lan_branch", translate("lan_enable"))
+lan_enable = s:option(Flag, "enable_lan_branch", translate("flm_lan"))
 lan_enable.rmempty = false
 
-s = m:section(NamedSection, "main", "settings", "analog port configuration")
-phase = s:option(ListValue, "phase", translate("phase"))
+s = m:section(NamedSection, "main", "settings", translate("flm_ct_setup"))
+phase = s:option(ListValue, "phase", translate("flm_phase"))
 phase:value("1")
 phase:value("3")
+phase.description = translate("flm_ct_descr")
 
 -- (ab)use phase validation callback to assgn port numbers to sensors
 function phase:validate(value, section)
@@ -61,26 +62,26 @@ function phase:validate(value, section)
 end
 
 for i = 1, MAX_SENSORS do
-	s = m:section(NamedSection, tostring(i), "sensor", "sensor #" .. i)
+	s = m:section(NamedSection, tostring(i), "sensor", translate("flm_sensor_num") .. i)
 	s.addremove = false
 
-	enable = s:option(Flag, "enable", translate("enable"))
+	enable = s:option(Flag, "enable", translate("flm_enable"))
 	enable.rmempty = false
 
-	s:option(DummyValue, "id", translate("identifier"))
-	s:option(DummyValue, "class", translate("class"))
+	s:option(DummyValue, "id", translate("flm_id"))
+	s:option(DummyValue, "class", translate("flm_class"))
 
 	if FLUKSO[tostring(i)].class == "analog" then
-		typ = s:option(DummyValue, "type", translate("type"))
+		typ = s:option(DummyValue, "type", translate("flm_type"))
 
-		func = s:option(Value, "function", translate("function"))
+		func = s:option(Value, "function", translate("flm_function"))
 		func:depends("enable", "1")
 		func.rmempty = true
 
-		voltage = s:option(Value, "voltage", translate("voltage"))
+		voltage = s:option(Value, "voltage", translate("flm_voltage"))
 		voltage.rmempty = false
 
-		current = s:option(ListValue, "current", translate("current"))
+		current = s:option(ListValue, "current", translate("flm_current"))
 		current:value("50")
 		current:value("100")
 		current:value("250")
@@ -88,14 +89,14 @@ for i = 1, MAX_SENSORS do
 		current.rmempty = false
 	
 	elseif FLUKSO[tostring(i)].class == "pulse" then
-		typ = s:option(Value, "type", translate("type"))
+		typ = s:option(Value, "type", translate("flm_type"))
 		typ.rmempty = true
 
-		func = s:option(Value, "function", translate("function"))
+		func = s:option(Value, "function", translate("flm_function"))
 		func:depends("enable", "1")
 		func.rmempty = true
 
-		constant = s:option(Value, "constant", translate("constant"))
+		constant = s:option(Value, "constant", translate("flm_constant"))
 		constant.rmempty = false
 	end
 end
@@ -123,7 +124,7 @@ function m:parse(...)
 				and field["enable"]:formvalue(sid) == "1"
 				and field["function"]:formvalue(sid) == "" then
 
-				err[#err + 1] = "an enabled sensor must have a name"
+				err[#err + 1] = translate("flm_err_no_name")
 			end	
 
 			-- an enabled sensor requires a non-empty type
@@ -131,7 +132,7 @@ function m:parse(...)
 				and field["enable"]:formvalue(sid) == "1"
 				and field["type"]:formvalue(sid) == "" then
 
-				err[#err + 1] = "an enabled sensor must have a type"
+				err[#err + 1] = translate("flm_err_no_type")
 			end
 
 			if next(err) then

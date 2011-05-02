@@ -20,5 +20,5 @@ function index()
 	luci.i18n.loadc("admin-core")
 	local i18n = luci.i18n.translate
 
-	entry({"sensor"}, cbi("mini/sensor", {autoapply=true}), i18n("sensor"), 1)
+	entry({"sensor"}, cbi("mini/sensor", {autoapply=true}), i18n("sensor"), 1).i18n="sensor"
 end
