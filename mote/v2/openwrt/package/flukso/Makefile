@@ -29,6 +29,11 @@ define Build/Prepare
 	$(CP) ./luasrc/* $(PKG_BUILD_DIR)/
 	$(CP) ./config/* $(PKG_BUILD_DIR)/
 	$(CP) -r ./files $(PKG_BUILD_DIR)/
+
+	make -C ../../../avr clean
+	make -C ../../../avr
+	mkdir -p $(PKG_BUILD_DIR)/avr
+	$(CP) ../../../avr/*.{hex,eep} $(PKG_BUILD_DIR)/avr/
 endef
 
 FLUKSO_COMMIT:=$(shell git rev-parse HEAD | awk '{print substr($$0,1,16)}')
@@ -65,6 +70,9 @@ define Package/flukso/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fdude.lua $(1)/usr/bin/fdude
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fcheck.sh $(1)/usr/bin/fcheck
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/restful.lua $(1)/usr/bin/restful
+
+	$(INSTALL_DIR) $(1)/usr/bin/avr
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/avr/*.{hex,eep} $(1)/usr/bin/avr/
 endef
 
 $(eval $(call BuildPackage,flukso))

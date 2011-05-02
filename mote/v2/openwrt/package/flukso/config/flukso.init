@@ -21,6 +21,24 @@ load_config()
         logger 'configuring flukso device and sensor ids'
 }
 
+program_sensor_board()
+{
+	AVRDUDE=fdude
+
+	MCU=atmega168p
+	PROGRAMMER=gpio
+	FLAGS="-p $MCU -c $PROGRAMMER"
+	FUSES="-U lfuse:w:0xEC:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m"
+
+	AVRDIR=/usr/bin/avr
+	HEXFILE=$(find $AVRDIR/*.hex)
+	EEPFILE=$(find $AVRDIR/*.eep)
+
+	FLASH="-U flash:w:$HEXFILE"
+	EEPROM="-U eeprom:w:$EEPFILE"
+
+	$AVRDUDE $FLAGS $FUSES $FLASH $EEPROM
+}
 
 start()
 {
@@ -29,6 +47,7 @@ start()
 	if [ $FIRSTBOOT -eq '1' ]
 	then
 		load_config
+		program_sensor_board
 	fi
 
 	chmod 666 /dev/spidev0.0

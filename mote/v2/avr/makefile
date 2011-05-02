@@ -72,11 +72,11 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = main
+TARGET = $(shell git rev-parse HEAD | awk '{print substr($$0,1,16)}')
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c buffer.c uart.c spi.c ctrl.c
+SRC = main.c buffer.c uart.c spi.c ctrl.c
 
 
 # List Assembler source files here.
@@ -542,13 +542,13 @@ clean: begin clean_list end
 clean_list :
 	@echo
 	@echo $(MSG_CLEANING)
-	$(REMOVE) $(TARGET).hex
-	$(REMOVE) $(TARGET).eep
-	$(REMOVE) $(TARGET).cof
-	$(REMOVE) $(TARGET).elf
-	$(REMOVE) $(TARGET).map
-	$(REMOVE) $(TARGET).sym
-	$(REMOVE) $(TARGET).lss
+	$(REMOVE) *.hex
+	$(REMOVE) *.eep
+	$(REMOVE) *.cof
+	$(REMOVE) *.elf
+	$(REMOVE) *.map
+	$(REMOVE) *.sym
+	$(REMOVE) *.lss
 	$(REMOVE) $(OBJ)
 	$(REMOVE) $(LST)
 	$(REMOVE) $(SRC:.c=.s)
