@@ -1,0 +1,20 @@
+--- Makefile	(revision 26802)
++++ Makefile	(working copy)
+@@ -90,6 +90,17 @@
+ package/symlinks-clean:
+ 	$(SCRIPT_DIR)/feeds uninstall -a
+ 
++# flash the target with Sven Ola's ap51-flash tool
++SUDO=sudo
++AP51=tools/ap51-flash
++ETH=eth0
++BINDIR=bin/atheros
++ROOTFS=$(BINDIR)/openwrt-atheros-root.squashfs
++KERNEL=$(BINDIR)/openwrt-atheros-vmlinux.lzma
++
++flash:
++	$(SUDO) $(AP51) $(ETH) $(ROOTFS) $(KERNEL)
++
+ .PHONY: clean dirclean prereq prepare world package/symlinks package/symlinks-install package/symlinks-clean
+ 
+ endif
