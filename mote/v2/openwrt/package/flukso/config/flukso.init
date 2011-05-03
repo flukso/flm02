@@ -18,7 +18,7 @@ load_config()
 	uci set system.@system[0].firstboot='0'
         uci commit
 
-        logger 'configuring flukso device and sensor ids'
+        logger 'configuring flukso device and sensor ids at firstboot'
 }
 
 program_sensor_board()
@@ -39,6 +39,8 @@ program_sensor_board()
 	EEPROM="-U eeprom:w:$EEPFILE"
 
 	$AVRDUDE $FLAGS $FUSES $FLASH $EEPROM
+
+	logger 'flashing the sensor board at firstboot'
 }
 
 start()
