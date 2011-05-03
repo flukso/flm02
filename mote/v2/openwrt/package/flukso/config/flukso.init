@@ -38,7 +38,7 @@ program_sensor_board()
 	FLASH="-U flash:w:$HEXFILE"
 	EEPROM="-U eeprom:w:$EEPFILE"
 
-	$AVRDUDE $FLAGS $FUSES $FLASH $EEPROM
+	$AVRDUDE $FLAGS $FUSES $FLASH $EEPROM 2>1 >&- <&-
 
 	logger 'flashing the sensor board at firstboot'
 }
