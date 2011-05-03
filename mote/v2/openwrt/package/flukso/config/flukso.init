@@ -30,9 +30,10 @@ program_sensor_board()
 	FLAGS="-p $MCU -c $PROGRAMMER"
 	FUSES="-U lfuse:w:0xEC:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m"
 
+	TARGET=main
 	AVRDIR=/usr/bin/avr
-	HEXFILE=$(find $AVRDIR/*.hex)
-	EEPFILE=$(find $AVRDIR/*.eep)
+	HEXFILE="$AVRDIR/$TARGET.hex"
+	EEPFILE="$AVRDIR/$TARGET.eep"
 
 	FLASH="-U flash:w:$HEXFILE"
 	EEPROM="-U eeprom:w:$EEPFILE"
