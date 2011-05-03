@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-USAGE="Usage: ./install </your/preferred/backfire/installation/path>"
+USAGE="Usage: . ./install /your/preferred/backfire/installation/path"
 
 if (( $# < 1 ))
 then
@@ -67,12 +67,21 @@ rm $BACKFIRE_PATH/package/base-files/files/etc/hotplug.d/iface/40-rdate
 
 # and then build the Fluksometer firmware...
 echo 
-echo " ============================================================================ "
-echo " To compile this custom Backfire build for Flukso, just type: make -j8 in the "
-echo " installation path you selected. Use at least as many jobs as the number of   "
-echo " cores available on your build machine.                                       "
+echo " ================================================= "
+echo " To compile this custom Backfire build for Flukso, "
+echo " just type make -j8 in the installation path you   "
+echo " selected. Use at least as many jobs as the number "
+echo " of cores available on your build machine.         "
 echo
-echo " IMPORTANT: make sure your machine has a recent version (>= v4.3.4) of the    "
-echo " avr-gcc toolchain installed                                                  "
-echo " ============================================================================ "
+echo " IMPORTANT: make sure your machine has a recent    "
+echo " version of the gcc-avr toolchain (>= 4.3.4) and   "
+echo " avr-libc (>= 1.6.7) installed.                    "
+echo
+echo " To upload the firmware to the Fluksometer after   "
+echo " compilation, type make flash V=99. Then connect   "
+echo " the Fluksometer to your machine via ethernet and  "
+echo " power it up.                                      "
+echo
+echo " Happy hacking!                                    "
+echo " ================================================= "
 echo 
