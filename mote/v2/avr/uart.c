@@ -238,7 +238,7 @@ u08 uartSendBuffer(char *buffer, u16 nBytes)
 	}
 }
 */
-// UART Transmit Complete Interrupt Handler
+// UART Data Register Empty Interrupt Handler
 UART_INTERRUPT_HANDLER(SIG_UART_DATA)
 {
 	// check if buffered tx is enabled
@@ -247,6 +247,8 @@ UART_INTERRUPT_HANDLER(SIG_UART_DATA)
 		// check if there's data left in the buffer
 		if(uartTxBuffer.datalength)
 		{
+			// set RS-485 into transmit mode
+			PORTD |= (1<<PD5);
 			// send byte from top of buffer
 			outb(UDR, bufferGetFromFront(&uartTxBuffer));
 		}
@@ -256,8 +258,10 @@ UART_INTERRUPT_HANDLER(SIG_UART_DATA)
 			uartBufferedTx = FALSE;
 			// return to ready state
 			uartReadyTx = TRUE;
-			// disable TXCIE0 interrupt
+			// disable UDRIE0 interrupt
 			UCR &= ~(1<<UDRIE0);
+			// enable TXCIE0 interrupt
+			UCR |= (1<<TXCIE0);
 		}
 	}
 	else
@@ -266,6 +270,15 @@ UART_INTERRUPT_HANDLER(SIG_UART_DATA)
 		// indicate transmit complete, back to ready
 		uartReadyTx = TRUE;
 	}
+}
+
+// UART Transmit Complete Interrupt Handler
+UART_INTERRUPT_HANDLER(SIG_UART_TRANS)
+{
+	// set RS-485 into receive mode
+	PORTD &= ~(1<<PD5);
+	// disable TXCIE0 interrupt
+	UCR &= ~(1<<TXCIE0);
 }
 
 // UART Receive Complete Interrupt Handler
