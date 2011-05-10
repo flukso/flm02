@@ -155,7 +155,7 @@ function tx(msg, cdev)
 end
 
 function wait(msg, short, long)
-	if msg.parsed.cmd and msg.parsed.cmd == 'ct' then
+	if msg.parsed and msg.parsed.cmd and msg.parsed.cmd == 'ct' then
 		nixio.nanosleep(0, long)
 	else
 		nixio.nanosleep(0, short)
