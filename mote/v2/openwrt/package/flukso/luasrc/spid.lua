@@ -37,6 +37,8 @@ local SPI_TX_RX_DELAY_NS	= 2e7
 local SPI_CT_DELAY_NS		= 5e8
 local POLL_TIMEOUT_MS		= 100
 
+local UART_MAX_BYTES		= 256
+
 local TIMERFD_ENABLE		= 1
 local TIMERFD_SEC		= 1
 local TIMERFD_NS		= 0
@@ -106,7 +108,7 @@ while true do
 			msg:parse()
 
 		elseif uart.revents == POLLIN then
-			msg = spi.new_msg('uart', uart.line())
+			msg = spi.new_msg('uart', uart.fdin:read(UART_MAX_BYTES))
 		end
 
 		msg:encode()
@@ -128,7 +130,7 @@ while true do
 		end
 
 		if dispatch.uart then
-			uart.fdout:write(dispatch.uart .. '\n')
+			uart.fdout:write(dispatch.uart)
 		end
 	end
 end
