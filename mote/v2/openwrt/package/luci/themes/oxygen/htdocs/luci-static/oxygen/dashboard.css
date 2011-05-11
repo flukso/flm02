@@ -1,0 +1,43 @@
+@charset "utf-8";
+
+@media all {
+
+div.dashicon {
+	float: left;
+}
+
+div.dashicon a {
+	background-image: url(icons/default.png);
+	background-repeat: no-repeat;
+	background-position: top;
+	display: block;
+	width: 70px;
+	padding-top: 70px;
+	color: #000000;	
+	text-decoration: none;
+	text-align: center;
+	margin: 2em;	
+	font-weight: bold;
+}
+
+div.di_system a {
+	background-image: url(icons/system.png);
+}
+
+div.di_network a {
+	background-image: url(icons/network.png);
+}
+
+div.di_wifi a {
+	background-image: url(icons/wifi.png);
+}
+
+div.di_syslog a {
+	background-image: url(icons/syslog.png);
+}
+
+div.di_sensor a {
+	background-image: url(icons/sensor.png);
+}
+
+}

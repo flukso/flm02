@@ -1,0 +1,210 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-05-19 19:36+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 1.1.1\n"
+
+#. auto
+#: i18n/english/luasrc/i18n/wifi.en.lua:1
+msgid "wifi_auto"
+msgstr "auto"
+
+#. Frequency Hopping
+#: i18n/english/luasrc/i18n/wifi.en.lua:2
+msgid "wifi_fh"
+msgstr "Frequency Hopping"
+
+#. Diversity
+#: i18n/english/luasrc/i18n/wifi.en.lua:3
+msgid "wifi_diversity"
+msgstr "Diversity"
+
+#. Transmitter Antenna
+#: i18n/english/luasrc/i18n/wifi.en.lua:4
+msgid "wifi_txantenna"
+msgstr "Antenna trasmettente"
+
+#. Receiver Antenna
+#: i18n/english/luasrc/i18n/wifi.en.lua:5
+msgid "wifi_rxantenna"
+msgstr "Antenna ricevente"
+
+#. Distance Optimization
+#: i18n/english/luasrc/i18n/wifi.en.lua:6
+msgid "wifi_distance"
+msgstr "Ottimizzazione distanza"
+
+#. Distance to farthest network member in meters.
+#: i18n/english/luasrc/i18n/wifi.en.lua:7
+msgid "wifi_distance_desc"
+msgstr "Distanza del membro più lontano della rete in metri."
+
+#. MAC-Address Filter
+#: i18n/english/luasrc/i18n/wifi.en.lua:8
+msgid "wifi_macpolicy"
+msgstr "Filtro dei MAC-Addres"
+
+#. Allow listed only
+#: i18n/english/luasrc/i18n/wifi.en.lua:9
+msgid "wifi_whitelist"
+msgstr "Consenti solo quelli in lista"
+
+#. Allow all except listed
+#: i18n/english/luasrc/i18n/wifi.en.lua:10
+msgid "wifi_blacklist"
+msgstr "Consenti tutti tranne quelli in lista"
+
+#. MAC-List
+#: i18n/english/luasrc/i18n/wifi.en.lua:11
+msgid "wifi_maclist"
+msgstr "Lista MAC"
+
+#. Frame Bursting
+#: i18n/english/luasrc/i18n/wifi.en.lua:12
+msgid "wifi_bursting"
+msgstr "Frame Bursting"
+
+#. Regulatory Domain
+#: i18n/english/luasrc/i18n/wifi.en.lua:13
+msgid "wifi_regdomain"
+msgstr ""
+
+#. Country Code
+#: i18n/english/luasrc/i18n/wifi.en.lua:14
+msgid "wifi_country"
+msgstr "Codice nazione"
+
+#. Outdoor Channels
+#: i18n/english/luasrc/i18n/wifi.en.lua:15
+msgid "wifi_outdoor"
+msgstr ""
+
+#. Connection Limit
+#: i18n/english/luasrc/i18n/wifi.en.lua:16
+msgid "wifi_maxassoc"
+msgstr "Limite connessioni"
+
+#. <abbr title=\"Extended Service Set Identifier\">ESSID</abbr>
+#: i18n/english/luasrc/i18n/wifi.en.lua:17
+msgid "wifi_essid"
+msgstr "<abbr title=\"Extended Service Set Identifier\">ESSID</abbr>"
+
+#. <abbr title=\"Basic Service Set Identifier\">BSSID</abbr>
+#: i18n/english/luasrc/i18n/wifi.en.lua:18
+msgid "wifi_bssid"
+msgstr "<abbr title=\"Basic Service Set Identifier\">BSSID</abbr>"
+
+#. Fragmentation Threshold
+#: i18n/english/luasrc/i18n/wifi.en.lua:19
+msgid "wifi_frag"
+msgstr "Soglia di frammentazione"
+
+#. RTS/CTS Threshold
+#: i18n/english/luasrc/i18n/wifi.en.lua:20
+msgid "wifi_rts"
+msgstr "Soglia RTS/CTS"
+
+#. <abbr title=\"Wireless Distribution System\">WDS</abbr>
+#: i18n/english/luasrc/i18n/wifi.en.lua:21
+msgid "wifi_wds"
+msgstr "<abbr title=\"Wireless Distribution System\">WDS</abbr>"
+
+#. Separate WDS
+#: i18n/english/luasrc/i18n/wifi.en.lua:22
+msgid "wifi_wdssep"
+msgstr "WDS separati"
+
+#. Hide <abbr title=\"Extended Service Set Identifier\">ESSID</abbr>
+#: i18n/english/luasrc/i18n/wifi.en.lua:23
+msgid "wifi_hidden"
+msgstr "Nascondi <abbr title=\"Extended Service Set Identifier\">ESSID</abbr>"
+
+#. Isolate Clients
+#: i18n/english/luasrc/i18n/wifi.en.lua:24
+msgid "wifi_isloate"
+msgstr "Isola utenti"
+
+#. Prevent Client to Client Communication
+#: i18n/english/luasrc/i18n/wifi.en.lua:25
+msgid "wifi_isloate_desc"
+msgstr "Impedisci comunicazione fra utenti"
+
+#. Background Scan
+#: i18n/english/luasrc/i18n/wifi.en.lua:26
+msgid "wifi_bgscan"
+msgstr "Scansione in background"
+
+#. Transmission Rate
+#: i18n/english/luasrc/i18n/wifi.en.lua:27
+msgid "wifi_rate"
+msgstr "Velocità di transmissione"
+
+#. Multicast Rate
+#: i18n/english/luasrc/i18n/wifi.en.lua:28
+msgid "wifi_mcast_rate"
+msgstr "Velocità multicast"
+
+#. Minimum Rate
+#: i18n/english/luasrc/i18n/wifi.en.lua:29
+msgid "wifi_minrate"
+msgstr "Velocità minima"
+
+#. Maximum Rate
+#: i18n/english/luasrc/i18n/wifi.en.lua:30
+msgid "wifi_maxrate"
+msgstr "Velocità massima"
+
+#. Compression
+#: i18n/english/luasrc/i18n/wifi.en.lua:31
+msgid "wifi_compression"
+msgstr "Compressione"
+
+#. Turbo Mode
+#: i18n/english/luasrc/i18n/wifi.en.lua:32
+msgid "wifi_turbo"
+msgstr "Modalità turbo"
+
+#. Fast Frames
+#: i18n/english/luasrc/i18n/wifi.en.lua:33
+msgid "wifi_ff"
+msgstr "Frame veloci"
+
+#. WMM Mode
+#: i18n/english/luasrc/i18n/wifi.en.lua:34
+msgid "wifi_wmm"
+msgstr "Modalità WMM"
+
+#. XR Support
+#: i18n/english/luasrc/i18n/wifi.en.lua:35
+msgid "wifi_xr"
+msgstr "Supporto XR"
+
+#. AR Support
+#: i18n/english/luasrc/i18n/wifi.en.lua:36
+msgid "wifi_ar"
+msgstr "Supporto AR"
+
+#. Disable HW-Beacon timer
+#: i18n/english/luasrc/i18n/wifi.en.lua:37
+msgid "wifi_nosbeacon"
+msgstr "Disabilita Timer Beacon HW"
+
+#. Do not send probe responses
+#: i18n/english/luasrc/i18n/wifi.en.lua:38
+msgid "wifi_noprobereq"
+msgstr "Disabilita Probe-Responses"
+
+#. WPA-Encryption requires wpa_supplicant (for client mode) or hostapd (for AP and ad-hoc mode) to be installed.
+#: i18n/english/luasrc/i18n/wifi.en.lua:39
+msgid "wifi_wpareq"
+msgstr ""
+"La crittografia WPA richiede l&#39;installazione di wpa_supplicant (per la "
+"modalità client) o hostapd (per la modalità AP o ad-hoc)."

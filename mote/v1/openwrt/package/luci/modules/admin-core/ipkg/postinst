@@ -1,0 +1,6 @@
+#!/bin/sh
+
+[ -n "${IPKG_INSTROOT}" ] || {
+	/etc/init.d/luci_dhcp_migrate enabled || /etc/init.d/luci_dhcp_migrate enable
+	exit 0
+}

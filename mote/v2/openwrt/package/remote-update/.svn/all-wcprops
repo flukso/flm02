@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/6030/luci/tags/0.9.0/contrib/package/remote-update
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/6030/luci/tags/0.9.0/contrib/package/remote-update/Makefile
+END

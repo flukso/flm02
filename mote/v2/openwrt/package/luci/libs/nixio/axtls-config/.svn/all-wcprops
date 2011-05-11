@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axtls-config
+END
+.config
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axtls-config/.config
+END
+config.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axtls-config/config.h
+END

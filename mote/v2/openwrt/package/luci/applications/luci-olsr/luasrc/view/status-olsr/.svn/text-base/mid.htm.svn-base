@@ -1,0 +1,32 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id$
+
+-%>
+<%+header%>
+<h2><a id="content" name="content"><%:olsrd_mid%></a></h2>
+<p><%:olsrd_mid_desc%></p>
+<br />
+<table class="smalltext" cellspacing="0" cellpadding="6">
+<tr>
+<th><%:olsrd_node%></th>
+<th><%:olsrd_mid_aliases%></th>
+</tr>
+<% for k, mid in ipairs(mids) do %>
+<tr>
+<td><a href="http://<%=mid["IP address"]%>"><%=mid["IP address"]%></a></td>
+<td><%=mid.Aliases%></td>
+</tr>
+<% end %>
+</table>
+<br />
+<%+footer%>

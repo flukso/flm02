@@ -1,0 +1,262 @@
+--- a/include/linux/spi/spi.h	2009-12-04 07:00:07.000000000 +0100
++++ b/include/linux/spi/spi.h	2011-01-18 14:30:48.919450001 +0100
+@@ -68,6 +68,7 @@
+ 	struct device		dev;
+ 	struct spi_master	*master;
+ 	u32			max_speed_hz;
++	u16			delay_usecs;
+ 	u8			chip_select;
+ 	u8			mode;
+ #define	SPI_CPHA	0x01			/* clock phase */
+--- a/include/linux/spi/spidev.h	2009-12-04 07:00:07.000000000 +0100
++++ b/include/linux/spi/spidev.h	2011-01-18 14:09:47.719449999 +0100
+@@ -124,6 +124,8 @@
+ #define SPI_IOC_RD_MAX_SPEED_HZ		_IOR(SPI_IOC_MAGIC, 4, __u32)
+ #define SPI_IOC_WR_MAX_SPEED_HZ		_IOW(SPI_IOC_MAGIC, 4, __u32)
+ 
+-
++/* Read / Write SPI device default delay us */
++#define SPI_IOC_RD_DELAY_US		_IOR(SPI_IOC_MAGIC, 5, __u32)
++#define SPI_IOC_WR_DELAY_US		_IOW(SPI_IOC_MAGIC, 5, __u32)
+ 
+ #endif /* SPIDEV_H */
+--- a/include/linux/spi/spi_bitbang.h	2009-12-04 07:00:07.000000000 +0100
++++ b/include/linux/spi/spi_bitbang.h	2011-01-18 13:33:26.731450001 +0100
+@@ -50,7 +50,7 @@
+ 
+ 	/* txrx_word[SPI_MODE_*]() just looks like a shift register */
+ 	u32	(*txrx_word[4])(struct spi_device *spi,
+-			unsigned nsecs,
++			unsigned bit_delay, unsigned byte_delay,
+ 			u32 word, u8 bits);
+ };
+ 
+@@ -102,20 +102,22 @@
+ 
+ static inline u32
+ bitbang_txrx_be_cpha0(struct spi_device *spi,
+-		unsigned nsecs, unsigned cpol,
+-		u32 word, u8 bits)
++	unsigned bit_delay, unsigned byte_delay,
++	unsigned cpol, u32 word, u8 bits)
+ {
+ 	/* if (cpol == 0) this is SPI_MODE_0; else this is SPI_MODE_2 */
+ 
++	spidelay(byte_delay);
++
+ 	/* clock starts at inactive polarity */
+ 	for (word <<= (32 - bits); likely(bits); bits--) {
+ 
+ 		/* setup MSB (to slave) on trailing edge */
+ 		setmosi(spi, word & (1 << 31));
+-		spidelay(nsecs);	/* T(setup) */
++		spidelay(bit_delay);      /* T(setup) */
+ 
+ 		setsck(spi, !cpol);
+-		spidelay(nsecs);
++		spidelay(bit_delay);
+ 
+ 		/* sample MSB (from slave) on leading edge */
+ 		word <<= 1;
+@@ -127,21 +129,23 @@
+ 
+ static inline u32
+ bitbang_txrx_be_cpha1(struct spi_device *spi,
+-		unsigned nsecs, unsigned cpol,
+-		u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay,
++		unsigned cpol, u32 word, u8 bits)
+ {
+ 	/* if (cpol == 0) this is SPI_MODE_1; else this is SPI_MODE_3 */
+ 
++	spidelay(byte_delay);
++
+ 	/* clock starts at inactive polarity */
+ 	for (word <<= (32 - bits); likely(bits); bits--) {
+ 
+ 		/* setup MSB (to slave) on leading edge */
+ 		setsck(spi, !cpol);
+ 		setmosi(spi, word & (1 << 31));
+-		spidelay(nsecs); /* T(setup) */
++		spidelay(bit_delay); /* T(setup) */
+ 
+ 		setsck(spi, cpol);
+-		spidelay(nsecs);
++		spidelay(bit_delay);
+ 
+ 		/* sample MSB (from slave) on trailing edge */
+ 		word <<= 1;
+--- a/drivers/spi/spidev.c	2009-12-04 07:00:07.000000000 +0100
++++ b/drivers/spi/spidev.c	2011-01-18 14:15:00.971449999 +0100
+@@ -362,6 +362,9 @@
+ 	case SPI_IOC_RD_MAX_SPEED_HZ:
+ 		retval = __put_user(spi->max_speed_hz, (__u32 __user *)arg);
+ 		break;
++	case SPI_IOC_RD_DELAY_US:
++		retval = __put_user(spi->delay_usecs, (__u32 __user *)arg);
++		break;
+ 
+ 	/* write requests */
+ 	case SPI_IOC_WR_MODE:
+@@ -426,7 +429,19 @@
+ 				dev_dbg(&spi->dev, "%d Hz (max)\n", tmp);
+ 		}
+ 		break;
++	case SPI_IOC_WR_DELAY_US:
++		retval = __get_user(tmp, (__u32 __user *)arg);
++		if (retval == 0) {
++			u32	save = spi->delay_usecs;
+ 
++			spi->delay_usecs = tmp;
++			retval = spi_setup(spi);
++			if (retval < 0)
++				spi->delay_usecs = save;
++			else
++				dev_dbg(&spi->dev, "%d us delay\n", tmp);
++		}
++		break;
+ 	default:
+ 		/* segmented and/or full-duplex I/O request */
+ 		if (_IOC_NR(cmd) != _IOC_NR(SPI_IOC_MESSAGE(0))
+--- a/drivers/spi/spi_bitbang.c	2009-12-04 07:00:07.000000000 +0100
++++ b/drivers/spi/spi_bitbang.c	2011-01-18 20:53:42.079449999 +0100
+@@ -49,12 +49,14 @@
+ 
+ struct spi_bitbang_cs {
+ 	unsigned	nsecs;	/* (clock cycle time)/2 */
+-	u32		(*txrx_word)(struct spi_device *spi, unsigned nsecs,
++	u32		(*txrx_word)(struct spi_device *spi,
++					unsigned bit_delay, unsigned byte_delay,
+ 					u32 word, u8 bits);
+ 	unsigned	(*txrx_bufs)(struct spi_device *,
+ 					u32 (*txrx_word)(
+ 						struct spi_device *spi,
+-						unsigned nsecs,
++						unsigned bit_delay,
++						unsigned byte_delay,
+ 						u32 word, u8 bits),
+ 					unsigned, struct spi_transfer *);
+ };
+@@ -62,26 +64,42 @@
+ static unsigned bitbang_txrx_8(
+ 	struct spi_device	*spi,
+ 	u32			(*txrx_word)(struct spi_device *spi,
+-					unsigned nsecs,
++					unsigned bit_delay, unsigned byte_delay,
+ 					u32 word, u8 bits),
+-	unsigned		ns,
++	unsigned		bit_delay,
+ 	struct spi_transfer	*t
+ ) {
+ 	unsigned		bits = spi->bits_per_word;
+ 	unsigned		count = t->len;
+ 	const u8		*tx = t->tx_buf;
+ 	u8			*rx = t->rx_buf;
++	unsigned		byte_delay = spi->delay_usecs;
+ 
+ 	while (likely(count > 0)) {
+ 		u8		word = 0;
+ 
+-		if (tx)
++		if (unlikely(tx))
+ 			word = *tx++;
+-		word = txrx_word(spi, ns, word, bits);
+-		if (rx)
++		word = txrx_word(spi, bit_delay, byte_delay, word, bits);
++		if (likely(rx)) {
++			/* If we receive a 0x00, fetch one extra byte to sync
++                           the state machine, then break out of the while loop. */
++			if (unlikely(!word)) {
++				txrx_word(spi, bit_delay, byte_delay, 0x00, bits); /* discard */
++				break;
++			}
++
+ 			*rx++ = word;
++		}
+ 		count -= 1;
+ 	}
++
++	if (unlikely(tx)) {
++		/* Signal the end of tx by sending two 0x00's. */
++		txrx_word(spi, bit_delay, byte_delay, 0x00, bits);
++		txrx_word(spi, bit_delay, byte_delay, 0x00, bits);
++	}
++
+ 	return t->len - count;
+ }
+ 
+@@ -156,10 +174,10 @@
+ 		bits_per_word = spi->bits_per_word;
+ 	if (bits_per_word <= 8)
+ 		cs->txrx_bufs = bitbang_txrx_8;
+-	else if (bits_per_word <= 16)
++/*	else if (bits_per_word <= 16)
+ 		cs->txrx_bufs = bitbang_txrx_16;
+ 	else if (bits_per_word <= 32)
+-		cs->txrx_bufs = bitbang_txrx_32;
++		cs->txrx_bufs = bitbang_txrx_32; */
+ 	else
+ 		return -EINVAL;
+ 
+@@ -167,8 +185,8 @@
+ 	if (!hz)
+ 		hz = spi->max_speed_hz;
+ 	if (hz) {
+-		cs->nsecs = (1000000000/2) / hz;
+-		if (cs->nsecs > (MAX_UDELAY_MS * 1000 * 1000))
++		cs->nsecs = (1000000/2) / hz;
++		if (cs->nsecs > (MAX_UDELAY_MS * 1000))
+ 			return -EINVAL;
+ 	}
+ 
+@@ -346,12 +364,6 @@
+ 			}
+ 			if (status > 0)
+ 				m->actual_length += status;
+-			if (status != t->len) {
+-				/* always report some kind of error */
+-				if (status >= 0)
+-					status = -EREMOTEIO;
+-				break;
+-			}
+ 			status = 0;
+ 
+ 			/* protocol tweaks before next transfer */
+--- a/drivers/spi/spi_gpio.c	2010-12-14 01:02:26.673204002 +0100
++++ b/drivers/spi/spi_gpio.c	2011-01-18 13:29:17.915450000 +0100
+@@ -156,27 +156,27 @@
+  */
+ 
+ static u32 spi_gpio_txrx_word_mode0(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+-	return bitbang_txrx_be_cpha0(spi, nsecs, 0, word, bits);
++	return bitbang_txrx_be_cpha0(spi, bit_delay, byte_delay, 0, word, bits);
+ }
+ 
+ static u32 spi_gpio_txrx_word_mode1(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+-	return bitbang_txrx_be_cpha1(spi, nsecs, 0, word, bits);
++	return bitbang_txrx_be_cpha1(spi, bit_delay, byte_delay, 0, word, bits);
+ }
+ 
+ static u32 spi_gpio_txrx_word_mode2(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+-	return bitbang_txrx_be_cpha0(spi, nsecs, 1, word, bits);
++	return bitbang_txrx_be_cpha0(spi, bit_delay, byte_delay, 1, word, bits);
+ }
+ 
+ static u32 spi_gpio_txrx_word_mode3(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+-	return bitbang_txrx_be_cpha1(spi, nsecs, 1, word, bits);
++	return bitbang_txrx_be_cpha1(spi, bit_delay, byte_delay, 1, word, bits);
+ }
+ 
+ /*----------------------------------------------------------------------*/

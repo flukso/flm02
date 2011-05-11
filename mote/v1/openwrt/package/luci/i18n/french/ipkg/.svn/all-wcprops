@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/4830/luci/branches/luci-0.9/i18n/french/ipkg
+END
+postinst
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/4830/luci/branches/luci-0.9/i18n/french/ipkg/postinst
+END

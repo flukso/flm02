@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/!svn/ver/5606/luci/branches/luci-0.9/applications/luci-upnp/luasrc/model/cbi/upnp
+END
+upnpmini.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/5606/luci/branches/luci-0.9/applications/luci-upnp/luasrc/model/cbi/upnp/upnpmini.lua
+END
+upnp.lua
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/5606/luci/branches/luci-0.9/applications/luci-upnp/luasrc/model/cbi/upnp/upnp.lua
+END

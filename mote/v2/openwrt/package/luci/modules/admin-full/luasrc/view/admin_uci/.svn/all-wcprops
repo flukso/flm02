@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_uci
+END
+changes.htm
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_uci/changes.htm
+END
+apply.htm
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_uci/apply.htm
+END
+revert.htm
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_uci/revert.htm
+END

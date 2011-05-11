@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/!svn/ver/6029/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status
+END
+dmesg.htm
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/dmesg.htm
+END
+syslog.htm
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/syslog.htm
+END
+routes.htm
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/6029/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/routes.htm
+END
+conntrack.htm
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/5118/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/conntrack.htm
+END
+interfaces.htm
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/5118/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/interfaces.htm
+END
+iptables.htm
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/iptables.htm
+END
+index.htm
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/index.htm
+END

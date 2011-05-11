@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+#
+#   gsc - generate a server config file from boardconfig files
+#
+#   Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+BFLAG=
+VFLAG=
+
+BATCH="FLxx"
+VERSION=0
+
+while getopts 'b:v:h' OPTION
+do
+	case $OPTION in
+	b)	BFLAG=1
+		BATCH="$OPTARG"
+		;;
+
+	v)	VFLAG=1
+		VERSION="$OPTARG"
+		;;
+
+	h|?)	printf "Generate a server config file from boardconfig files.\n"
+		printf "Usage: %s -b <batch> -v <sensor board hardware version>\n" $(basename $0) >&2
+		exit 1
+		;;
+	esac
+done
+
+shift $(($OPTIND - 1))
+
+if [ -z "$BFLAG" -o -z "$VFLAG" ]
+then
+	printf "Mandatory command flag is missing. Please run with -h for help.\n"
+	exit 2
+fi
+
+if [ -d $BATCH ]
+then
+	cd $BATCH
+else
+	printf "$BATCH directory does not exist.\n"
+	exit 3
+fi
+
+printf "serial;device;key;sensor_hw_version;sensor1;sensor2;sensor3;sensor4;sensor5;sensor6\n" >> $BATCH.sc
+
+for FN in $BATCH'0'*
+do
+	printf "$FN;" >> $BATCH.sc
+	printf "$(hexdump -v -e '1/1 "%.2x"' -s $((0x1020)) -n 16 $FN);" >> $BATCH.sc
+	printf "$(hexdump -v -e '1/1 "%.2x"' -s $((0x1000)) -n 16 $FN);" >> $BATCH.sc
+	printf "$VERSION;" >> $BATCH.sc
+
+	for i in `seq 6`;
+	do
+		ADDRESS=0x10$((i+2))0
+		printf "$(hexdump -v -e '1/1 "%.2x"' -s $((ADDRESS)) -n 16 $FN)" >> $BATCH.sc
+
+		if [ $i -ne 6 ]
+		then
+			printf ";" >> $BATCH.sc
+		else
+			printf "\n" >> $BATCH.sc
+		fi
+	done
+done

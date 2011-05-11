@@ -1,0 +1,9 @@
+K 12
+svn:keywords
+V 2
+Id
+K 13
+svn:mergeinfo
+V 82
+/luci/trunk/libs/uvl/luasrc/uvl/errors.lua:5655,5865,5869,5871,5902-5903,6024-6025
+END

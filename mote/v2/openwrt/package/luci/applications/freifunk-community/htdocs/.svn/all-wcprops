@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/4830/luci/branches/luci-0.9/applications/freifunk-community/htdocs
+END
+cgi-bin-nodes.html
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/4830/luci/branches/luci-0.9/applications/freifunk-community/htdocs/cgi-bin-nodes.html
+END
+cgi-bin-status.html
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/4830/luci/branches/luci-0.9/applications/freifunk-community/htdocs/cgi-bin-status.html
+END

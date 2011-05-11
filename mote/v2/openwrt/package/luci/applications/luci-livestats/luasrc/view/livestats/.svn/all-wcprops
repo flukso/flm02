@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/5929/luci/branches/luci-0.9/applications/luci-livestats/luasrc/view/livestats
+END
+loadavg.htm
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-livestats/luasrc/view/livestats/loadavg.htm
+END
+wireless.htm
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/5929/luci/branches/luci-0.9/applications/luci-livestats/luasrc/view/livestats/wireless.htm
+END
+traffic.htm
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-livestats/luasrc/view/livestats/traffic.htm
+END

@@ -1,0 +1,18 @@
+config wifi-device  wifi0
+        option type        atheros
+        option channel     auto
+	option mode        11bg
+        option diversity   0
+        option txantenna   1
+        option rxantenna   1
+        option disabled    0
+
+config wifi-iface
+        option device      wifi0
+        option network     wan
+        option mode        sta
+        option nosbeacon   1
+        option hidden      0
+        option ssid        zwaluw
+        option encryption  wep
+        option key         4ae56b7820f6b6b3cba78da46b

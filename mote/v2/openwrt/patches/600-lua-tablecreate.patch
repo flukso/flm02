@@ -1,0 +1,24 @@
+--- a/src/ltablib.c	2008-02-14 17:46:58.000000000 +0100
++++ b/src/ltablib.c	2011-05-01 13:27:24.599067003 +0200
+@@ -265,6 +265,13 @@
+ 
+ /* }====================================================== */
+ 
++static int create (lua_State *L) {
++  int narr, nrec;
++  narr = luaL_optint(L, 1, 0);
++  nrec = luaL_optint(L, 2, 0);
++  lua_createtable(L, narr, nrec);
++  return 1;
++}
+ 
+ static const luaL_Reg tab_funcs[] = {
+   {"concat", tconcat},
+@@ -276,6 +283,7 @@
+   {"remove", tremove},
+   {"setn", setn},
+   {"sort", sort},
++  {"create", create},
+   {NULL, NULL}
+ };
+ 

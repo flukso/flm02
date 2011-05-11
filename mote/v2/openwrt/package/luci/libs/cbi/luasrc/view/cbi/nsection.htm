@@ -1,0 +1,46 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008-2009 Jo-Philipp Wich <xm@subsignal>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: nsection.htm 5773 2010-03-09 02:05:49Z jow $
+
+-%>
+
+<% if self:cfgvalue(self.section) then section = self.section %>
+	<fieldset class="cbi-section" id="cbi-<%=self.config%>-<%=section%>">
+		<% if self.title and #self.title > 0 then -%>
+			<legend><%=self.title%></legend>
+		<%- end %>
+		<% if self.description and #self.description > 0 then -%>
+			<div class="cbi-section-descr"><%=self.description%></div>
+		<%- end %>
+		<% if self.addremove then -%>
+			<div class="cbi-section-remove right">
+				<input type="submit" name="cbi.rns.<%=self.config%>.<%=section%>" value="<%:cbi_del%>" />
+			</div>
+		<%- end %>
+		<%+cbi/tabmenu%>
+		<div class="cbi-section-node" id="cbi-<%=self.config%>-<%=section%>">
+			<%+cbi/ucisection%>
+		</div>
+		<br />
+	</fieldset>
+<% elseif self.addremove then %>
+	<% if self.template_addremove then include(self.template_addremove) else -%>
+	<fieldset class="cbi-section" id="cbi-<%=self.config%>-<%=self.section%>">
+		<% if self.title and #self.title > 0 then -%>
+			<legend><%=self.title%></legend>
+		<%- end %>
+		<div class="cbi-section-descr"><%=self.description%></div>
+		<input type="submit" class="cbi-button-add" name="cbi.cns.<%=self.config%>.<%=self.section%>" value="<%:cbi_add%>" />
+	</fieldset>
+	<%- end %>
+<% end %>
+<!-- /nsection -->

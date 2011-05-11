@@ -1,0 +1,185 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/6029/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi
+END
+lvalue.htm
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/5190/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/lvalue.htm
+END
+header.htm
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/header.htm
+END
+tsection.htm
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/5773/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/tsection.htm
+END
+mvalue.htm
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/mvalue.htm
+END
+cell_valuefooter.htm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/cell_valuefooter.htm
+END
+tabmenu.htm
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/5773/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/tabmenu.htm
+END
+valuefooter.htm
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/valuefooter.htm
+END
+footer.htm
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/footer.htm
+END
+nullsection.htm
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/nullsection.htm
+END
+tvalue.htm
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/tvalue.htm
+END
+ucisection.htm
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/6029/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/ucisection.htm
+END
+delegator.htm
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/5183/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/delegator.htm
+END
+tblsection.htm
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/5717/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/tblsection.htm
+END
+full_valueheader.htm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/full_valueheader.htm
+END
+tabcontainer.htm
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/5773/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/tabcontainer.htm
+END
+button.htm
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/button.htm
+END
+value.htm
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/value.htm
+END
+map.htm
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/5773/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/map.htm
+END
+full_valuefooter.htm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/full_valuefooter.htm
+END
+simpleform.htm
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/simpleform.htm
+END
+dvalue.htm
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/dvalue.htm
+END
+fvalue.htm
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/fvalue.htm
+END
+nsection.htm
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/5773/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/nsection.htm
+END
+filebrowser.htm
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/5118/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/filebrowser.htm
+END
+browser.htm
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/browser.htm
+END
+compound.htm
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/compound.htm
+END
+cell_valueheader.htm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/cell_valueheader.htm
+END
+upload.htm
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/6029/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/upload.htm
+END
+valueheader.htm
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/4830/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/valueheader.htm
+END
+dynlist.htm
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/5267/luci/branches/luci-0.9/libs/cbi/luasrc/view/cbi/dynlist.htm
+END

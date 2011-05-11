@@ -1,2 +1,0 @@
-config defaults wifi_device
-	option channel 10
