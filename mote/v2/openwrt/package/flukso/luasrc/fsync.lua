@@ -318,8 +318,10 @@ end
 --- Remove all /sensor/xyz endpoint mappings to the cgi script.
 -- @return		none 
 local function remove_symlinks()
-	for symlink in nixio.fs.dir(API_PATH) do
-		nixio.fs.unlink(API_PATH .. symlink)
+	if nixio.fs.dir(API_PATH) then
+		for symlink in nixio.fs.dir(API_PATH) do
+			nixio.fs.unlink(API_PATH .. symlink)
+		end
 	end
 end
 
