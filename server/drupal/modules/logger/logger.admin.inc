@@ -158,8 +158,8 @@ function _logger_account_sensors($type = 'electricity') {
   $result = db_query("SELECT lm.meter, lm.function, lt.token, lt.permissions 
                       FROM {logger_meters} lm
                       INNER JOIN {logger_tokens} lt ON lm.meter = lt.meter
-                      WHERE lm.uid = %d AND lm.type = '%s'
-                      ORDER BY lm.function", $user->uid, $type);
+                      WHERE lm.uid = %d AND lm.type = '%s' AND lm.enabled = %d
+                      ORDER BY lm.function", $user->uid, $type, 1);
 
   while ($sensor = db_fetch_object($result)) {
     $row = array();

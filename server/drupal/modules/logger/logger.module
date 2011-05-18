@@ -316,20 +316,20 @@ function _logger_dashboard($type, $function, $interval) {
 
   $main_me = db_fetch_object(db_query("SELECT meter, function
                                        FROM {logger_meters}
-                                       WHERE uid = %d AND type = '%s' AND function = '%s'
-                                       ORDER BY created", $user->uid, $type, $function));
+                                       WHERE uid = %d AND type = '%s' AND function = '%s' AND enabled = %d
+                                       ORDER BY created", $user->uid, $type, $function, 1));
 
   if (is_array($user->roles) && in_array('pro', array_values($user->roles)))
     $result_me = db_query("SELECT meter, function
   	                   FROM {logger_meters}
-	                   WHERE uid = %d AND type = '%s' and chart = %d
-	                   ORDER BY function", $user->uid, $type, 1);
+	                   WHERE uid = %d AND type = '%s' AND enabled = %d AND chart = %d
+	                   ORDER BY function", $user->uid, $type, 1, 1);
 
   else
     $result_me = db_query("SELECT meter, function
   	                   FROM {logger_meters}
-	                   WHERE uid = %d AND type = '%s'
-	                   ORDER BY function", $user->uid, $type);
+	                   WHERE uid = %d AND type = '%s' AND enabled = %d
+	                   ORDER BY function", $user->uid, $type, 1);
 
   $meter_me = db_fetch_object($result_me);
 
@@ -339,8 +339,8 @@ function _logger_dashboard($type, $function, $interval) {
                           INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid)
                           INNER JOIN {logger_meters} lm ON u.uid = lm.uid)
                           INNER JOIN {logger_users} lu ON u.uid = lu.uid
-                          WHERE ur.requester_id = %d AND urt.name = '%s' AND type = '%s' AND function = '%s'
-                          ORDER BY ur.rid", $user->uid, 'subscription', $type, $function);
+                          WHERE ur.requester_id = %d AND urt.name = '%s' AND lm.type = '%s' AND lm.function = '%s' AND lm.enabled = %d
+                          ORDER BY ur.rid", $user->uid, 'subscription', $type, $function, 1);
   $meter_sub = db_fetch_object($result_sub);
 
   switch ($type) {
