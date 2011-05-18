@@ -329,7 +329,8 @@ function _logger_dashboard($type, $function, $interval) {
     $result_me = db_query("SELECT meter, function
   	                   FROM {logger_meters}
 	                   WHERE uid = %d AND type = '%s' AND enabled = %d
-	                   ORDER BY function", $user->uid, $type, 1);
+	                   ORDER BY function
+                           LIMIT 0, 5", $user->uid, $type, 1);
 
   $meter_me = db_fetch_object($result_me);
 
