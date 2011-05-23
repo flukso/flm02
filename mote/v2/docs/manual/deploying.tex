@@ -1,0 +1,76 @@
+\chapter{Deploying}
+
+This chapter will guide you through the installation steps that should lead to your Fluksometer's successful deployment. Please consult the troubleshooting chapter if you experience any installation difficulties.
+
+
+\section{Networking}
+\label{sec:deploying_networking}
+
+Out of the box, a Fluksometer will report to the Flukso server via the wifi interface. Please refer to section~\ref{sec:deploying_networking_wifi} if you wish to use your Fluksometer in this reporting mode. As detailed in section~\ref{sec:introduction_pushbutton}, the Fluksometer's pushbutton can be used to toggle the reporting mode to ethernet. The networking setup for this case is described in section~\ref{sec:deploying_networking_eth}.
+
+\subsection{Wifi Mode}
+\label{sec:deploying_networking_wifi}
+Power up your Fluksometer and wait until the heartbeat LED starts to blink. Connect your computer to the Fluksometer's ethernet port. Then surf to \href{http://192.168.255.1}{192.168.255.1}. Configure the wifi page with the proper name and security key so that the Fluksometer gets connected with the internet via your local wifi network. After saving\footnote{While saving settings doesn't take long, restarting the whole wifi and networking stack with its dependencies can take more than a minute to complete. Be patient.} these settings, the globe LED on the Fluksometer should light up. To further test your configuration, try surfing to \href{http://www.flukso.net}{www.flukso.net} while the ethernet cable is still connected to the Fluksometer.
+
+\begin{aside}{Art thou WAN or LAN?}
+\label{note:deploying_networkig_wan_lan}
+The default settings listed on the network page will mostly work just fine. Should this not be the case, it's important to understand which section on the network page applies to which interface. In wifi mode, the \emph{Local Network} or \emph{LAN} section refers to the ethernet interface while the \emph{Internet Connection} or \emph{WAN} section is associated with the wifi interface. So if you want to assign a fixed IP address to the wifi interface, then you should set the \emph{Protocol} for the \emph{Internet Connection} to \emph{manual} and fill in the additional form fields. Conversely, if you wish to change the IP settings on the ethernet interface, then the \emph{Local Network} section should be edited.
+
+We understand this configuration aspect will be the cause of some confusion. We however cannot apply the \emph{ethernet} and \emph{wifi} naming to these sections directly since they are swapped when toggling the Fluksometer into ethernet mode. The \emph{Internet Connection} will in this case refer to the ethernet interface and the \emph{Local Network} to the wifi interface.
+\end{aside}
+
+\subsection{Ethernet Mode}
+\label{sec:deploying_networking_eth}
+When the reporting mode is toggled to ethernet, the ethernet interface will be set as a DHCP client. The wifi interface will be disabled. Connect the Fluksometer's ethernet port to your network and find out which IP address it has been assigned by your DHCP server. Power up your Fluksometer and wait until the heartbeat LED starts to blink. The globe LED should now be on. Surf to the Fluksometer's ethernet IP address. No further network configuration steps should be required. In case you do need to change something, you should read note~\ref{note:deploying_networkig_wan_lan} first. 
+
+\section{Configuring Sensors}
+
+The sensor configuration will be synchronized with the Flukso server each time you save the sensor page. A synchronization can only be successful when the Fluksometer has internet connectivity.  You should therefore make sure the globe LED is lit before commencing this configuration step. If not, then goto section~\ref{sec:deploying_networking}.
+
+\subsection{Services}
+Your Fluksometer will by default be configured to report its measurements to the Flukso server. Clear the checkbox if you want to stop all communication with the Flukso server. Since no HTTP calls will be initiated to the server anymore, the globe LED will be turned off.
+
+The Fluksometer can make its sensor measurements available through a local JSON/REST API as well. While the Flukso server allows you to analyze your historical data and derive trend information, this local API is useful for monitoring your sensors in real-time. Sixty datapoints with a second resolution will be made available via the local API. No historical data is stored on the Fluksometer itself. Set the checkbox if you wish to enable the local API feature.
+
+\subsection{Current Clamp Setup}
+Select the number of phases that apply for your current clamp setup. When selecting 3 phases, the three current clamp ports will be grouped and presented as a single sensor \#1. Sensors \#2 and \#3 will be disabled automatically after saving. When selecting 1 phase, each clamp port will be sampled seperately and mapped to sensors \#1, \#2 and \#3 respectively.
+
+\subsection{Sensors}
+As already indicated in the previous section, a sensor is a \emph{logical} entity that can aggregate multiple \emph{physical} screw terminal ports as defined in section~\ref{sec:introduction_ports_screw}. Since the screw terminal contains a maximum of six ports, six sensors per Fluksometer will suffice. A sensor is defined by a unique identifier. Sensors can be enabled or disabled individually. Leave sensors in a disabled state when not in use. An enabled sensor requires a name. This name will be used in the Flukso website's charts. It's important that you assign a distinct name for each enabled sensor associated with your account. By convention, we use \emph{main} for total household electricity consumption and \emph{solar} for photo-voltaic production. When adding other users to your chart on the Flukso website, the main sensors will be the ones on display. A sensor can only contain ports of the same class. Ports that have different classes cannot be aggregated into a single sensor. We now introduce each of the three classes in turn:
+
+\begin{description}
+
+\item[Analog] Ports \#1, \#2 and \#3 are analog ports. They accept Flukso split-core current clamps of 50A, 100A, 250A and 500A. A three-phase setup requires all current clamps to be identical. Besides the current range, you can also specify the line voltage for each clamp. The default is 230V, which applies to the mains electricity voltage in most European countries. Australia and New-Zealand have a 240V power grid. Please consult this Wikipedia \href{http://en.wikipedia.org/wiki/Mains_electricity_by_country}{article} if you are unsure about your country's mains voltage.
+
+\item[Pulse] Ports \#4 and \#5 on the screw terminal are pulse ports. They are mapped to sensors \#4 and \#5 respectively. A meterconstant defines the amount represented by each pulse. For electricity, the unit is Wh per pulse while water is specified in dl per pulse.
+
+\item[Uart] The RS-485 port \#6 is mapped to sensor \#6. The baud rate is set to a fixed 115200.
+
+\end{description}
+
+\section{Securing the Fluksometer}
+
+Disconnect all cables from the Fluksometer. Now find a suitable location near the fuse box to install the device. Mounting holes have been provisioned on the back of the Fluksometer. Alternatively, you can use a plastic cable tie or velcro.
+
+\section{Attaching Current Clamps}
+
+For safety reasons, switch off the main electricity supply when installing the current clamps. Attach a clamp to each non-neutral line in the fuse box. Close the clamps firmly. You should hear a double click. The lip should lie flush with the clamp's body.
+
+\section{Connecting Sensor Clamp Cables}
+
+Connect a cable from each current clamp to the Fluksometer's screw terminal. Use the red wire for positive polarity and the black one for negative polarity. 
+
+\section{Powering Up}
+
+Switch the main electricity supply back on. Activate the Fluksometer by inserting its power plug.
+
+\section{Registering}
+
+Vist \href{http://www.flukso.net/user/register}{www.flukso.net/user/register} and fill in the form to create your account. Once logged in, you can associate the Fluksometer with your account. Click on the \emph{My account $\rightarrow$ Devices} tab and submit the Fluksometer's serial number. You should now see this Fluksometer added to the device list.
+
+Point your browser to \href{http://www.flukso.net}{www.flukso.net}. A first reading should be visible on the hour chart within five minutes from powering up.
+
+
+\section{Congratulations}
+
+You are now part of the Flukso community!

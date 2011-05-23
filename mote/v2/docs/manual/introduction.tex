@@ -1,0 +1,47 @@
+\chapter{Introduction}
+
+Let's kick off this manual with a short tour of a Fluksometer's externals. We will introduce each of the Fluksometer's ports, buttons and LEDs. 
+
+\section{Ports}
+
+\subsection{Screw Terminal}
+\label{sec:introduction_ports_screw}
+The screw terminal contains twelve inputs. A \emph{port} on the screw terminal is defined as a \emph{pair of adjacent inputs}. We have printed the port numbers on the side of the enclosure for easy reference, with the polarity denoted by + and -. Ports 1 to 3 are analog ports that are tuned to accept Flukso split-core current clamps. Ports 4 and 5 can be used for detecting pulses. This includes support for, but is not limited to, the S0 interface\footnote{S0 is an open-collector interface standardized in DIN EN 62053-31} common to DIN-rail energy meters. Finally, port 6 offers a half-duplex RS-485 serial interface. Contrary to the other ports, the RS-485 port has its polarity indicated by the letters a and b.
+
+\subsection{Ethernet}
+The ethernet port offers support for a 10baseT/100baseTx interface with auto-negotiation and auto MDI/MDI-X crossover detection.
+
+\subsection{Power Jack}
+The center-positive power jack accepts a DC voltage between 9V and 15V. The switching adapter should have a minimum rating of 500mA output current.
+
+
+\section{Pushbutton}
+\label{sec:introduction_pushbutton}
+
+The pushbutton has a dual function. Which function will be triggered depends on how long the button is pressed.
+
+\begin{description}
+
+\item[Toggle reporting mode] If you press the button for 2 to 5 seconds, the Fluksometer will toggle its reporting mode to the Flukso server from wifi to ethernet or vice-versa.
+\item[Restore defaults] If you press the button between 10 and 30 seconds, the Fluksometer will restore its default network settings.
+
+\end{description}
+
+
+\section{LEDs}
+The Fluksometer has five red LEDs on the top of its enclosure. Together these LEDs provide us with an overview of the Fluksometer's internal functioning, the status of its network interfaces and its ability to communicate with the Flukso server. From left to right, these LEDs are:
+
+\begin{description}
+
+\item[Wifi] If the wifi interface is enabled, the wifi LED will blink. A fast blink rate [approx. twice per second] signals that no wifi connection can be established. A slow blink rate [once every three seconds] signifies that a wifi connection has been successfully set up.
+
+\item[Ethernet]	The ethernet LED will be on when an ethernet link is established. This can either be a 10baseT or 100baseTX link in full- or half-duplex mode.
+
+\item[Globe] After the Fluksometer has finished its boot sequence, the globe LED will be on when it can access the Flukso server. Every time the Fluksometer reports to the Flukso server, the LED will blink in case of a successful call. The globe LED will be turned off when the call is not completed successfully. A successful call has been made when either a 200 or 204 HTTP response code is returned by the Flukso server.
+
+\item[Heartbeat] The heartbeat LED is positioned right next to the globe led. While the globe LED informs us about the status of the Fluksometer's external communication, the heartbeat LED allows us to monitor the Fluksometer's internal functioning. This LED will be on when the sensor board is running its firmware. From the moment the Flukso daemon is started during the boot sequence, it will start polling the sensor board every second for data. Each poll triggers a blink of this LED, thus mimicking a real heartbeat. Hence, a 'heartbeat' is an indication of a Fluksometer that has booted, a running Flukso daemon, a sensor board running its firmware and proper communication between the main board and sensor board.
+
+\item[Power] The power LED is directly connected to the internal 3.3V supply. A burning LED indicates that power has been applied to the device and the internal voltage regulators are working properly.
+
+\end{description}
+
