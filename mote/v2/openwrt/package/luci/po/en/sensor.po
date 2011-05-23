@@ -88,7 +88,7 @@ msgstr "An enabled sensor should have a function/name assigned."
 msgid "flm_err_no_type"
 msgstr "An enabled sensor should have a type assigned."
 
-#. When selecting 3 phases, the three clamp inputs will be grouped and presented as a single sensor #1. Sensors #2 and #3 will be disabled automatically after saving. When selecting 1 phase, each clamp input will be sampled seperately and mapped to sensors #1, #2 and #3 respectively.
+#. When selecting 3 phases, the three current clamp ports will be grouped and presented as a single sensor #1. Sensors #2 and #3 will be disabled automatically after saving. When selecting 1 phase, each clamp port will be sampled seperately and mapped to sensors #1, #2 and #3 respectively.
 #: i18n/english/luasrc/i18n/sensor.en.lua:19
 msgid "flm_ct_descr"
-msgstr "When selecting 3 phases, the three clamp inputs will be grouped and presented as a single sensor #1. Sensors #2 and #3 will be disabled automatically after saving. When selecting 1 phase, each clamp input will be sampled seperately and mapped to sensors #1, #2 and #3 respectively."
+msgstr "When selecting 3 phases, the three current clamp ports will be grouped and presented as a single sensor #1. Sensors #2 and #3 will be disabled automatically after saving. When selecting 1 phase, each clamp port will be sampled seperately and mapped to sensors #1, #2 and #3 respectively."
