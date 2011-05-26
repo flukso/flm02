@@ -17,11 +17,11 @@ config settings daemon
 	option cacert /etc/ssl/certs/flukso.ca.crt
 
 ### sensor config options
-# config sensor <1..6>
+# config sensor 1..6
 #	option id <uuid>
-#	option class <analog|pulse|uart>
-#	option type <electricity|water>
-#	list port <1..6>
+#	option type electricity|water
+#	option class analog|pulse|uart
+#	list port 1..6
 #	option constant [<meterconstant>]
 #	option voltage [<volts>]
 #	option current [<amps>]
