@@ -1,9 +1,0 @@
-K 12
-svn:keywords
-V 2
-Id
-K 13
-svn:mergeinfo
-V 117
-/luci/trunk/contrib/package/olsrd-luci/Makefile:5412,5516,5530,5560,5590-5592,5613,5902-5903,5908-5911,5919,6024-6025
-END

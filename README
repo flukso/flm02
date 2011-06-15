@@ -1,31 +1,52 @@
-Welcome to the Flukso repository.
+This git repo contains the code needed for builing an OpenWRT Backfire-based
+firmware for the Fluksometer v2, aka FLM02.
 
-The repository is structured as follows:
-* mote/v[1|2]/openwrt
-The modules, patches and scripts needed to tailor a stock OpenWRT Backfire to
-the Fluksometer hardware. The bulk of development will now be taking place in
-the v2 directory which maps to the v2 hardware.
-* mote/v[1|2]/eagle
-The Eagle schematic, board and BOM files for building a v1 or v2 Flukso sensor
-board.
-* mote/v[1|2]/avr
-The AVR microcontroller code for the Flukso sensor board.
-* server/api
-The Erlang/Webmachine code that handles the Flukso server's JSON/REST API.
-* server/drupal
-Custom Drupal v6 modules that transform a Drupal 6 installation into a community
-metering web platform, see a.o. www.flukso.net or www.mysmartgrid.de.
+tree:
+.
+|-- avr
+|-- docs
+|   `-- manual
+|-- eagle
+|   |-- cam
+|   |-- dru
+|   |-- lbr
+|   `-- prj
+|       |-- flukso.sensor.board.v2.0
+|       `-- flukso.sensor.board.v2.1
+|-- openwrt
+|   |-- files
+|   |   `-- etc
+|   |-- package
+|   |   |-- avahi
+|   |   |-- avrdude
+|   |   |-- button
+|   |   |-- expat
+|   |   |-- flukso
+|   |   |-- gdbm
+|   |   |-- intltool
+|   |   |-- libdaemon
+|   |   |-- luaprofiler
+|   |   |-- luci
+|   |   |-- mii-tool
+|   |   |-- ntpclient
+|   |   |-- remote-update
+|   |   `-- rrdtool-1.0.x
+|   `-- patches
+`-- tools
+
+avr: AVR microcontroller code for the v2 Flukso sensor board
+
+docs: LaTeX sources of the Fluksometer Manual
+
+eagle: Eagle schematic, board and BOM files for building a v2 Flukso sensor
+board
+
+openwrt: the modules, patches and scripts needed to tailor a stock OpenWRT
+Backfire to the Fluksometer hardware.
+
+tools: a set of helper tools for flashing, generating boardconfigs, etc.
 
 
-For more information about this project and to see the code in action, surf to
-www.flukso.net.
-
-Interested in contributing code- or schematic-wise? Then please join the
-flukso-dev mailing list.
-You can sign up via the web: http://lists.flukso.net/mailman/listinfo/flukso-dev.
-Or simply drop a mail to this address: flukso-dev-join@lists.flukso.net.
-
-You can also harass us via IRC in the #flukso channel on freenode.
-
-Happy metering!
-Bart.
+$forum = www.flukso.net/forum
+$mailing_list = flukso-dev-join@lists.flukso.net
+$irc = #flukso on freenode
