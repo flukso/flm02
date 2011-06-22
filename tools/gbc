@@ -76,6 +76,8 @@ do
 
 	printf "Writing 224 CSPRNG bytes to %s.\n" $FN
 	hexdump -v -e '1/1 "%.2x"' -n 224 /dev/urandom | xxd -r -p -s $((0x1020)) - $FN
+
+	printf "$BATCH%06d;$ETH;$WIFI\n" $((SERIAL + i)) >> $BATCH.log
 done
 
 printf "Writing 32 TRNG bytes to each boardconfig file.\n"
