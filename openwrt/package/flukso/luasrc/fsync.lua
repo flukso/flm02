@@ -123,7 +123,7 @@ local function ctrl_init()
 	if not (ctrl.fdin:lock('tlock') and ctrl.fdout:lock('tlock')) then
 		print('Error. Detected a lock on one of the ctrl fifos.')
 		print('Exiting...')
-		exit(1)
+		exit(2)
 	end
 
 	ctrl.fd = ctrl.fdout -- need this entry for nixio.poll
@@ -178,7 +178,7 @@ local function send(ctrl, cmd)
 	end
 
 	print(MAX_TRIES .. ' write attempts failed. Exiting ...')
-	exit(2) 
+	exit(3) 
 end
 
 --- Check the sensor board hardware version.
@@ -201,7 +201,7 @@ local function check_hw_version(ctrl)
 			print('Overridden. Good luck!')
 		else
 			print('Use -f to override this check at your own peril.')
-			exit(3)
+			exit(4)
 		end
 	else
 		print(string.format('Hardware check (major: %s, minor: %s) .. ok', hw_major, hw_minor))
@@ -228,7 +228,7 @@ local function set_phy_to_log(ctrl)
 		if flukso[tostring(i)] ~= nil then
 			if flukso[tostring(i)]['class'] == 'analog' and i > MAX_ANALOG_SENSORS then
 				print(string.format('Error. Analog sensor %s should be less than or equal to max_analog_sensors (%s)', i, MAX_ANALOG_SENSORS))
-				exit(4)
+				exit(5)
 			end
 
 			local ports = flukso[tostring(i)].port or {}
@@ -236,7 +236,7 @@ local function set_phy_to_log(ctrl)
 			for j = 1, #ports do
 				if tonumber(ports[j]) > MAX_SENSORS then
 					print(string.format('Error. Port numbering in sensor %s should be less than or equal to max_sensors (%s)', i, MAX_SENSORS))
-					exit(5)
+					exit(6)
 
 				else
 					phy_to_log[toc(tonumber(ports[j]))] = toc(i)
@@ -443,6 +443,8 @@ local function phone_home()
 
 	local http_persist = httpclient.create_persistent()
 
+	local err = false
+
 	for i = 1, MAX_SENSORS do
 		if flukso[tostring(i)] ~= nil and flukso[tostring(i)].id then
 			local sensor_id = flukso[tostring(i)].id
@@ -469,6 +471,7 @@ local function phone_home()
 				level = 'info'
 			else
 				level = 'err'
+				err = true
 			end
 
 			nixio.syslog(level, string.format('%s %s: %s', options.method, url, code))
@@ -484,6 +487,10 @@ local function phone_home()
 				end
 			end
 		end
+	end
+
+	if err then
+		exit(7)
 	end
 end
 
