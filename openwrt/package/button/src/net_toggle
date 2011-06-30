@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2010 flukso.net
+# Copyright (c) 2010-2011 flukso.net
 
 to_wifi ()
 {
@@ -36,12 +36,12 @@ then
 	to_eth
 fi
 
-gpioctl dirout 4
+gpioctl dirout 7
 
 for i in 1 2 3 4 5
 do
-	gpioctl clear 4
-	gpioctl set 4
+	gpioctl clear 7
+	gpioctl set 7
 done
 
 /etc/init.d/network restart
