@@ -27,6 +27,21 @@ When the reporting mode is toggled to ethernet, the ethernet interface will be s
 
 The sensor configuration will be synchronized with the Flukso server each time you save the sensor page. A synchronization can only be successful when the Fluksometer has internet connectivity.  You should therefore make sure the globe LED is lit before commencing this configuration step. If not, then goto section~\ref{sec:deploying_networking}.
 
+\subsection{Status}
+The status section lists a couple of parameters to help you verify that your Fluksometer is configured and operating correctly.
+
+\begin{description}
+
+\item[System Time] The Fluksometer's system time is presented in UTC. If this time setting is showing a Jan 1970 date, then your network firewall might be blocking NTP's UDP port 123.
+
+\item[Flukso server ping test] When generating the sensor page, the Fluksometer will try pinging the Flukso server and report the outcome. A failed ping indicates a networking problem, so please consult section~\ref{sec:deploying_networking} before continuing the sensor configuration.
+
+\item[Last synchronisation time] Saving this sensor page will trigger a synchronisation action with the sensor board and the Flukso server. This entry shows last time a synchronisation attempt was made.
+
+\item[Last synchronisation status] The last synchronisation status indicates the last synchronisation attempt's outcome.
+
+\end{description}
+
 \subsection{Services}
 Your Fluksometer will by default be configured to report its measurements to the Flukso server. Clear the checkbox if you want to stop all communication with the Flukso server. Since no HTTP calls will be initiated to the server anymore, the globe LED will be turned off.
 
