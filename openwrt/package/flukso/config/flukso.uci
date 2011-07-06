@@ -1,3 +1,8 @@
+config settings fsync
+	option exit_status -1
+	option exit_string 'no synchronisation'
+	option time 0
+
 config settings main
 	option hw_major 2
 	option hw_minor 0

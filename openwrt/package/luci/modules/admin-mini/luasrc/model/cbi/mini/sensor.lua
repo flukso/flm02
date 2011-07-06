@@ -25,8 +25,26 @@ local uci = require "luci.model.uci".cursor()
 local FLUKSO      = uci:get_all("flukso")
 local MAX_SENSORS = tonumber(FLUKSO.main.max_sensors)
 
+local PING_STRING = { [  0] = "succeeded",
+                      [256] = "failed" }
+
+local FSYNC_TIME_STRING = { [0] = "never" }
 
 m = Map("flukso", translate("flm_sensor"), translate("flm_sensor_settings"))
+
+s = m:section(NamedSection, "fsync", "settings", "Status")
+s:option(DummyValue, "_systime", translate("m_i_systemtime")).value =
+ os.date("%c")
+
+local home = string.match(FLUKSO.daemon.wan_base_url, "%a+://([%w%.]+)/")
+s:option(DummyValue, "_pingtest", "Flukso server ping test").value =
+ PING_STRING[luci.sys.net.pingtest(home)]
+
+local fsync_time = tonumber(FLUKSO.fsync.time)
+local option_fsync_time = s:option(DummyValue, "_synctime", "Last synchronisation time [UTC]")
+option_fsync_time.value = FSYNC_TIME_STRING[fsync_time] or os.date("%c", fsync_time)
+
+s:option(DummyValue, "exit_string", "Last synchronisation status")
 
 s = m:section(NamedSection, "daemon", "settings", translate("flm_service_config"))
 wan_enable = s:option(Flag, "enable_wan_branch", translate("flm_wan"))
@@ -152,6 +170,13 @@ end
 -- sync with the sensor board after committing changes to the uci file
 m.on_after_commit = function(self)
 	luci.util.exec("fsync")
+end
+
+-- kludge for making sure that the _last_ fsync time is being displayed after a save
+m.on_before_apply = function(self)
+	local uci = require "luci.model.uci".cursor()
+	local fsync_time = tonumber(uci:get("flukso", "fsync", "time"))
+	option_fsync_time.value = FSYNC_TIME_STRING[fsync_time] or os.date("%c", fsync_time)
 end
 
 

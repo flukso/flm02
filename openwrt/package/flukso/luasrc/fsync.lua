@@ -81,6 +81,17 @@ uci:foreach('system', 'system', function(x) FLUKSO_VERSION = x.version end)
 local USER_AGENT	 = 'Fluksometer v' .. FLUKSO_VERSION
 local CACERT		 = flukso.daemon.cacert
 
+-- map exit codes to strings
+local EXIT_STRING	 = { [-1] = "no synchronisation",
+                              [0] = "successful",
+                              [1] = "unable to open ctrl fifos",
+                              [2] = "detected lock on ctrl fifos",
+                              [3] = "synchronisation with sensor board failed",
+                              [4] = "sensor board hardware compatibility check failed",
+                              [5] = "analog sensor numbering error",
+                              [6] = "port numbering error",
+                              [7] = "synchronisation with Flukso server failed" }
+
 
 --- Convert from Lua-style to c-style index.
 -- @param index		Lua-style index startng at 1
@@ -101,7 +112,13 @@ local function exit(code)
 		level = 'err'
 	end
 
-	nixio.syslog(level, string.format('fsync exit status: %d', code))
+	nixio.syslog(level, string.format('fsync exit status: %d, %s', code, EXIT_STRING[code]))
+
+	uci:set("flukso", "fsync", "time", os.time() - 15)
+	uci:set("flukso", "fsync", "exit_status", code)
+	uci:set("flukso", "fsync", "exit_string", EXIT_STRING[code])
+	uci:commit("flukso")
+
 	os.exit(code)
 end
 
