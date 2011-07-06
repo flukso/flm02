@@ -29,9 +29,12 @@ struct event_struct {
 struct sensor_struct {
 	uint32_t counter;
 	uint16_t meterconst;
+	uint16_t fraction;	// expressed in milli
 };
 
-# define UNIT 1000000000
+# define M_UNIT 1000		// milli
+# define N_UNIT 1000000000	// nano
+
 # define SECOND 665 // 666Hz - 1
 
 #define STATE_PULSE		0x01
@@ -48,6 +51,8 @@ struct state_struct {
 	uint32_t nano_end;
 	uint8_t  pulse_count;
 	uint8_t  pulse_count_final;
+
+	uint16_t milli;
 
 	uint32_t power;
 	uint32_t timestamp;

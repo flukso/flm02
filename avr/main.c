@@ -188,8 +188,17 @@ ISR(INT1_vect)
 void register_pulse(volatile struct sensor_struct *psensor, volatile struct state_struct *pstate)
 {
 	psensor->counter += psensor->meterconst;
-	pstate->flags |= STATE_PULSE;
-	pstate->timestamp = time.ms;
+	pstate->milli += psensor->fraction;
+
+	if (psensor->meterconst || pstate->milli >= M_UNIT) {
+		pstate->flags |= STATE_PULSE;
+		pstate->timestamp = time.ms;
+
+		if (pstate->milli >= M_UNIT) {
+			pstate->milli -= M_UNIT;
+			psensor->counter++;
+		}
+	}
 }
 
 ISR(TIMER1_COMPA_vect)
@@ -206,11 +215,11 @@ ISR(TIMER1_COMPA_vect)
 
 		MacU16X16to32(state[sensor_id].nano, sensor[sensor_id].meterconst, ADC);
 
-		if (state[sensor_id].nano >= UNIT) {
+		if (state[sensor_id].nano >= N_UNIT) {
 			sensor[sensor_id].counter++;
 
 			state[sensor_id].flags |= STATE_PULSE;
-			state[sensor_id].nano -= UNIT;
+			state[sensor_id].nano -= N_UNIT;
 			state[sensor_id].pulse_count++;
 		}
 

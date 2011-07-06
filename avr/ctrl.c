@@ -324,6 +324,15 @@ void ctrlCmdGet(uint8_t cmd)
 		}
 		break;
 
+	case 'f':		/* sensor meterconstant fraction */
+		ctrlReadCharFromRxBuffer(&i);
+
+		if (i < MAX_SENSORS) {
+			ctrlWriteCharToTxBuffer(i);
+			ctrlWriteShortToTxBuffer(sensor[i].fraction);
+		}
+		break;
+
 	case 'w':		/* watchdog counter */
 		ctrlWriteShortToTxBuffer(event.wdt);
 		break;
@@ -431,6 +440,21 @@ void ctrlCmdSet(uint8_t cmd)
 
 			ctrlWriteCharToTxBuffer(i);
 			ctrlWriteShortToTxBuffer(sensor[i].meterconst);
+		}
+		break;
+
+	case 'f':		/* sensor meterconstant fraction */
+		ctrlReadCharFromRxBuffer(&i);
+
+		if (i < MAX_SENSORS) {
+			ctrlReadShortFromRxBuffer(&tmp16);
+
+			cli();
+			sensor[i].fraction = tmp16;	
+			sei();
+
+			ctrlWriteCharToTxBuffer(i);
+			ctrlWriteShortToTxBuffer(sensor[i].fraction);
 		}
 		break;
 
