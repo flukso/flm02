@@ -61,6 +61,7 @@ local GET_HW_VERSION_R	 = '^gh%s+(%d+)%s+(%d+)$'
 local SET_ENABLE	 = 'se %d %d'
 local SET_PHY_TO_LOG	 = 'sp' -- with [1..MAX_SENSORS] arguments
 local SET_METERCONST	 = 'sm %d %d'
+local SET_FRACTION	 = 'sf %d %d'
 local SET_COUNTER	 = 'sc %d %d'
 local COMMIT		 = 'ct'
 
@@ -278,25 +279,34 @@ end
 -- @return		none 
 local function set_meterconst(ctrl)
 	for i = 1, MAX_SENSORS do
-		local cmd
+		local cmd = { }
 
 		if flukso[tostring(i)] == nil then
-			cmd = string.format(SET_METERCONST, toc(i), 0)
+			cmd[1] = string.format(SET_METERCONST, toc(i), 0)
 
 		elseif flukso[tostring(i)]['class'] == 'analog' then
 			local voltage = tonumber(flukso[tostring(i)].voltage or "0")
 			local current = tonumber(flukso[tostring(i)].current or "0")
-			cmd = string.format(SET_METERCONST, toc(i), math.floor(METERCONST_FACTOR * voltage * current))
+
+			cmd[1] = string.format(SET_METERCONST, toc(i), math.floor(METERCONST_FACTOR * voltage * current))
 
 		elseif flukso[tostring(i)]['class'] == 'pulse'then
-			local meterconst = tonumber(flukso[tostring(i)].constant or "0")
-			cmd = string.format(SET_METERCONST, toc(i), meterconst)
+			local real = tonumber(flukso[tostring(i)].constant or "0")
+			local meterconst = math.floor(real)
+			local fraction = math.floor((real % 1) * 1000)
 
+			cmd[1] = string.format(SET_METERCONST, toc(i), meterconst)
+			cmd[2] = string.format(SET_FRACTION, toc(i), fraction) 
 		else
-			cmd = string.format(SET_METERCONST, toc(i), 0)
+			cmd[1] = string.format(SET_METERCONST, toc(i), 0)
 		end
 
-		if cmd then send(ctrl,cmd) end
+		if not cmd[2] then
+			cmd[2] = string.format(SET_FRACTION, toc(i), 0)
+		end
+
+		send(ctrl, cmd[1])
+		send(ctrl, cmd[2])
 	end
 end
 

@@ -104,6 +104,9 @@ function encode(msg)
 	elseif msg.parsed.cmd == 'gm' and argcheck(1) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
 
+	elseif msg.parsed.cmd == 'gf' and argcheck(1) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
+
 	elseif msg.parsed.cmd == 'sh' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 2)
                                              .. numtohex(msg.parsed[2], 1)
@@ -128,6 +131,10 @@ function encode(msg)
                                              .. numtohex(msg.parsed[2], 4)
 
 	elseif msg.parsed.cmd == 'sm' and argcheck(2) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
+                                             .. numtohex(msg.parsed[2], 2)
+
+	elseif msg.parsed.cmd == 'sf' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
                                              .. numtohex(msg.parsed[2], 2)
 
@@ -244,6 +251,12 @@ function decode(msg)
 			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 
 		elseif msg.decoded.cmd == 'gm' or msg.decoded.cmd == 'sm' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
+			msg.decoded[2] = hextonum(msg.decoded.args:sub(3, 6))
+
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
+
+		elseif msg.decoded.cmd == 'gf' or msg.decoded.cmd == 'sf' then
 			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
 			msg.decoded[2] = hextonum(msg.decoded.args:sub(3, 6))
 
