@@ -206,11 +206,11 @@ ISR(TIMER1_COMPA_vect)
 
 		MacU16X16to32(state[sensor_id].nano, sensor[sensor_id].meterconst, ADC);
 
-		if (state[sensor_id].nano > WATT) {
+		if (state[sensor_id].nano > UNIT) {
 			sensor[sensor_id].counter++;
 
 			state[sensor_id].flags |= STATE_PULSE;
-			state[sensor_id].nano -= WATT;
+			state[sensor_id].nano -= UNIT;
 			state[sensor_id].pulse_count++;
 		}
 

@@ -31,7 +31,7 @@ struct sensor_struct {
 	uint16_t meterconst;
 };
 
-# define WATT 1000000000
+# define UNIT 1000000000
 # define SECOND 665 // 666Hz - 1
 
 #define STATE_PULSE		0x01
