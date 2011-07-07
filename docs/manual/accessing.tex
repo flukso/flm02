@@ -1,0 +1,234 @@
+\chapter{Accessing}
+
+Once the Fluksometer is operational, it will start collecting data on its configured ports. These measurements are sent to the Flukso server and stored in a time series database. You can access the data in chart form via the \href{http://www.flukso.net}{Flukso website}. The same data is also made available in a machine-readable format via the RESTful API.
+
+\section{Version}
+This chapter is a description of \texttt{v1.0} of the Flukso API. Although only a single version is currently in use, you are required to specify the version for each API call. This will prevent any existing code from breaking when new, incompatible versions of the API are introduced in the future.
+
+You can include the versioning parameter either as part of the header (\texttt{X-Version: 1.0}) or as a query parameter (\texttt{\&version=1.0}).
+
+\section{Token}
+The server will verify each time whether a correct token has been specified for the requested resource. For extracting information, you can use two types of tokens:
+\begin{description}
+
+\item[Sensor-level token] A default token is generated for each sensor providing full read access to the sensor resource. The database structure has been conceived to support multiple tokens per sensor, each with different access restrictions. This functionality is however not currently activated. It might be interesting when you want to make a subset of your sensor data available to a third-party service for further processing. This would allow you to revoke this specific token at any time without affecting other services accessing the same sensor data.
+
+\item[Account-level token] A token is also made available to each account, which you can regard as an API key. This single token allows you to access data of all devices and sensors associated with your account.
+
+\end{description}
+
+\section{Data Types}
+\begin{tabular}{|l|p{9.5cm}|}
+
+\hline
+unix\_time() & int32 representing the number of seconds elapsed since midnight UTC of Jan 1, 1970 \\
+
+\hline
+time\_range() & minute, 15min, hour, day, week, month, year, night \\
+
+\hline
+unit() & watt, kwhperyear, eurperyear, audperyear \\
+
+\hline
+
+\end{tabular}
+
+\section{Retreiving sensor time series data}
+\begin{tabular}{|l|l|l|p{5cm}|}
+
+\hline
+request & \multicolumn{3}{|l|}{retreive sensor data in time series format from flukso.net} \\
+
+\hline
+verb & \multicolumn{3}{|l|}{\texttt{GET}} \\
+
+\hline
+url & \multicolumn{3}{|l|}{\texttt{https://api.flukso.net/sensor/\textless sensorid\textgreater}} \\
+
+\hline
+\multirow{2}{*}{query params} & \texttt{interval} & time\_range() & time range for which values should be returned, from \texttt{now - interval} till \texttt{now} \\
+& \texttt{start} & unix\_time() & start time \\
+& \texttt{end} & unix\_time() & end time \\
+& \texttt{resolution} & time\_range() & format data in this resolution \\
+& \texttt{unit} & unit() & convert values to specified unit \\
+& \texttt{{\small jsonp\_callback}} & string() & jsonp function name \\
+
+\hline
+response & \multicolumn{3}{|l|}{a JSON array containing [unix timestamp, value] array elements} \\
+
+\hline
+
+\end{tabular}
+
+\paragraph{Query Parameter Compatibility}
+The most straightforward way to extract time series data from the platform is by use of the \texttt{interval} query parameter. E.g. specifying \texttt{interval=month} will return one month worth of data in a \texttt{day} resolution, the default resolution for this interval. A default resolution can be overridden by including it explicitely in the query parameters. If you would like to fully customize the interval, then you should instead use the \texttt{start} and, optionally, \texttt{end} parameters. Below is a compatibility matrix detailing which parameters are Required [R], Exclusive [X] or Optional [O]. 
+
+\vspace{12pt}
+\begin{center}
+\begin{tabular}{l|c|c|c|c|}
+
+& interval & start & end & resolution \\
+
+\hline
+interval & R & X & X & O \\
+
+\hline
+start    & X & R & O & O \\
+
+\hline
+
+\end{tabular}
+\end{center}
+
+\paragraph{Example 1}
+\begin{Verbatim}
+icarus75@cirrus:~$ curl -k -v -X GET -H "Accept: application/json"
+-H "X-Version: 1.0" -H "X-Token: d8a8ab8893ea73f768b66b45234b5c3a"
+"https://api.flukso.net/sensor/c1411c6b4f9910bbbab09f145f8533b9?
+interval=month&unit=watt"
+
+> GET /sensor/c1411c6b4f9910bbbab09f145f8533b9?interval=month&
+unit=watt HTTP/1.1
+> User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7
+OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+> Host: api.flukso.net
+> Accept: application/json
+> X-Version: 1.0
+> X-Token: d8a8ab8893ea73f768b66b45234b5c3a
+> 
+< HTTP/1.1 200 OK
+< Server: nginx/0.7.64
+< Date: Thu, 07 Jul 2011 10:34:35 GMT
+< Content-Type: application/json
+< Connection: keep-alive
+< Content-Length: 494
+< 
+[[1307664000,234],[1307750400,169],[1307836800,72],[1307923200,71],
+[1308009600,103],[1308096000,263],[1308182400,176],[1308268800,165],
+[1308355200,261],[1308441600,400],[1308528000,139],[1308614400,235],
+[1308700800,151],[1308787200,141],[1308873600,113],[1308960000,301],
+[1309046400,210],[1309132800,166],[1309219200,286],[1309305600,237],
+[1309392000,241],[1309478400,148],[1309564800,125],[1309651200,187],
+[1309737600,248],[1309824000,263],[1309910400,143],[1309996800,191],
+[1310083200,"nan"]]
+\end{Verbatim}
+
+\paragraph{Example 2}
+\begin{Verbatim}
+icarus75@cirrus:~$ curl -k -v -X GET -H "Accept: application/json"
+-H "X-Version: 1.0" -H "X-Token: d8a8ab8893ea73f768b66b45234b5c3a"
+"https://api.flukso.net/sensor/c1411c6b4f9910bbbab09f145f8533b9?
+start=1309478400&end=1309996800&resolution=day&unit=watt"
+
+> GET /sensor/c1411c6b4f9910bbbab09f145f8533b9?start=1309478400&
+end=1309996800&resolution=day&unit=watt HTTP/1.1
+> User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7
+OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+> Host: api.flukso.net
+> Accept: application/json
+> X-Version: 1.0
+> X-Token: d8a8ab8893ea73f768b66b45234b5c3a
+> 
+< HTTP/1.1 200 OK
+< Server: nginx/0.7.64
+< Date: Thu, 07 Jul 2011 12:45:02 GMT
+< Content-Type: application/json
+< Connection: keep-alive
+< Content-Length: 122
+< 
+[[1309564800,125],[1309651200,187],[1309737600,248],[1309824000,263],
+[1309910400,143],[1309996800,191],[1310083200,"nan"]]
+\end{Verbatim}
+
+\section{Retreiving sensor parameters}
+\begin{tabular}{|l|l|l|p{5cm}|}
+
+\hline
+request & \multicolumn{3}{|l|}{retreive sensor parameters from flukso.net} \\
+
+\hline
+verb & \multicolumn{3}{|l|}{\texttt{GET}} \\
+
+\hline
+url & \multicolumn{3}{|l|}{\texttt{https://api.flukso.net/sensor/\textless sensorid\textgreater}} \\
+
+\hline
+{query params} & \texttt{param} & \texttt{all} & return all sensor parameters \\
+
+\hline
+response & \multicolumn{3}{|l|}{a JSON object containing containing all sensor parameters} \\
+
+\hline
+
+\end{tabular}
+
+\paragraph{Example}
+\begin{Verbatim}
+icarus75@cirrus:~$ curl -k -v -X GET -H "Accept: application/json"
+"https://api.flukso.net/sensor/c1411c6b4f9910bbbab09f145f8533b9?
+version=1.0&token=d8a8ab8893ea73f768b66b45234b5c3a&param=all"
+> GET /sensor/c1411c6b4f9910bbbab09f145f8533b9?version=1.0&
+token=d8a8ab8893ea73f768b66b45234b5c3a&param=all HTTP/1.1
+> User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7
+OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+> Host: api.flukso.net
+> Accept: application/json
+> 
+< HTTP/1.1 200 OK
+< Server: nginx/0.7.64
+< Date: Thu, 07 Jul 2011 13:28:18 GMT
+< Content-Type: application/json
+< Connection: keep-alive
+< Content-Length: 183
+< 
+{"access":1310045295,"type":"electricity","function":"main","class":
+"pulse","voltage":null,"current":null,"phase":null,"constant":1.0,
+"enabled":1,"lastupdate":[1310045295,1006793948]}
+\end{Verbatim}
+
+\section{Retreiving real-time sensor data}
+\begin{tabular}{|l|l|l|p{5cm}|}
+
+\hline
+request & \multicolumn{3}{|l|}{retreive real-time sensor data directly from the Fluksometer} \\
+
+\hline
+verb & \multicolumn{3}{|l|}{\texttt{GET}} \\
+
+\hline
+url & \multicolumn{3}{|l|}{\texttt{https://192.168.255.1:8080/sensor/\textless sensorid\textgreater}} \\
+
+\hline
+\multirow{2}{*}{query params} & \texttt{interval} & \texttt{minute} & fixed interval \\
+& \texttt{unit} & watt & fixed unit \\
+& \texttt{{\small jsonp\_callback}} & string() & jsonp function name \\
+
+\hline
+response & \multicolumn{3}{|l|}{a JSON array containing [unix timestamp, value] array elements} \\
+
+\hline
+
+\end{tabular}
+
+\paragraph{Example}
+\begin{Verbatim}
+icarus75@cirrus:~$ curl -v "http://192.168.255.1:8080/sensor/
+c1411c6b4f9910bbbab09f145f8533b9?version=1.0&interval=minute&
+unit=watt&jsonp_callback=realtime"
+> GET /sensor/c1411c6b4f9910bbbab09f145f8533b9?version=1.0&interval=
+minute&unit=watt&jsonp_callback=realtime HTTP/1.1
+> User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7
+OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+> Host: 192.168.255.1:8080
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Connection: close
+< Transfer-Encoding: chunked
+< Content-Type: application/json
+< 
+realtime([[1310047446,124],[1310047447,125],[1310047448,125],
+[1310047449,125],[1310047450,125],[1310047451,125],[1310047452,125], ...
+[1310047501,124],[1310047502,124],[1310047503,124],[1310047504,"nan"],
+[1310047505,"nan"]])
+\end{Verbatim}
