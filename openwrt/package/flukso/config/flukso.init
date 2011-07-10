@@ -3,6 +3,15 @@
 
 START=98
 
+set_version()
+{
+	VERSION=$(opkg info flukso | grep -o -e '[0-9]*\.[0-9]*\.[0-9]*' | sed 's/\.//g')
+	uci set system.@system[0].version=$VERSION
+	uci commit
+
+	logger 'copying flukso package version into system uci file at firstboot'
+}
+
 load_config()
 {
         uci set system.@system[0].key=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11000)) -n 16 /dev/mtd6)
@@ -49,6 +58,7 @@ start()
 
 	if [ $FIRSTBOOT -eq '1' ]
 	then
+		set_version
 		load_config
 		program_sensor_board
 	fi

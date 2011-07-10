@@ -3,7 +3,6 @@ config system
         option hostname  flukso
         option device    0123456789abcdef0123456789abcdef
         option key       00112233445566778899aabbccddeeff
-        option version   210
 	option firstboot 1
 	option cronloglevel 1
 
