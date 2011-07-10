@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+VERSION=$(grep PKG_VERSION:= package/flukso/Makefile | sed 's/.*:=[0-9]\.//')
 USAGE="Usage: . ./install /your/preferred/backfire/installation/path"
 
 if (( $# < 1 ))
@@ -19,7 +20,7 @@ then
 fi
 
 REPO_PATH=$(pwd)
-BACKFIRE_PATH=$1
+BACKFIRE_PATH=$1/flm02.$VERSION
 
 # checkout the stock OpenWRT build environment to the path specified on the command line
 mkdir -p $BACKFIRE_PATH
