@@ -65,6 +65,7 @@ function collect_mp()
 
 	monitor.reset = tonumber(arg[1])
 	monitor.version = tonumber(FLUKSO_VERSION)
+	monitor.time = os.time()
 	monitor.uptime  = math.floor(luci.sys.uptime())
 	system, model, monitor.memtotal, monitor.memcached, monitor.membuffers, monitor.memfree = luci.sys.sysinfo()
 
