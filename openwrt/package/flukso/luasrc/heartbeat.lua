@@ -59,8 +59,12 @@ uci:foreach('system', 'system', function(x) FLUKSO_VERSION = x.version end)
 local USER_AGENT	= 'Fluksometer v' .. FLUKSO_VERSION
 local CACERT		= FLUKSO.daemon.cacert
 
+-- gzipped syslog tmp file
+local SYSLOG_TMP	= '/tmp/syslog.gz'
+local SYSLOG_GZIP	= 'logread | gzip > ' .. SYSLOG_TMP
+
 -- collect relevant monitoring points
-function collect_mp()
+local function collect_mp()
 	local monitor = {}
 
 	monitor.reset = tonumber(arg[1])
@@ -68,6 +72,12 @@ function collect_mp()
 	monitor.time = os.time()
 	monitor.uptime  = math.floor(luci.sys.uptime())
 	system, model, monitor.memtotal, monitor.memcached, monitor.membuffers, monitor.memfree = luci.sys.sysinfo()
+
+	os.execute(SYSLOG_GZIP)
+	io.input(SYSLOG_TMP)
+	local syslog_gz = io.read("*all")
+
+	monitor.syslog = nixio.bin.b64encode(syslog_gz)
 
 	return monitor
 end
