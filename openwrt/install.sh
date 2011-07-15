@@ -22,9 +22,9 @@ fi
 REPO_PATH=$(pwd)
 BACKFIRE_PATH=$1/flm02.$VERSION
 
-# checkout the stock OpenWRT build environment to the path specified on the command line
+# checkout the stock OpenWRT build environment [Backfire 10.03.1-rc5] to the path specified on the command line
 mkdir -p $BACKFIRE_PATH
-svn co svn://svn.openwrt.org/openwrt/branches/backfire $BACKFIRE_PATH
+svn co svn://svn.openwrt.org/openwrt/branches/backfire -r 27608 $BACKFIRE_PATH
 
 # add the specific flukso packages as a feed
 echo "src-link flukso $REPO_PATH/package" > $BACKFIRE_PATH/feeds.conf
