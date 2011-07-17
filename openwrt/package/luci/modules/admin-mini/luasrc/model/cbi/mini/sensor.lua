@@ -108,6 +108,9 @@ for i = 1, MAX_SENSORS do
 	
 	elseif FLUKSO[tostring(i)].class == "pulse" then
 		typ = s:option(Value, "type", translate("flm_type"))
+		typ:value("electricity")
+		typ:value("water")
+		typ:value("gas")
 		typ.rmempty = true
 
 		func = s:option(Value, "function", translate("flm_function"))
