@@ -83,6 +83,14 @@ local LAN_INTERVAL	= 0
 local LAN_POLISH_CUTOFF	= 60
 local LAN_PUBLISH_PATH	= DAEMON_PATH .. '/sensor'
 
+local LAN_FACTOR	= { ['electricity'] =  3.6e6,	-- 1 Wh/ms = 3.6e6 W
+			    ['water']       = 86.6e6,	-- 1 L/ms  = 24 * 3.6e6 L/day
+			    ['gas']         = 86.6e6 }	-- 1 L/ms  = 24 * 3.6e6 L/day
+
+local LAN_ID_TO_FACTOR	= { }
+uci:foreach('flukso', 'sensor', function(x) LAN_ID_TO_FACTOR[x.id] = LAN_FACTOR[x['type']] end)
+
+
 function dispatch(wan_child, lan_child)
 	return coroutine.create(function()
 		local delta = { fdin  = nixio.open(DELTA_PATH_IN, O_RDWR_NONBLOCK),
@@ -284,8 +292,11 @@ function lan_buffer(child)
 			if timestamp > TIMESTAMP_MIN and timestamp > (previous[sensor_id].timestamp or 0) then
 				if not power then  -- we're dealing pulse message so first calculate power
 					if previous[sensor_id].msec and msec > previous[sensor_id].msec then
-						power = math.floor(diff(previous[sensor_id].counter, counter) /
-                        	                                   diff(previous[sensor_id].msec, msec) * 3.6 * 10^6 + 0.5)
+						power = math.floor(
+							diff(previous[sensor_id].counter, counter) /
+							diff(previous[sensor_id].msec, msec) *
+							(LAN_ID_TO_FACTOR[sensor_id] or 1000) +
+							0.5)
 
 					end
 

@@ -51,7 +51,7 @@ local version = "1.0"
 -- local path    = uci:get("flukso", "main", "localDir") .. "/"
 -- local version = uci:get("flukso", "main", "localVersion")
 
-if param.interval == "minute" and param.unit == "watt" and param.version == version then
+if param.interval == "minute" and (param.unit == "watt" or param.unit == "lperday") and param.version == version then
 	local pre, post =  "", ""
 	
 	if param.jsonp_callback then
