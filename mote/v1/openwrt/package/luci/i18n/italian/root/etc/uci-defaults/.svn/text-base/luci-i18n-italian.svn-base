@@ -1,6 +1,0 @@
-#!/bin/sh
-uci batch <<-EOF
-	set luci.languages.it=Italian
-        commit luci
-EOF
-	

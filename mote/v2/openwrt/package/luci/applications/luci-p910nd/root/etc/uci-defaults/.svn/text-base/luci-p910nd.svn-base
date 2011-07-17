@@ -1,7 +1,0 @@
-#!/bin/sh
-
-uci batch <<-EOF
-	add ucitrack p910nd
-	set ucitrack.@p910nd[-1].init=p910nd
-	commit ucitrack
-EOF

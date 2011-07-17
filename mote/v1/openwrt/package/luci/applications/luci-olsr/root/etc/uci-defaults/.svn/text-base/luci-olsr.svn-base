@@ -1,7 +1,0 @@
-#!/bin/sh
-
-uci batch <<-EOF
-	add ucitrack olsrd
-	set ucitrack.@olsrd[-1].init=olsrd
-	commit ucitrack
-EOF

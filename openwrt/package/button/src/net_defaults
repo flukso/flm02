@@ -1,0 +1,17 @@
+#!/bin/sh
+# Copyright (c) 2010-2011 flukso.net
+
+cd /rom/etc/config
+cp firewall network wireless /etc/config
+
+logger 'returning to firewall, network and wireless defaults'
+
+gpioctl dirout 7
+
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+do
+	gpioctl clear 7
+	gpioctl set 7
+done
+
+/etc/init.d/network restart

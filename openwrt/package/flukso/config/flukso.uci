@@ -1,0 +1,81 @@
+config settings fsync
+	option exit_status -1
+	option exit_string 'no synchronisation'
+	option time 0
+
+config settings main
+	option hw_major 2
+	option hw_minor 1
+	option sw_major 1
+	option sw_minor 0
+	option max_sensors 6
+	option max_analog_sensors 3
+	option reset_counters 0
+	option phase 1
+
+config settings daemon
+	option logmask info
+	option enable_wan_branch 1
+	option enable_lan_branch 0
+	option wan_base_url https://api.flukso.net/
+	option upgrade_url http://www.flukso.net/files/upgrade/
+	option cacert /etc/ssl/certs/flukso.ca.crt
+
+### sensor config options
+# config sensor 1..6
+#	option id <uuid>
+#	option type electricity|water
+#	option class analog|pulse|uart
+#	list port 1..6
+#	option constant [<meterconstant>]
+#	option voltage [<volts>]
+#	option current [<amps>]
+
+config sensor 1
+	option id 0123456789abcdef0123456789abcde1
+	option type electricity
+	option class analog
+	list port 1
+	option voltage 230
+	option current 50
+	option enable 0
+
+config sensor 2
+	option id 0123456789abcdef0123456789abcde2
+	option type electricity
+	option class analog
+	list port 2
+	option voltage 230
+	option current 50
+	option enable 0
+
+config sensor 3
+	option id 0123456789abcdef0123456789abcde3
+	option type electricity
+	option class analog
+	list port 3
+	option voltage 230
+	option current 50
+	option enable 0
+
+config sensor 4
+	option id 0123456789abcdef0123456789abcde4
+	option type electricity
+	option class pulse
+	list port 4
+	option constant 1
+	option enable 0
+
+config sensor 5
+	option id 0123456789abcdef0123456789abcde5
+	option type electricity
+	option class pulse
+	list port 5
+	option constant 1
+	option enable 0
+
+config sensor 6
+	option id 0123456789abcdef0123456789abcde6
+	option class uart
+	list port 6
+	option enable 0

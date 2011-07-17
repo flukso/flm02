@@ -1,2 +1,0 @@
-To install a customized OpenWRT Backfire build environment for Flukso targets:
-./install.sh /path/you/would/like/to/backfire

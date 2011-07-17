@@ -1,9 +1,0 @@
-K 12
-svn:keywords
-V 2
-Id
-K 13
-svn:mergeinfo
-V 102
-/luci/trunk/libs/web/luasrc/dispatcher.lua:5240,5315-5316,5655,5730-5731,5769,5902-5903,6024-6025,6081
-END

@@ -1,0 +1,20 @@
+--- Makefile	2011-05-03 12:06:27.309938997 +0200
++++ Makefile	2011-07-12 14:22:27.176332998 +0200
+@@ -97,10 +97,17 @@
+ BINDIR=bin/atheros
+ ROOTFS=$(BINDIR)/openwrt-atheros-root.squashfs
+ KERNEL=$(BINDIR)/openwrt-atheros-vmlinux.lzma
++COMBINED=$(BINDIR)/openwrt-atheros-combined.squashfs.img
+ 
+ flash:
+ 	$(SUDO) $(AP51) $(ETH) $(ROOTFS) $(KERNEL)
+ 
++# publish development binaries to flukso.net
++SITE=$(USER)@flukso.net:~/www/public/files/flm02/bin/develop
++
++publish:
++	scp $(KERNEL) $(ROOTFS) $(COMBINED) $(SITE)
++
+ .PHONY: clean dirclean prereq prepare world package/symlinks package/symlinks-install package/symlinks-clean
+ 
+ endif
