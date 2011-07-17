@@ -92,3 +92,23 @@ msgstr "An enabled sensor should have a type assigned."
 #: i18n/english/luasrc/i18n/sensor.en.lua:19
 msgid "flm_ct_descr"
 msgstr "When selecting 3 phases, the three current clamp ports will be grouped and presented as a single sensor #1. Sensors #2 and #3 will be disabled automatically after saving. When selecting 1 phase, each clamp port will be sampled seperately and mapped to sensors #1, #2 and #3 respectively."
+
+#. Flukso server ping test
+#: i18n/english/luasrc/i18n/sensor.en.lua:20
+msgid "flm_ping_test"
+msgstr "Flukso server ping test"
+
+#. Last synchronisation time [UTC]
+#: i18n/english/luasrc/i18n/sensor.en.lua:21
+msgid "flm_last_sync_time"
+msgstr "Last synchronisation time [UTC]"
+
+#. Last synchronisation status
+#: i18n/english/luasrc/i18n/sensor.en.lua:22
+msgid "flm_last_sync_status"
+msgstr "Last synchronisation status"
+
+#. Meter constants for electricity are expressed in Wh/pulse, while meter constants for water and gas are entered in L/pulse. Meter constants can range from 0.001 to 65535.999.
+#: i18n/english/luasrc/i18n/sensor.en.lua:23
+msgid "flm_const_descr"
+msgstr "Meter constants for electricity are expressed in Wh/pulse, while meter constants for water and gas are entered in L/pulse. Meter constants can range from 0.001 to 65535.999."

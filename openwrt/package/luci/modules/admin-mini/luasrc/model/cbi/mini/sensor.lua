@@ -37,14 +37,14 @@ s:option(DummyValue, "_systime", translate("m_i_systemtime")).value =
  os.date("%c")
 
 local home = string.match(FLUKSO.daemon.wan_base_url, "%a+://([%w%.]+)/")
-s:option(DummyValue, "_pingtest", "Flukso server ping test").value =
+s:option(DummyValue, "_pingtest", translate("flm_ping_test")).value =
  PING_STRING[luci.sys.net.pingtest(home)]
 
 local fsync_time = tonumber(FLUKSO.fsync.time)
-local option_fsync_time = s:option(DummyValue, "_synctime", "Last synchronisation time [UTC]")
+local option_fsync_time = s:option(DummyValue, "_synctime", translate("flm_last_sync_time"))
 option_fsync_time.value = FSYNC_TIME_STRING[fsync_time] or os.date("%c", fsync_time)
 
-s:option(DummyValue, "exit_string", "Last synchronisation status")
+s:option(DummyValue, "exit_string", translate("flm_last_sync_status"))
 
 s = m:section(NamedSection, "daemon", "settings", translate("flm_service_config"))
 wan_enable = s:option(Flag, "enable_wan_branch", translate("flm_wan"))
@@ -59,7 +59,7 @@ phase:value("1")
 phase:value("3")
 phase.description = translate("flm_ct_descr")
 
--- (ab)use phase validation callback to assgn port numbers to sensors
+-- (ab)use phase validation callback to assign port numbers to sensors
 function phase:validate(value, section)
 	if value == "1" then
 		uci:set_list("flukso", "1", "port", "1")
@@ -119,6 +119,7 @@ for i = 1, MAX_SENSORS do
 
 		constant = s:option(Value, "constant", translate("flm_constant"))
 		constant.rmempty = false
+		constant.description = translate("flm_const_descr")
 	end
 end
 
