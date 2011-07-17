@@ -57,7 +57,7 @@ As already indicated in the previous section, a sensor is a \emph{logical} entit
 
 \item[Analog] Ports \#1, \#2 and \#3 are analog ports. They accept Flukso split-core current clamps of 50A, 100A, 250A and 500A. A three-phase setup requires all current clamps to be identical. Besides the current range, you can also specify the line voltage for each clamp. The default is 230V, which applies to the mains electricity voltage in most European countries. Australia and New-Zealand have a 240V power grid. Please consult this Wikipedia \href{http://en.wikipedia.org/wiki/Mains_electricity_by_country}{article} if you are unsure about your country's mains voltage.
 
-\item[Pulse] Ports \#4 and \#5 on the screw terminal are pulse ports. They are mapped to sensors \#4 and \#5 respectively. A meterconstant defines the amount represented by each pulse. For electricity, the unit is Wh per pulse while water is specified in dl per pulse.
+\item[Pulse] Ports \#4 and \#5 on the screw terminal are pulse ports. They are mapped to sensors \#4 and \#5 respectively. A meterconstant defines the amount of flow represented by each pulse. For electricity, the unit is Wh per pulse\footnote{Most small energy meters define their meterconstant in imp/kWh. 1000, 2000 and 5000 imp/kWh values on the energy meter equal meterconstants of 1, 0.5 and 0.2 Wh/pulse on the Fluksometer respectively.} while water and gas are specified in liter per pulse. Fractional meterconstants are allowed down to 0.001.
 
 \item[Uart] The RS-485 port \#6 is mapped to sensor \#6. The baud rate is set to a fixed 115200.
 
