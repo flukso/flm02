@@ -1,7 +1,7 @@
 //
-// basiciotest.c : test code for the io and buffer ops of the UART and SPI ports
+// main.c : init functions and primary interrupt routines
 //
-// Copyright (c) 2010 flukso.net
+// Copyright (c) 2010-2011 bart.vandermeerssche@flukso.net
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
