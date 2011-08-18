@@ -90,6 +90,13 @@ local LAN_FACTOR	= { ['electricity'] =  3.6e6,	-- 1 Wh/ms = 3.6e6 W
 local LAN_ID_TO_FACTOR	= { }
 uci:foreach('flukso', 'sensor', function(x) LAN_ID_TO_FACTOR[x.id] = LAN_FACTOR[x['type']] end)
 
+function resume(...)
+	local status, err = coroutine.resume(...)
+
+	if not status then
+		error(err, 0)
+	end
+end
 
 function dispatch(wan_child, lan_child)
 	return coroutine.create(function()
@@ -130,15 +137,15 @@ function dispatch(wan_child, lan_child)
 
 				-- resume both branches
 				if WAN_ENABLED then
-					coroutine.resume(wan_child, sensor_id, timestamp, counter)
+					resume(wan_child, sensor_id, timestamp, counter)
 				end
 
 				if LAN_ENABLED then
 					if sensor_class == 'analog' then
-						coroutine.resume(lan_child, sensor_id, timestamp, extra)
+						resume(lan_child, sensor_id, timestamp, extra)
 
 					elseif sensor_class == 'pulse' then
-						coroutine.resume(lan_child, sensor_id, timestamp, false, counter, extra)
+						resume(lan_child, sensor_id, timestamp, false, counter, extra)
 					end
 				end
 			end 
@@ -173,7 +180,7 @@ function wan_buffer(child)
 			end
 
 			if timestamp > threshold and next(measurements) then  --checking whether table is not empty
-				coroutine.resume(child, measurements)
+				resume(child, measurements)
 				threshold = os.time() + WAN_INTERVAL
 			end
 
@@ -186,7 +193,7 @@ function filter(child, span, offset)
 	return coroutine.create(function(measurements)
 		while true do
 			measurements:filter(span, offset)
-			coroutine.resume(child, measurements)
+			resume(child, measurements)
 			measurements = coroutine.yield()
 		end
 	end)
@@ -254,7 +261,10 @@ function send(child)
 				end
 			end
 
-			coroutine.resume(child, measurements)
+			-- allow coroutine to be gc'ed
+			http_persist = nil
+
+			resume(child, measurements)
 			measurements = coroutine.yield()
 		end
 	end)
@@ -264,7 +274,7 @@ function gc(child)
 	return coroutine.create(function(measurements)
 		while true do
 			collectgarbage() -- force a complete garbage collection cycle
-			coroutine.resume(child, measurements)
+			resume(child, measurements)
 			measurements = coroutine.yield()
 		end
 	end)
@@ -313,7 +323,7 @@ function lan_buffer(child)
 			end
 
 			if timestamp > threshold and next(measurements) then  --checking whether table is not empty
-				coroutine.resume(child, measurements)
+				resume(child, measurements)
 				threshold = os.time() + LAN_INTERVAL
 			end
 
@@ -343,7 +353,7 @@ function publish(child)
 				fd:close()
 			end
 
-			coroutine.resume(child, measurements)
+			resume(child, measurements)
 			measurements = coroutine.yield()
 		end
 	end)
@@ -357,7 +367,7 @@ function debug(child)
 			end
 
 			if child then
-				coroutine.resume(child, measurements)
+				resume(child, measurements)
 			end
 
 			measurements = coroutine.yield()
@@ -389,4 +399,4 @@ local lan_chain =
 
 local chain = dispatch(wan_chain, lan_chain)
 
-coroutine.resume(chain)
+resume(chain)
