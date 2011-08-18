@@ -132,7 +132,7 @@ function create_persistent()
 			status, response, buffer, sock = request_raw(uri, options, sock)
 
 			if not status then
-				uri, options = yield(nil, response, buffer)
+				uri, options = yield(nil, response or "", buffer)
 
 			elseif status ~= 200 and status ~= 206 then
 				if status == 204 then
