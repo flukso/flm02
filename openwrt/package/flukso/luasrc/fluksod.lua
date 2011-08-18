@@ -261,6 +261,9 @@ function send(child)
 				end
 			end
 
+			-- allow coroutine to be gc'ed
+			http_persist = nil
+
 			resume(child, measurements)
 			measurements = coroutine.yield()
 		end
