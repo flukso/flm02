@@ -32,10 +32,10 @@ struct sensor_struct {
 	uint16_t fraction;	// expressed in milli
 };
 
-# define M_UNIT 1000		// milli
-# define N_UNIT 1000000000	// nano
+# define M_UNIT 1000U		// milli
+# define N_UNIT 1000000000U	// nano
 
-# define SECOND 665 // 666Hz - 1
+# define SECOND 665U // 666Hz - 1
 
 #define STATE_PULSE		0x01
 #define STATE_SKIP		0x02

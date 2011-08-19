@@ -361,13 +361,16 @@ void setup_analog_comparator(void)
 
 void calculate_power(volatile struct state_struct *pstate)
 {
-	int32_t rest, power = 0;
+	int32_t rest;
+	uint32_t pulse_power, urest, power = 0;
 	uint8_t pulse_count;
 
 	cli();
 	rest = pstate->nano_end - pstate->nano_start;
 	pulse_count = pstate->pulse_count_final;
 	sei();
+
+	urest = labs(rest);
 
 	// Since the AVR has no dedicated floating-point hardware, we need 
 	// to resort to fixed-point calculations for converting nWh/s to W.
@@ -382,14 +385,21 @@ void calculate_power(volatile struct state_struct *pstate)
 	// We round the constant down to 61909 to prevent 'underflow' in the
 	// consecutive else statement.
 	// The error introduced in the fixed-point rounding equals 7.1*10^-6.
-	MacU16X16to32(power, (uint16_t)(labs(rest)/65536), 61909);
-	power /= 262144;
+	MacU16X16to32(power, (uint16_t)(urest/65536U), 61909U);
+	power /= 262144U;
+
+	pulse_power = pulse_count*3600UL;
 
 	if (rest >= 0) {
-		power += pulse_count*3600UL;
+		power += pulse_power;
 	}
 	else {
-		power = pulse_count*3600UL - power;
+		power = pulse_power - power;
+
+		// guard against unsigned integer wrapping
+		if (power > pulse_power) {
+			power = 0;
+		}
 	}
 
 	pstate->power = power;
