@@ -386,10 +386,10 @@ void calculate_power(volatile struct state_struct *pstate)
 	power /= 262144;
 
 	if (rest >= 0) {
-		power += pulse_count*3600;
+		power += pulse_count*3600UL;
 	}
 	else {
-		power = pulse_count*3600 - power;
+		power = pulse_count*3600UL - power;
 	}
 
 	pstate->power = power;
