@@ -23,8 +23,12 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#include "main.h"
 #include "buffer.h"
 #include "uart.h"
+
+extern uint8_t phy_to_log[MAX_SENSORS];
+extern uint8_t enabled;
 
 // UART global variables
 // flag variables
@@ -187,13 +191,22 @@ u08 uartReceiveBufferIsEmpty(void)
 // add byte to end of uart Tx buffer
 u08 uartAddToTxBuffer(u08 data)
 {
-	u08 status;
-	// add data byte to the end of the tx buffer
-	status = bufferAddToEnd(&uartTxBuffer, data);
-	// turn on buffered transmit
-	uartBufferedTx = TRUE;
-	// enable UDRIE0 interrupt
-	UCR |= 1<<UDRIE0;
+	u08 sensor_id, status = 0;
+
+	sensor_id = phy_to_log[PORT_UART];
+
+	if (ENABLED(sensor_id)) {
+		// add data byte to the end of the tx buffer
+		status = bufferAddToEnd(&uartTxBuffer, data);
+		// turn on buffered transmit
+		uartBufferedTx = TRUE;
+		// enable UDRIE0 interrupt
+		UCR |= 1<<UDRIE0;
+	}
+	else {
+		//uart is disabled, so do not tx but loop back to Rx buffer instead
+		status = bufferAddToEnd(&uartRxBuffer, data);
+	}
 
 	return status;
 }

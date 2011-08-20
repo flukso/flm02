@@ -359,6 +359,31 @@ void setup_analog_comparator(void)
 	ACSR |= (1<<ACBG) | (1<<ACIC);
 }
 
+void setup_rs485(void)
+{
+	uint8_t sensor_id = phy_to_log[PORT_UART];
+
+	// Configure PD5=DE as output pin with low as default
+	DDRD |= (1<<DDD5);
+
+	if (ENABLED(sensor_id)) {
+		/* If the UART port is enabled, put the RS485 in rx mode by setting DE low.
+		 * We're doing this explicitely to allow live re-configuration.
+		 */
+		PORTD &= ~(1<<PD5);
+	}
+	else {
+		/* If the UART port is disabled, we put the RS485 into tx by setting DE high.
+		 * A UART idle line corresponds to a logic 1 data bit = logic high voltage.
+		 * A logic high TTL input on the RS485 results in a > b, which means
+		 * the RS485 'a' terminal can now be used as a 3.3V rail.
+		 * We make sure that no data is ever transmitted on the UART by looping back
+		 * all UART data received on the SPI itf (see uartAddToTxBuffer function).
+		 */
+		PORTD |= (1<<PD5);
+	}
+}
+
 void calculate_power(volatile struct state_struct *pstate)
 {
 	int32_t rest;
@@ -411,11 +436,6 @@ int main(void)
 
 	cli();
 
-	// RS-485: Configure PD5=DE as output pin with low as default
-	DDRD |= (1<<DDD5);
-	// set high to transmit
-	//PORTD |= (1<<PD5);
-
 	setup_datastructs();
 	setup_led();
 	setup_adc();
@@ -427,6 +447,8 @@ int main(void)
 	ctrlInit();
 	// initialize the UART hardware and buffers
 	uartInit();
+	// initialize the RS485 chip
+	setup_rs485();
 	// initialize the SPI in slave mode
 	setup_spi(SPI_MODE_2, SPI_MSB, SPI_INTERRUPT, SPI_SLAVE);
 
