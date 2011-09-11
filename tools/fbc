@@ -1,0 +1,70 @@
+#!/usr/bin/perl -w
+#
+#   fbc -  flash board config section
+#
+#   Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+use Net::Telnet ();
+
+my $bc = $ARGV[1] or die "Syntax: $0 <host> <board config>\n";
+my $host = $ARGV[0];
+
+my $t = new Net::Telnet (Port    => 9000,
+                         Timeout => 30);
+
+if (!defined($t)) {
+	print "new Net::Telnet failed\n";
+	exit(1);
+}
+
+my $ok;
+$ok = $t->errmode("return");
+$ok = $t->open($host);
+if(!defined($ok)) {
+	print "open('$host') failed\n";
+	$t->close();
+	exit(1);
+}
+
+$t->cmd("");
+sleep(1);
+
+# load the board config file into RAM
+@out = $t->cmd(String => "load -r -b %{FREEMEMLO} $bc",
+               Prompt => "/RedBoot>/");
+
+print @out;
+sleep(1);
+
+# write boad config file to flash
+@out = $t->cmd(String => "fis write -b 0x8003e000 -f 0xA87F0000 -l 0x10000",
+               Prompt => "/continue (y/n)?/");
+
+print @out;
+sleep(1);
+
+# Flashing where no man has flashed before...
+# Sure hope you know what you're doing!
+# * CAUTION * about to program FLASH
+#             at 0xa87f0000..0xa87fffff from 0x8003e000 - continue (y/n)?
+@out = $t->cmd(String => "y",
+               Prompt => "/RedBoot>/");
+
+print @out;
+
+$t->close();
+exit(0);
