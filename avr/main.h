@@ -7,6 +7,7 @@ struct version_struct {
 
 #define PORT_PULSE_1		3
 #define PORT_PULSE_2		4
+#define PORT_UART		5
 
 #define SPI_NO_OP_1		0x01
 #define SPI_NO_OP_2		0x02
@@ -32,10 +33,10 @@ struct sensor_struct {
 	uint16_t fraction;	// expressed in milli
 };
 
-# define M_UNIT 1000		// milli
-# define N_UNIT 1000000000	// nano
+# define M_UNIT 1000U		// milli
+# define N_UNIT 1000000000U	// nano
 
-# define SECOND 665 // 666Hz - 1
+# define SECOND 665U // 666Hz - 1
 
 #define STATE_PULSE		0x01
 #define STATE_SKIP		0x02
@@ -103,4 +104,5 @@ void setup_pulse_input(void);
 void setup_adc(void);
 void setup_timer1(void);
 void setup_analog_comparator(void);
+void setup_rs485(void);
 void calculate_power(volatile struct state_struct *pstate);

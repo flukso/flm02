@@ -122,7 +122,7 @@ function create_persistent()
 				sock:close()
 			end
 
-			coroutine.yield(...)
+			return coroutine.yield(...)
 		end
 	
 		while true do

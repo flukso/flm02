@@ -1,0 +1,57 @@
+#!/usr/bin/perl -w
+#
+#   drc - dump radio config data in srec format
+#
+#   Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+use Net::Telnet ();
+use IO::File ();
+
+my $host = $ARGV[0] or die "Syntax: $0 <host>\n";
+
+my $t = new Net::Telnet (Port    => 9000,
+                         Timeout => 30);
+
+if (!defined($t)) {
+	print "new Net::Telnet failed\n";
+	exit(1);
+}
+
+my $ok;
+$ok = $t->errmode("return");
+$ok = $t->open($host);
+if(!defined($ok)) {
+	print "open('$host') failed\n";
+	$t->close();
+	exit(1);
+}
+
+$t->cmd("");
+sleep(1);
+
+# dump 2048 bytes of radio config data in srec format
+@dump = $t->cmd(String => "dump -s -b 0xA87F00F8 -l 0x800",
+                Prompt => "/RedBoot>/");
+
+print @dump;
+
+my $fh = new IO::File ("/tmp/radio.srec",'w');
+print $fh @dump;
+$fh->close();
+
+$t->close();
+exit(0);

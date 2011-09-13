@@ -56,9 +56,14 @@ s:option(DummyValue, "_uptime", translate("m_i_uptime")).value =
 s:option(DummyValue, "_hostname", translate("hostname")).value =                   
  luci.sys.hostname(value)                                                          
 
-
--- Wifi Data init -- 
 local uci = luci.model.uci.cursor()
+
+local fwv = "000"
+uci:foreach("system", "system", function(x) fwv = x.version end)
+
+s:option(DummyValue, "_fw_version", translate("fw_version")).value = fwv
+ 
+-- Wifi Data init -- 
 if not uci:get("network", "wan") then
 	uci:section("network", "interface", "wan", {proto="none", ifname=" "})
 	uci:save("network")

@@ -396,6 +396,10 @@ void ctrlCmdSet(uint8_t cmd)
 				enabled &= ~(1 << i);
 			}
 
+			if (i == phy_to_log[PORT_UART]) {
+				setup_rs485();
+			}
+
 			ctrlWriteCharToTxBuffer(i);
 			ctrlWriteCharToTxBuffer((enabled >> i) & 0x01);
 		}

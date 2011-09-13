@@ -359,15 +359,43 @@ void setup_analog_comparator(void)
 	ACSR |= (1<<ACBG) | (1<<ACIC);
 }
 
+void setup_rs485(void)
+{
+	uint8_t sensor_id = phy_to_log[PORT_UART];
+
+	// Configure PD5=DE as output pin with low as default
+	DDRD |= (1<<DDD5);
+
+	if (ENABLED(sensor_id)) {
+		/* If the UART port is enabled, put the RS485 in rx mode by setting DE low.
+		 * We're doing this explicitely to allow live re-configuration.
+		 */
+		PORTD &= ~(1<<PD5);
+	}
+	else {
+		/* If the UART port is disabled, we put the RS485 into tx by setting DE high.
+		 * A UART idle line corresponds to a logic 1 data bit = logic high voltage.
+		 * A logic high TTL input on the RS485 results in a > b, which means
+		 * the RS485 'a' terminal can now be used as a 3.3V rail.
+		 * We make sure that no data is ever transmitted on the UART by looping back
+		 * all UART data received on the SPI itf (see uartAddToTxBuffer function).
+		 */
+		PORTD |= (1<<PD5);
+	}
+}
+
 void calculate_power(volatile struct state_struct *pstate)
 {
-	int32_t rest, power = 0;
+	int32_t rest;
+	uint32_t pulse_power, urest, power = 0;
 	uint8_t pulse_count;
 
 	cli();
 	rest = pstate->nano_end - pstate->nano_start;
 	pulse_count = pstate->pulse_count_final;
 	sei();
+
+	urest = labs(rest);
 
 	// Since the AVR has no dedicated floating-point hardware, we need 
 	// to resort to fixed-point calculations for converting nWh/s to W.
@@ -382,14 +410,21 @@ void calculate_power(volatile struct state_struct *pstate)
 	// We round the constant down to 61909 to prevent 'underflow' in the
 	// consecutive else statement.
 	// The error introduced in the fixed-point rounding equals 7.1*10^-6.
-	MacU16X16to32(power, (uint16_t)(labs(rest)/65536), 61909);
-	power /= 262144;
+	MacU16X16to32(power, (uint16_t)(urest/65536U), 61909U);
+	power /= 262144U;
+
+	pulse_power = pulse_count*3600UL;
 
 	if (rest >= 0) {
-		power += pulse_count*3600;
+		power += pulse_power;
 	}
 	else {
-		power = pulse_count*3600 - power;
+		power = pulse_power - power;
+
+		// guard against unsigned integer wrapping
+		if (power > pulse_power) {
+			power = 0;
+		}
 	}
 
 	pstate->power = power;
@@ -400,11 +435,6 @@ int main(void)
 	uint8_t i;
 
 	cli();
-
-	// RS-485: Configure PD5=DE as output pin with low as default
-	DDRD |= (1<<DDD5);
-	// set high to transmit
-	//PORTD |= (1<<PD5);
 
 	setup_datastructs();
 	setup_led();
@@ -417,6 +447,8 @@ int main(void)
 	ctrlInit();
 	// initialize the UART hardware and buffers
 	uartInit();
+	// initialize the RS485 chip
+	setup_rs485();
 	// initialize the SPI in slave mode
 	setup_spi(SPI_MODE_2, SPI_MSB, SPI_INTERRUPT, SPI_SLAVE);
 

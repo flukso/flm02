@@ -2260,3 +2260,8 @@ msgstr "These default settings should work just fine for most wifi networks."
 #: i18n/english/luasrc/i18n/admin-core.en.lua:414
 msgid "m_i_chipset"
 msgstr "Chipset"
+
+#. Firmware version
+#: i18n/english/luasrc/i18n/admin-core.en.lua:415
+msgid "fw_version"
+msgstr "Firmware version"

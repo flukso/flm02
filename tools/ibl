@@ -1,0 +1,59 @@
+#!/usr/bin/perl -w
+#
+#   ibl - interrupt (RedBoot) boot loader
+#
+#   Copyright (C) 20xx unidentified source
+#   Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+use Net::Telnet ();
+
+my $host = $ARGV[0] or die "Syntax: $0 <host>\n";
+
+system("while true; do fping -t200 $host && break; done");
+
+my $t = new Net::Telnet (Port    => 9000,
+                         Timeout => 30);
+if (!defined($t)) {
+	print "new Net::Telnet failed\n";
+	exit(1);
+}
+
+my $ok;
+$ok = $t->errmode("return");
+$ok = $t->open($host);
+if(!defined($ok)) {
+	print "open('$host') failed\n";
+	$t->close();
+	exit(1);
+}
+
+# == Executing boot script in 1.930 seconds - enter ^C to abort
+my $line;
+
+while ($line = $t->getline()) {
+	$line =~ s/[\r\n]//;
+	print "-> $line\n";
+
+	if ($line =~ m/enter \^C to abort/) {
+		$t->cmd(chr(3)); # send ^C
+		print "<- \^C\n";
+		sleep(1);
+
+		$t->close();
+		exit(0);
+	}
+}

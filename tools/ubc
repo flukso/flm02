@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+#
+#   ubc - update the board config section with MAC and sensor/device IDs
+#         keeping the radio config part
+#
+#   Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+BFLAG=
+SFLAG=
+TFLAG=
+
+BATCH="FLxx"
+SERIAL=1
+TARGET="192.168.255.1"
+
+while getopts 'b:s:t:h:?' OPTION
+do
+	case $OPTION in
+	b)	BFLAG=1
+		BATCH="$OPTARG"
+		;;
+
+	s)	SFLAG=1
+		SERIAL="$OPTARG"
+		;;
+
+	t)	TFLAG=1
+		TARGET="$OPTARG"
+		;;
+
+	h|?)	printf "Update the board config section with MAC and sensor/device IDs\n"
+		printf "Usage: %s -b <batch> -s <serial> -t <target IP>\n" $(basename $0) >&2
+		exit 1
+		;;
+	esac
+done
+
+shift $(($OPTIND - 1))
+
+printf "+++ interrupt boot loader +++\n"
+./ibl $TARGET
+
+printf "+++ download radio config +++\n"
+./drc $TARGET
+
+FN=$(printf "$BATCH/$BATCH%06d" $SERIAL)
+
+printf "+++ binary patch board config %s with radio calibration data +++\n" $FN
+objcopy -I srec -O binary /tmp/radio.srec /tmp/radio.bin
+xxd -p /tmp/radio.bin | xxd -r -p -s $((0x00F8)) - $FN
+
+printf "+++ flash board config section +++\n"
+./fbc $TARGET $FN
