@@ -83,9 +83,9 @@ local LAN_INTERVAL	= 0
 local LAN_POLISH_CUTOFF	= 60
 local LAN_PUBLISH_PATH	= DAEMON_PATH .. '/sensor'
 
-local LAN_FACTOR	= { ['electricity'] =  3.6e6,	-- 1 Wh/ms = 3.6e6 W
-			    ['water']       = 86.6e6,	-- 1 L/ms  = 24 * 3.6e6 L/day
-			    ['gas']         = 86.6e6 }	-- 1 L/ms  = 24 * 3.6e6 L/day
+local LAN_FACTOR	= { ['electricity'] =      3.6e6,	-- 1 Wh/ms = 3.6e6 W
+			    ['water']       = 24 * 3.6e6,	-- 1 L/ms  = 24 * 3.6e6 L/day
+			    ['gas']         = 24 * 3.6e6 }	-- 1 L/ms  = 24 * 3.6e6 L/day
 
 local LAN_ID_TO_FACTOR	= { }
 uci:foreach('flukso', 'sensor', function(x) LAN_ID_TO_FACTOR[x.id] = LAN_FACTOR[x['type']] end)

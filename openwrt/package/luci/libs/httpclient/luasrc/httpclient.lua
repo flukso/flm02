@@ -118,7 +118,14 @@ function create_persistent()
 		local status, response, buffer, sock
 
 		local function yield(...)
-			if options.headers["Connection"] == "close" then
+			-- request_raw() will only return a socket userdatum after a successful call
+			-- a nil socket value implies that the socket has already been closed and
+			-- thus cannot be re-used for future calls
+			--
+			-- so the only case where we have to explicitely close the socket is when
+			-- the Connection header says so and a non-nil socket userdatum is returned
+			-- by request_raw()
+			if sock and options.headers["Connection"] == "close" then
 				sock:close()
 			end
 
