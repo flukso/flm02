@@ -156,7 +156,7 @@ local response = luci.json.decode(response_json)
 if response.upgrade == monitor.version then
 	os.execute('reboot')
 elseif response.upgrade > monitor.version then
-	os.execute('wget -P /tmp ' .. UPGRADE_URL .. 'upgrade.' .. response.upgrade)
+	os.execute('wget -q -P /tmp ' .. UPGRADE_URL .. 'upgrade.' .. response.upgrade)
 	os.execute('chmod a+x /tmp/upgrade.' .. response.upgrade)
 	os.execute('/tmp/upgrade.' .. response.upgrade)
 	os.execute('rm /tmp/upgrade.' .. response.upgrade)
