@@ -68,6 +68,17 @@ start()
 	/usr/sbin/spid
 	/usr/sbin/fluksod
 
+	RESTORE=$(uci get system.@system[0].restore)
+
+	if [ $RESTORE -eq '1' ]
+	then
+		fbackup -r
+		fsync
+
+		uci set system.@system[0].restore='0'
+		uci commit
+	fi
+
 	HEARTBEAT=/usr/bin/heartbeat
 	FCHECK=/usr/bin/fcheck
 	MINUTE=$(date '+%M')

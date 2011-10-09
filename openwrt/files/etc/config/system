@@ -4,6 +4,7 @@ config system
         option device    0123456789abcdef0123456789abcdef
         option key       00112233445566778899aabbccddeeff
 	option firstboot 1
+	option restore 0
 	option cronloglevel 1
 
 config button
