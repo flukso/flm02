@@ -51,7 +51,7 @@ url & \multicolumn{3}{|l|}{\texttt{https://api.flukso.net/sensor/\textless senso
 & \texttt{end} & unix\_time() & end time \\
 & \texttt{resolution} & time\_range() & format data in this resolution \\
 & \texttt{unit} & unit() & convert values to specified unit \\
-& \texttt{{\small jsonp\_callback}} & string() & jsonp function name \\
+& \texttt{{\small callback}} & string() & jsonp function name \\
 
 \hline
 response & \multicolumn{3}{|l|}{a JSON array containing [unix timestamp, value] array elements} \\
@@ -201,7 +201,7 @@ url & \multicolumn{3}{|l|}{\texttt{http://192.168.255.1:8080/sensor/\textless se
 \hline
 \multirow{2}{*}{query params} & \texttt{interval} & \texttt{minute} & fixed interval \\
 & \texttt{unit} & watt & fixed unit \\
-& \texttt{{\small jsonp\_callback}} & string() & jsonp function name \\
+& \texttt{{\small callback}} & string() & jsonp function name \\
 
 \hline
 response & \multicolumn{3}{|l|}{a JSON array containing [unix timestamp, value] array elements} \\
@@ -214,9 +214,9 @@ response & \multicolumn{3}{|l|}{a JSON array containing [unix timestamp, value] 
 \begin{Verbatim}
 icarus75@cirrus:~$ curl -v "http://192.168.255.1:8080/sensor/
 c1411c6b4f9910bbbab09f145f8533b9?version=1.0&interval=minute&
-unit=watt&jsonp_callback=realtime"
+unit=watt&callback=realtime"
 > GET /sensor/c1411c6b4f9910bbbab09f145f8533b9?version=1.0&interval=
-minute&unit=watt&jsonp_callback=realtime HTTP/1.1
+minute&unit=watt&callback=realtime HTTP/1.1
 > User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7
 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 > Host: 192.168.255.1:8080
