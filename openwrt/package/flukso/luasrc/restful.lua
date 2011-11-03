@@ -55,7 +55,7 @@ if param.interval == "minute" and (param.unit == "watt" or param.unit == "lperda
 	local pre, post =  "", ""
 	
 	if param.callback then
-		pre, post =  param.callback .. "(", ")"
+		pre, post =  param.callback .. "(", ");"
 	end
 
 	io.input(path .. sensor_id())
