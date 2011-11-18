@@ -104,5 +104,4 @@ void setup_pulse_input(void);
 void setup_adc(void);
 void setup_timer1(void);
 void setup_analog_comparator(void);
-void setup_rs485(void);
 void calculate_power(volatile struct state_struct *pstate);

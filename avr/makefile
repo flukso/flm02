@@ -76,7 +76,7 @@ TARGET = main
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c buffer.c uart.c spi.c ctrl.c
+SRC = $(TARGET).c buffer.c spi.c ctrl.c rfm12.c
 
 
 # List Assembler source files here.
@@ -136,12 +136,6 @@ CDEFS += -DBOARD_ID=$(BOARD_ID)
 # Sensor board hw/sw major/minor version
 CDEFS += -DHW_VERSION_MAJOR=$(HW_VERSION_MAJOR) -DHW_VERSION_MINOR=$(HW_VERSION_MINOR)
 CDEFS += -DSW_VERSION_MAJOR=$(SW_VERSION_MAJOR) -DSW_VERSION_MINOR=$(SW_VERSION_MINOR)
-
-# uncomment and adapt these line if you want different UART library buffer size
-CDEFS += -DUART_RX_BUFFER_SIZE=256
-CDEFS += -DUART_TX_BUFFER_SIZE=64
-
-CDEFS += -DUART_DEFAULT_BAUD_RATE=115200
 
 # override default CTRL buffer sizes
 CDEFS += -DCTRL_RX_BUFFER_SIZE=32

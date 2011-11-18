@@ -30,14 +30,16 @@
 
 #include "debug.h"
 #include "main.h"
-#include "uart.h"
 #include "spi.h"
 #include "ctrl.h"
 #include "global.h"
 #include "encode.h"
 
+#include "rfm12.h"
+
 register uint8_t spi_status asm("r7");
 uint8_t spi_high_hex;
+uint8_t spi_uart_tx_bytes = 0;
 
 uint8_t EEMEM first_EEPROM_byte_not_used_to_protect_from_brownout_corruption = 0xbe;
 
@@ -94,7 +96,16 @@ ISR(SPI_STC_vect)
 		}
 
 		if (spi_status & SPI_TO_FROM_UART) {
-			if (!uartReceiveByte(&tx)) {
+			if (spi_uart_tx_bytes) {
+				tx = rfm12_rx_byte(rfm12_rx_len() - spi_uart_tx_bytes--);
+				btoh(tx, &spi_tx, (uint8_t *)&spi_high_hex); /* actually low hex ! */
+				spi_status |= SPI_HIGH_HEX;
+				received_from_spi(spi_tx);
+				goto finish;
+			}
+			else {
+				rfm12_rx_clear();
+
 				received_from_spi(SPI_END_OF_TX);
 				spi_status &= ~SPI_TRANSMIT;
 				spi_status |= SPI_NO_OP_2;
@@ -109,14 +120,12 @@ ISR(SPI_STC_vect)
 			else {
 				received_from_spi(SPI_FORWARD_TO_UART_PORT);
 				spi_status |= SPI_TO_FROM_UART;
+
+				spi_uart_tx_bytes = (rfm12_rx_status() == STATUS_COMPLETE) ? rfm12_rx_len() : 0;
+
 				goto finish;
 			}
 		}
-
-		btoh(tx, &spi_tx, (uint8_t *)&spi_high_hex); /* actually low hex ! */
-		spi_status |= SPI_HIGH_HEX;
-		received_from_spi(spi_tx);
-		goto finish;
 	}
 
 	// we're in Rx mode
@@ -141,7 +150,7 @@ ISR(SPI_STC_vect)
 		default:
 			if (spi_status & SPI_HIGH_HEX) {
 				htob(spi_high_hex, spi_rx, &rx);
-				uartAddToTxBuffer(rx);
+				rfm12_tx_buffer_add(rx);
 			}
 			else {
 				if (spi_status & SPI_TO_FROM_UART) {
@@ -161,6 +170,7 @@ finish:
 	DBG_ISR_END();
 }
 
+/** TODO remap to pins PC4/5 and use PCINT for detecting pulses
 ISR(INT0_vect)
 {
 	DBG_ISR_BEGIN();
@@ -184,7 +194,7 @@ ISR(INT1_vect)
 
 	DBG_ISR_END();
 }
-
+**/
 void register_pulse(volatile struct sensor_struct *psensor, volatile struct state_struct *pstate)
 {
 	psensor->counter += psensor->meterconst;
@@ -359,31 +369,6 @@ void setup_analog_comparator(void)
 	ACSR |= (1<<ACBG) | (1<<ACIC);
 }
 
-void setup_rs485(void)
-{
-	uint8_t sensor_id = phy_to_log[PORT_UART];
-
-	// Configure PD5=DE as output pin with low as default
-	DDRD |= (1<<DDD5);
-
-	if (ENABLED(sensor_id)) {
-		/* If the UART port is enabled, put the RS485 in rx mode by setting DE low.
-		 * We're doing this explicitely to allow live re-configuration.
-		 */
-		PORTD &= ~(1<<PD5);
-	}
-	else {
-		/* If the UART port is disabled, we put the RS485 into tx by setting DE high.
-		 * A UART idle line corresponds to a logic 1 data bit = logic high voltage.
-		 * A logic high TTL input on the RS485 results in a > b, which means
-		 * the RS485 'a' terminal can now be used as a 3.3V rail.
-		 * We make sure that no data is ever transmitted on the UART by looping back
-		 * all UART data received on the SPI itf (see uartAddToTxBuffer function).
-		 */
-		PORTD |= (1<<PD5);
-	}
-}
-
 void calculate_power(volatile struct state_struct *pstate)
 {
 	int32_t rest;
@@ -438,19 +423,18 @@ int main(void)
 
 	setup_datastructs();
 	setup_led();
-	setup_adc();
-	setup_pulse_input();
-	setup_analog_comparator();
-	setup_timer1();
+	//setup_adc();
+	//setup_pulse_input();
+	//setup_analog_comparator();
+	//setup_timer1();
 	
 	// initialize the CTRL buffers
 	ctrlInit();
-	// initialize the UART hardware and buffers
-	uartInit();
-	// initialize the RS485 chip
-	setup_rs485();
 	// initialize the SPI in slave mode
 	setup_spi(SPI_MODE_2, SPI_MSB, SPI_INTERRUPT, SPI_SLAVE);
+
+	// initialize the Si4421/RFM12 radio and buffers
+	rfm12_init();
 
 	sei();
 
@@ -468,6 +452,8 @@ int main(void)
 				state[i].flags |= STATE_POWER;
 			}
 		}
+
+		rfm12_tick();
 	}
 
 	return 0;

@@ -95,6 +95,10 @@ function encode(msg)
 	if noarg_cmd[msg.parsed.cmd] then
 		msg.encoded = msg.parsed.cmd
 
+	elseif msg.parsed.cmd == 'rt' and argcheck(2) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
+                                             .. numtohex(msg.parsed[2], 1)
+
 	elseif msg.parsed.cmd == 'ge' and argcheck(1) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
 
@@ -218,6 +222,12 @@ function decode(msg)
 			end
 
 			msg.decoded.delta = os.time() .. ' ' .. table.concat(msg.decoded, ' ')
+
+		elseif msg.decoded.cmd == 'rt' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
+			msg.decoded[2] = hextonum(msg.decoded.args:sub(3, 4))
+
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 
 		elseif msg.decoded.cmd == 'gh' or msg.decoded.cmd == 'sh' then
 			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 4))

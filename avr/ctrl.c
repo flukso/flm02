@@ -28,6 +28,8 @@
 #include "ctrl.h"
 #include "encode.h"
 
+#include "rfm12.h"
+
 cBuffer ctrlRxBuffer; // ctrl receive buffer
 cBuffer ctrlTxBuffer; // ctrl transmit buffer
 
@@ -256,6 +258,10 @@ void ctrlDecode(void)
 		case 'c':	/* commit */
 			if (cmd[1] == 't') ctrlCmdCommit();
 			break;
+		
+		case 'r':	/* rf */
+			ctrlCmdRf(cmd[1]);
+			break;
 		}
 	}
 	else {
@@ -396,10 +402,6 @@ void ctrlCmdSet(uint8_t cmd)
 				enabled &= ~(1 << i);
 			}
 
-			if (i == phy_to_log[PORT_UART]) {
-				setup_rs485();
-			}
-
 			ctrlWriteCharToTxBuffer(i);
 			ctrlWriteCharToTxBuffer((enabled >> i) & 0x01);
 		}
@@ -494,3 +496,23 @@ void ctrlCmdCommit(void)
 	eeprom_update_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
 	sei();
 }
+
+void ctrlCmdRf(uint8_t cmd)
+{
+	uint8_t type, length = 0;
+
+	switch (cmd) {
+	case 't':		/* tx packet */
+		ctrlReadCharFromRxBuffer(&type);
+		ctrlReadCharFromRxBuffer(&length);
+
+		/* TODO add some error reporting later on */
+		rfm12_start_tx(type, length);
+
+		ctrlWriteCharToTxBuffer(type);
+		ctrlWriteCharToTxBuffer(length);
+
+		break;
+	}
+}
+

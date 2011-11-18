@@ -151,3 +151,10 @@ void ctrlCmdSet(uint8_t cmd);
  *
  */
 void ctrlCmdCommit(void);
+
+/**
+ * Issue a command to the radio section.
+ *
+ * @param cmd  specific radio command
+ */
+void ctrlCmdRf(uint8_t cmd);
