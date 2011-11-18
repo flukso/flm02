@@ -406,11 +406,12 @@ program: $(TARGET).hex $(TARGET).eep
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
 
 # Program the device remotely.
+HOST = 192.168.255.1
 FLUKSO = /etc/init.d/flukso
 
 rprogram: $(TARGET).hex $(TARGET).eep
-	@scp $(TARGET).hex $(TARGET).eep root@192.168.255.1:/tmp
-	@ssh root@192.168.255.1 \
+	@scp $(TARGET).hex $(TARGET).eep root@$(HOST):/tmp
+	@ssh root@$(HOST) \
 	"echo +++ stopping the flukso daemon +++;" \
 	"$(FLUKSO) stop;" \
 	"cd /tmp;" \
