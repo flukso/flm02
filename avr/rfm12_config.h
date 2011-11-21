@@ -46,11 +46,6 @@
 */
 
 
-/************************
- * PIN DEFINITIONS
- */
-
-/* TODO adapt the lib to work with the AVR's USART in SPI mode */
 //Pin that the RFM12's slave select is connected to
 #define DDR_SS DDRD
 #define PORT_SS PORTD
@@ -69,7 +64,7 @@
 //correctly, independently of the CS pin used for the RFM12
 
 /************************
- * SOFT SPI PIN DEFINITIONS
+ * SPI PIN DEFINITIONS
  */
 
 //SPI MOSI port = TXD = PD1
@@ -84,7 +79,11 @@
 #define DDR_SCK DDRD
 #define PORT_SCK PORTD
 
-//SPI SS port = INT1 = PD3
+//Pin that the RFM12's slave select is connected to = INT1 = PD3
+#define DDR_SS DDRD
+#define PORT_SS PORTD
+
+//SPI SS port = N/A as USART does not have a HW /SS pin
 //#define DDR_SPI_SS DDRD
 //#define PORT_SPI_SS PORTD
 
@@ -92,8 +91,11 @@
 #define BIT_MOSI 1
 #define BIT_MISO 0
 #define BIT_SCK  4
-//#define BIT_SPI_SS 3
-
+#define BIT_SS   3
+//#define BIT_SPI_SS x
+//this is the hardware SS pin of the AVR - it 
+//needs to be set to output for the spi-interface to work 
+//correctly, independently of the CS pin used for the RFM12
 
 /************************
  * RFM12 CONFIGURATION OPTIONS
@@ -106,10 +108,10 @@
 #define FREQ 868300000UL
 
 //use this for datarates >= 2700 Baud
-//#define DATARATE_VALUE RFM12_DATARATE_CALC_HIGH(9600.0)
+#define DATARATE_VALUE RFM12_DATARATE_CALC_HIGH(9600.0)
 
 //use this for 340 Baud < datarate < 2700 Baud
-#define DATARATE_VALUE RFM12_DATARATE_CALC_LOW(340.0)
+//#define DATARATE_VALUE RFM12_DATARATE_CALC_LOW(340.0)
 
 //TX BUFFER SIZE
 #define RFM12_TX_BUFFER_SIZE 66
@@ -150,7 +152,8 @@
 #define RFM12_NORETURNS 0
 #define RFM12_NOCOLLISIONDETECTION 0
 #define RFM12_TRANSMIT_ONLY 0
-#define RFM12_SPI_SOFTWARE 1
+#define RFM12_SPI_SOFTWARE 0
+#define RFM12_SPI_USART 1
 #define RFM12_USE_POLLING 0
 #define RFM12_RECEIVE_ASK 0
 #define RFM12_TRANSMIT_ASK 0
