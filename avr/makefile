@@ -64,8 +64,7 @@ MCU = atmega168
 #     processor frequency. You can then use this symbol in your source code to 
 #     calculate timings. Do NOT tack on a 'UL' at the end, this will be done
 #     automatically to create a 32-bit value in your source code.
-F_CPU = 3686400
-
+F_CPU = 16000000
 
 # Output format. (can be srec, ihex, binary)
 FORMAT = ihex
@@ -242,7 +241,7 @@ AVRDUDE_PORT = /dev/ttyUSB*    # programmer connected to serial device
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
-AVRDUDE_WRITE_FUSES = -U lfuse:w:0xEC:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m
+AVRDUDE_WRITE_FUSES = -U lfuse:w:0xEE:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m
 
 # Uncomment the following if you want avrdude's erase cycle counter.
 # Note that this counter needs to be initialized first using -Yn,
