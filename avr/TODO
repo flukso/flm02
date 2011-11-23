@@ -1,0 +1,9 @@
+TODO list:
+[ ] 868MHz link range testing
+[ ] implement a soft uart for state machine debugging
+[ ] add a strict priority queue for tx'ing acks
+[ ] merge code with existing flukso functionality
+[ ] substitute the _delay_ms in the main loop with a timing condition
+[ ] test how much higher we can set the rf link baud rate
+[ ] test how fast we can clock the spi bus between MIPS and AVR
+[ ] revisit the power loss detection code for it to cope with a 3.3V rail and 16MHz clock
