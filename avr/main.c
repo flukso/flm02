@@ -454,6 +454,8 @@ int main(void)
 		}
 
 		rfm12_tick();
+
+		_delay_ms(10);
 	}
 
 	return 0;
