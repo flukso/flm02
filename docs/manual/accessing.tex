@@ -24,20 +24,20 @@ The server will verify each time whether a correct token has been specified for 
 unix\_time() & int32 representing the number of seconds elapsed since midnight UTC of Jan 1, 1970 \\
 
 \hline
-time\_range() & minute, 15min, hour, day, week, month, year, night \\
+time\_range() & minute, 15min, hour, day, week, month, year, decade, night \\
 
 \hline
-unit() & watt, kwhperyear, eurperyear, audperyear \\
+unit() & watt, kwhperyear, eurperyear, audperyear, lpermin, lperday, m3peryear \\
 
 \hline
 
 \end{tabular}
 
-\section{Retreiving sensor time series data}
+\section{Retrieving sensor time series data}
 \begin{tabular}{|l|l|l|p{5cm}|}
 
 \hline
-request & \multicolumn{3}{|l|}{retreive sensor data in time series format from flukso.net} \\
+request & \multicolumn{3}{|l|}{retrieve sensor data in time series format from flukso.net} \\
 
 \hline
 verb & \multicolumn{3}{|l|}{\texttt{GET}} \\
@@ -51,7 +51,7 @@ url & \multicolumn{3}{|l|}{\texttt{https://api.flukso.net/sensor/\textless senso
 & \texttt{end} & unix\_time() & end time \\
 & \texttt{resolution} & time\_range() & format data in this resolution \\
 & \texttt{unit} & unit() & convert values to specified unit \\
-& \texttt{{\small jsonp\_callback}} & string() & jsonp function name \\
+& \texttt{{\small callback}} & string() & jsonp function name \\
 
 \hline
 response & \multicolumn{3}{|l|}{a JSON array containing [unix timestamp, value] array elements} \\
@@ -140,11 +140,11 @@ OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 [1309910400,143],[1309996800,191],[1310083200,"nan"]]
 \end{Verbatim}
 
-\section{Retreiving sensor parameters}
+\section{Retrieving sensor parameters}
 \begin{tabular}{|l|l|l|p{5cm}|}
 
 \hline
-request & \multicolumn{3}{|l|}{retreive sensor parameters from flukso.net} \\
+request & \multicolumn{3}{|l|}{retrieve sensor parameters from flukso.net} \\
 
 \hline
 verb & \multicolumn{3}{|l|}{\texttt{GET}} \\
@@ -186,22 +186,22 @@ OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 "enabled":1,"lastupdate":[1310045295,1006793948]}
 \end{Verbatim}
 
-\section{Retreiving real-time sensor data}
+\section{Retrieving real-time sensor data}
 \begin{tabular}{|l|l|l|p{5cm}|}
 
 \hline
-request & \multicolumn{3}{|l|}{retreive real-time sensor data directly from the Fluksometer} \\
+request & \multicolumn{3}{|l|}{retrieve real-time sensor data directly from the Fluksometer} \\
 
 \hline
 verb & \multicolumn{3}{|l|}{\texttt{GET}} \\
 
 \hline
-url & \multicolumn{3}{|l|}{\texttt{https://192.168.255.1:8080/sensor/\textless sensorid\textgreater}} \\
+url & \multicolumn{3}{|l|}{\texttt{http://192.168.255.1:8080/sensor/\textless sensorid\textgreater}} \\
 
 \hline
 \multirow{2}{*}{query params} & \texttt{interval} & \texttt{minute} & fixed interval \\
 & \texttt{unit} & watt & fixed unit \\
-& \texttt{{\small jsonp\_callback}} & string() & jsonp function name \\
+& \texttt{{\small callback}} & string() & jsonp function name \\
 
 \hline
 response & \multicolumn{3}{|l|}{a JSON array containing [unix timestamp, value] array elements} \\
@@ -214,9 +214,9 @@ response & \multicolumn{3}{|l|}{a JSON array containing [unix timestamp, value] 
 \begin{Verbatim}
 icarus75@cirrus:~$ curl -v "http://192.168.255.1:8080/sensor/
 c1411c6b4f9910bbbab09f145f8533b9?version=1.0&interval=minute&
-unit=watt&jsonp_callback=realtime"
+unit=watt&callback=realtime"
 > GET /sensor/c1411c6b4f9910bbbab09f145f8533b9?version=1.0&interval=
-minute&unit=watt&jsonp_callback=realtime HTTP/1.1
+minute&unit=watt&callback=realtime HTTP/1.1
 > User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7
 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 > Host: 192.168.255.1:8080

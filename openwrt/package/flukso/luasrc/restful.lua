@@ -53,9 +53,10 @@ local version = "1.0"
 
 if param.interval == "minute" and (param.unit == "watt" or param.unit == "lperday") and param.version == version then
 	local pre, post =  "", ""
-	
-	if param.jsonp_callback then
-		pre, post =  param.jsonp_callback .. "(", ")"
+
+	-- jsonp_callback is deprecated but we'll support it for the time being	
+	if param.callback or param.jsonp_callback then
+		pre, post =  (param.callback or param.jsonp_callback) .. "(", ");"
 	end
 
 	io.input(path .. sensor_id())
