@@ -20,3 +20,10 @@ config button
 	option handler  net_defaults
 	option min      10
 	option max      30
+
+config button
+	option button   reset
+	option action   released
+	option handler  'mtd -r erase rootfs_data'
+	option min      60
+	option max      120
