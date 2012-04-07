@@ -24,6 +24,7 @@ SFLAG=
 MFLAG=
 CFALG=
 
+MODEL="FLM02A"
 BATCH="FLxx"
 SERIAL=1
 MAC="0123456789abc"
@@ -76,6 +77,9 @@ do
 
 	printf "Writing 2048-32=2016 CSPRNG bytes to %s.\n" $FN
 	hexdump -v -e '1/1 "%.2x"' -n 2016 /dev/urandom | xxd -r -p -s $((0x1020)) - $FN
+
+	printf "Writing model and serial to %s.\n" $FN
+	echo -n $MODEL$(printf "$BATCH%06d" $((SERIAL + i))) | xxd -p | xxd -r -p -s $((0x1800)) - $FN
 
 	printf "$BATCH%06d;$ETH;$WIFI\n" $((SERIAL + i)) >> $BATCH.log
 done
