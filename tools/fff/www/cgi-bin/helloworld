@@ -44,10 +44,10 @@ FN=$(printf "$BATCH/$BATCH%06d" $SERIAL)
 	&& { echo 2 > $HOME/code; } \
 	|| { echo 1 > $HOME/code; echo "error"; exit 1; }
 
-for (( i=0; i<10; i++))
+for (( i=0; i<50; i++))
 do
-	sleep 1
-	echo Hello World!
+	sleep 0.1
+	echo "Hello World #$i!"
 done
 
 echo 0 > $HOME/code
