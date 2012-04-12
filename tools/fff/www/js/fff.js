@@ -17,18 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-$(function() {
-    var rq = new XMLHttpRequest();
-    rq.open("GET", "/cgi-bin/helloworld?error=0");
-    rq.onprogress = function(e) {
-        $("#stdout").text(rq.responseText);
-    };
-
-    rq.send(null);
-});
-
 window.Fff = {
-    state: {
+    states: {
         RDY: 0,
         UBC: 1,
         FSH: 2,
@@ -40,7 +30,8 @@ Fff.DeviceState = Backbone.Model.extend({
     defaults: {
         batch: "FL03",
         serial: 1,
-        state: Fff.state.RDY
+        state: Fff.states.RDY,
+        rqst: null
     }
 });
 
@@ -59,15 +50,15 @@ Fff.SerialView = Backbone.View.extend({
 });
 
 Fff.CounterView = Backbone.View.extend({
-    el: ".counter button",
+    el: ".counter",
 
     events: {
-        "click": "clickButton"
+        "click button": "clickButton"
     },
 
     clickButton: function(e) {
         /* we don't allow serial updates during flashing */
-        if (this.model.get("state") != Fff.state.RDY) return this;
+        if (this.model.get("state") != Fff.states.RDY) return this;
 
         var sel = e.target;
         var change = Number($(sel).html());
@@ -83,8 +74,45 @@ Fff.CounterView = Backbone.View.extend({
     }
 });
 
+Fff.ActionView = Backbone.View.extend({
+    el: ".action",
+
+    events: {
+        "click button#go": "clickGo",
+        "click button#abort" : "clickAbort"
+    },
+
+    clickGo: function(e) {
+        if (this.model.get("state") != Fff.states.RDY) return this;
+        console.log("go!"); /* TODO remove before flight */
+
+        this.model.set("state", Fff.states.UBC);
+        this.helloWorld();
+    },
+
+    clickAbort: function(e) {
+        if (this.model.get("state") == Fff.states.RDY) return this;
+        console.log("abort"); /* TODO remove before flight */
+
+        this.model.get("rqst").abort();
+        this.model.set("state", Fff.states.RDY);
+    },
+
+    helloWorld: function() {
+        var rqst = new XMLHttpRequest();
+        rqst.open("GET", "/cgi-bin/helloworld?error=0");
+        rqst.onprogress = function(e) {
+            $("#stdout").text(rqst.responseText);
+        };
+
+        rqst.send(null);
+        this.model.set("rqst", rqst);
+    }
+});
+
 $(function() {
     Fff.deviceState = new Fff.DeviceState();
     Fff.serialView = new Fff.SerialView({model: Fff.deviceState});
     Fff.counterView = new Fff.CounterView({model: Fff.deviceState});
+    Fff.actionView = new Fff.ActionView({model: Fff.deviceState});
 });
