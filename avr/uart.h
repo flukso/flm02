@@ -116,9 +116,9 @@
 	#define TXEN			TXEN0
 	#define UBRRL			UBRR0L
 	#define UBRRH			UBRR0H
-	#define SIG_UART_TRANS		SIG_USART_TRANS
-	#define SIG_UART_RECV		SIG_USART_RECV
-	#define SIG_UART_DATA		SIG_USART_DATA
+	#define SIG_UART_TRANS		USART_TX_vect
+	#define SIG_UART_RECV		USART_RX_vect
+	#define SIG_UART_DATA		USART_UDRE_vect
 #endif
 // compatibility with mega169 processors
 #if	defined(__AVR_ATmega169__)
