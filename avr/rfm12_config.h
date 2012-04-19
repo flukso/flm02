@@ -113,11 +113,13 @@
 //use this for 340 Baud < datarate < 2700 Baud
 //#define DATARATE_VALUE RFM12_DATARATE_CALC_LOW(340.0)
 
+#define RFM12_MAXDATA 66
+
 //TX BUFFER SIZE
-#define RFM12_TX_BUFFER_SIZE 66
+#define RFM12_TX_BUFFER_SIZE RFM12_MAXDATA + 5 // 2/3 header + data + 2 crc bytes
 
 //RX BUFFER SIZE (there are going to be 2 Buffers of this size for double_buffering)
-#define RFM12_RX_BUFFER_SIZE 66
+#define RFM12_RX_BUFFER_SIZE RFM12_MAXDATA + 5
 
 
 /************************
