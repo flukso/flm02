@@ -105,7 +105,7 @@
 #define RFM12_BASEBAND RFM12_BAND_868
 
 //center frequency to use (+-125kHz FSK frequency shift)
-#define FREQ 868300000UL
+#define FREQ 868000000UL
 
 //use this for datarates >= 2700 Baud
 #define DATARATE_VALUE RFM12_DATARATE_CALC_HIGH(49200.0)
@@ -113,13 +113,11 @@
 //use this for 340 Baud < datarate < 2700 Baud
 //#define DATARATE_VALUE RFM12_DATARATE_CALC_LOW(340.0)
 
-#define RFM12_MAXDATA 66
-
-//TX BUFFER SIZE
-#define RFM12_TX_BUFFER_SIZE RFM12_MAXDATA + 5 // 2/3 header + data + 2 crc bytes
+//TX BUFFER SIZE (we're storing the first sync byte in the tx buffer as well, hence the +1)
+#define RFM12_TX_BUFFER_SIZE RFM12_MAXDATA + PACKET_OVERHEAD + 1
 
 //RX BUFFER SIZE (there are going to be 2 Buffers of this size for double_buffering)
-#define RFM12_RX_BUFFER_SIZE RFM12_MAXDATA + 5
+#define RFM12_RX_BUFFER_SIZE RFM12_MAXDATA + PACKET_OVERHEAD
 
 
 /************************

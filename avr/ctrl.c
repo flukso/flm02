@@ -499,20 +499,7 @@ void ctrlCmdCommit(void)
 
 void ctrlCmdRf(uint8_t cmd)
 {
-	uint8_t type, length = 0;
-
 	switch (cmd) {
-	case 't':		/* tx packet */
-		ctrlReadCharFromRxBuffer(&type);
-		ctrlReadCharFromRxBuffer(&length);
-
-		/* TODO add some error reporting later on */
-		rfm12_start_tx(type, length);
-
-		ctrlWriteCharToTxBuffer(type);
-		ctrlWriteCharToTxBuffer(length);
-
-		break;
-	}
+    }
 }
 

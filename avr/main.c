@@ -133,6 +133,7 @@ ISR(SPI_STC_vect)
 		case SPI_END_OF_TX:
 			spi_status |= SPI_TRANSMIT | SPI_START_TX; 
 			spi_status &= ~(SPI_HIGH_HEX | SPI_TO_FROM_UART);
+			rfm12_tx_start();
 			break;
 		case SPI_END_OF_MESSAGE:
 			if (!(spi_status & SPI_TO_FROM_UART)) {
@@ -141,6 +142,7 @@ ISR(SPI_STC_vect)
 			break;
 		case SPI_FORWARD_TO_UART_PORT:
 			spi_status |= SPI_TO_FROM_UART;
+			rfm12_tx_occupy();
 			DBG_LED_OFF();
 			break;
 		case SPI_FORWARD_TO_CTRL_PORT:
@@ -454,8 +456,6 @@ int main(void)
 		}
 
 		rfm12_tick();
-
-		_delay_ms(10);
 	}
 
 	return 0;
