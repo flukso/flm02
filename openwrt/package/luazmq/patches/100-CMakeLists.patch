@@ -1,0 +1,25 @@
+--- luazmq-1.1/CMakeLists.txt	2012-04-30 13:14:16.000000000 +0200
++++ CMakeLists.txt	2012-05-01 00:25:37.060235971 +0200
+@@ -9,9 +9,9 @@
+ 
+ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+ 
+-set(INSTALL_LMOD ${CMAKE_INSTALL_PREFIX}/share/lua/5.1 CACHE PATH
++set(INSTALL_LMOD ${CMAKE_INSTALL_PREFIX}/share/lua CACHE PATH
+ 				"Directory to install Lua source modules (configure lua via LUA_PATH)")
+-set(INSTALL_CMOD ${CMAKE_INSTALL_PREFIX}/lib/lua/5.1 CACHE PATH
++set(INSTALL_CMOD ${CMAKE_INSTALL_PREFIX}/lib/lua CACHE PATH
+ 				"Directory to install Lua binary modules (configure lua via LUA_CPATH)")
+ set(LUA_NATIVE_OBJECTS_PATH ../LuaNativeObjects CACHE PATH
+ 				"Directory to LuaNativeObjects bindings generator.")
+@@ -25,10 +25,6 @@
+ set(COMMON_LIBS)
+ 
+ ## Lua 5.1.x
+-include(FindLua51)
+-if(NOT ${LUA51_FOUND})
+-	message(FATAL_ERROR "The FindLua51 module could not find lua :-(")
+-endif()
+ if(WIN32)
+ 	set(COMMON_CFLAGS "${COMMON_CFLAGS} -I${LUA_INCLUDE_DIR}")
+ 	set(COMMON_LDFLAGS "${COMMON_LDFLAGS} ${LUA_LIBRARY}")
