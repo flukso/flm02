@@ -20,8 +20,8 @@
 
 # exit codes
 # 0: ok
-# 1: error
-# 2: abort
+# 126: error
+# 127: abort
 
 # build the response header first
 echo "HTTP/1.1 200 OK"
@@ -38,8 +38,8 @@ NOBUF="$HOME/stdbuf -i0 -o0 -e0"
 ERROR=$(echo "$QUERY_STRING" | sed -n 's/^.*error=\([^&]*\).*$/\1/p' | sed "s/%20/ /g")
 
 [ $ERROR -eq 0 ] \
-	&& { echo 2 > $HOME/code; } \
-	|| { echo 1 > $HOME/code; echo "error"; exit 1; }
+	&& { echo 127 > $HOME/code; } \
+	|| { echo 126 > $HOME/code; echo "error"; exit 126; }
 
 for (( i=0; i<50; i++))
 do
