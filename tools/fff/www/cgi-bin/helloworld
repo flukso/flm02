@@ -37,9 +37,6 @@ NOBUF="$HOME/stdbuf -i0 -o0 -e0"
 
 ERROR=$(echo "$QUERY_STRING" | sed -n 's/^.*error=\([^&]*\).*$/\1/p' | sed "s/%20/ /g")
 
-# check if boardconfig file exists and is writeable
-FN=$(printf "$BATCH/$BATCH%06d" $SERIAL)
-
 [ $ERROR -eq 0 ] \
 	&& { echo 2 > $HOME/code; } \
 	|| { echo 1 > $HOME/code; echo "error"; exit 1; }
