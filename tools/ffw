@@ -1,0 +1,93 @@
+#!/usr/bin/perl -w
+#
+#   ffw - flash firmware
+#
+#   Copyright (C) 2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# disable Perl's default output buffering
+$| = 1;
+
+use Net::Telnet ();
+
+my $rootfs = $ARGV[2] or die "Syntax: $0 <host> <kernel> <rootfs>\n";
+my $kernel = $ARGV[1];
+my $host = $ARGV[0];
+
+my $t = new Net::Telnet (Port    => 9000,
+                         Timeout => 300,
+                         Prompt  => "/RedBoot>/");
+
+if (!defined($t)) {
+	print "new Net::Telnet failed\n";
+	exit(1);
+}
+
+my $ok;
+$ok = $t->errmode("return");
+$ok = $t->open($host);
+if(!defined($ok)) {
+	print "open('$host') failed\n";
+	$t->close();
+	exit(1);
+}
+
+$t->cmd("");
+sleep(1);
+
+# initialize flash image system [fis]
+@out = $t->cmd(String => "fis init",
+               Prompt => "/continue (y/n)?/");
+
+print @out;
+sleep(1);
+
+@out = $t->cmd(String => "y");
+
+print @out;
+sleep(1);
+
+# load the kernel into RAM
+@out = $t->cmd(String => "load -r -b %{FREEMEMLO} $kernel");
+
+print @out;
+sleep(1);
+
+# flash the kernel partition
+@out = $t->cmd(String => "fis create -e 0x80041000 -r 0x80041000 vmlinux.bin.l7");
+
+print @out;
+sleep(1);
+
+# load the file system into RAM
+@out = $t->cmd(String => "load -r -b %{FREEMEMLO} $rootfs");
+
+print @out;
+sleep(1);
+
+# flash the rootfs partition
+@out = $t->cmd(String => "fis create -l 0x6D0000 rootfs");
+
+print @out;
+sleep(1);
+
+# reset the FLM
+$t->cmd(String  => "reset",
+        Errmode => "return",
+        Timeout => 1);
+
+$t->close();
+exit(0);
