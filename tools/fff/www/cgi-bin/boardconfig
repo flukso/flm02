@@ -20,8 +20,8 @@
 
 # exit codes
 # 0: ok
-# 1: no corresponding boardconfig found
-# 2: ubc did not finish its operation
+# 126: no corresponding boardconfig found
+# 127: ubc did not finish its operation
 
 # build the response header first
 echo "HTTP/1.1 200 OK"
@@ -43,9 +43,9 @@ SERIAL=$(echo "$QUERY_STRING" | sed -n 's/^.*serial=\([^&]*\).*$/\1/p' | sed "s/
 FN=$(printf "$BATCH/$BATCH%06d" $SERIAL)
 
 [ -w $TOOLS/$FN ] \
-	&& { echo 2 > $HOME/code; } \
-	|| { echo 1 > $HOME/code; exit 1; }
+	&& { echo 127 > $HOME/code; } \
+	|| { echo 126 > $HOME/code; exit 126; }
 
 env PWDS=$TOOLS $NOBUF $TOOLS/ubc -b $BATCH -s $SERIAL -t $HOST 2>&1
 
-echo 0 > $HOME/code
+echo $? > $HOME/code

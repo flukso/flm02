@@ -55,9 +55,11 @@ shift $(($OPTIND - 1))
 
 printf "+++ interrupt boot loader +++\n"
 $PWD/ibl $TARGET
+IBL=$?
 
 printf "+++ download radio config +++\n"
 $PWD/drc $TARGET
+DRC=$?
 
 FN=$(printf "$BATCH/$BATCH%06d" $SERIAL)
 
@@ -67,3 +69,6 @@ xxd -p /tmp/radio.bin | xxd -r -p -s $((0x00F8)) - $PWD/$FN
 
 printf "+++ flash board config section +++\n"
 $PWD/fbc $TARGET $FN
+FBC=$?
+
+exit $((IBL + DRC + FBC))
