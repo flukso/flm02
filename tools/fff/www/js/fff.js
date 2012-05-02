@@ -19,10 +19,19 @@
 
 window.Fff = {
     states: {
+        ABT: -1,
         RDY: 0,
         UBC: 1,
         FSH: 2,
         TST: 3
+    },
+
+    alerts: {
+        "-1": "Job aborted",
+        0: "Factory flashing successful",
+        1: "Updating board configuration",
+        2: "Flashing firmware",
+        3: "Testing board"
     }
 };
 
@@ -58,7 +67,7 @@ Fff.CounterView = Backbone.View.extend({
 
     clickButton: function(e) {
         /* we don't allow serial updates during flashing */
-        if (this.model.get("state") != Fff.states.RDY) return this;
+        if (this.model.get("state") > 0) return this;
 
         var sel = e.target;
         var change = Number($(sel).html());
@@ -83,7 +92,7 @@ Fff.ActionView = Backbone.View.extend({
     },
 
     clickGo: function(e) {
-        if (this.model.get("state") != Fff.states.RDY) return this;
+        if (this.model.get("state") > 0) return this;
         console.log("go!"); /* TODO remove before flight */
 
         this.model.set("state", Fff.states.UBC);
@@ -91,11 +100,11 @@ Fff.ActionView = Backbone.View.extend({
     },
 
     clickAbort: function(e) {
-        if (this.model.get("state") == Fff.states.RDY) return this;
+        if (this.model.get("state") <= 0) return this;
         console.log("abort"); /* TODO remove before flight */
 
         this.model.get("rqst").abort();
-        this.model.set("state", Fff.states.RDY);
+        this.model.set("state", Fff.states.ABT);
     },
 
     helloWorld: function() {
@@ -104,9 +113,29 @@ Fff.ActionView = Backbone.View.extend({
         rqst.onprogress = function(e) {
             $("#stdout").text(rqst.responseText);
         };
+        rqst.onload = function(e) {
+            Fff.deviceState.set("state", Fff.states.RDY);
+        };
 
         rqst.send(null);
         this.model.set("rqst", rqst);
+    }
+});
+
+Fff.AlertView = Backbone.View.extend({
+    el: '#alert',
+
+    initialize: function() {
+        _.bindAll(this, 'stateChange');
+        this.model.bind('change:state', this.stateChange);
+    },
+
+    stateChange: function() {
+        var tpl = this.model.get('state') >= 0 ?
+            _.template($('#alert-state-change').html()) :
+            _.template($('#alert-state-error').html());
+
+        $(this.el).html(tpl({msg: Fff.alerts[this.model.get('state')]}));
     }
 });
 
@@ -115,4 +144,5 @@ $(function() {
     Fff.serialView = new Fff.SerialView({model: Fff.deviceState});
     Fff.counterView = new Fff.CounterView({model: Fff.deviceState});
     Fff.actionView = new Fff.ActionView({model: Fff.deviceState});
+    Fff.alertView = new Fff.AlertView({model: Fff.deviceState});
 });
