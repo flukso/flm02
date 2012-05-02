@@ -28,7 +28,7 @@ window.Fff = {
 
     alerts: {
         "-1": "Job aborted",
-        0: "Factory flashing successful",
+        0: "Factory flashing finished",
         1: "Updating board configuration",
         2: "Flashing firmware",
         3: "Testing board"
