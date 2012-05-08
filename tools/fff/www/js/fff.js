@@ -19,6 +19,7 @@
 
 window.Fff = {
     states: {
+        ERR: -2,
         ABT: -1,
         RDY: 0,
         UBC: 1,
@@ -40,7 +41,8 @@ Fff.DeviceState = Backbone.Model.extend({
         batch: "FL03",
         serial: 1,
         state: Fff.states.RDY,
-        rqst: null
+        rqst: null,
+        code: 0
     }
 });
 
@@ -86,6 +88,10 @@ Fff.CounterView = Backbone.View.extend({
 Fff.ActionView = Backbone.View.extend({
     el: ".action",
 
+    initialize: function() {
+        _.bindAll(this, "configBoard", "flashFirmware", "finish", "helloWorld", "checkStatus");
+   },
+
     events: {
         "click button#go": "clickGo",
         "click button#abort" : "clickAbort"
@@ -95,8 +101,7 @@ Fff.ActionView = Backbone.View.extend({
         if (this.model.get("state") > 0) return this;
         console.log("go!"); /* TODO remove before flight */
 
-        this.model.set("state", Fff.states.UBC);
-        this.helloWorld();
+        this.configBoard();
     },
 
     clickAbort: function(e) {
@@ -107,6 +112,44 @@ Fff.ActionView = Backbone.View.extend({
         this.model.set("state", Fff.states.ABT);
     },
 
+    configBoard: function() {
+        this.model.set("state", Fff.states.UBC);
+
+        var rqst = new XMLHttpRequest();
+        rqst.open("GET", "/cgi-bin/boardconfig?batch=FL02&serial=220"); /* TODO parametrize */
+        rqst.onprogress = function(e) {
+            $("#stdout").text(rqst.responseText);
+        };
+        rqst.onload = function(e) {
+            /* cannot seem to bind 'this' to rqst.onload
+               so resorting to calling the function explicitely */ 
+            Fff.actionView.checkStatus(Fff.actionView.flashFirmware);
+        };
+
+        rqst.send(null);
+        this.model.set("rqst", rqst);
+    },
+
+    flashFirmware: function() {
+        this.model.set("state", Fff.states.FSH);
+
+        var rqst = new XMLHttpRequest();
+        rqst.open("GET", "/cgi-bin/firmware");
+        rqst.onprogress = function(e) {
+            $("#stdout").text(rqst.responseText);
+        };
+        rqst.onload = function(e) {
+            Fff.actionView.checkStatus(Fff.actionView.finish);
+        };
+
+        rqst.send(null);
+        this.model.set("rqst", rqst);
+    },
+
+    finish: function() {
+        Fff.deviceState.set("state", Fff.states.RDY);
+    },
+
     helloWorld: function() {
         var rqst = new XMLHttpRequest();
         rqst.open("GET", "/cgi-bin/helloworld?error=0");
@@ -115,6 +158,24 @@ Fff.ActionView = Backbone.View.extend({
         };
         rqst.onload = function(e) {
             Fff.deviceState.set("state", Fff.states.RDY);
+        };
+
+        rqst.send(null);
+        this.model.set("rqst", rqst);
+    },
+
+    checkStatus: function(next) {
+        var rqst = new XMLHttpRequest();
+        rqst.open("GET", "/cgi-bin/status");
+        rqst.onload = function(e) {
+            var code = Number(rqst.responseText);
+
+            Fff.deviceState.set("code", code);
+
+            if (code == 0)
+                next()
+            else
+                Fff.deviceState.set("state", Fff.states.ERR);
         };
 
         rqst.send(null);
@@ -131,11 +192,23 @@ Fff.AlertView = Backbone.View.extend({
     },
 
     stateChange: function() {
-        var tpl = this.model.get('state') >= 0 ?
-            _.template($('#alert-state-change').html()) :
-            _.template($('#alert-state-error').html());
+        var tpl =  _.template($('#alert-state-change').html());
+        var code = this.model.get('code');
+        var type;
 
-        $(this.el).html(tpl({msg: Fff.alerts[this.model.get('state')]}));
+        if (this.model.get('state') < 0)
+            type = "error"
+        else if (this.model.get('state') == 0)
+            type = "success"
+        else if (this.model.get('state') > 0)
+            type = "info";
+
+        $(this.el).html(tpl({
+            type: type,
+            msg: this.model.get('state') == Fff.states.ERR ?
+                "An error occured with return code " + code :
+                Fff.alerts[this.model.get('state')],
+        }));
     }
 });
 
