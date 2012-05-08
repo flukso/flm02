@@ -66,14 +66,7 @@
   </body>
 
   <script type="text/template" id="alert-state-change">
-    <div class="alert alert-success">
-      <a class="close" data-dismiss="alert">×</a>
-      <strong>State - </strong> <%= msg %>.
-    </div>
-  </script>
-
-  <script type="text/template" id="alert-state-error">
-    <div class="alert alert-error">
+    <div class="alert alert-<%= type %>">
       <a class="close" data-dismiss="alert">×</a>
       <strong>State - </strong> <%= msg %>.
     </div>
