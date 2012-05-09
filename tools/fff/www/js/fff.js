@@ -116,7 +116,8 @@ Fff.ActionView = Backbone.View.extend({
         this.model.set("state", Fff.states.UBC);
 
         var rqst = new XMLHttpRequest();
-        rqst.open("GET", "/cgi-bin/boardconfig?batch=FL02&serial=220"); /* TODO parametrize */
+        var query_string = "?batch=" + this.model.get("batch") + "&serial=" + this.model.get("serial");
+        rqst.open("GET", "/cgi-bin/boardconfig" + query_string); /* TODO parametrize */
         rqst.onprogress = function(e) {
             $("#stdout").text(rqst.responseText);
         };
