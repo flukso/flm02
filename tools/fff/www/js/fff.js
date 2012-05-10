@@ -117,9 +117,9 @@ Fff.ActionView = Backbone.View.extend({
 
         var rqst = new XMLHttpRequest();
         var query_string = "?batch=" + this.model.get("batch") + "&serial=" + this.model.get("serial");
-        rqst.open("GET", "/cgi-bin/boardconfig" + query_string); /* TODO parametrize */
+        rqst.open("GET", "/cgi-bin/boardconfig" + query_string);
         rqst.onprogress = function(e) {
-            $("#stdout").text(rqst.responseText);
+            $("#stdout").text(rqst.responseText).scrollTop(99999);
         };
         rqst.onload = function(e) {
             /* cannot seem to bind 'this' to rqst.onload
