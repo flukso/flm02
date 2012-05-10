@@ -48,6 +48,11 @@ sleep(1);
                Prompt => "/RedBoot>/");
 
 print @out;
+
+if ($out[-1] =~ m/file not found/) {
+    exit(4);
+};
+
 sleep(1);
 
 # write boad config file to flash
