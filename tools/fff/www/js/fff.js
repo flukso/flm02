@@ -89,7 +89,7 @@ Fff.ActionView = Backbone.View.extend({
     el: ".action",
 
     initialize: function() {
-        _.bindAll(this, "configBoard", "flashFirmware", "finish", "helloWorld", "checkStatus");
+        _.bindAll(this, "configBoard", "flashFirmware", "getTestResult", "finish", "helloWorld", "checkStatus");
    },
 
     events: {
@@ -140,12 +140,47 @@ Fff.ActionView = Backbone.View.extend({
             $("#stdout").text(rqst.responseText);
         };
         rqst.onload = function(e) {
-            Fff.actionView.checkStatus(Fff.actionView.finish);
+            Fff.actionView.checkStatus(Fff.actionView.getTestResult);
         };
 
         rqst.send(null);
         this.model.set("rqst", rqst);
     },
+
+    getTestResult: function() {
+        this.model.set("state", Fff.states.TST);
+        $("#stdout").text("Waiting for FLM test result...\n");
+
+        function pollResult() {
+            var rqst = new XMLHttpRequest();
+            rqst.open("GET", "/cgi-bin/test");
+            rqst.onload = function(e) {
+                switch(Number(rqst.responseText)) {
+                    case -1:
+                        $("#stdout").append("No result yet\n");
+                        setTimeout(pollResult, 5000);
+                        break;
+                    case 0:
+                        $("#stdout").append("Sensor board communication test successful\n");
+                        Fff.actionView.checkStatus(Fff.actionView.finish);
+                        break;
+                    case 1:
+                    case 2:
+                        $("#stdout").append("Sensor board communication failed\n");
+                        Fff.deviceState.set("code", Number(rqst.responseText));
+                        Fff.deviceState.set("state", Fff.states.ERR);
+                        break;
+                }
+            }
+
+            rqst.send(null);
+            this.model.set("rqst", rqst);
+        }
+
+        pollResult = _.bind(pollResult, this);
+        pollResult();
+    },
+
 
     finish: function() {
         Fff.deviceState.set("state", Fff.states.RDY);
