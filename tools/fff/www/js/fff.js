@@ -117,17 +117,19 @@ Fff.ActionView = Backbone.View.extend({
     configBoard: function() {
         this.model.set("state", Fff.states.UBC);
 
+        function onload(e) {
+            this.checkStatus(this.flashFirmware);
+        }
+
+        onload = _.bind(onload, this);
+
         var rqst = new XMLHttpRequest();
         var query_string = "?batch=" + this.model.get("batch") + "&serial=" + this.model.get("serial");
         rqst.open("GET", "/cgi-bin/boardconfig" + query_string);
         rqst.onprogress = function(e) {
             $("#stdout").text(rqst.responseText).scrollTop(999);
-        };
-        rqst.onload = function(e) {
-            /* cannot seem to bind 'this' to rqst.onload
-               so resorting to calling the function explicitely */ 
-            Fff.actionView.checkStatus(Fff.actionView.flashFirmware);
-        };
+        }
+        rqst.onload = onload;
 
         rqst.send(null);
         this.model.set("rqst", rqst);
@@ -136,14 +138,18 @@ Fff.ActionView = Backbone.View.extend({
     flashFirmware: function() {
         this.model.set("state", Fff.states.FSH);
 
+        function onload(e) {
+            this.checkStatus(this.getTestResult);
+        }
+
+        onload = _.bind(onload, this);
+
         var rqst = new XMLHttpRequest();
         rqst.open("GET", "/cgi-bin/firmware");
         rqst.onprogress = function(e) {
             $("#stdout").text(rqst.responseText).scrollTop(999);
-        };
-        rqst.onload = function(e) {
-            Fff.actionView.checkStatus(Fff.actionView.getTestResult);
-        };
+        }
+        rqst.onload = onload;
 
         rqst.send(null);
         this.model.set("rqst", rqst);
@@ -151,24 +157,24 @@ Fff.ActionView = Backbone.View.extend({
 
     getTestResult: function() {
         this.model.set("state", Fff.states.TST);
-        $("#stdout").text("Waiting for FLM test result...\n");
+        $("#stdout").text("+++ Waiting for FLM test result +++\n");
 
         function pollResult() {
             function onload(e) {
                 switch(Number(rqst.responseText)) {
                     case -1:
-                        $("#stdout").append("No result yet\n").scrollTop(999);
+                        $("#stdout").append("No result yet...\n").scrollTop(999);
                         this.model.set("timerId", setTimeout(pollResult, 10000));
                         break;
                     case 0:
                         $("#stdout").append("Sensor board communication test successful\n").scrollTop(999);
-                        Fff.actionView.checkStatus(Fff.actionView.finish);
+                        this.checkStatus(this.finish);
                         break;
                     case 1:
                     case 2:
                         $("#stdout").append("Sensor board communication failed\n").scrollTop(999);
-                        Fff.deviceState.set("code", Number(rqst.responseText));
-                        Fff.deviceState.set("state", Fff.states.ERR);
+                        this.model.set("code", Number(rqst.responseText));
+                        this.model.set("state", Fff.states.ERR);
                         break;
                 }
             }
@@ -189,36 +195,44 @@ Fff.ActionView = Backbone.View.extend({
 
 
     finish: function() {
-        Fff.deviceState.set("state", Fff.states.RDY);
+        this.model.set("state", Fff.states.RDY);
     },
 
     helloWorld: function() {
+        function onload(e) {
+            this.model.set("state", Fff.states.RDY);
+        }
+
+        onload = _.bind(onload, this);
+
         var rqst = new XMLHttpRequest();
         rqst.open("GET", "/cgi-bin/helloworld?error=0");
         rqst.onprogress = function(e) {
             $("#stdout").text(rqst.responseText).scrollTop(999);
-        };
-        rqst.onload = function(e) {
-            Fff.deviceState.set("state", Fff.states.RDY);
-        };
+        }
+        rqst.onload = onload;
 
         rqst.send(null);
         this.model.set("rqst", rqst);
     },
 
     checkStatus: function(next) {
-        var rqst = new XMLHttpRequest();
-        rqst.open("GET", "/cgi-bin/status");
-        rqst.onload = function(e) {
+        function onload(e) {
             var code = Number(rqst.responseText);
 
-            Fff.deviceState.set("code", code);
+            this.model.set("code", code);
 
             if (code == 0)
                 next()
             else
-                Fff.deviceState.set("state", Fff.states.ERR);
-        };
+                this.model.set("state", Fff.states.ERR);
+        }
+
+        onload = _.bind(onload, this);
+
+        var rqst = new XMLHttpRequest();
+        rqst.open("GET", "/cgi-bin/status");
+        rqst.onload = onload;
 
         rqst.send(null);
         this.model.set("rqst", rqst);
