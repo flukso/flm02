@@ -119,7 +119,7 @@ Fff.ActionView = Backbone.View.extend({
         var query_string = "?batch=" + this.model.get("batch") + "&serial=" + this.model.get("serial");
         rqst.open("GET", "/cgi-bin/boardconfig" + query_string);
         rqst.onprogress = function(e) {
-            $("#stdout").text(rqst.responseText).scrollTop(99999);
+            $("#stdout").text(rqst.responseText).scrollTop(999);
         };
         rqst.onload = function(e) {
             /* cannot seem to bind 'this' to rqst.onload
@@ -137,7 +137,7 @@ Fff.ActionView = Backbone.View.extend({
         var rqst = new XMLHttpRequest();
         rqst.open("GET", "/cgi-bin/firmware");
         rqst.onprogress = function(e) {
-            $("#stdout").text(rqst.responseText);
+            $("#stdout").text(rqst.responseText).scrollTop(999);
         };
         rqst.onload = function(e) {
             Fff.actionView.checkStatus(Fff.actionView.getTestResult);
@@ -157,16 +157,16 @@ Fff.ActionView = Backbone.View.extend({
             rqst.onload = function(e) {
                 switch(Number(rqst.responseText)) {
                     case -1:
-                        $("#stdout").append("No result yet\n");
-                        setTimeout(pollResult, 5000);
+                        $("#stdout").append("No result yet\n").scrollTop(999);
+                        setTimeout(pollResult, 10000);
                         break;
                     case 0:
-                        $("#stdout").append("Sensor board communication test successful\n");
+                        $("#stdout").append("Sensor board communication test successful\n").scrollTop(999);
                         Fff.actionView.checkStatus(Fff.actionView.finish);
                         break;
                     case 1:
                     case 2:
-                        $("#stdout").append("Sensor board communication failed\n");
+                        $("#stdout").append("Sensor board communication failed\n").scrollTop(999);
                         Fff.deviceState.set("code", Number(rqst.responseText));
                         Fff.deviceState.set("state", Fff.states.ERR);
                         break;
@@ -190,7 +190,7 @@ Fff.ActionView = Backbone.View.extend({
         var rqst = new XMLHttpRequest();
         rqst.open("GET", "/cgi-bin/helloworld?error=0");
         rqst.onprogress = function(e) {
-            $("#stdout").text(rqst.responseText);
+            $("#stdout").text(rqst.responseText).scrollTop(999);
         };
         rqst.onload = function(e) {
             Fff.deviceState.set("state", Fff.states.RDY);
