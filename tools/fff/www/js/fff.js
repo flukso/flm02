@@ -42,6 +42,7 @@ Fff.DeviceState = Backbone.Model.extend({
         serial: 1,
         state: Fff.states.RDY,
         rqst: null,
+        timerId: null,
         code: 0
     }
 });
@@ -109,6 +110,7 @@ Fff.ActionView = Backbone.View.extend({
         console.log("abort"); /* TODO remove before flight */
 
         this.model.get("rqst").abort();
+        clearTimeout(this.model.get("timerId"));
         this.model.set("state", Fff.states.ABT);
     },
 
@@ -152,13 +154,11 @@ Fff.ActionView = Backbone.View.extend({
         $("#stdout").text("Waiting for FLM test result...\n");
 
         function pollResult() {
-            var rqst = new XMLHttpRequest();
-            rqst.open("GET", "/cgi-bin/test");
-            rqst.onload = function(e) {
+            function onload(e) {
                 switch(Number(rqst.responseText)) {
                     case -1:
                         $("#stdout").append("No result yet\n").scrollTop(999);
-                        setTimeout(pollResult, 10000);
+                        this.model.set("timerId", setTimeout(pollResult, 10000));
                         break;
                     case 0:
                         $("#stdout").append("Sensor board communication test successful\n").scrollTop(999);
@@ -173,6 +173,12 @@ Fff.ActionView = Backbone.View.extend({
                 }
             }
 
+            onload = _.bind(onload, this);
+
+            var rqst = new XMLHttpRequest();
+            rqst.open("GET", "/cgi-bin/test");
+            rqst.onload = onload;
+ 
             rqst.send(null);
             this.model.set("rqst", rqst);
         }
