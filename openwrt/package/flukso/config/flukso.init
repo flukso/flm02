@@ -58,7 +58,7 @@ test_sensor_board()
 	PORT=8080
 	RESULT=$($TEST; echo $?)
 
-	wget "http://$IP:$PORT/cgi-bin/test?result=$RESULT"
+	wget -s -q "http://$IP:$PORT/cgi-bin/test?result=$RESULT"
 }
 
 start()
