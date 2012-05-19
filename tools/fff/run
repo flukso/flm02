@@ -19,4 +19,4 @@
 #
 
 echo "+++ starting the Flukso Factory Flasher +++"
-sudo ./uhttpd -f -h www -p 127.0.0.1:8080 -t 60 -T 30
+sudo ./uhttpd -f -h www -p 8080 -t 60 -T 30
