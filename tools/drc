@@ -47,7 +47,7 @@ sleep(1);
 @dump = $t->cmd(String => "dump -s -b 0xA87F00F8 -l 0x800",
                 Prompt => "/RedBoot>/");
 
-print @dump;
+#print @dump;
 
 my $fh = new IO::File ("/tmp/radio.srec",'w');
 print $fh @dump;

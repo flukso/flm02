@@ -14,25 +14,24 @@ set_version()
 
 load_config()
 {
-        uci set system.@system[0].key=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11000)) -n 16 /dev/mtd6)
-        uci set system.@system[0].device=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 16 /dev/mtd6)
-        uci set system.@system[0].hostname=flukso-$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 3 /dev/mtd6)
+	uci set system.@system[0].key=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11000)) -n 16 /dev/mtd6)
+	uci set system.@system[0].device=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 16 /dev/mtd6)
+	uci set system.@system[0].hostname=flukso-$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 3 /dev/mtd6)
 
-        for i in `seq 6`;
-        do
-                ADDRESS=0x110$((i+2))0
-                uci set flukso.$i.id=$(hexdump -v -e '1/1 "%.2x"' -s $((ADDRESS)) -n 16 /dev/mtd6)
-        done
+	for i in `seq 6`;
+	do
+		ADDRESS=0x110$((i+2))0
+		uci set flukso.$i.id=$(hexdump -v -e '1/1 "%.2x"' -s $((ADDRESS)) -n 16 /dev/mtd6)
+	done
 
-	uci set system.@system[0].firstboot='0'
-        uci commit
+	uci commit
 
-        logger 'configuring flukso device and sensor ids at firstboot'
+	logger 'configuring flukso device and sensor ids at firstboot'
 }
 
 program_sensor_board()
 {
-	AVRDUDE=fdude
+	AVRDUDE=/usr/bin/fdude
 
 	MCU=atmega168p
 	PROGRAMMER=gpio
@@ -52,6 +51,16 @@ program_sensor_board()
 	logger 'flashing the sensor board at firstboot'
 }
 
+test_sensor_board()
+{
+	TEST=/usr/bin/ftest
+	IP=192.168.255.2
+	PORT=8080
+	RESULT=$($TEST; echo $?)
+
+	wget -s -q "http://$IP:$PORT/cgi-bin/test?result=$RESULT"
+}
+
 start()
 {
 	FIRSTBOOT=$(uci get system.@system[0].firstboot)
@@ -67,6 +76,14 @@ start()
 
 	/usr/sbin/spid
 	/usr/sbin/fluksod
+
+	if [ $FIRSTBOOT -eq '1' ]
+	then
+		test_sensor_board
+
+		uci set system.@system[0].firstboot='0'
+		uci commit
+	fi
 
 	RESTORE=$(uci get system.@system[0].restore)
 
@@ -87,12 +104,12 @@ start()
 	$HEARTBEAT 1 >&- 2>&- <&-
 
 	# Configure cron
-	echo -e "$MINUTE * * * * $HEARTBEAT 0\n*/15 * * * * [ \$($FCHECK; echo \$?) -ne 0 ] && reboot" | crontab -
+	echo -e "$MINUTE * * * * $HEARTBEAT 0\n*/15 * * * * [ \$($FCHECK; echo \$?) -ne 0 ] && reboot" | crontab -u flukso -
 }
 
 stop()
 {
-	crontab -r
+	crontab -u flukso -r
 
 	/usr/sbin/fluksod -k
 	/usr/sbin/spid -k

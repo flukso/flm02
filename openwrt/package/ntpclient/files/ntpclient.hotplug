@@ -37,6 +37,7 @@ set_drift() {
 }
 
 start_ntpclient() {
+	echo -e "*/15 * * * * /usr/bin/fntp" | crontab -u root -
 	config_foreach set_drift ntpdrift
 	config_foreach check_server ntpserver
 	[ -z "$SERVER" ] && exit 0
@@ -47,6 +48,7 @@ start_ntpclient() {
 stop_ntpclient() {
 	logger stopping ntpclient
 	killall ntpclient
+	crontab -u root -r	
 }
 
 load_settings() {

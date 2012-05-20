@@ -1,0 +1,74 @@
+<html>
+  <head>
+    <link media="all" rel="stylesheet" type="text/css" href="css/bootstrap.min.css"> 
+    <link media="all" rel="stylesheet" type="text/css" href="css/style.css"> 
+    <script type="text/javascript" src="lib/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="lib/bootstrap.min.js"></script>
+    <script type="text/javascript" src="lib/underscore-min.js"></script>
+    <script type="text/javascript" src="lib/backbone-min.js"></script>
+    <script type="text/javascript" src="js/fff.js"></script>
+  </head>
+
+  <body>
+    <header>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="/">
+            <img alt="Flukso" src="/img/flukso.logo.png">
+          </a>
+          <text class="brand">
+            Factory Flasher v1.1
+          </text>
+        </div>
+      </div>
+    </div>
+    </header>
+
+    <section role="main" class="clearfix">
+      <div class="container">
+        <div class="row">
+          <div class="span12">
+             <div class="well">
+               <div class="row">
+                 <div id="serial" class="span3">FL99012345</div>
+                 <div class="counter span1">
+                   <button class="btn btn-large">+1</button>
+                 </div>
+                 <div class="counter span5">
+                   <button class="btn btn-large">-100</button>
+                   <button class="btn btn-large">-10</button>
+                   <button class="btn btn-large">-1</button>
+                   <button class="btn btn-large">+10</button>
+                   <button class="btn btn-large">+100</button>
+                 </div>
+                 <div class="action span2" style="float: right;">
+                   <button id="go" class="btn btn-large btn-success">Go!</button>
+                   <button id="abort" class="btn btn-large btn-danger">Abort</button>
+                 </div>
+               </div>
+             </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="span12">
+            <textarea id="stdout" readonly="readonly"></textarea>
+          </div>
+        </div>
+        <div class="row">
+          <div class="span12"> 
+            <div id="alert"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </body>
+
+  <script type="text/template" id="alert-state-change">
+    <div class="alert alert-<%= type %>">
+      <a class="close" data-dismiss="alert">×</a>
+      <strong>State - </strong> <%= msg %>.
+    </div>
+  </script>
+</html>
