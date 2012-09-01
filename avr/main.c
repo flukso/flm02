@@ -263,7 +263,7 @@ ISR(TIMER1_CAPT_vect)
 	uint8_t i;
 
 	for (i=0; i<128; i++)
-		eeprom_write_byte((uint8_t *)(i + 0x0100), i); 			
+		eeprom_write_byte((uint8_t *)(i + 0x0100), i);
 #else
 	eeprom_update_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
 	eeprom_update_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
@@ -273,6 +273,7 @@ ISR(TIMER1_CAPT_vect)
 	clock_prescale_set(clock_div_1);
 
 	setup_led();
+	FLAG_CLR_ICF1();
 }
 
 void setup_datastructs(void)
@@ -450,6 +451,7 @@ int main(void)
 	// initialize the SPI in slave mode
 	setup_spi(SPI_MODE_2, SPI_MSB, SPI_INTERRUPT, SPI_SLAVE);
 
+	FLAG_CLR_ICF1();
 	sei();
 
 
