@@ -262,6 +262,8 @@ ISR(TIMER1_CAPT_vect)
 #if DBG > 0 
 	uint8_t i;
 
+	eeprom_update_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
+
 	for (i=0; i<128; i++)
 		eeprom_write_byte((uint8_t *)(i + 0x0100), i);
 #else
