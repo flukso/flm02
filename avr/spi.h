@@ -67,7 +67,8 @@ extern "C"{
 #define SPI_MSTR_CLK8 0x05 /* chip clock/8 */
 #define SPI_MSTR_CLK32 0x06 /* chip clock/32 */
 
-
+#define SPI_ENABLE() SPCR |= (1<<SPE)
+#define SPI_DISABLE() SPCR &= ~(1<<SPE)
 
 // setup spi
 void setup_spi(uint8_t mode,   // timing mode SPI_MODE[0-4]

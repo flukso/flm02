@@ -241,7 +241,7 @@ AVRDUDE_PORT = /dev/ttyUSB*    # programmer connected to serial device
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
-AVRDUDE_WRITE_FUSES = -U lfuse:w:0xEE:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m
+AVRDUDE_WRITE_FUSES = -U lfuse:w:0x6E:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m
 
 # Uncomment the following if you want avrdude's erase cycle counter.
 # Note that this counter needs to be initialized first using -Yn,

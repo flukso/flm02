@@ -264,10 +264,11 @@ ISR(TIMER1_COMPA_vect)
 ISR(TIMER1_CAPT_vect)
 {
 	disable_led();
+	SPI_DISABLE();
 
 	// throttle the cpu clock to draw less amps
 	// raises the number of bytes that can be written to EEPROM from 43 to 48
-	clock_prescale_set(clock_div_16);
+	clock_prescale_set(clock_div_64);
 
 	event.brown_out++;
 
@@ -286,6 +287,7 @@ ISR(TIMER1_CAPT_vect)
 	// restore the original clock setting
 	clock_prescale_set(clock_div_1);
 
+	SPI_ENABLE();
 	setup_led();
 	FLAG_CLR_ICF1();
 }
@@ -423,6 +425,8 @@ int main(void)
 	uint8_t i;
 
 	cli();
+	//TODO replace by an ana comp polling loop
+	_delay_ms(10);
 
 	setup_datastructs();
 	setup_led();
@@ -434,13 +438,14 @@ int main(void)
 	// initialize the CTRL buffers
 	ctrlInit();
 	// initialize the SPI in slave mode
-	setup_spi(SPI_MODE_2, SPI_MSB, SPI_INTERRUPT, SPI_SLAVE);
+	setup_spi(SPI_MODE_0, SPI_MSB, SPI_INTERRUPT, SPI_SLAVE);
 
 	// initialize the Si4421/RFM12 radio and buffers
 	rfm12_init();
 
+	// the clk/8 fuse bit is set
+	clock_prescale_set(clock_div_1);
 	FLAG_CLR_ICF1();
-
 	sei();
 
 
