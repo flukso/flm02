@@ -18,7 +18,7 @@
             <img alt="Flukso" src="/img/flukso.logo.png">
           </a>
           <text class="brand">
-            Factory Flasher
+            Factory Flasher v1.1
           </text>
         </div>
       </div>
@@ -51,15 +51,24 @@
           </div>
         </div>
         <div class="row">
-          <div id="alert"></div>
-        </div>
-        <div class="row">
           <div class="span12">
             <textarea id="stdout" readonly="readonly"></textarea>
+          </div>
+        </div>
+        <div class="row">
+          <div class="span12"> 
+            <div id="alert"></div>
           </div>
         </div>
       </div>
     </section>
 
   </body>
+
+  <script type="text/template" id="alert-state-change">
+    <div class="alert alert-<%= type %>">
+      <a class="close" data-dismiss="alert">×</a>
+      <strong>State - </strong> <%= msg %>.
+    </div>
+  </script>
 </html>

@@ -274,8 +274,10 @@ ISR(TIMER1_CAPT_vect)
 #if DBG > 0 
 	uint8_t i;
 
+	eeprom_update_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
+
 	for (i=0; i<128; i++)
-		eeprom_write_byte((uint8_t *)(i + 0x0100), i); 			
+		eeprom_write_byte((uint8_t *)(i + 0x0100), i);
 #else
 	eeprom_update_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
 	eeprom_update_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
@@ -285,17 +287,16 @@ ISR(TIMER1_CAPT_vect)
 	clock_prescale_set(clock_div_1);
 
 	setup_led();
+	FLAG_CLR_ICF1();
 }
 
 void setup_datastructs(void)
 {
-	cli();
 	eeprom_read_block((void*)&version, (const void*)&EEPROM_version, sizeof(version));
 	eeprom_read_block((void*)&event, (const void*)&EEPROM_event, sizeof(event));
 	eeprom_read_block((void*)&enabled, (const void*)&EEPROM_enabled, sizeof(enabled));
 	eeprom_read_block((void*)&phy_to_log, (const void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
 	eeprom_read_block((void*)&sensor, (const void*)&EEPROM_sensor, sizeof(sensor));
-	sei();
 }
 
 void setup_led(void)
@@ -437,6 +438,8 @@ int main(void)
 
 	// initialize the Si4421/RFM12 radio and buffers
 	rfm12_init();
+
+	FLAG_CLR_ICF1();
 
 	sei();
 

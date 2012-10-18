@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#   run - start fff daemon
+#   test - receive and transmit FLM ftest result
 #
 #   Copyright (C) 2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
 #
@@ -18,5 +18,31 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-echo "+++ starting the Flukso Factory Flasher +++"
-sudo ./uhttpd -f -h www -p 8080 -t 60 -T 30
+# exit codes
+# 0: ok
+
+# build the response header first
+echo "HTTP/1.1 200 OK"
+echo "Content-Type: text/plain"
+echo "Transfer-Encoding: chunked"
+echo ""
+
+# ... followed by the response body
+HOME=$PWD/cgi-bin
+TOOLS=$HOME/tools
+
+NOBUF="$HOME/stdbuf -i0 -o0 -e0"
+
+RESULT=$(echo "$QUERY_STRING" | sed -n 's/^.*result=\([^&]*\).*$/\1/p' | sed "s/%20/ /g")
+
+if [ -z $RESULT ]
+then
+	# test result is being queried by browser
+	# clean up if necessary
+	[ -e $HOME/result ] && { cat $HOME/result; rm $HOME/result; } || echo -1
+else
+	# test result is being reported back by FLM
+	echo $RESULT > $HOME/result
+fi
+
+echo 0 > $HOME/code

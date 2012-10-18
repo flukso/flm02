@@ -96,6 +96,8 @@ asm volatile ( \
 	"r2", "r4", "r5" \
 )
 
+#define FLAG_CLR_ICF1() TIFR1 |= (1<<ICF1)
+
 void register_pulse(volatile struct sensor_struct *psensor, volatile struct state_struct *pstate);
 void setup_led(void);
 void disable_led(void);

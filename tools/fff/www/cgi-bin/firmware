@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#   run - start fff daemon
+#   firmware - an fff script to update the FLM firmware after a bootloader interrupt
 #
 #   Copyright (C) 2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
 #
@@ -18,5 +18,29 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-echo "+++ starting the Flukso Factory Flasher +++"
-sudo ./uhttpd -f -h www -p 8080 -t 60 -T 30
+# exit codes
+# 0: ok
+# 126: not used
+# 127: ffw did not finish its operation
+
+# build the response header first
+echo "HTTP/1.1 200 OK"
+echo "Content-Type: text/plain"
+echo "Transfer-Encoding: chunked"
+echo ""
+
+# ... followed by the response body
+HOME=$PWD/cgi-bin
+TOOLS=$HOME/tools
+
+NOBUF="$HOME/stdbuf -i0 -o0 -e0"
+
+HOST="192.168.255.1"
+KERNEL=firmware/openwrt-atheros-vmlinux.lzma
+ROOTFS=firmware/openwrt-atheros-root.squashfs
+
+echo 127 > $HOME/code
+
+env PWDS=$TOOLS $NOBUF $TOOLS/ffw $HOST $KERNEL $ROOTFS 2>&1
+
+echo $? > $HOME/code

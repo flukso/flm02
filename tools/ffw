@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 #
-#   fbc -  flash board config section
+#   ffw - flash firmware
 #
-#   Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+#   Copyright (C) 2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -18,13 +18,18 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# disable Perl's default output buffering
+$| = 1;
+
 use Net::Telnet ();
 
-my $bc = $ARGV[1] or die "Syntax: $0 <host> <board config>\n";
+my $rootfs = $ARGV[2] or die "Syntax: $0 <host> <kernel> <rootfs>\n";
+my $kernel = $ARGV[1];
 my $host = $ARGV[0];
 
 my $t = new Net::Telnet (Port    => 9000,
-                         Timeout => 30);
+                         Timeout => 300,
+                         Prompt  => "/RedBoot>/");
 
 if (!defined($t)) {
 	print "new Net::Telnet failed\n";
@@ -43,33 +48,46 @@ if(!defined($ok)) {
 $t->cmd("");
 sleep(1);
 
-# load the board config file into RAM
-@out = $t->cmd(String => "load -r -b %{FREEMEMLO} $bc",
-               Prompt => "/RedBoot>/");
-
-print @out;
-
-if ($out[-1] =~ m/file not found/) {
-    exit(4);
-};
-
-sleep(1);
-
-# write boad config file to flash
-@out = $t->cmd(String => "fis write -b 0x8003e000 -f 0xA87F0000 -l 0x10000",
+# initialize flash image system [fis]
+@out = $t->cmd(String => "fis init",
                Prompt => "/continue (y/n)?/");
 
 print @out;
 sleep(1);
 
-# Flashing where no man has flashed before...
-# Sure hope you know what you're doing!
-# * CAUTION * about to program FLASH
-#             at 0xa87f0000..0xa87fffff from 0x8003e000 - continue (y/n)?
-@out = $t->cmd(String => "y",
-               Prompt => "/RedBoot>/");
+@out = $t->cmd(String => "y");
 
 print @out;
+sleep(1);
+
+# load the kernel into RAM
+@out = $t->cmd(String => "load -r -b %{FREEMEMLO} $kernel");
+
+print @out;
+sleep(1);
+
+# flash the kernel partition
+@out = $t->cmd(String => "fis create -e 0x80041000 -r 0x80041000 vmlinux.bin.l7");
+
+print @out;
+sleep(1);
+
+# load the file system into RAM
+@out = $t->cmd(String => "load -r -b %{FREEMEMLO} $rootfs");
+
+print @out;
+sleep(1);
+
+# flash the rootfs partition
+@out = $t->cmd(String => "fis create -l 0x6D0000 rootfs");
+
+print @out;
+sleep(1);
+
+# reset the FLM
+$t->cmd(String  => "reset",
+        Errmode => "return",
+        Timeout => 1);
 
 $t->close();
 exit(0);
