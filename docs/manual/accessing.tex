@@ -24,20 +24,20 @@ The server will verify each time whether a correct token has been specified for 
 unix\_time() & int32 representing the number of seconds elapsed since midnight UTC of Jan 1, 1970 \\
 
 \hline
-time\_range() & minute, 15min, hour, day, week, month, year, night \\
+time\_range() & minute, 15min, hour, day, week, month, year, decade, night \\
 
 \hline
-unit() & watt, kwhperyear, eurperyear, audperyear \\
+unit() & watt, kwhperyear, eurperyear, audperyear, lpermin, lperday, m3peryear \\
 
 \hline
 
 \end{tabular}
 
-\section{Retreiving sensor time series data}
+\section{Retrieving sensor time series data}
 \begin{tabular}{|l|l|l|p{5cm}|}
 
 \hline
-request & \multicolumn{3}{|l|}{retreive sensor data in time series format from flukso.net} \\
+request & \multicolumn{3}{|l|}{retrieve sensor data in time series format from flukso.net} \\
 
 \hline
 verb & \multicolumn{3}{|l|}{\texttt{GET}} \\
@@ -140,11 +140,11 @@ OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 [1309910400,143],[1309996800,191],[1310083200,"nan"]]
 \end{Verbatim}
 
-\section{Retreiving sensor parameters}
+\section{Retrieving sensor parameters}
 \begin{tabular}{|l|l|l|p{5cm}|}
 
 \hline
-request & \multicolumn{3}{|l|}{retreive sensor parameters from flukso.net} \\
+request & \multicolumn{3}{|l|}{retrieve sensor parameters from flukso.net} \\
 
 \hline
 verb & \multicolumn{3}{|l|}{\texttt{GET}} \\
@@ -186,11 +186,11 @@ OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 "enabled":1,"lastupdate":[1310045295,1006793948]}
 \end{Verbatim}
 
-\section{Retreiving real-time sensor data}
+\section{Retrieving real-time sensor data}
 \begin{tabular}{|l|l|l|p{5cm}|}
 
 \hline
-request & \multicolumn{3}{|l|}{retreive real-time sensor data directly from the Fluksometer} \\
+request & \multicolumn{3}{|l|}{retrieve real-time sensor data directly from the Fluksometer} \\
 
 \hline
 verb & \multicolumn{3}{|l|}{\texttt{GET}} \\

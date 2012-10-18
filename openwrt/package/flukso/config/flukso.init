@@ -87,12 +87,12 @@ start()
 	$HEARTBEAT 1 >&- 2>&- <&-
 
 	# Configure cron
-	echo -e "$MINUTE * * * * $HEARTBEAT 0\n*/15 * * * * [ \$($FCHECK; echo \$?) -ne 0 ] && reboot" | crontab -
+	echo -e "$MINUTE * * * * $HEARTBEAT 0\n*/15 * * * * [ \$($FCHECK; echo \$?) -ne 0 ] && reboot" | crontab -u flukso -
 }
 
 stop()
 {
-	crontab -r
+	crontab -u flukso -r
 
 	/usr/sbin/fluksod -k
 	/usr/sbin/spid -k

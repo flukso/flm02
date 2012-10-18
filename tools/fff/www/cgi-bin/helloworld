@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#
+#   helloworld - an hello world fff script
+#
+#   Copyright (C) 2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# exit codes
+# 0: ok
+# 1: error
+# 2: abort
+
+# build the response header first
+echo "HTTP/1.1 200 OK"
+echo "Content-Type: text/plain"
+echo "Transfer-Encoding: chunked"
+echo ""
+
+# ... followed by the response body
+HOME=$PWD/cgi-bin
+TOOLS=$HOME/tools
+
+NOBUF="$HOME/stdbuf -i0 -o0 -e0"
+
+ERROR=$(echo "$QUERY_STRING" | sed -n 's/^.*error=\([^&]*\).*$/\1/p' | sed "s/%20/ /g")
+
+# check if boardconfig file exists and is writeable
+FN=$(printf "$BATCH/$BATCH%06d" $SERIAL)
+
+[ $ERROR -eq 0 ] \
+	&& { echo 2 > $HOME/code; } \
+	|| { echo 1 > $HOME/code; echo "error"; exit 1; }
+
+for (( i=0; i<50; i++))
+do
+	sleep 0.1
+	echo "Hello World #$i!"
+done
+
+echo 0 > $HOME/code

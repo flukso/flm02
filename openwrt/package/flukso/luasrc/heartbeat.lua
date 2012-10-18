@@ -34,6 +34,7 @@ local uci        = require 'luci.model.uci'.cursor()
 local luci       = require 'luci'
 luci.sys         = require 'luci.sys'
 luci.json        = require 'luci.json'
+luci.util        = require 'luci.util'
 local httpclient = require 'luci.httpclient'
 
 
@@ -78,6 +79,10 @@ local function collect_mp()
 	local syslog_gz = io.read("*all")
 
 	monitor.syslog = nixio.bin.b64encode(syslog_gz)
+
+	local device = luci.sys.net.defaultroute().device
+	monitor.ip = luci.util.exec("ifconfig " .. device):match("inet addr:([%d\.]*) ")
+	monitor.port = uci:get('uhttpd', 'restful', 'listen_http')[1]:match(":([%d]*)")
 
 	return monitor
 end

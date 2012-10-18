@@ -19,6 +19,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+[ -z $PWDS ] || PWD=$PWDS
 
 BFLAG=
 SFLAG=
@@ -53,16 +54,16 @@ done
 shift $(($OPTIND - 1))
 
 printf "+++ interrupt boot loader +++\n"
-./ibl $TARGET
+$PWD/ibl $TARGET
 
 printf "+++ download radio config +++\n"
-./drc $TARGET
+$PWD/drc $TARGET
 
 FN=$(printf "$BATCH/$BATCH%06d" $SERIAL)
 
 printf "+++ binary patch board config %s with radio calibration data +++\n" $FN
 objcopy -I srec -O binary /tmp/radio.srec /tmp/radio.bin
-xxd -p /tmp/radio.bin | xxd -r -p -s $((0x00F8)) - $FN
+xxd -p /tmp/radio.bin | xxd -r -p -s $((0x00F8)) - $PWD/$FN
 
 printf "+++ flash board config section +++\n"
-./fbc $TARGET $FN
+$PWD/fbc $TARGET $FN

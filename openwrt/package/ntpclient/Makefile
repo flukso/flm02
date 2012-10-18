@@ -48,6 +48,8 @@ define Package/ntpclient/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ntpclient $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/adjtimex $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/rate.awk $(1)/usr/sbin/
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) ./files/fntp.sh $(1)/usr/bin/fntp
 endef
 
 $(eval $(call BuildPackage,ntpclient))
