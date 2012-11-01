@@ -343,10 +343,10 @@ void setup_adc(void)
 
 void setup_timer1(void)
 {
-	// Timer1 clock prescaler set to 1 => fTOV1 = 3686.4kHz / 65536 = 56.25Hz (DS p.134)
-	TCCR1B |= (1<<CS10);
-	// Increase sampling frequency to 2kHz (= 667Hz per channel) with an error of 0.01% (DS p.122)
-	OCR1A = 0x0732;
+	// Timer1 prescaler set to 64 giving us a base freq of 125kHz (DS p.134)
+	TCCR1B |= (1<<CS11) | (1<<CS10);
+	// Decrease timer freq to 2kHz (DS p.122)
+	OCR1A = 0x7c;
 	// Timer1 set to CTC mode (DS p.133)
 	TCCR1B |= 1<<WGM12;
 	// Enable output compare match interrupt for timer1 (DS p.136)
@@ -432,8 +432,8 @@ int main(void)
 	setup_led();
 	//setup_adc();
 	//setup_pulse_input();
-	//setup_analog_comparator();
-	//setup_timer1();
+	setup_analog_comparator();
+	setup_timer1();
 	
 	// initialize the CTRL buffers
 	ctrlInit();
