@@ -97,13 +97,3 @@ asm volatile ( \
 )
 
 #define FLAG_CLR_ICF1() TIFR1 |= (1<<ICF1)
-
-void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate);
-void setup_led(void);
-void disable_led(void);
-void setup_datastructs(void);
-void setup_pulse_input(void);
-void setup_adc(void);
-void setup_timer1(void);
-void setup_analog_comparator(void);
-void calculate_power(volatile state_t *pstate);

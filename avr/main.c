@@ -261,6 +261,22 @@ ISR(TIMER1_COMPA_vect)
 	DBG_ISR_END();
 }
 
+void setup_led(void)
+{
+	// set output low (= LED enabled)
+	PORTB &= ~(1<<PB0);
+	// set LED pin (PB0) as output pin
+	DDRB |= (1<<DDB0);
+}
+
+void disable_led(void)
+{
+	// set LED pin (PB0) as input pin
+	DDRB &= ~(1<<DDB0);
+	// disable pull-up
+	PORTB &= ~(1<<PB0);
+}
+
 ISR(TIMER1_CAPT_vect)
 {
 	disable_led();
@@ -299,22 +315,6 @@ void setup_datastructs(void)
 	eeprom_read_block((void*)&enabled, (const void*)&EEPROM_enabled, sizeof(enabled));
 	eeprom_read_block((void*)&phy_to_log, (const void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
 	eeprom_read_block((void*)&sensor, (const void*)&EEPROM_sensor, sizeof(sensor));
-}
-
-void setup_led(void)
-{
-	// set output low (= LED enabled)
-	PORTB &= ~(1<<PB0);
-	// set LED pin (PB0) as output pin
-	DDRB |= (1<<DDB0);
-}
-
-void disable_led(void)
-{
-	// set LED pin (PB0) as input pin
-	DDRB &= ~(1<<DDB0);
-	// disable pull-up
-	PORTB &= ~(1<<PB0);
 }
 
 void setup_pulse_input(void)
