@@ -1,9 +1,9 @@
-struct version_struct {
+typedef struct {
 	uint16_t hw_major;
 	uint8_t  hw_minor;
 	uint8_t  sw_major;
 	uint8_t  sw_minor;
-};
+} version_t;
 
 #define PORT_PULSE_1		3
 #define PORT_PULSE_2		4
@@ -22,16 +22,16 @@ struct version_struct {
 #define SPI_FORWARD_TO_UART_PORT	'u'
 #define SPI_FORWARD_TO_CTRL_PORT	'l' // 'l'ocal port
 
-struct event_struct {
+typedef struct {
 	uint16_t wdt;
 	uint16_t brown_out;
-};
+} event_t;
 
-struct sensor_struct {
+typedef struct {
 	uint32_t counter;
 	uint16_t meterconst;
 	uint16_t fraction;	// expressed in milli
-};
+} sensor_t;
 
 # define M_UNIT 1000U		// milli
 # define N_UNIT 1000000000U	// nano
@@ -44,7 +44,7 @@ struct sensor_struct {
 #define STATE_POWER_CALC	0x08
 #define STATE_POWER		0x10
 
-struct state_struct {
+typedef struct {
 	uint8_t  flags;
 
 	uint32_t nano;
@@ -57,12 +57,12 @@ struct state_struct {
 
 	uint32_t power;
 	uint32_t timestamp;
-};
+} state_t;
 
-struct time_struct {
+typedef struct {
 	uint8_t	 skip;
 	uint32_t ms;
-};
+} time_t;
 
 /* 
  * This macro performs a 16x16 -> 32 unsigned MAC in 37 cycles with operands and results in memory
@@ -98,7 +98,7 @@ asm volatile ( \
 
 #define FLAG_CLR_ICF1() TIFR1 |= (1<<ICF1)
 
-void register_pulse(volatile struct sensor_struct *psensor, volatile struct state_struct *pstate);
+void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate);
 void setup_led(void);
 void disable_led(void);
 void setup_datastructs(void);
@@ -106,4 +106,4 @@ void setup_pulse_input(void);
 void setup_adc(void);
 void setup_timer1(void);
 void setup_analog_comparator(void);
-void calculate_power(volatile struct state_struct *pstate);
+void calculate_power(volatile state_t *pstate);

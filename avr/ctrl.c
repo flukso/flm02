@@ -36,11 +36,11 @@ cBuffer ctrlTxBuffer; // ctrl transmit buffer
 static char ctrlRxData[CTRL_RX_BUFFER_SIZE];
 static char ctrlTxData[CTRL_TX_BUFFER_SIZE];
 
-extern struct version_struct EEMEM EEPROM_version;
-extern struct version_struct version;
+extern version_t EEMEM EEPROM_version;
+extern version_t version;
 
-extern struct event_struct EEMEM EEPROM_event;
-extern struct event_struct event;
+extern event_t EEMEM EEPROM_event;
+extern event_t event;
 
 extern uint8_t EEMEM EEPROM_enabled;
 extern uint8_t enabled;
@@ -48,10 +48,10 @@ extern uint8_t enabled;
 extern uint8_t EEMEM EEPROM_phy_to_log[MAX_SENSORS];
 extern uint8_t phy_to_log[MAX_SENSORS];
 
-extern struct sensor_struct EEMEM EEPROM_sensor[MAX_SENSORS];
-extern struct sensor_struct sensor[MAX_SENSORS];
+extern sensor_t EEMEM EEPROM_sensor[MAX_SENSORS];
+extern sensor_t sensor[MAX_SENSORS];
 
-extern struct state_struct state[MAX_SENSORS];
+extern state_t state[MAX_SENSORS];
 
 void ctrlInit(void)
 {

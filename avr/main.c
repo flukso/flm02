@@ -43,12 +43,12 @@ uint8_t spi_uart_tx_bytes = 0;
 
 uint8_t EEMEM first_EEPROM_byte_not_used_to_protect_from_brownout_corruption = 0xbe;
 
-struct version_struct EEMEM EEPROM_version =
+version_t EEMEM EEPROM_version =
 	{HW_VERSION_MAJOR, HW_VERSION_MINOR, SW_VERSION_MAJOR, SW_VERSION_MINOR};
-struct version_struct version;
+version_t version;
 
-struct event_struct EEMEM EEPROM_event = {0, 0};
-struct event_struct event;
+event_t EEMEM EEPROM_event = {0, 0};
+event_t event;
 
 uint8_t EEMEM EEPROM_enabled = DISABLE_ALL_SENSORS;
 uint8_t enabled;
@@ -57,15 +57,15 @@ uint8_t EEMEM EEPROM_phy_to_log[MAX_SENSORS] =
 	{DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT};
 uint8_t phy_to_log[MAX_SENSORS];
 
-struct sensor_struct EEMEM EEPROM_sensor[MAX_SENSORS];
-volatile struct sensor_struct sensor[MAX_SENSORS];
+sensor_t EEMEM EEPROM_sensor[MAX_SENSORS];
+volatile sensor_t sensor[MAX_SENSORS];
 
-volatile struct state_struct state[MAX_SENSORS];
+volatile state_t state[MAX_SENSORS];
 
 uint8_t muxn = 0;
 uint16_t timer = 0;
 
-struct time_struct time = {0, 0};
+time_t time = {0, 0};
 
 ISR(SPI_STC_vect)
 {
@@ -197,7 +197,7 @@ ISR(INT1_vect)
 	DBG_ISR_END();
 }
 **/
-void register_pulse(volatile struct sensor_struct *psensor, volatile struct state_struct *pstate)
+void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate)
 {
 	psensor->counter += psensor->meterconst;
 	pstate->milli += psensor->fraction;
@@ -374,7 +374,7 @@ void setup_analog_comparator(void)
 	ACSR |= (1<<ACBG) | (1<<ACIC);
 }
 
-void calculate_power(volatile struct state_struct *pstate)
+void calculate_power(volatile state_t *pstate)
 {
 	int32_t rest;
 	uint32_t pulse_power, urest, power = 0;
