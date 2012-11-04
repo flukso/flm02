@@ -62,9 +62,6 @@ volatile sensor_t sensor[MAX_SENSORS];
 
 volatile state_t state[MAX_SENSORS];
 
-uint8_t muxn = 0;
-uint16_t timer = 0;
-
 time_t time = {0, 0};
 
 ISR(SPI_STC_vect)
@@ -216,6 +213,9 @@ void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate)
 ISR(TIMER1_COMPA_vect)
 {
 	DBG_ISR_BEGIN();
+
+	static uint8_t muxn = 0;
+	static uint16_t timer = 0;
 
 	uint8_t sensor_id = phy_to_log[muxn];
 
