@@ -43,8 +43,12 @@ uint8_t spi_uart_tx_bytes = 0;
 
 uint8_t EEMEM _do_not_use_eep = 0xbe;
 
-version_t EEMEM version_eep =
-	{HW_VERSION_MAJOR, HW_VERSION_MINOR, SW_VERSION_MAJOR, SW_VERSION_MINOR};
+version_t EEMEM version_eep = {
+	HW_VERSION_MAJOR,
+	HW_VERSION_MINOR,
+	SW_VERSION_MAJOR,
+	SW_VERSION_MINOR
+};
 version_t version;
 
 event_t EEMEM event_eep = {0, 0};
@@ -53,8 +57,14 @@ event_t event;
 uint8_t EEMEM enabled_eep = DISABLE_ALL_SENSORS;
 uint8_t enabled;
 
-uint8_t EEMEM phy_to_log_eep[MAX_SENSORS] =
-	{DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT};
+uint8_t EEMEM phy_to_log_eep[MAX_SENSORS] = {
+	DISABLE_PORT,
+	DISABLE_PORT,
+	DISABLE_PORT,
+	DISABLE_PORT,
+	DISABLE_PORT,
+	DISABLE_PORT
+};
 uint8_t phy_to_log[MAX_SENSORS];
 
 sensor_t EEMEM sensor_eep[MAX_SENSORS];
