@@ -41,23 +41,23 @@ register uint8_t spi_status asm("r7");
 uint8_t spi_high_hex;
 uint8_t spi_uart_tx_bytes = 0;
 
-uint8_t EEMEM first_EEPROM_byte_not_used_to_protect_from_brownout_corruption = 0xbe;
+uint8_t EEMEM _do_not_use_eep = 0xbe;
 
-version_t EEMEM EEPROM_version =
+version_t EEMEM version_eep =
 	{HW_VERSION_MAJOR, HW_VERSION_MINOR, SW_VERSION_MAJOR, SW_VERSION_MINOR};
 version_t version;
 
-event_t EEMEM EEPROM_event = {0, 0};
+event_t EEMEM event_eep = {0, 0};
 event_t event;
 
-uint8_t EEMEM EEPROM_enabled = DISABLE_ALL_SENSORS;
+uint8_t EEMEM enabled_eep = DISABLE_ALL_SENSORS;
 uint8_t enabled;
 
-uint8_t EEMEM EEPROM_phy_to_log[MAX_SENSORS] =
+uint8_t EEMEM phy_to_log_eep[MAX_SENSORS] =
 	{DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT, DISABLE_PORT};
 uint8_t phy_to_log[MAX_SENSORS];
 
-sensor_t EEMEM EEPROM_sensor[MAX_SENSORS];
+sensor_t EEMEM sensor_eep[MAX_SENSORS];
 volatile sensor_t sensor[MAX_SENSORS];
 
 volatile state_t state[MAX_SENSORS];
@@ -291,13 +291,13 @@ ISR(TIMER1_CAPT_vect)
 #if DBG > 0 
 	uint8_t i;
 
-	eeprom_update_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
+	eeprom_update_block((const void*)&event, (void*)&event_eep, sizeof(event));
 
 	for (i=0; i<128; i++)
 		eeprom_write_byte((uint8_t *)(i + 0x0100), i);
 #else
-	eeprom_update_block((const void*)&sensor, (void*)&EEPROM_sensor, sizeof(sensor));
-	eeprom_update_block((const void*)&event, (void*)&EEPROM_event, sizeof(event));
+	eeprom_update_block((const void*)&sensor, (void*)&sensor_eep, sizeof(sensor));
+	eeprom_update_block((const void*)&event, (void*)&event_eep, sizeof(event));
 #endif
 
 	// restore the original clock setting
@@ -310,11 +310,11 @@ ISR(TIMER1_CAPT_vect)
 
 void setup_datastructs(void)
 {
-	eeprom_read_block((void*)&version, (const void*)&EEPROM_version, sizeof(version));
-	eeprom_read_block((void*)&event, (const void*)&EEPROM_event, sizeof(event));
-	eeprom_read_block((void*)&enabled, (const void*)&EEPROM_enabled, sizeof(enabled));
-	eeprom_read_block((void*)&phy_to_log, (const void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
-	eeprom_read_block((void*)&sensor, (const void*)&EEPROM_sensor, sizeof(sensor));
+	eeprom_read_block((void*)&version, (const void*)&version_eep, sizeof(version));
+	eeprom_read_block((void*)&event, (const void*)&event_eep, sizeof(event));
+	eeprom_read_block((void*)&enabled, (const void*)&enabled_eep, sizeof(enabled));
+	eeprom_read_block((void*)&phy_to_log, (const void*)&phy_to_log_eep, sizeof(phy_to_log));
+	eeprom_read_block((void*)&sensor, (const void*)&sensor_eep, sizeof(sensor));
 }
 
 void setup_pulse_input(void)
