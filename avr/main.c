@@ -194,7 +194,7 @@ ISR(INT1_vect)
 	DBG_ISR_END();
 }
 **/
-void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate)
+static void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate)
 {
 	psensor->counter += psensor->meterconst;
 	pstate->milli += psensor->fraction;
@@ -261,7 +261,7 @@ ISR(TIMER1_COMPA_vect)
 	DBG_ISR_END();
 }
 
-void setup_led(void)
+static inline void setup_led(void)
 {
 	// set output low (= LED enabled)
 	PORTB &= ~(1<<PB0);
@@ -269,7 +269,7 @@ void setup_led(void)
 	DDRB |= (1<<DDB0);
 }
 
-void disable_led(void)
+static inline void disable_led(void)
 {
 	// set LED pin (PB0) as input pin
 	DDRB &= ~(1<<DDB0);
@@ -308,7 +308,7 @@ ISR(TIMER1_CAPT_vect)
 	FLAG_CLR_ICF1();
 }
 
-void setup_datastructs(void)
+static inline void setup_datastructs(void)
 {
 	eeprom_read_block((void*)&version, (const void*)&version_eep, sizeof(version));
 	eeprom_read_block((void*)&event, (const void*)&event_eep, sizeof(event));
@@ -317,7 +317,7 @@ void setup_datastructs(void)
 	eeprom_read_block((void*)&sensor, (const void*)&sensor_eep, sizeof(sensor));
 }
 
-void setup_pulse_input(void)
+static inline void setup_pulse_input(void)
 {
 	// PD2=INT0 and PD3=INT1 configuration
 	// set as input pin with 20k pull-up enabled
@@ -328,7 +328,7 @@ void setup_pulse_input(void)
 	EIMSK = (1<<INT0) | (1<<INT1);
 }
 
-void setup_adc(void)
+static inline void setup_adc(void)
 {
 	// disable digital input cicuitry on ADCx pins to reduce leakage current
 	DIDR0 |= (1<<ADC5D) | (1<<ADC4D) | (1<<ADC3D) | (1<<ADC2D) | (1<<ADC1D) | (1<<ADC0D);
@@ -341,7 +341,7 @@ void setup_adc(void)
 	ADCSRA |= (1<<ADEN) | (1<<ADSC);
 }
 
-void setup_timer1(void)
+static inline void setup_timer1(void)
 {
 	// Timer1 prescaler set to 64 giving us a base freq of 125kHz (DS p.134)
 	TCCR1B |= (1<<CS11) | (1<<CS10);
@@ -361,7 +361,7 @@ void setup_timer1(void)
 	DBG_OC1A_TOGGLE();
 }
 
-void setup_analog_comparator(void)
+static inline void setup_analog_comparator(void)
 {
 	// analog comparator setup for brown-out detection
 	// PD7=AIN1 configured by default as input to obtain high impedance
@@ -374,7 +374,7 @@ void setup_analog_comparator(void)
 	ACSR |= (1<<ACBG) | (1<<ACIC);
 }
 
-void calculate_power(volatile state_t *pstate)
+static inline void calculate_power(volatile state_t *pstate)
 {
 	int32_t rest;
 	uint32_t pulse_power, urest, power = 0;
