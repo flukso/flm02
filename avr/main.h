@@ -7,18 +7,22 @@ typedef struct {
 
 #define PORT_PULSE_1		3
 #define PORT_PULSE_2		4
-#define PORT_UART		5
+#define PORT_UART			5
 
-#define SPI_NO_OP_1		0x01
-#define SPI_NO_OP_2		0x02
+#define ANALOG_EN			0x01
+#define UART_RX_INV			0x02
+#define UART_TX_INV			0x04
+
+#define SPI_NO_OP_1			0x01
+#define SPI_NO_OP_2			0x02
 #define SPI_START_TX		0x04
 #define SPI_TRANSMIT		0x08
 #define SPI_HIGH_HEX		0x10
 #define SPI_TO_FROM_UART	0x20
 #define SPI_NEW_CTRL_MSG	0x40
 
-#define SPI_END_OF_TX			0x00
-#define SPI_END_OF_MESSAGE		'.'
+#define SPI_END_OF_TX				0x00
+#define SPI_END_OF_MESSAGE			'.'
 #define SPI_FORWARD_TO_UART_PORT	'u'
 #define SPI_FORWARD_TO_CTRL_PORT	'l' // 'l'ocal port
 

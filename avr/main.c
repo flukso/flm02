@@ -54,6 +54,11 @@ version_t version;
 event_t EEMEM event_eep = {0, 0};
 event_t event;
 
+uint8_t max_analog_sensors = MAX_ANALOG_SENSORS;
+
+uint8_t EEMEM port_config_eep = ANALOG_EN;
+uint8_t port_config;
+
 uint8_t EEMEM enabled_eep = DISABLE_ALL_SENSORS;
 uint8_t enabled;
 
@@ -66,6 +71,8 @@ uint8_t EEMEM phy_to_log_eep[MAX_SENSORS] = {
 	DISABLE_PORT
 };
 uint8_t phy_to_log[MAX_SENSORS];
+
+const uint8_t phy_to_pin[MAX_SENSORS] = {7, 0, 1, 4, 5};
 
 sensor_t EEMEM sensor_eep[MAX_SENSORS];
 volatile sensor_t sensor[MAX_SENSORS];
@@ -229,7 +236,7 @@ ISR(TIMER1_COMPA_vect)
 
 	uint8_t sensor_id = phy_to_log[muxn];
 
-	if (ENABLED(sensor_id)) {
+	if ((muxn < max_analog_sensors) && ENABLED(sensor_id)) {
 		/*  clear the power calculation lock when starting a new 1sec cycle */
 		if (timer == 0)
 			state[sensor_id].flags &= ~STATE_POWER_LOCK;
@@ -264,7 +271,7 @@ ISR(TIMER1_COMPA_vect)
 	time.skip ^= 1;
 
 	ADMUX &= 0xF8;
-	ADMUX |= muxn;
+	ADMUX |= phy_to_pin[muxn];
 	/* Start a new ADC conversion. */
 	ADCSRA |= (1<<ADSC);
 
@@ -322,6 +329,7 @@ static inline void setup_datastructs(void)
 {
 	eeprom_read_block((void*)&version, (const void*)&version_eep, sizeof(version));
 	eeprom_read_block((void*)&event, (const void*)&event_eep, sizeof(event));
+	eeprom_read_block((void*)&port_config, (const void*)&port_config_eep, sizeof(port_config));
 	eeprom_read_block((void*)&enabled, (const void*)&enabled_eep, sizeof(enabled));
 	eeprom_read_block((void*)&phy_to_log, (const void*)&phy_to_log_eep, sizeof(phy_to_log));
 	eeprom_read_block((void*)&sensor, (const void*)&sensor_eep, sizeof(sensor));
@@ -341,12 +349,25 @@ static inline void setup_pulse_input(void)
 static inline void setup_adc(void)
 {
 	// disable digital input cicuitry on ADCx pins to reduce leakage current
-	DIDR0 |= (1<<ADC5D) | (1<<ADC4D) | (1<<ADC3D) | (1<<ADC2D) | (1<<ADC1D) | (1<<ADC0D);
+	DIDR0 |= (1<<ADC3D) | (1<<ADC2D);
+
+	// set PC2 as output pin
+	DDRC |= (1<<DDC2);
+
+	if (port_config & ANALOG_EN) {
+		DIDR0 |= (1<<ADC1D) | (1<<ADC0D);
+		PORTC |= (1<<PC2);
+	} else {
+		max_analog_sensors = 1;
+		PORTC &= ~(1<<PC2);
+	}
 
 	// select VBG as reference for ADC
 	ADMUX |= (1<<REFS1) | (1<<REFS0);
-	// ADC prescaler set to 32 => 3686.4kHz / 32 = 115.2kHz (DS p.258)
-	ADCSRA |= (1<<ADPS2) | (1<<ADPS0);
+	// ADC prescaler set to 128 => 16MHz / 128 = 125kHz (DS p.258)
+	ADCSRA |= (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
+	// set ADC mux to first analog port
+	ADMUX |= phy_to_pin[0];
 	// enable ADC and start a first ADC conversion
 	ADCSRA |= (1<<ADEN) | (1<<ADSC);
 }
@@ -440,7 +461,7 @@ int main(void)
 
 	setup_datastructs();
 	setup_led();
-	//setup_adc();
+	setup_adc();
 	//setup_pulse_input();
 	setup_analog_comparator();
 	setup_timer1();
@@ -465,7 +486,7 @@ int main(void)
 			spi_status &= ~SPI_NEW_CTRL_MSG;
 		}
 
-		for (i = 0; i < MAX_ANALOG_SENSORS; i++) {
+		for (i = 0; i < max_analog_sensors; i++) {
 			if (state[i].flags & STATE_POWER_CALC) {
 				calculate_power(&state[i]);
 				state[i].flags &= ~STATE_POWER_CALC;

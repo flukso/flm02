@@ -49,6 +49,6 @@
 
 /* 0xff is the default sensor id for non-assigned ports and is disabled by default
    a further check is done against the 'enabled' bitfield */
-#define ENABLED(x) (x != 0xff) && (enabled & (1 << x))
+#define ENABLED(x) ((x != 0xff) && (enabled & (1 << x)))
 
 #endif

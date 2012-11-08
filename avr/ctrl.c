@@ -42,6 +42,11 @@ extern version_t version;
 extern event_t EEMEM event_eep;
 extern event_t event;
 
+extern uint8_t max_analog_sensors;
+
+extern uint8_t EEMEM port_config_eep;
+extern uint8_t port_config;
+
 extern uint8_t EEMEM enabled_eep;
 extern uint8_t enabled;
 
@@ -354,7 +359,7 @@ void ctrlCmdGet(uint8_t cmd)
 
 				cli();
 				tmp32 = sensor[i].counter;
-				tmp32_bis = (i < MAX_ANALOG_SENSORS) ? state[i].power : state[i].timestamp;
+				tmp32_bis = (i < max_analog_sensors) ? state[i].power : state[i].timestamp;
 				state[i].flags &= ~(STATE_PULSE | STATE_POWER);
 				sei();
 
@@ -491,6 +496,7 @@ void ctrlCmdCommit(void)
 	cli();
 	eeprom_update_block((const void*)&version, (void*)&version_eep, sizeof(version));
 	eeprom_update_block((const void*)&event, (void*)&event_eep, sizeof(event));
+	eeprom_update_block((const void*)&port_config, (void*)&port_config_eep, sizeof(port_config));
 	eeprom_update_block((const void*)&enabled, (void*)&enabled_eep, sizeof(enabled));
 	eeprom_update_block((const void*)&phy_to_log, (void*)&phy_to_log_eep, sizeof(phy_to_log));
 	eeprom_update_block((const void*)&sensor, (void*)&sensor_eep, sizeof(sensor));
