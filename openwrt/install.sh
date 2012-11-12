@@ -44,6 +44,7 @@ cp patches/310-hotplug_button_jiffies_calc.patch $BACKFIRE_PATH/target/linux/ath
 cp patches/400-spi_gpio_support.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
 cp patches/410-spi_gpio_enable_cs_line.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
 cp patches/420-tune_spi_bitbanging_for_avr.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
+cp patches/500-early_printk_disable.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
 
 # backport loglevel fix to busybox v1.15.3-2
 # see: https://bugs.busybox.net/show_bug.cgi?id=681
@@ -60,7 +61,7 @@ cp ../tools/ap51-flash $BACKFIRE_PATH/tools
 # patch files of the OpenWRT build system
 cd $BACKFIRE_PATH
 patch -p0 < $REPO_PATH/patches/900-disable_console.patch
-patch -p0 < $REPO_PATH/patches/910-set_ttyS0_baud_to_115200.patch
+patch -p0 < $REPO_PATH/patches/910-redirect-console-to-devnull.patch
 patch -p0 < $REPO_PATH/patches/920-add-make-flash-option.patch
 patch -p0 < $REPO_PATH/patches/921-add-make-publish-option.patch
 patch -p0 < $REPO_PATH/patches/930-boot_crond_without_crontabs.patch
