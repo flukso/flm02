@@ -5,9 +5,8 @@
    desc  = "Use gpio_dev to bitbang GPIO lines";
    type  = gpio;
 -  reset = 0;
--  sck   = 3;
 +  reset = ~0;
-+  sck   = ~3;
+   sck   = 3;
    mosi  = 1;
    miso  = 2;  
  ;
