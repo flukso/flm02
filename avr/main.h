@@ -5,6 +5,8 @@ typedef struct {
 	uint8_t  sw_minor;
 } version_t;
 
+#define PC7					7
+
 #define PORT_PULSE_1		3
 #define PORT_PULSE_2		4
 #define PORT_UART			5

@@ -72,7 +72,7 @@ uint8_t EEMEM phy_to_log_eep[MAX_SENSORS] = {
 };
 uint8_t phy_to_log[MAX_SENSORS];
 
-const uint8_t phy_to_pin[MAX_SENSORS] = {7, 0, 1, 4, 5};
+const uint8_t phy_to_pin[MAX_SENSORS] = {PC7, PC0, PC1, PC4, PC5};
 
 sensor_t EEMEM sensor_eep[MAX_SENSORS];
 volatile sensor_t sensor[MAX_SENSORS];
@@ -335,6 +335,24 @@ static inline void setup_datastructs(void)
 	eeprom_read_block((void*)&sensor, (const void*)&sensor_eep, sizeof(sensor));
 }
 
+static inline void setup_ar_uart(void)
+{
+	// set PD5 & PD6 as output pins
+	DDRD |= (1<<DDD5) | (1<<DDD6);
+
+	if (port_config & UART_RX_INV) {
+		PORTD |= (1<<PD5);
+	} else {
+		PORTD &= ~(1<<PD5);
+	}
+
+	if (port_config & UART_TX_INV) {
+		PORTD |= (1<<PD6);
+	} else {
+		PORTD &= ~(1<<PD6);
+	}
+}
+
 static inline void setup_pulse_input(void)
 {
 	// PD2=INT0 and PD3=INT1 configuration
@@ -461,6 +479,7 @@ int main(void)
 
 	setup_datastructs();
 	setup_led();
+	setup_ar_uart();
 	setup_adc();
 	//setup_pulse_input();
 	setup_analog_comparator();
