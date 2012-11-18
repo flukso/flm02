@@ -47,14 +47,4 @@
 #define ENABLE_ALL_SENSORS ((1 << MAX_SENSORS) - 1)
 #define DISABLE_ALL_SENSORS 0x00
 
-/* 0xff is the default sensor id for non-assigned ports and is disabled by default
-   a further check is done against the 'enabled' bitfield */
-#define ENABLED(x) ((x != 0xff) && (enabled & (1 << x)))
-
-#define PORT_HIGH(pinc, x)	(pinc & (1 << phy_to_pin[x]))
-#define PORT_LOW(pinc, x)	!PORT_HIGH(pinc, x)
-
-#define HI_TO_LO(state, pinc, x) ((state.flags & STATE_PULSE_HIGH) && PORT_LOW(pinc, x))
-#define LO_TO_HI(state, pinc, x) (!(state.flags & STATE_PULSE_HIGH) && PORT_HIGH(pinc, x))
-
 #endif

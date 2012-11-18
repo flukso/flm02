@@ -187,7 +187,34 @@ finish:
 	DBG_ISR_END();
 }
 
-static void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate)
+static inline bool port_enabled(uint8_t i)
+{
+	/* 0xff is the default sensor id for non-assigned ports and is disabled by default
+	   a further check is done against the 'enabled' bitfield */
+	return (i != 0xff) && (enabled & (1 << i));
+}
+
+static inline bool port_high(uint8_t pinx, uint8_t i)
+{
+	return pinx & (1 << phy_to_pin[i]);
+}
+
+static inline bool port_low(uint8_t pinx, uint8_t i)
+{
+	return !port_high(pinx, i);
+}
+
+static inline bool high_to_low(state_t state, uint8_t pinx, uint8_t i)
+{
+	return (state.flags & STATE_PULSE_HIGH) && port_low(pinx, i);
+}
+
+static inline bool low_to_high(state_t state, uint8_t pinx, uint8_t i)
+{
+	return !(state.flags & STATE_PULSE_HIGH) && port_high(pinx, i);
+}
+
+static inline void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate)
 {
 	psensor->counter += psensor->meterconst;
 	pstate->milli += psensor->fraction;
@@ -213,14 +240,14 @@ ISR(PCINT1_vect)
 
 	//check each of the pulse inputs for a high-to-low state transition
 	for (i = max_analog_sensors; i < MAX_SENSORS; i++) {
-		if (HI_TO_LO(state[i], pinc, i)) {
+		if (high_to_low(state[i], pinc, i)) {
 			state[i].flags &= ~STATE_PULSE_HIGH;
 
-			if (ENABLED(i))
+			if (port_enabled(i))
 				register_pulse(&sensor[i], &state[i]);
 		}
 
-		if (LO_TO_HI(state[i], pinc, i)) {
+		if (low_to_high(state[i], pinc, i)) {
 			state[i].flags |= STATE_PULSE_HIGH;
 		}		
 	}
@@ -237,7 +264,7 @@ ISR(TIMER1_COMPA_vect)
 
 	uint8_t sensor_id = phy_to_log[muxn];
 
-	if ((muxn < max_analog_sensors) && ENABLED(sensor_id)) {
+	if ((muxn < max_analog_sensors) && port_enabled(sensor_id)) {
 		/*  clear the power calculation lock when starting a new 1sec cycle */
 		if (timer == 0)
 			state[sensor_id].flags &= ~STATE_POWER_LOCK;
@@ -408,7 +435,7 @@ static inline void setup_pulse_input(void)
 
 	//sample each of the pulse inputs and store the logic state
 	for (i = max_analog_sensors; i < MAX_SENSORS; i++) {
-		if (PORT_HIGH(pinc, i)) {
+		if (port_high(pinc, i)) {
 			state[i].flags = STATE_PULSE_HIGH;
 		}
 	}
