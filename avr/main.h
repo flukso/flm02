@@ -44,11 +44,11 @@ typedef struct {
 
 # define SECOND 665U // 666Hz - 1
 
-#define STATE_PULSE		0x01
-#define STATE_SKIP		0x02
+#define STATE_PULSE_HIGH	0x01
+#define STATE_PULSE			0x02
 #define STATE_POWER_LOCK	0x04
 #define STATE_POWER_CALC	0x08
-#define STATE_POWER		0x10
+#define STATE_POWER			0x10
 
 typedef struct {
 	uint8_t  flags;

@@ -20,6 +20,7 @@
 // $Id$
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -54,7 +55,7 @@ version_t version;
 event_t EEMEM event_eep = {0, 0};
 event_t event;
 
-uint8_t max_analog_sensors = MAX_ANALOG_SENSORS;
+uint8_t max_analog_sensors = DEFAULT_MAX_ANALOG_SENSORS;
 
 uint8_t EEMEM port_config_eep = ANALOG_EN;
 uint8_t port_config;
@@ -186,31 +187,6 @@ finish:
 	DBG_ISR_END();
 }
 
-/** TODO remap to pins PC4/5 and use PCINT for detecting pulses
-ISR(INT0_vect)
-{
-	DBG_ISR_BEGIN();
-
-	uint8_t sensor_id = phy_to_log[PORT_PULSE_1];
-
-	if (ENABLED(sensor_id))
-		register_pulse(&sensor[sensor_id], &state[sensor_id]);
-
-	DBG_ISR_END();
-}
-
-ISR(INT1_vect)
-{
-	DBG_ISR_BEGIN();
-
-	uint8_t sensor_id = phy_to_log[PORT_PULSE_2];
-
-	if (ENABLED(sensor_id))
-		register_pulse(&sensor[sensor_id], &state[sensor_id]);
-
-	DBG_ISR_END();
-}
-**/
 static void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate)
 {
 	psensor->counter += psensor->meterconst;
@@ -225,6 +201,31 @@ static void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate)
 			psensor->counter++;
 		}
 	}
+}
+
+ISR(PCINT1_vect)
+{
+	DBG_ISR_BEGIN();
+
+	uint8_t i;
+	// take a snapshot of the pin state at the start of the ISR
+	uint8_t pinc = PINC;
+
+	//check each of the pulse inputs for a high-to-low state transition
+	for (i = max_analog_sensors; i < MAX_SENSORS; i++) {
+		if (HI_TO_LO(state[i], pinc, i)) {
+			state[i].flags &= ~STATE_PULSE_HIGH;
+
+			if (ENABLED(i))
+				register_pulse(&sensor[i], &state[i]);
+		}
+
+		if (LO_TO_HI(state[i], pinc, i)) {
+			state[i].flags |= STATE_PULSE_HIGH;
+		}		
+	}
+
+	DBG_ISR_END();
 }
 
 ISR(TIMER1_COMPA_vect)
@@ -353,17 +354,6 @@ static inline void setup_ar_uart(void)
 	}
 }
 
-static inline void setup_pulse_input(void)
-{
-	// PD2=INT0 and PD3=INT1 configuration
-	// set as input pin with 20k pull-up enabled
-	PORTD |= (1<<PD2) | (1<<PD3);
-	// INT0 and INT1 to trigger an interrupt on a falling edge
-	EICRA = (1<<ISC01) | (1<<ISC11);
-	// enable INT0 and INT1 interrupts
-	EIMSK = (1<<INT0) | (1<<INT1);
-}
-
 static inline void setup_adc(void)
 {
 	// disable digital input cicuitry on ADCx pins to reduce leakage current
@@ -388,6 +378,43 @@ static inline void setup_adc(void)
 	ADMUX |= phy_to_pin[0];
 	// enable ADC and start a first ADC conversion
 	ADCSRA |= (1<<ADEN) | (1<<ADSC);
+}
+
+static inline void setup_pulse_input(void)
+{
+	uint8_t i, pinc;
+
+	//set PC4 (=PCINT12) & PC5 (=PCINT13) as input pins with internal pull-ups
+	PORTC |= (1<<PC4) | (1<<PC5);
+	//enable pin change interrupts on PCINT12 & 13
+	PCMSK1 |= (1<<PCINT12) | (1<<PCINT13);
+
+	if (port_config & ANALOG_EN) {
+		//disable PC0 & PC1 internal pull-ups
+		PORTC &= ~((1<<PC0) | (1<<PC1));
+		//disable pin change interrupts on PCINT8 & 9
+		PCMSK1 &= ~((1<<PCINT8) | (1<<PCINT9));
+	} else {
+		//set PC0 (=PCINT8) & PC1 (=PCINT9) as input pins with internal pull-ups
+		PORTC |= (1<<PC0) | (1<<PC1);
+		//enable pin change interrupts on PCINT8 & 9
+		PCMSK1 |= (1<<PCINT8) | (1<<PCINT9);
+	}
+
+	//let the pull-ups settle before sampling
+	_delay_ms(10);
+
+	pinc = PINC;	
+
+	//sample each of the pulse inputs and store the logic state
+	for (i = max_analog_sensors; i < MAX_SENSORS; i++) {
+		if (PORT_HIGH(pinc, i)) {
+			state[i].flags = STATE_PULSE_HIGH;
+		}
+	}
+
+	//enable pin change interrupt 1
+	PCICR |= (1<<PCIE1);
 }
 
 static inline void setup_timer1(void)
@@ -481,7 +508,7 @@ int main(void)
 	setup_led();
 	setup_ar_uart();
 	setup_adc();
-	//setup_pulse_input();
+	setup_pulse_input();
 	setup_analog_comparator();
 	setup_timer1();
 	
