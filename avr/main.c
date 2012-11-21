@@ -91,7 +91,7 @@ ISR(SPI_STC_vect)
 	// the SPI is double-buffered, requiring two NO_OPs when switching from Tx to Rx
 	if (spi_status & (SPI_NO_OP_1 | SPI_NO_OP_2)) {
 		spi_status--;
-		DBG_LED_ON();
+		DBG_LED_DELAY_ON();
 		goto finish;
 	}
 
@@ -306,6 +306,11 @@ ISR(TIMER1_COMPA_vect)
 	DBG_ISR_END();
 }
 
+ISR(TIMER0_OVF_vect)
+{
+	DBG_LED_ON();
+}
+
 static inline void setup_led(void)
 {
 	// set output low (= LED enabled)
@@ -444,6 +449,13 @@ static inline void setup_pulse_input(void)
 	PCICR |= (1<<PCIE1);
 }
 
+static inline void setup_timer0(void)
+{
+	// Timer0 prescaler set to 1024 giving us a base freq of 7.8125kHz (DS p.106)
+	// With timer0 in normal operation, an overflow will occur in 32.768ms
+	TCCR0B |= (1<<CS02) | (1<<CS00);
+}
+
 static inline void setup_timer1(void)
 {
 	// Timer1 prescaler set to 64 giving us a base freq of 125kHz (DS p.134)
@@ -537,6 +549,7 @@ int main(void)
 	setup_adc();
 	setup_pulse_input();
 	setup_analog_comparator();
+	setup_timer0();
 	setup_timer1();
 	
 	// initialize the CTRL buffers

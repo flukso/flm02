@@ -7,6 +7,7 @@
 	#define  DBG_OC1A_TOGGLE()	DDRB |= (1<<DDB1); \
 					TCCR1A |= 1<<COM1A0
 
+	#define DBG_LED_DELAY_ON()	/* nothing */
 	#define DBG_LED_ON()		/* nothing */
 	#define DBG_LED_OFF()		/* nothing */
 #else
@@ -15,6 +16,7 @@
 	#define DBG_OC1A_TOGGLE()	/* nothing */
 
 	/* LED behaviour in non-debugging mode */
-	#define DBG_LED_ON()		PORTB &= ~(1<<PB0)
+	#define DBG_LED_DELAY_ON()	TCNT0 = 0; TIMSK0 |= (1<<TOIE0)
+	#define DBG_LED_ON()		TIMSK0 &= ~(1<<TOIE0); PORTB &= ~(1<<PB0) /* and disable timer */
 	#define DBG_LED_OFF()		PORTB |= (1<<PB0)
 #endif
