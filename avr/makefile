@@ -75,7 +75,7 @@ TARGET = main
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c buffer.c spi.c ctrl.c rfm12.c
+SRC = $(TARGET).c buffer.c ctrl.c rfm12.c
 
 
 # List Assembler source files here.

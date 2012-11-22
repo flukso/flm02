@@ -1,5 +1,6 @@
 /* 
  * Copyright (c) 2009 Andrew Smallbone <andrew@rocketnumbernine.com>
+ *               2012 bart.vandermeerssche@flukso.net
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +24,6 @@
 #define _spi_h__
 
 #include <avr/io.h>
-
-#ifdef __cplusplus
-extern "C"{
-#endif
 
 // create alias for the different SPI chip pins - code assumes all on port B
 #if (defined(__AVR_AT90USB82__) || defined(__AVR_AT90USB162__))
@@ -67,29 +64,63 @@ extern "C"{
 #define SPI_MSTR_CLK8 0x05 /* chip clock/8 */
 #define SPI_MSTR_CLK32 0x06 /* chip clock/32 */
 
-#define SPI_ENABLE() SPCR |= (1<<SPE)
-#define SPI_DISABLE() SPCR &= ~(1<<SPE)
+static inline void setup_spi(
+	uint8_t mode,	// timing mode SPI_MODE[0-4]
+	int dord,		// data direction SPI_LSB|SPI_MSB
+	int interrupt,	// whether to raise interrupt on recieve
+	uint8_t clock) 	// clock diviser
+{
+	// specify pin directions for SPI pins on port B
+	if (clock == SPI_SLAVE) { // if slave SS and SCK is input
+		DDRB &= ~(1<<SPI_MOSI_PIN); // input
+		DDRB |= (1<<SPI_MISO_PIN); // output
+		DDRB &= ~(1<<SPI_SS_PIN); // input
+		DDRB &= ~(1<<SPI_SCK_PIN); // input
+	} else {
+		DDRB |= (1<<SPI_MOSI_PIN); // output
+		DDRB &= ~(1<<SPI_MISO_PIN); // input
+		DDRB |= (1<<SPI_SCK_PIN); // output
+		DDRB |= (1<<SPI_SS_PIN); // output
+	}
 
-// setup spi
-void setup_spi(uint8_t mode,   // timing mode SPI_MODE[0-4]
-	       int dord,             // data direction SPI_LSB|SPI_MSB
-	       int interrupt,        // whether to raise interrupt on recieve
-	       uint8_t clock); // clock diviser
+	SPCR = ((interrupt ? 1 : 0)<<SPIE) // interrupt enabled
+		| (1<<SPE) // enable SPI
+		| (dord<<DORD) // LSB or MSB
+		| (((clock != SPI_SLAVE) ? 1 : 0) <<MSTR) // Slave or Master
+		| (((mode & 0x02) == 2) << CPOL) // clock timing mode CPOL
+		| (((mode & 0x01)) << CPHA) // clock timing mode CPHA
+		| (((clock & 0x02) == 2) << SPR1) // cpu clock divisor SPR1
+		| ((clock & 0x01) << SPR0); // cpu clock divisor SPR0
 
-// disable spi
-void disable_spi(void);
+	SPSR = (((clock & 0x04) == 4) << SPI2X); // clock divisor SPI2X
+}
+
+static inline void disable_spi(void)
+{
+	SPCR &= ~(1<<SPE);
+}
+
+static inline void enable_spi(void)
+{
+	SPCR |= (1<<SPE);
+}
 
 // send and receive a byte of data (master mode)
-uint8_t send_spi(uint8_t out);
+static inline uint8_t send_spi(uint8_t out)
+{
+	SPDR = out;
+	while (!(SPSR & (1<<SPIF)));
+
+	return SPDR;
+}
 
 // receive the byte of data waiting on the SPI buffer and
 // set the next byte to transfer - for use in slave mode
 // when interrupts are enabled.
-uint8_t received_from_spi(uint8_t out);
+static inline uint8_t received_from_spi(uint8_t data)
+{
+	SPDR = data;
+	return SPDR;
+}
 
-#ifdef __cplusplus
-} // extern "C"
 #endif
-
-#endif
-
