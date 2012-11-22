@@ -10,10 +10,6 @@ typedef struct {
 
 #define PC7					7
 
-#define PORT_PULSE_1		3
-#define PORT_PULSE_2		4
-#define PORT_UART			5
-
 #define ANALOG_EN			0x01
 #define UART_RX_INV			0x02
 #define UART_TX_INV			0x04
