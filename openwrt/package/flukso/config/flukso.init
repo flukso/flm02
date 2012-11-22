@@ -36,7 +36,7 @@ program_sensor_board()
 	MCU=atmega168p
 	PROGRAMMER=gpio
 	FLAGS="-p $MCU -c $PROGRAMMER"
-	FUSES="-U lfuse:w:0x6E:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m"
+	FUSES="-U lfuse:w:0x6E:m -U hfuse:w:0xDE:m -U efuse:w:0x01:m"
 
 	TARGET=main
 	AVRDIR=/usr/bin/avr
