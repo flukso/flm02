@@ -331,6 +331,7 @@ ISR(TIMER1_CAPT_vect)
 {
 	disable_led();
 	disable_spi();
+	rfm12_spi_disable();
 
 	// throttle the cpu clock to draw less amps
 	// raises the number of bytes that can be written to EEPROM from 43 to 48
@@ -353,6 +354,7 @@ ISR(TIMER1_CAPT_vect)
 	// restore the original clock setting
 	clock_prescale_set(clock_div_1);
 
+	rfm12_spi_enable();
 	enable_spi();
 	setup_led();
 	FLAG_CLR_ICF1();
