@@ -97,7 +97,7 @@ function encode(msg)
 
 	elseif msg.parsed.cmd == 'rt' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
-                                             .. numtohex(msg.parsed[2], 1)
+                                     .. numtohex(msg.parsed[2], 1)
 
 	elseif msg.parsed.cmd == 'ge' and argcheck(1) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
@@ -113,15 +113,15 @@ function encode(msg)
 
 	elseif msg.parsed.cmd == 'sh' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 2)
-                                             .. numtohex(msg.parsed[2], 1)
+                                     .. numtohex(msg.parsed[2], 1)
 
 	elseif msg.parsed.cmd == 'ss' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
-                                             .. numtohex(msg.parsed[2], 1)
+                                     .. numtohex(msg.parsed[2], 1)
 
 	elseif msg.parsed.cmd == 'se' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
-                                             .. numtohex(msg.parsed[2], 1)
+                                     .. numtohex(msg.parsed[2], 1)
 
 	elseif msg.parsed.cmd == 'sp' and argcheck(6) then
 		msg.encoded = msg.parsed.cmd
@@ -132,15 +132,15 @@ function encode(msg)
 
 	elseif msg.parsed.cmd == 'sc' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
-                                             .. numtohex(msg.parsed[2], 4)
+                                     .. numtohex(msg.parsed[2], 4)
 
 	elseif msg.parsed.cmd == 'sm' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
-                                             .. numtohex(msg.parsed[2], 2)
+                                     .. numtohex(msg.parsed[2], 2)
 
 	elseif msg.parsed.cmd == 'sf' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
-                                             .. numtohex(msg.parsed[2], 2)
+                                     .. numtohex(msg.parsed[2], 2)
 
 	elseif msg.parsed.cmd == 'sw' and argcheck(1) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 2)
