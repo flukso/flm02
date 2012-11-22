@@ -36,28 +36,6 @@ cBuffer ctrlTxBuffer; // ctrl transmit buffer
 static char ctrlRxData[CTRL_RX_BUFFER_SIZE];
 static char ctrlTxData[CTRL_TX_BUFFER_SIZE];
 
-extern version_t EEMEM version_eep;
-extern version_t version;
-
-extern event_t EEMEM event_eep;
-extern event_t event;
-
-extern uint8_t max_analog_sensors;
-
-extern uint8_t EEMEM port_config_eep;
-extern uint8_t port_config;
-
-extern uint8_t EEMEM enabled_eep;
-extern uint8_t enabled;
-
-extern uint8_t EEMEM phy_to_log_eep[MAX_SENSORS];
-extern uint8_t phy_to_log[MAX_SENSORS];
-
-extern sensor_t EEMEM sensor_eep[MAX_SENSORS];
-extern sensor_t sensor[MAX_SENSORS];
-
-extern state_t state[MAX_SENSORS];
-
 void ctrlInit(void)
 {
 	// initialize the CTRL receive buffer

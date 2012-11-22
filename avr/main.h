@@ -1,3 +1,6 @@
+#ifndef _main_h__
+#define _main_h__
+
 typedef struct {
 	uint16_t hw_major;
 	uint8_t  hw_minor;
@@ -103,3 +106,28 @@ asm volatile ( \
 )
 
 #define FLAG_CLR_ICF1() TIFR1 |= (1<<ICF1)
+
+/* globals */
+extern version_t EEMEM version_eep;
+extern version_t version;
+
+extern event_t EEMEM event_eep;
+extern event_t event;
+
+extern uint8_t max_analog_sensors;
+
+extern uint8_t EEMEM port_config_eep;
+extern uint8_t port_config;
+
+extern uint8_t EEMEM enabled_eep;
+extern uint8_t enabled;
+
+extern uint8_t EEMEM phy_to_log_eep[MAX_SENSORS];
+extern uint8_t phy_to_log[MAX_SENSORS];
+
+extern sensor_t EEMEM sensor_eep[MAX_SENSORS];
+extern volatile sensor_t sensor[MAX_SENSORS];
+
+extern volatile state_t state[MAX_SENSORS];
+
+#endif

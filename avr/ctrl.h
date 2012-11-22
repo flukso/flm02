@@ -19,9 +19,8 @@
 //
 // $Id$
 
-#ifndef CTRL_H
-#define CTRL_H
-#endif
+#ifndef _ctrl_h__
+#define _ctrl_h__
 
 #include <inttypes.h>
 #include "buffer.h"
@@ -158,3 +157,5 @@ void ctrlCmdCommit(void);
  * @param cmd  specific radio command
  */
 void ctrlCmdRf(uint8_t cmd);
+
+#endif

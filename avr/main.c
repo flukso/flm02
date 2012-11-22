@@ -30,11 +30,11 @@
 #include <util/delay.h>
 
 #include "debug.h"
-#include "main.h"
 #include "spi.h"
 #include "ctrl.h"
 #include "global.h"
 #include "encode.h"
+#include "main.h"
 
 #include "rfm12.h"
 
