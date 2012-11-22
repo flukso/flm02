@@ -266,6 +266,23 @@ void ctrlCmdGet(uint8_t cmd)
 	uint32_t tmp32, tmp32_bis;
 
 	switch (cmd) {
+	case 'd':		/* delta: all changes since last gd */
+		for (i = 0 ; i < MAX_SENSORS; i++) {
+			if (state[i].flags & (STATE_PULSE | STATE_POWER)) {
+				ctrlWriteCharToTxBuffer(i);
+
+				cli();
+				tmp32 = sensor[i].counter;
+				tmp32_bis = (i < max_analog_sensors) ? state[i].power : state[i].timestamp;
+				state[i].flags &= ~(STATE_PULSE | STATE_POWER);
+				sei();
+
+				ctrlWriteLongToTxBuffer(tmp32);
+				ctrlWriteLongToTxBuffer(tmp32_bis);
+			}
+		}
+		break;
+
 	case 'h':		/* hardware {major,minor} version */
 		ctrlWriteShortToTxBuffer(version.hw_major);
 		ctrlWriteCharToTxBuffer(version.hw_minor);
@@ -328,23 +345,6 @@ void ctrlCmdGet(uint8_t cmd)
 
 	case 'b':		/* brown-out counter */
 		ctrlWriteShortToTxBuffer(event.brown_out);
-		break;
-
-	case 'd':		/* delta: all changes since last gd */
-		for (i = 0 ; i < MAX_SENSORS; i++) {
-			if (state[i].flags & (STATE_PULSE | STATE_POWER)) {
-				ctrlWriteCharToTxBuffer(i);
-
-				cli();
-				tmp32 = sensor[i].counter;
-				tmp32_bis = (i < max_analog_sensors) ? state[i].power : state[i].timestamp;
-				state[i].flags &= ~(STATE_PULSE | STATE_POWER);
-				sei();
-
-				ctrlWriteLongToTxBuffer(tmp32);
-				ctrlWriteLongToTxBuffer(tmp32_bis);
-			}
-		}
 		break;
 	}
 }
