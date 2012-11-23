@@ -126,4 +126,9 @@ extern volatile sensor_t sensor[MAX_SENSORS];
 
 extern volatile state_t state[MAX_SENSORS];
 
+/* prototypes */
+void setup_ar_uart(void);
+void setup_adc(void);
+void setup_pulse_input(void);
+
 #endif

@@ -346,6 +346,12 @@ void ctrlCmdGet(uint8_t cmd)
 	case 'b':		/* brown-out counter */
 		ctrlWriteShortToTxBuffer(event.brown_out);
 		break;
+
+	case 'k':		/* konfig hardware lines */
+		for (i = 0; i < 3; i++) {
+			ctrlWriteCharToTxBuffer((port_config >> i) & 0x01);		
+		}
+		break;
 	}
 }
 
@@ -465,6 +471,29 @@ void ctrlCmdSet(uint8_t cmd)
 		sei();
 
 		ctrlWriteShortToTxBuffer(event.brown_out);
+		break;
+
+	case 'k':		/* konfig hardware lines */
+		for (i = 0; i < 3; i++) {
+			ctrlReadCharFromRxBuffer(&tmp8);
+
+			cli();
+			if (tmp8) {
+				port_config |= (1<<i);
+			} else {
+				port_config &= ~(1<<i);
+			}
+			sei();
+
+			ctrlWriteCharToTxBuffer((port_config >> i) & 0x01);
+		}
+
+		cli();
+		setup_ar_uart();
+		setup_adc();
+		setup_pulse_input();
+		sei();
+
 		break;
 	}
 }

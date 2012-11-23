@@ -370,7 +370,7 @@ static inline void setup_datastructs(void)
 	eeprom_read_block((void*)&sensor, (const void*)&sensor_eep, sizeof(sensor));
 }
 
-static inline void setup_ar_uart(void)
+void setup_ar_uart(void)
 {
 	// set PD5 & PD6 as output pins
 	DDRD |= (1<<DDD5) | (1<<DDD6);
@@ -388,7 +388,7 @@ static inline void setup_ar_uart(void)
 	}
 }
 
-static inline void setup_adc(void)
+void setup_adc(void)
 {
 	// disable digital input cicuitry on ADCx pins to reduce leakage current
 	DIDR0 |= (1<<ADC3D) | (1<<ADC2D);
@@ -414,7 +414,7 @@ static inline void setup_adc(void)
 	ADCSRA |= (1<<ADEN) | (1<<ADSC);
 }
 
-static inline void setup_pulse_input(void)
+void setup_pulse_input(void)
 {
 	uint8_t i, pinc;
 
@@ -434,9 +434,6 @@ static inline void setup_pulse_input(void)
 		//enable pin change interrupts on PCINT8 & 9
 		PCMSK1 |= (1<<PCINT8) | (1<<PCINT9);
 	}
-
-	//let the pull-ups settle before sampling
-	_delay_ms(10);
 
 	pinc = PINC;	
 
