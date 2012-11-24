@@ -8,6 +8,8 @@ config settings main
 	option hw_minor 1
 	option sw_major 1
 	option sw_minor 0
+	option uart_tx_invert 0
+	option uart_rx_invert 0
 	option max_sensors 6
 	option max_analog_sensors 3
 	option reset_counters 0

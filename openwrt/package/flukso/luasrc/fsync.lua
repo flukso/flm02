@@ -47,8 +47,11 @@ local MAX_TRIES			= 5
 -- parse and load /etc/config/flukso
 local flukso = uci:get_all('flukso')
 
+local UART_TX_INVERT		= tonumber(flukso.main.uart_tx_invert)
+local UART_RX_INVERT		= tonumber(flukso.main.uart_rx_invert)
 local MAX_SENSORS			= tonumber(flukso.main.max_sensors)
 local MAX_ANALOG_SENSORS	= tonumber(flukso.main.max_analog_sensors)
+local ANALOG_ENABLE			= (MAX_ANALOG_SENSORS == 3) and 1 or 0
 local RESET_COUNTERS		= (flukso.main.reset_counters == '1')
 local WAN_ENABLED			= (flukso.daemon.enable_wan_branch == '1')
 local LAN_ENABLED			= (flukso.daemon.enable_lan_branch == '1')
@@ -59,6 +62,7 @@ local METERCONST_FACTOR	= 0.449
 local GET_HW_VERSION	= 'gh'
 local GET_HW_VERSION_R	= '^gh%s+(%d+)%s+(%d+)$'
 local SET_ENABLE		= 'se %d %d'
+local SET_HW_LINES		= 'sk %d %d %d' -- ANALOG_EN, UART_RX_INV, UART_TX_INV
 local SET_PHY_TO_LOG	= 'sp' -- with [1..MAX_SENSORS] arguments
 local SET_METERCONST	= 'sm %d %d'
 local SET_FRACTION		= 'sf %d %d'
@@ -236,6 +240,14 @@ local function disable_all_sensors(ctrl)
 		local cmd = string.format(SET_ENABLE, toc(i), 0)
 		send(ctrl, cmd)
 	end
+end
+
+--- Set all configurable hardware lines.
+-- @param ctrl  	ctrl object
+-- @return		none 
+local function set_hardware_lines(ctrl)
+	local cmd = string.format(SET_HW_LINES, ANALOG_ENABLE, UART_RX_INVERT, UART_TX_INVERT)
+	send(ctrl, cmd)
 end
 
 --- Populate the physical (port) to logical (sensor) map on the sensor board.
@@ -531,6 +543,7 @@ local ctrl = ctrl_init()
 
 check_hw_version(ctrl)
 disable_all_sensors(ctrl)
+set_hardware_lines(ctrl)
 set_phy_to_log(ctrl)
 set_meterconst(ctrl)
 
