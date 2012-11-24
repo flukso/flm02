@@ -5,7 +5,7 @@
     fsync.lua - synchronize /etc/config/flukso settings with the sensor board
                 via the spid ctrl fifos
 
-    Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+    Copyright (C) 2011-2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,75 +23,77 @@
 ]]--
 
 
-local dbg        = require 'dbg'
-local nixio      = require 'nixio'
-nixio.fs         = require 'nixio.fs'
-local uci        = require 'luci.model.uci'.cursor()
-local luci       = require 'luci'
-luci.json        = require 'luci.json'
-local httpclient = require 'luci.httpclient'
+local dbg 			= require 'dbg'
+local nixio			= require 'nixio'
+nixio.fs			= require 'nixio.fs'
+local uci			= require 'luci.model.uci'.cursor()
+local luci			= require 'luci'
+luci.json			= require 'luci.json'
+local httpclient	= require 'luci.httpclient'
 
 
-local HW_CHECK_OVERRIDE	 = (arg[1] == '-f')
+local HW_CHECK_OVERRIDE = (arg[1] == '-f')
 
-local CTRL_PATH		 = '/var/run/spid/ctrl'
-local CTRL_PATH_IN	 = CTRL_PATH .. '/in'
-local CTRL_PATH_OUT	 = CTRL_PATH .. '/out'
+local CTRL_PATH		= '/var/run/spid/ctrl'
+local CTRL_PATH_IN	= CTRL_PATH .. '/in'
+local CTRL_PATH_OUT	= CTRL_PATH .. '/out'
 
-local O_RDWR_NONBLOCK	 = nixio.open_flags('rdwr', 'nonblock')
-local O_RDWR_CREAT	 = nixio.open_flags('rdwr', 'creat')
-local POLLIN		 = nixio.poll_flags('in')
-local POLL_TIMEOUT_MS	 = 1000
-local MAX_TRIES		 = 5
+local O_RDWR_NONBLOCK	= nixio.open_flags('rdwr', 'nonblock')
+local O_RDWR_CREAT		= nixio.open_flags('rdwr', 'creat')
+local POLLIN			= nixio.poll_flags('in')
+local POLL_TIMEOUT_MS	= 1000
+local MAX_TRIES			= 5
 
 -- parse and load /etc/config/flukso
 local flukso = uci:get_all('flukso')
 
-local MAX_SENSORS	 = tonumber(flukso.main.max_sensors)
-local MAX_ANALOG_SENSORS = tonumber(flukso.main.max_analog_sensors)
-local RESET_COUNTERS	 = (flukso.main.reset_counters == '1')
-local WAN_ENABLED	 = (flukso.daemon.enable_wan_branch == '1')
-local LAN_ENABLED	 = (flukso.daemon.enable_lan_branch == '1')
+local MAX_SENSORS			= tonumber(flukso.main.max_sensors)
+local MAX_ANALOG_SENSORS	= tonumber(flukso.main.max_analog_sensors)
+local RESET_COUNTERS		= (flukso.main.reset_counters == '1')
+local WAN_ENABLED			= (flukso.daemon.enable_wan_branch == '1')
+local LAN_ENABLED			= (flukso.daemon.enable_lan_branch == '1')
 
-local METERCONST_FACTOR	 = 0.449
+local METERCONST_FACTOR	= 0.449
 
 -- sensor board commands
-local GET_HW_VERSION	 = 'gh'
-local GET_HW_VERSION_R	 = '^gh%s+(%d+)%s+(%d+)$'
-local SET_ENABLE	 = 'se %d %d'
-local SET_PHY_TO_LOG	 = 'sp' -- with [1..MAX_SENSORS] arguments
-local SET_METERCONST	 = 'sm %d %d'
-local SET_FRACTION	 = 'sf %d %d'
-local SET_COUNTER	 = 'sc %d %d'
-local COMMIT		 = 'ct'
+local GET_HW_VERSION	= 'gh'
+local GET_HW_VERSION_R	= '^gh%s+(%d+)%s+(%d+)$'
+local SET_ENABLE		= 'se %d %d'
+local SET_PHY_TO_LOG	= 'sp' -- with [1..MAX_SENSORS] arguments
+local SET_METERCONST	= 'sm %d %d'
+local SET_FRACTION		= 'sf %d %d'
+local SET_COUNTER		= 'sc %d %d'
+local COMMIT			= 'ct'
 
 -- LAN settings
-local API_PATH		 = '/www/sensor/'
-local CGI_SCRIPT	 = '/usr/bin/restful'
-local AVAHI_PATH	 = '/etc/avahi/services/flukso.service'
+local API_PATH		= '/www/sensor/'
+local CGI_SCRIPT	= '/usr/bin/restful'
+local AVAHI_PATH	= '/etc/avahi/services/flukso.service'
 
 -- WAN settings
-local WAN_BASE_URL	 = flukso.daemon.wan_base_url .. 'sensor/'
-local WAN_KEY		 = '0123456789abcdef0123456789abcdef'
+local WAN_BASE_URL	= flukso.daemon.wan_base_url .. 'sensor/'
+local WAN_KEY		= '0123456789abcdef0123456789abcdef'
 uci:foreach('system', 'system', function(x) WAN_KEY = x.key end) -- quirky but it works
 
 -- https header helpers
-local FLUKSO_VERSION	 = '000'
+local FLUKSO_VERSION = '000'
 uci:foreach('system', 'system', function(x) FLUKSO_VERSION = x.version end)
 
-local USER_AGENT	 = 'Fluksometer v' .. FLUKSO_VERSION
-local CACERT		 = flukso.daemon.cacert
+local USER_AGENT	= 'Fluksometer v' .. FLUKSO_VERSION
+local CACERT		= flukso.daemon.cacert
 
 -- map exit codes to strings
-local EXIT_STRING	 = { [-1] = "no synchronisation",
-                              [0] = "successful",
-                              [1] = "unable to open ctrl fifos",
-                              [2] = "detected lock on ctrl fifos",
-                              [3] = "synchronisation with sensor board failed",
-                              [4] = "sensor board hardware compatibility check failed",
-                              [5] = "analog sensor numbering error",
-                              [6] = "port numbering error",
-                              [7] = "synchronisation with Flukso server failed" }
+local EXIT_STRING = {
+	[-1] = "no synchronisation",
+	 [0] = "successful",
+	 [1] = "unable to open ctrl fifos",
+	 [2] = "detected lock on ctrl fifos",
+	 [3] = "synchronisation with sensor board failed",
+	 [4] = "sensor board hardware compatibility check failed",
+	 [5] = "analog sensor numbering error",
+	 [6] = "port numbering error",
+	 [7] = "synchronisation with Flukso server failed"
+}
 
 
 --- Convert from Lua-style to c-style index.
