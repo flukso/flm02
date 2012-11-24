@@ -26,7 +26,7 @@
 #include <avr/interrupt.h>
 #include <avr/eeprom.h>
 #include <avr/power.h>
-
+#include <avr/wdt.h>
 #include <util/delay.h>
 
 #include "debug.h"
@@ -351,13 +351,8 @@ ISR(TIMER1_CAPT_vect)
 	eeprom_update_block((const void*)&event, (void*)&event_eep, sizeof(event));
 #endif
 
-	// restore the original clock setting
-	clock_prescale_set(clock_div_1);
-
-	rfm12_spi_enable();
-	enable_spi();
-	setup_led();
-	FLAG_CLR_ICF1();
+	wdt_enable(WDTO_250MS);
+	_delay_ms(1000);
 }
 
 static inline void setup_datastructs(void)
@@ -539,6 +534,9 @@ int main(void)
 	uint8_t i;
 
 	cli();
+	MCUSR = 0;
+	wdt_disable();
+
 	//TODO replace by an ana comp polling loop
 	_delay_ms(10);
 
