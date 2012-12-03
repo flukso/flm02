@@ -33,6 +33,7 @@ static int mosq__error(lua_State *L, int mosq_errno) {
 
 		case MOSQ_ERR_NO_CONN:
 		case MOSQ_ERR_CONN_LOST:
+		case MOSQ_ERR_PAYLOAD_SIZE:
 			lua_pushnil(L);
 			lua_pushinteger(L, mosq_errno);
 			lua_pushstring(L, mosquitto_strerror(mosq_errno));
@@ -150,6 +151,26 @@ static int ctx_disconnect(lua_State *L)
 	return mosq__error(L, rc);
 }
 
+static int ctx_publish(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+	int *mid = NULL;	/* message id could be used in the publish callback */
+	const char *topic = luaL_checkstring(L, 2);
+
+	if (!lua_isstring(L, 3)) {
+		return luaL_argerror(L, 3, "payload should be a string or number");
+	};
+
+	size_t payloadlen;
+	const void *payload = (const void *) lua_tolstring(L, 3, &payloadlen);
+
+	int qos = luaL_checkint(L, 4);
+	bool retain = lua_toboolean(L, 5);
+
+	int rc = mosquitto_publish(ctx->mosq, mid, topic, payloadlen, payload, qos, retain);
+	return mosq__error(L, rc);
+}
+
 static int ctx_loop(lua_State *L)
 {
 	ctx_t *ctx = ctx_check(L);
@@ -187,8 +208,8 @@ static const struct luaL_Reg ctx_M[] = {
 	{"connect_async",	ctx_connect_async},
 	{"reconnect",		ctx_reconnect},
 	{"disconnect",		ctx_disconnect},
-/*	{"publish",			ctx_publish},
-	{"subscribe",		ctx_subscribe},
+	{"publish",			ctx_publish},
+/*	{"subscribe",		ctx_subscribe},
 	{"unsubscribe",		ctx_unsubscribe},		TODO */
 	{"loop",			ctx_loop},
 	{"start_loop",		ctx_loop_start},
