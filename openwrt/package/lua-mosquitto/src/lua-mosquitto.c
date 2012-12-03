@@ -26,10 +26,13 @@ static int mosq__error(lua_State *L, int mosq_errno) {
 
 		case MOSQ_ERR_INVAL:
 		case MOSQ_ERR_NOMEM:
+		case MOSQ_ERR_PROTOCOL:
+		case MOSQ_ERR_NOT_SUPPORTED:
 			return luaL_error(L, mosquitto_strerror(mosq_errno));
 			break;
 
 		case MOSQ_ERR_NO_CONN:
+		case MOSQ_ERR_CONN_LOST:
 			lua_pushnil(L);
 			lua_pushinteger(L, mosq_errno);
 			lua_pushstring(L, mosquitto_strerror(mosq_errno));
@@ -147,7 +150,23 @@ static int ctx_disconnect(lua_State *L)
 	return mosq__error(L, rc);
 }
 
+static int ctx_loop(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+	int timeout = luaL_checkint(L, 2);
+	int max_packets = luaL_checkint(L, 3);
 
+	int rc = mosquitto_loop(ctx->mosq, timeout, max_packets);
+	return mosq__error(L, rc);
+}
+
+static int ctx_loop_start(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+
+	int rc = mosquitto_loop_start(ctx->mosq);
+	return mosq__error(L, rc);
+}
 static const struct luaL_Reg R[] = {
 	{"version",	mosq_version},
 	{"init",	mosq_init},
@@ -168,6 +187,13 @@ static const struct luaL_Reg ctx_M[] = {
 	{"connect_async",	ctx_connect_async},
 	{"reconnect",		ctx_reconnect},
 	{"disconnect",		ctx_disconnect},
+/*	{"publish",			ctx_publish},
+	{"subscribe",		ctx_subscribe},
+	{"unsubscribe",		ctx_unsubscribe},		TODO */
+	{"loop",			ctx_loop},
+	{"start_loop",		ctx_loop_start},
+/*	{"stop_loop",		ctx_loop_stop},
+	{"get_socket",		ctx_socket},			TODO */
 	{NULL,		NULL}
 };
 
