@@ -16,25 +16,35 @@ typedef struct {
 	void *obj;
 } ctx_t;
 
-/* raises an error with mosquitto-specific strerr */
+/* handle mosquitto lib return codes */
 static int mosq__error(lua_State *L, int mosq_errno) {
-    return luaL_error(L, mosquitto_strerror(mosq_errno));
-}
+	switch (mosq_errno) {
+		case MOSQ_ERR_SUCCESS:
+			lua_pushboolean(L, true);
+			return 1;
+			break;
 
-/* pushes nil, mosquitto-specific error number and strerr on the stack */
-static int mosq__perror(lua_State *L, int mosq_errno) {
-	lua_pushnil(L);
-	lua_pushinteger(L, mosq_errno);
-	lua_pushstring(L, mosquitto_strerror(mosq_errno));
-	return 3;
-}
+		case MOSQ_ERR_INVAL:
+		case MOSQ_ERR_NOMEM:
+			return luaL_error(L, mosquitto_strerror(mosq_errno));
+			break;
 
-/* pushes nil, mosquitto-specific error number and strerr on the stack */
-static int mosq__psyserror(lua_State *L) {
-	lua_pushnil(L);
-	lua_pushinteger(L, errno);
-	lua_pushstring(L, strerror(errno));
-	return 3;
+		case MOSQ_ERR_NO_CONN:
+			lua_pushnil(L);
+			lua_pushinteger(L, mosq_errno);
+			lua_pushstring(L, mosquitto_strerror(mosq_errno));
+			return 3;
+			break;
+
+		case MOSQ_ERR_ERRNO:
+			lua_pushnil(L);
+			lua_pushinteger(L, errno);
+			lua_pushstring(L, strerror(errno));
+			return 3;
+			break;
+	};
+
+	return 0;
 }
 
 static int mosq_version(lua_State *L)
@@ -105,21 +115,20 @@ static int ctx_connect(lua_State *L)
 	int port = luaL_checkint(L, 3);
 	int keepalive = luaL_checkint(L, 4);
 
-	int rc = mosquitto_connect(ctx->mosq, host, port, keepalive);
+	int rc =  mosquitto_connect(ctx->mosq, host, port, keepalive);
+	return mosq__error(L, rc);
+}
 
-	switch (rc) {
-		case MOSQ_ERR_INVAL:
-			return mosq__error(L, rc);
-			break;
+static int ctx_connect_async(lua_State *L)
+{
+	/* TODO add sensible defaults, especially for port & keepalive */
+	ctx_t *ctx = ctx_check(L);
+	const char *host = luaL_checkstring(L, 2);
+	int port = luaL_checkint(L, 3);
+	int keepalive = luaL_checkint(L, 4);
 
-		case MOSQ_ERR_ERRNO:
-			return mosq__psyserror(L);
-			break;
-	};
-
-	lua_pushboolean(L, true);
-
-	return 1;
+	int rc =  mosquitto_connect_async(ctx->mosq, host, port, keepalive);
+	return mosq__error(L, rc);
 }
 
 static int ctx_reconnect(lua_State *L)
@@ -127,20 +136,7 @@ static int ctx_reconnect(lua_State *L)
 	ctx_t *ctx = ctx_check(L);
 
 	int rc = mosquitto_reconnect(ctx->mosq);
-
-	switch (rc) {
-		case MOSQ_ERR_INVAL:
-			return mosq__error(L, rc);
-			break;
-
-		case MOSQ_ERR_ERRNO:
-			return mosq__psyserror(L);
-			break;
-	};
-
-	lua_pushboolean(L, true);
-
-	return 1;
+	return mosq__error(L, rc);
 }
 
 static int ctx_disconnect(lua_State *L)
@@ -148,20 +144,7 @@ static int ctx_disconnect(lua_State *L)
 	ctx_t *ctx = ctx_check(L);
 
 	int rc = mosquitto_disconnect(ctx->mosq);
-
-	switch (rc) {
-		case MOSQ_ERR_INVAL:
-			return mosq__error(L, rc);
-			break;
-
-		case MOSQ_ERR_NO_CONN:
-			return mosq__perror(L, rc);
-			break;
-	};
-
-	lua_pushboolean(L, true);
-
-	return 1;
+	return mosq__error(L, rc);
 }
 
 
@@ -182,6 +165,7 @@ static const struct luaL_Reg ctx_M[] = {
 	{"clear_will",		ctx_will_clear},
 	{"set_login",		ctx_login_set},			TODO */
 	{"connect",			ctx_connect},
+	{"connect_async",	ctx_connect_async},
 	{"reconnect",		ctx_reconnect},
 	{"disconnect",		ctx_disconnect},
 	{NULL,		NULL}
