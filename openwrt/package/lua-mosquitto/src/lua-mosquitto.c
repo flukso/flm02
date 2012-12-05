@@ -65,13 +65,13 @@ static int mosq_version(lua_State *L)
 static int mosq_init(lua_State *L)
 {
 	mosquitto_lib_init();
-	return 0;
+	return mosq__error(L, MOSQ_ERR_SUCCESS);
 }
 
 static int mosq_cleanup(lua_State *L)
 {
 	mosquitto_lib_cleanup();
-	return 0;
+	return mosq__error(L, MOSQ_ERR_SUCCESS);
 }
 
 static int mosq_new(lua_State *L)
@@ -108,7 +108,7 @@ static int ctx_destroy(lua_State *L)
 	ctx_t *ctx = ctx_check(L);
 	mosquitto_destroy(ctx->mosq);
 
-	return 0;
+	return mosq__error(L, MOSQ_ERR_SUCCESS);
 }
 
 static int ctx_connect(lua_State *L)
@@ -188,6 +188,24 @@ static int ctx_loop_start(lua_State *L)
 	int rc = mosquitto_loop_start(ctx->mosq);
 	return mosq__error(L, rc);
 }
+
+static int ctx_socket(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+
+	int fd = mosquitto_socket(ctx->mosq);
+	switch (fd) {
+		case -1:
+			lua_pushboolean(L, false);
+			break;
+		default:
+			lua_pushinteger(L, fd);
+			break;
+	}
+
+	return 1;
+}
+
 static const struct luaL_Reg R[] = {
 	{"version",	mosq_version},
 	{"init",	mosq_init},
@@ -213,8 +231,8 @@ static const struct luaL_Reg ctx_M[] = {
 	{"unsubscribe",		ctx_unsubscribe},		TODO */
 	{"loop",			ctx_loop},
 	{"start_loop",		ctx_loop_start},
-/*	{"stop_loop",		ctx_loop_stop},
-	{"get_socket",		ctx_socket},			TODO */
+/*	{"stop_loop",		ctx_loop_stop},			TODO */
+	{"socket",			ctx_socket},
 	{NULL,		NULL}
 };
 
