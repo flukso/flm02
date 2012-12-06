@@ -33,8 +33,9 @@
 #define MOSQ_META_CTX	"mosquitto.ctx"
 
 typedef struct {
+	lua_State *L;
 	struct mosquitto *mosq;
-	void *obj;
+	int on_message;
 } ctx_t;
 
 /* handle mosquitto lib return codes */
@@ -74,7 +75,7 @@ static int mosq__error(lua_State *L, int mosq_errno) {
 
 static int mosq_version(lua_State *L)
 {
-    int major, minor, rev;
+	int major, minor, rev;
 	char version[16];
 
 	mosquitto_lib_version(&major, &minor, &rev);
@@ -106,8 +107,9 @@ static int mosq_new(lua_State *L)
 
 	ctx_t *ctx = (ctx_t *) lua_newuserdata(L, sizeof(ctx_t));
 
-	ctx->obj = NULL;
-	ctx->mosq = mosquitto_new(id, clean_session, ctx->obj);
+	/* ctx will be passed as void *obj arg in the callback functions */
+	ctx->L = L;
+	ctx->mosq = mosquitto_new(id, clean_session, ctx);
 
 	if (ctx->mosq == NULL) {
 		return luaL_error(L, strerror(errno));
@@ -175,7 +177,7 @@ static int ctx_disconnect(lua_State *L)
 static int ctx_publish(lua_State *L)
 {
 	ctx_t *ctx = ctx_check(L);
-	int *mid = NULL;	/* message id could be used in the publish callback */
+	int mid;	/* message id is referenced in the publish callback */
 	const char *topic = luaL_checkstring(L, 2);
 
 	if (!lua_isstring(L, 3)) {
@@ -188,8 +190,31 @@ static int ctx_publish(lua_State *L)
 	int qos = luaL_checkint(L, 4);
 	bool retain = lua_toboolean(L, 5);
 
-	int rc = mosquitto_publish(ctx->mosq, mid, topic, payloadlen, payload, qos, retain);
-	return mosq__error(L, rc);
+	int rc = mosquitto_publish(ctx->mosq, &mid, topic, payloadlen, payload, qos, retain);
+
+	if (rc != MOSQ_ERR_SUCCESS) {
+		return mosq__error(L, rc);
+	} else {
+		lua_pushinteger(L, mid);
+		return 1;
+	};
+}
+
+static int ctx_subscribe(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+	int mid;
+	const char *sub = luaL_checkstring(L, 2);
+	int qos = luaL_checkinteger(L, 3);
+
+	int rc = mosquitto_subscribe(ctx->mosq, &mid, sub, qos);
+
+	if (rc != MOSQ_ERR_SUCCESS) {
+		return mosq__error(L, rc);
+	} else {
+		lua_pushinteger(L, mid);
+		return 1;
+	};
 }
 
 static int ctx_loop(lua_State *L)
@@ -227,6 +252,77 @@ static int ctx_socket(lua_State *L)
 	return 1;
 }
 
+static int ctx_loop_read(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+	int max_packets = luaL_checkint(L, 2);
+
+	int rc = mosquitto_loop_read(ctx->mosq, max_packets);
+	return mosq__error(L, rc);
+}
+
+static int ctx_loop_write(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+	int max_packets = luaL_checkint(L, 2);
+
+	int rc = mosquitto_loop_write(ctx->mosq, max_packets);
+	return mosq__error(L, rc);
+}
+
+static int ctx_loop_misc(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+
+	int rc = mosquitto_loop_misc(ctx->mosq);
+	return mosq__error(L, rc);
+}
+
+static int ctx_want_write(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+
+	lua_pushboolean(L, mosquitto_want_write(ctx->mosq));
+	return 1;
+}
+
+static void ctx_on_message(
+	struct mosquitto *mosq,
+	void *obj,
+	const struct mosquitto_message *msg)
+{
+	ctx_t *ctx = obj;
+
+	/* push registered Lua callback function onto the stack */
+	lua_rawgeti(ctx->L, LUA_REGISTRYINDEX, ctx->on_message);
+	/* push function args */
+	lua_pushinteger(ctx->L, msg->mid);
+	lua_pushstring(ctx->L, msg->topic);
+	lua_pushlstring(ctx->L, msg->payload, msg->payloadlen);
+	lua_pushinteger(ctx->L, msg->qos);
+	lua_pushboolean(ctx->L, msg->retain);
+
+	lua_pcall(ctx->L, 5, 0, 0); /* args: mid, topic, payload, qos, retain */
+}
+
+static int ctx_message_callback_set(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+
+	if (!lua_isfunction(L, 2)) {
+		return luaL_argerror(L, 2, "expecting a callback function");
+	}
+
+	/* pop the function from the stack and store it into the registry */
+	int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+	/* store the reference into the context, to be retrieved by ctx_on_message */
+	ctx->on_message = ref;
+	/* register C callback in mosquitto */
+	mosquitto_message_callback_set(ctx->mosq, ctx_on_message);
+
+	return mosq__error(L, MOSQ_ERR_SUCCESS);
+}
+
 static const struct luaL_Reg R[] = {
 	{"version",	mosq_version},
 	{"init",	mosq_init},
@@ -248,17 +344,27 @@ static const struct luaL_Reg ctx_M[] = {
 	{"reconnect",		ctx_reconnect},
 	{"disconnect",		ctx_disconnect},
 	{"publish",			ctx_publish},
-/*	{"subscribe",		ctx_subscribe},
-	{"unsubscribe",		ctx_unsubscribe},		TODO */
+	{"subscribe",		ctx_subscribe},
+/*	{"unsubscribe",		ctx_unsubscribe},		TODO */
 	{"loop",			ctx_loop},
 	{"start_loop",		ctx_loop_start},
 /*	{"stop_loop",		ctx_loop_stop},			TODO */
 	{"socket",			ctx_socket},
+	{"read",			ctx_loop_read},
+	{"write",			ctx_loop_write},
+	{"misc",			ctx_loop_misc},
+	{"want_write",		ctx_want_write},
+	{"message_callback",	ctx_message_callback_set},
 	{NULL,		NULL}
 };
 
 int luaopen_mosquitto(lua_State *L)
 {
+	/* set private environment for this module */
+	lua_newtable(L);
+	lua_replace(L, LUA_ENVIRONINDEX);
+
+	/* metatable.__index = metatable */
 	luaL_newmetatable(L, MOSQ_META_CTX);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
