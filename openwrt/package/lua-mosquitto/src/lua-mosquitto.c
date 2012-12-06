@@ -39,7 +39,7 @@ typedef struct {
 } ctx_t;
 
 /* handle mosquitto lib return codes */
-static int mosq__error(lua_State *L, int mosq_errno) {
+static int mosq__pstatus(lua_State *L, int mosq_errno) {
 	switch (mosq_errno) {
 		case MOSQ_ERR_SUCCESS:
 			lua_pushboolean(L, true);
@@ -87,13 +87,13 @@ static int mosq_version(lua_State *L)
 static int mosq_init(lua_State *L)
 {
 	mosquitto_lib_init();
-	return mosq__error(L, MOSQ_ERR_SUCCESS);
+	return mosq__pstatus(L, MOSQ_ERR_SUCCESS);
 }
 
 static int mosq_cleanup(lua_State *L)
 {
 	mosquitto_lib_cleanup();
-	return mosq__error(L, MOSQ_ERR_SUCCESS);
+	return mosq__pstatus(L, MOSQ_ERR_SUCCESS);
 }
 
 static int mosq_new(lua_State *L)
@@ -131,7 +131,7 @@ static int ctx_destroy(lua_State *L)
 	ctx_t *ctx = ctx_check(L);
 	mosquitto_destroy(ctx->mosq);
 
-	return mosq__error(L, MOSQ_ERR_SUCCESS);
+	return mosq__pstatus(L, MOSQ_ERR_SUCCESS);
 }
 
 static int ctx_connect(lua_State *L)
@@ -143,7 +143,7 @@ static int ctx_connect(lua_State *L)
 	int keepalive = luaL_checkint(L, 4);
 
 	int rc =  mosquitto_connect(ctx->mosq, host, port, keepalive);
-	return mosq__error(L, rc);
+	return mosq__pstatus(L, rc);
 }
 
 static int ctx_connect_async(lua_State *L)
@@ -155,7 +155,7 @@ static int ctx_connect_async(lua_State *L)
 	int keepalive = luaL_checkint(L, 4);
 
 	int rc =  mosquitto_connect_async(ctx->mosq, host, port, keepalive);
-	return mosq__error(L, rc);
+	return mosq__pstatus(L, rc);
 }
 
 static int ctx_reconnect(lua_State *L)
@@ -163,7 +163,7 @@ static int ctx_reconnect(lua_State *L)
 	ctx_t *ctx = ctx_check(L);
 
 	int rc = mosquitto_reconnect(ctx->mosq);
-	return mosq__error(L, rc);
+	return mosq__pstatus(L, rc);
 }
 
 static int ctx_disconnect(lua_State *L)
@@ -171,7 +171,7 @@ static int ctx_disconnect(lua_State *L)
 	ctx_t *ctx = ctx_check(L);
 
 	int rc = mosquitto_disconnect(ctx->mosq);
-	return mosq__error(L, rc);
+	return mosq__pstatus(L, rc);
 }
 
 static int ctx_publish(lua_State *L)
@@ -193,7 +193,7 @@ static int ctx_publish(lua_State *L)
 	int rc = mosquitto_publish(ctx->mosq, &mid, topic, payloadlen, payload, qos, retain);
 
 	if (rc != MOSQ_ERR_SUCCESS) {
-		return mosq__error(L, rc);
+		return mosq__pstatus(L, rc);
 	} else {
 		lua_pushinteger(L, mid);
 		return 1;
@@ -210,7 +210,7 @@ static int ctx_subscribe(lua_State *L)
 	int rc = mosquitto_subscribe(ctx->mosq, &mid, sub, qos);
 
 	if (rc != MOSQ_ERR_SUCCESS) {
-		return mosq__error(L, rc);
+		return mosq__pstatus(L, rc);
 	} else {
 		lua_pushinteger(L, mid);
 		return 1;
@@ -224,7 +224,7 @@ static int ctx_loop(lua_State *L)
 	int max_packets = luaL_checkint(L, 3);
 
 	int rc = mosquitto_loop(ctx->mosq, timeout, max_packets);
-	return mosq__error(L, rc);
+	return mosq__pstatus(L, rc);
 }
 
 static int ctx_loop_start(lua_State *L)
@@ -232,7 +232,7 @@ static int ctx_loop_start(lua_State *L)
 	ctx_t *ctx = ctx_check(L);
 
 	int rc = mosquitto_loop_start(ctx->mosq);
-	return mosq__error(L, rc);
+	return mosq__pstatus(L, rc);
 }
 
 static int ctx_socket(lua_State *L)
@@ -258,7 +258,7 @@ static int ctx_loop_read(lua_State *L)
 	int max_packets = luaL_checkint(L, 2);
 
 	int rc = mosquitto_loop_read(ctx->mosq, max_packets);
-	return mosq__error(L, rc);
+	return mosq__pstatus(L, rc);
 }
 
 static int ctx_loop_write(lua_State *L)
@@ -267,7 +267,7 @@ static int ctx_loop_write(lua_State *L)
 	int max_packets = luaL_checkint(L, 2);
 
 	int rc = mosquitto_loop_write(ctx->mosq, max_packets);
-	return mosq__error(L, rc);
+	return mosq__pstatus(L, rc);
 }
 
 static int ctx_loop_misc(lua_State *L)
@@ -275,7 +275,7 @@ static int ctx_loop_misc(lua_State *L)
 	ctx_t *ctx = ctx_check(L);
 
 	int rc = mosquitto_loop_misc(ctx->mosq);
-	return mosq__error(L, rc);
+	return mosq__pstatus(L, rc);
 }
 
 static int ctx_want_write(lua_State *L)
@@ -320,7 +320,7 @@ static int ctx_message_callback_set(lua_State *L)
 	/* register C callback in mosquitto */
 	mosquitto_message_callback_set(ctx->mosq, ctx_on_message);
 
-	return mosq__error(L, MOSQ_ERR_SUCCESS);
+	return mosq__pstatus(L, MOSQ_ERR_SUCCESS);
 }
 
 static const struct luaL_Reg R[] = {
