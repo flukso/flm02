@@ -29,13 +29,38 @@
 
 #include <mosquitto.h>
 
+/* re-using mqtt3 message types as callback types */
+#define CONNECT 	0x10
+#define PUBLISH 	0x30
+#define SUBSCRIBE 	0x80
+#define UNSUBSCRIBE	0xA0
+#define DISCONNECT	0xE0
+/* add two extra callback types */
+#define MESSAGE		0x01
+#define LOG			0x02
+
+enum connect_return_codes {
+	CONN_ACCEPT,
+	CONN_REF_BAD_PROTOCOL,
+	CONN_REF_BAD_ID,
+	CONN_REF_SERVER_NOAVAIL,
+	CONN_REF_BAD_LOGIN,
+	CONN_REF_NO_AUTH
+};
+
 /* unique naming for userdata metatables */
 #define MOSQ_META_CTX	"mosquitto.ctx"
 
 typedef struct {
 	lua_State *L;
 	struct mosquitto *mosq;
+	int on_connect;
+	int on_disconnect;
+	int on_publish;
 	int on_message;
+	int on_subscribe;
+	int on_unsubscribe;
+	int on_log;
 } ctx_t;
 
 /* handle mosquitto lib return codes */
@@ -286,6 +311,87 @@ static int ctx_want_write(lua_State *L)
 	return 1;
 }
 
+static void ctx_on_connect(
+	struct mosquitto *mosq,
+	void *obj,
+	int rc)
+{
+	ctx_t *ctx = obj;
+	bool success = false;
+	char *str = "reserved for future use";
+
+	switch(rc) {
+		case CONN_ACCEPT:
+			success = true;
+			str = "connection accepted";
+			break;
+
+		case CONN_REF_BAD_PROTOCOL:
+			str = "connection refused - incorrect protocol version";
+			break;
+
+		case CONN_REF_BAD_ID:
+			str = "connection refused - invalid client identifier";
+			break;
+
+		case CONN_REF_SERVER_NOAVAIL:
+			str = "connection refused - server unavailable";
+			break;
+
+		case CONN_REF_BAD_LOGIN:
+			str = "onnection refused - bad username or password";
+			break;
+
+		case CONN_REF_NO_AUTH:
+			str = "connection refused - not authorised";
+			break;	
+	}
+
+	lua_rawgeti(ctx->L, LUA_REGISTRYINDEX, ctx->on_connect);
+
+	lua_pushboolean(ctx->L, success);
+	lua_pushinteger(ctx->L, rc);
+	lua_pushstring(ctx->L, str);
+
+	lua_pcall(ctx->L, 3, 0, 0);
+}
+
+
+static void ctx_on_disconnect(
+	struct mosquitto *mosq,
+	void *obj,
+	int rc)
+{
+	ctx_t *ctx = obj;
+	bool success = true;
+	char *str = "client-initiated disconnect";
+
+	if (rc) {
+		success = false;
+		str = "unexpected disconnect";
+	}
+
+	lua_rawgeti(ctx->L, LUA_REGISTRYINDEX, ctx->on_disconnect);
+
+	lua_pushboolean(ctx->L, success);
+	lua_pushinteger(ctx->L, rc);
+	lua_pushstring(ctx->L, str);
+
+	lua_pcall(ctx->L, 3, 0, 0);	
+}
+
+static void ctx_on_publish(
+	struct mosquitto *mosq,
+	void *obj,
+	int mid)
+{
+	ctx_t *ctx = obj;
+
+	lua_rawgeti(ctx->L, LUA_REGISTRYINDEX, ctx->on_publish);
+	lua_pushinteger(ctx->L, mid);
+	lua_pcall(ctx->L, 1, 0, 0);
+}
+
 static void ctx_on_message(
 	struct mosquitto *mosq,
 	void *obj,
@@ -305,22 +411,145 @@ static void ctx_on_message(
 	lua_pcall(ctx->L, 5, 0, 0); /* args: mid, topic, payload, qos, retain */
 }
 
-static int ctx_message_callback_set(lua_State *L)
+static void ctx_on_subscribe(
+	struct mosquitto *mosq,
+	void *obj,
+	int mid,
+	int qos_count,
+	const int *granted_qos)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = obj;
+	int i;	
 
-	if (!lua_isfunction(L, 2)) {
-		return luaL_argerror(L, 2, "expecting a callback function");
+	lua_rawgeti(ctx->L, LUA_REGISTRYINDEX, ctx->on_subscribe);
+	lua_pushinteger(ctx->L, mid);
+
+	for (i = 0; i < qos_count; i++) {
+		lua_pushinteger(ctx->L, granted_qos[i]);
 	}
 
-	/* pop the function from the stack and store it into the registry */
+	lua_pcall(ctx->L, qos_count + 1, 0, 0);
+}
+
+static void ctx_on_unsubscribe(
+	struct mosquitto *mosq,
+	void *obj,
+	int mid)
+{
+	ctx_t *ctx = obj;
+
+	lua_rawgeti(ctx->L, LUA_REGISTRYINDEX, ctx->on_unsubscribe);
+	lua_pushinteger(ctx->L, mid);
+	lua_pcall(ctx->L, 1, 0 , 0);
+}
+
+static void ctx_on_log(
+	struct mosquitto *mosq,
+	void *obj,
+	int level,
+	const char *str)
+{
+	ctx_t *ctx = obj;
+
+	lua_rawgeti(ctx->L, LUA_REGISTRYINDEX, ctx->on_log);
+
+	lua_pushinteger(ctx->L, level);
+	lua_pushstring(ctx->L, str);
+
+	lua_pcall(ctx->L, 2, 0, 0);
+}
+
+static int ctx_callback_set(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+	int callback_type = luaL_checkint(L, 2);
+
+	if (!lua_isfunction(L, 3)) {
+		return luaL_argerror(L, 3, "expecting a callback function");
+	}
+
+	/* pop the function from the stack and store it in the registry */
 	int ref = luaL_ref(L, LUA_REGISTRYINDEX);
-	/* store the reference into the context, to be retrieved by ctx_on_message */
-	ctx->on_message = ref;
-	/* register C callback in mosquitto */
-	mosquitto_message_callback_set(ctx->mosq, ctx_on_message);
+
+	switch (callback_type) {
+		case CONNECT:
+			ctx->on_connect = ref;
+			mosquitto_connect_callback_set(ctx->mosq, ctx_on_connect);
+			break;
+
+		case DISCONNECT:
+			ctx->on_disconnect = ref;
+			mosquitto_disconnect_callback_set(ctx->mosq, ctx_on_disconnect);
+			break;
+
+		case PUBLISH:
+			ctx->on_publish = ref;
+			mosquitto_publish_callback_set(ctx->mosq, ctx_on_publish);
+			break;
+
+		case MESSAGE:
+			/* store the reference into the context, to be retrieved by ctx_on_message */
+			ctx->on_message = ref;
+			/* register C callback in mosquitto */
+			mosquitto_message_callback_set(ctx->mosq, ctx_on_message);
+			break;
+
+		case SUBSCRIBE:
+			ctx->on_subscribe = ref;
+			mosquitto_subscribe_callback_set(ctx->mosq, ctx_on_subscribe);
+			break;
+
+		case UNSUBSCRIBE:
+			ctx->on_unsubscribe = ref;
+			mosquitto_unsubscribe_callback_set(ctx->mosq, ctx_on_unsubscribe);
+			break;
+
+		case LOG:
+			ctx->on_log = ref;
+			mosquitto_log_callback_set(ctx->mosq, ctx_on_log);
+			break;
+
+		default:
+			luaL_unref(L, LUA_REGISTRYINDEX, ref);
+			luaL_argerror(L, 2, "not a proper callback type");
+			break;
+	}
 
 	return mosq__pstatus(L, MOSQ_ERR_SUCCESS);
+}
+
+struct define {
+	const char* name;
+	int value;
+};
+
+static const struct define D[] = {
+	{"CONNECT",		CONNECT},
+	{"DISCONNECT",	DISCONNECT},
+	{"PUBLISH",		PUBLISH},
+	{"MESSAGE",		MESSAGE},
+	{"SUBSCRIBE",	SUBSCRIBE},
+	{"UNSUBSCRIBE",	UNSUBSCRIBE},
+	{"LOG",			LOG},
+
+	{"LOG_NONE",	MOSQ_LOG_NONE},
+	{"LOG_INFO",	MOSQ_LOG_INFO},
+	{"LOG_NOTICE",	MOSQ_LOG_NOTICE},
+	{"LOG_WARNING",	MOSQ_LOG_WARNING},
+	{"LOG_ERROR",	MOSQ_LOG_ERR},
+	{"LOG_DEBUG",	MOSQ_LOG_DEBUG},
+	{"LOG_ALL",		MOSQ_LOG_ALL},
+
+	{NULL,			0}
+};
+
+static void mosq_register_defs(lua_State *L, const struct define *D)
+{
+	while (D->name != NULL) {
+		lua_pushinteger(L, D->value);
+		lua_setfield(L, -2, D->name);
+		D++;
+	}
 }
 
 static const struct luaL_Reg R[] = {
@@ -354,7 +583,7 @@ static const struct luaL_Reg ctx_M[] = {
 	{"write",			ctx_loop_write},
 	{"misc",			ctx_loop_misc},
 	{"want_write",		ctx_want_write},
-	{"message_callback",	ctx_message_callback_set},
+	{"set_callback",	ctx_callback_set},
 	{NULL,		NULL}
 };
 
@@ -371,6 +600,9 @@ int luaopen_mosquitto(lua_State *L)
 	luaL_register(L, NULL, ctx_M);
 
 	luaL_register(L, "mosquitto", R);
+
+	/* register callback defs into mosquitto table */
+	mosq_register_defs(L, D);
 
 	return 1;
 }
