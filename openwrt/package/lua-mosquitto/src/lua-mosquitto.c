@@ -170,14 +170,14 @@ static int mosq_new(lua_State *L)
 	return 1;
 }
 
-static ctx_t * ctx_check(lua_State *L)
+static ctx_t * ctx_check(lua_State *L, int i)
 {
-	return (ctx_t *) luaL_checkudata(L, 1, MOSQ_META_CTX);
+	return (ctx_t *) luaL_checkudata(L, i, MOSQ_META_CTX);
 }
 
 static int ctx_destroy(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 	mosquitto_destroy(ctx->mosq);
 
 	/* clean up Lua callback functions in the registry */
@@ -192,12 +192,12 @@ static int ctx_destroy(lua_State *L)
 
 static int ctx_reinitialise(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
-	const char *id = (lua_isnil(L, 1) ? NULL : luaL_checkstring(L, 2));
+	ctx_t *ctx = ctx_check(L, 1);
+	const char *id = (lua_isnil(L, 2) ? NULL : luaL_checkstring(L, 2));
 	bool clean_session = lua_toboolean(L, 3);
 
 	if (id == NULL && !clean_session) {
-		return luaL_argerror(L, 2, "if 'id' is nil then 'clean session' must be true");
+		return luaL_argerror(L, 3, "if 'id' is nil then 'clean session' must be true");
 	}
 
 	int rc = mosquitto_reinitialise(ctx->mosq, id, clean_session, ctx);
@@ -209,10 +209,46 @@ static int ctx_reinitialise(lua_State *L)
 	return mosq__pstatus(L, rc);
 }
 
+static int ctx_will_set(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L, 1);
+	const char *topic = luaL_checkstring(L, 2);
+
+	if (!lua_isstring(L, 3)) {
+		return luaL_argerror(L, 3, "payload should be a string or number");
+	};
+
+	size_t payloadlen;
+	const void *payload = lua_tolstring(L, 3, &payloadlen);
+	int qos = luaL_checkint(L, 4);
+	bool retain = lua_toboolean(L, 5);
+
+	int rc = mosquitto_will_set(ctx->mosq, topic, payloadlen, payload, qos, retain);
+	return mosq__pstatus(L, rc);
+}
+
+static int ctx_will_clear(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L, 1);
+
+	int rc = mosquitto_will_clear(ctx->mosq);
+	return mosq__pstatus(L, rc);
+}
+
+static int ctx_login_set(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L, 1);
+	const char *username = (lua_isnil(L, 2) ? NULL : luaL_checkstring(L, 2));
+	const char *password = (lua_isnil(L, 3) ? NULL : luaL_checkstring(L, 3));
+
+	int rc = mosquitto_username_pw_set(ctx->mosq, username, password);
+	return mosq__pstatus(L, rc);
+}
+
 static int ctx_connect(lua_State *L)
 {
 	/* TODO add sensible defaults, especially for port & keepalive */
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 	const char *host = luaL_checkstring(L, 2);
 	int port = luaL_checkint(L, 3);
 	int keepalive = luaL_checkint(L, 4);
@@ -224,7 +260,7 @@ static int ctx_connect(lua_State *L)
 static int ctx_connect_async(lua_State *L)
 {
 	/* TODO add sensible defaults, especially for port & keepalive */
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 	const char *host = luaL_checkstring(L, 2);
 	int port = luaL_checkint(L, 3);
 	int keepalive = luaL_checkint(L, 4);
@@ -235,7 +271,7 @@ static int ctx_connect_async(lua_State *L)
 
 static int ctx_reconnect(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 
 	int rc = mosquitto_reconnect(ctx->mosq);
 	return mosq__pstatus(L, rc);
@@ -243,7 +279,7 @@ static int ctx_reconnect(lua_State *L)
 
 static int ctx_disconnect(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 
 	int rc = mosquitto_disconnect(ctx->mosq);
 	return mosq__pstatus(L, rc);
@@ -251,7 +287,7 @@ static int ctx_disconnect(lua_State *L)
 
 static int ctx_publish(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 	int mid;	/* message id is referenced in the publish callback */
 	const char *topic = luaL_checkstring(L, 2);
 
@@ -260,8 +296,7 @@ static int ctx_publish(lua_State *L)
 	};
 
 	size_t payloadlen;
-	const void *payload = (const void *) lua_tolstring(L, 3, &payloadlen);
-
+	const void *payload = lua_tolstring(L, 3, &payloadlen);
 	int qos = luaL_checkint(L, 4);
 	bool retain = lua_toboolean(L, 5);
 
@@ -277,7 +312,7 @@ static int ctx_publish(lua_State *L)
 
 static int ctx_subscribe(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 	int mid;
 	const char *sub = luaL_checkstring(L, 2);
 	int qos = luaL_checkinteger(L, 3);
@@ -294,7 +329,7 @@ static int ctx_subscribe(lua_State *L)
 
 static int ctx_unsubscribe(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 	int mid;
 	const char *sub = luaL_checkstring(L, 2);
 
@@ -310,7 +345,7 @@ static int ctx_unsubscribe(lua_State *L)
 
 static int ctx_loop(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 	int timeout = luaL_checkint(L, 2);
 	int max_packets = luaL_checkint(L, 3);
 
@@ -320,7 +355,7 @@ static int ctx_loop(lua_State *L)
 
 static int ctx_loop_start(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 
 	int rc = mosquitto_loop_start(ctx->mosq);
 	return mosq__pstatus(L, rc);
@@ -328,7 +363,7 @@ static int ctx_loop_start(lua_State *L)
 
 static int ctx_loop_stop(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 	bool force = lua_toboolean(L, 2);
 
 	int rc = mosquitto_loop_stop(ctx->mosq, force);
@@ -337,7 +372,7 @@ static int ctx_loop_stop(lua_State *L)
 
 static int ctx_socket(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 
 	int fd = mosquitto_socket(ctx->mosq);
 	switch (fd) {
@@ -354,7 +389,7 @@ static int ctx_socket(lua_State *L)
 
 static int ctx_loop_read(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 	int max_packets = luaL_checkint(L, 2);
 
 	int rc = mosquitto_loop_read(ctx->mosq, max_packets);
@@ -363,7 +398,7 @@ static int ctx_loop_read(lua_State *L)
 
 static int ctx_loop_write(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 	int max_packets = luaL_checkint(L, 2);
 
 	int rc = mosquitto_loop_write(ctx->mosq, max_packets);
@@ -372,7 +407,7 @@ static int ctx_loop_write(lua_State *L)
 
 static int ctx_loop_misc(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 
 	int rc = mosquitto_loop_misc(ctx->mosq);
 	return mosq__pstatus(L, rc);
@@ -380,7 +415,7 @@ static int ctx_loop_misc(lua_State *L)
 
 static int ctx_want_write(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 
 	lua_pushboolean(L, mosquitto_want_write(ctx->mosq));
 	return 1;
@@ -536,7 +571,7 @@ static void ctx_on_log(
 
 static int ctx_callback_set(lua_State *L)
 {
-	ctx_t *ctx = ctx_check(L);
+	ctx_t *ctx = ctx_check(L, 1);
 	int callback_type = luaL_checkint(L, 2);
 
 	if (!lua_isfunction(L, 3)) {
@@ -640,9 +675,9 @@ static const struct luaL_Reg ctx_M[] = {
 	{"destroy",			ctx_destroy},
 	{"__gc",			ctx_destroy},
 	{"reinitialise", 	ctx_reinitialise},
-/*	{"set_will", 		ctx_will_set},
+	{"set_will", 		ctx_will_set},
 	{"clear_will",		ctx_will_clear},
-	{"set_login",		ctx_login_set},			TODO */
+	{"set_login",		ctx_login_set},
 	{"connect",			ctx_connect},
 	{"connect_async",	ctx_connect_async},
 	{"reconnect",		ctx_reconnect},
