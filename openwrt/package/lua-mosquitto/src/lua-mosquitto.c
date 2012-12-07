@@ -93,7 +93,7 @@ static int mosq__pstatus(lua_State *L, int mosq_errno) {
 			lua_pushstring(L, strerror(errno));
 			return 3;
 			break;
-	};
+	}
 
 	return 0;
 }
@@ -121,6 +121,28 @@ static int mosq_cleanup(lua_State *L)
 	return mosq__pstatus(L, MOSQ_ERR_SUCCESS);
 }
 
+static void ctx__on_init(ctx_t *ctx)
+{
+	ctx->on_connect = LUA_REFNIL;
+	ctx->on_disconnect = LUA_REFNIL;
+	ctx->on_publish = LUA_REFNIL;
+	ctx->on_message = LUA_REFNIL;
+	ctx->on_subscribe = LUA_REFNIL;
+	ctx->on_unsubscribe = LUA_REFNIL;
+	ctx->on_log = LUA_REFNIL;
+}
+
+static void ctx__on_clear(ctx_t *ctx)
+{
+	luaL_unref(ctx->L, LUA_REGISTRYINDEX, ctx->on_connect);
+	luaL_unref(ctx->L, LUA_REGISTRYINDEX, ctx->on_disconnect);
+	luaL_unref(ctx->L, LUA_REGISTRYINDEX, ctx->on_publish);
+	luaL_unref(ctx->L, LUA_REGISTRYINDEX, ctx->on_message);
+	luaL_unref(ctx->L, LUA_REGISTRYINDEX, ctx->on_subscribe);
+	luaL_unref(ctx->L, LUA_REGISTRYINDEX, ctx->on_unsubscribe);
+	luaL_unref(ctx->L, LUA_REGISTRYINDEX, ctx->on_log);
+}
+
 static int mosq_new(lua_State *L)
 {
 	const char *id = (lua_isnil(L, 1) ? NULL : luaL_checkstring(L, 1));
@@ -133,12 +155,14 @@ static int mosq_new(lua_State *L)
 	ctx_t *ctx = (ctx_t *) lua_newuserdata(L, sizeof(ctx_t));
 
 	/* ctx will be passed as void *obj arg in the callback functions */
-	ctx->L = L;
 	ctx->mosq = mosquitto_new(id, clean_session, ctx);
 
 	if (ctx->mosq == NULL) {
 		return luaL_error(L, strerror(errno));
 	}
+
+	ctx->L = L;
+	ctx__on_init(ctx);
 
 	luaL_getmetatable(L, MOSQ_META_CTX);
 	lua_setmetatable(L, -2);
@@ -156,7 +180,33 @@ static int ctx_destroy(lua_State *L)
 	ctx_t *ctx = ctx_check(L);
 	mosquitto_destroy(ctx->mosq);
 
+	/* clean up Lua callback functions in the registry */
+	ctx__on_clear(ctx);
+
+	/* remove all methods operating on ctx */
+	lua_newtable(L);
+	lua_setmetatable(L, -2);
+
 	return mosq__pstatus(L, MOSQ_ERR_SUCCESS);
+}
+
+static int ctx_reinitialise(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+	const char *id = (lua_isnil(L, 1) ? NULL : luaL_checkstring(L, 2));
+	bool clean_session = lua_toboolean(L, 3);
+
+	if (id == NULL && !clean_session) {
+		return luaL_argerror(L, 2, "if 'id' is nil then 'clean session' must be true");
+	}
+
+	int rc = mosquitto_reinitialise(ctx->mosq, id, clean_session, ctx);
+
+	/* clean up Lua callback functions in the registry */
+	ctx__on_clear(ctx);
+	ctx__on_init(ctx);
+
+	return mosq__pstatus(L, rc);
 }
 
 static int ctx_connect(lua_State *L)
@@ -222,7 +272,7 @@ static int ctx_publish(lua_State *L)
 	} else {
 		lua_pushinteger(L, mid);
 		return 1;
-	};
+	}
 }
 
 static int ctx_subscribe(lua_State *L)
@@ -239,7 +289,23 @@ static int ctx_subscribe(lua_State *L)
 	} else {
 		lua_pushinteger(L, mid);
 		return 1;
-	};
+	}
+}
+
+static int ctx_unsubscribe(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+	int mid;
+	const char *sub = luaL_checkstring(L, 2);
+
+	int rc = mosquitto_unsubscribe(ctx->mosq, &mid, sub);
+
+	if (rc != MOSQ_ERR_SUCCESS) {
+		return mosq__pstatus(L, rc);
+	} else {
+		lua_pushinteger(L, mid);
+		return 1;
+	}
 }
 
 static int ctx_loop(lua_State *L)
@@ -257,6 +323,15 @@ static int ctx_loop_start(lua_State *L)
 	ctx_t *ctx = ctx_check(L);
 
 	int rc = mosquitto_loop_start(ctx->mosq);
+	return mosq__pstatus(L, rc);
+}
+
+static int ctx_loop_stop(lua_State *L)
+{
+	ctx_t *ctx = ctx_check(L);
+	bool force = lua_toboolean(L, 2);
+
+	int rc = mosquitto_loop_stop(ctx->mosq, force);
 	return mosq__pstatus(L, rc);
 }
 
@@ -564,8 +639,8 @@ static const struct luaL_Reg R[] = {
 static const struct luaL_Reg ctx_M[] = {
 	{"destroy",			ctx_destroy},
 	{"__gc",			ctx_destroy},
-/*	{"reinitialise", 	ctx_reinitialise},
-	{"set_will", 		ctx_will_set},
+	{"reinitialise", 	ctx_reinitialise},
+/*	{"set_will", 		ctx_will_set},
 	{"clear_will",		ctx_will_clear},
 	{"set_login",		ctx_login_set},			TODO */
 	{"connect",			ctx_connect},
@@ -574,10 +649,10 @@ static const struct luaL_Reg ctx_M[] = {
 	{"disconnect",		ctx_disconnect},
 	{"publish",			ctx_publish},
 	{"subscribe",		ctx_subscribe},
-/*	{"unsubscribe",		ctx_unsubscribe},		TODO */
+	{"unsubscribe",		ctx_unsubscribe},
 	{"loop",			ctx_loop},
 	{"start_loop",		ctx_loop_start},
-/*	{"stop_loop",		ctx_loop_stop},			TODO */
+	{"stop_loop",		ctx_loop_stop},
 	{"socket",			ctx_socket},
 	{"read",			ctx_loop_read},
 	{"write",			ctx_loop_write},
