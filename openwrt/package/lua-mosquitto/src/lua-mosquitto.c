@@ -449,7 +449,7 @@ static void ctx_on_connect(
 			break;
 
 		case CONN_REF_BAD_LOGIN:
-			str = "onnection refused - bad username or password";
+			str = "connection refused - bad username or password";
 			break;
 
 		case CONN_REF_NO_AUTH:
