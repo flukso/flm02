@@ -19,5 +19,7 @@ $(CMOD): $(OBJS)
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<
 
+install:
+	cp $(CMOD) $(LUACPATH)
 clean:
 	rm -f $(CMOD) $(OBJS)
