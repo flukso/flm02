@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2011,2012 OpenWrt.org
+# Copyright (C) 2011-2013 OpenWrt.org
 # Copyright (C) 2010 Jo-Philipp Wich <xm@subsignal.org>
 #
 # This is free software, licensed under the GNU General Public License v2.
@@ -9,25 +9,25 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mosquitto
-PKG_VERSION:=1.0.3
+PKG_VERSION:=1.1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://mosquitto.org/files/source/
-PKG_MD5SUM:=9c9e06c57fcca80d76068c53ad140186
+PKG_MD5SUM:=ab51f64eb3f0041402073aa7865f3ec4
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
 MAKE_FLAGS+=WITH_MEMORY_TRACKING=no
-TARGET_CFLAGS+=-ggdb3
 
 define Package/$(PKG_NAME)/default
   SECTION:=net
   CATEGORY:=Network
   TITLE:=mosquitto - an MQTT message broker
   URL:=http://www.mosquitto.org/
+  MAINTAINER:=Karl Palsson <karlp@remake.is>
 endef
 
 define Package/$(PKG_NAME)

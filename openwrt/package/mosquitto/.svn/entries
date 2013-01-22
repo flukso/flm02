@@ -1,15 +1,15 @@
 10
 
 dir
-33886
+35292
 svn://svn.openwrt.org/openwrt/packages/net/mosquitto
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-10-16T15:55:31.722818Z
-33787
-florian
+2013-01-11T16:50:24.351140Z
+35099
+acinonyx
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2012-10-21T17:03:15.411396Z
-60f67ed4b955b1e49570330a7c79666a
-2012-10-16T15:55:31.722818Z
-33787
-florian
+2013-01-22T19:38:19.961654Z
+8e77546748a5c1283e703692efc75719
+2013-01-11T16:50:24.351140Z
+35099
+acinonyx
 
 
 
@@ -61,5 +61,5 @@ florian
 
 
 
-5675
+5696
 
