@@ -18,10 +18,18 @@ load_config()
 	uci set system.@system[0].device=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 16 /dev/mtd6)
 	uci set system.@system[0].hostname=flukso-$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 3 /dev/mtd6)
 
-	for i in `seq 6`;
+	for i in `seq 64`;
 	do
-		ADDRESS=0x110$((i+2))0
-		uci set flukso.$i.id=$(hexdump -v -e '1/1 "%.2x"' -s $((ADDRESS)) -n 16 /dev/mtd6)
+		ADDRESS=$((0x11020 + i * 0x10))
+		ID=$(hexdump -v -e '1/1 "%.2x"' -s $ADDRESS -n 16 /dev/mtd6)
+
+		if [ $ID == ffffffffffffffffffffffffffffffff ]
+		then
+			break
+		fi
+		
+		uci set flukso.$i=sensor
+		uci set flukso.$i.id=$ID
 	done
 
 	uci commit
@@ -36,7 +44,7 @@ program_sensor_board()
 	MCU=atmega168p
 	PROGRAMMER=gpio
 	FLAGS="-p $MCU -c $PROGRAMMER"
-	FUSES="-U lfuse:w:0x6E:m -U hfuse:w:0xDE:m -U efuse:w:0x01:m"
+	FUSES="-U lfuse:w:0x6E:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m"
 
 	TARGET=main
 	AVRDIR=/usr/bin/avr
