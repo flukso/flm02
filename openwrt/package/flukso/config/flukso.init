@@ -39,6 +39,7 @@ load_config()
 		
 		uci set flukso.$i=sensor
 		uci set flukso.$i.id=$ID
+		uci set flukso.main.max_provisioned_sensors=$i
 	done
 
 	uci commit
