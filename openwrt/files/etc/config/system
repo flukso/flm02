@@ -1,10 +1,12 @@
 config system
-	option timezone  UTC
-        option hostname  flukso
-        option device    0123456789abcdef0123456789abcdef
-        option key       00112233445566778899aabbccddeeff
-	option firstboot 1
-	option restore 0
+	option timezone     UTC
+	option model        FLM02A
+	option serial       unknown
+	option hostname     flukso
+	option device       0123456789abcdef0123456789abcdef
+	option key          00112233445566778899aabbccddeeff
+	option firstboot    1
+	option restore      0
 	option cronloglevel 1
 
 config button

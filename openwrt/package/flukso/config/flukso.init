@@ -14,6 +14,15 @@ set_version()
 
 load_config()
 {
+	MODEL=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11800)) -n 6 /dev/mtd6)
+	SERIAL=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11806)) -n 10 /dev/mtd6)
+
+	if [ $MODEL != ffffffffffff ]
+	then
+		uci set system.@system[0].model=$MODEL
+		uci set system.@system[0].serial=$SERIAL
+	fi
+
 	uci set system.@system[0].key=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11000)) -n 16 /dev/mtd6)
 	uci set system.@system[0].device=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 16 /dev/mtd6)
 	uci set system.@system[0].hostname=flukso-$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 3 /dev/mtd6)
