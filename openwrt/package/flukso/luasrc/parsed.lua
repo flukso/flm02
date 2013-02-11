@@ -24,10 +24,11 @@
 local dbg   = require "dbg"
 local uci   = require "luci.model.uci".cursor()
 local nixio = require "nixio"
-require "nixio.fs"
-require "nixio.util"
+nixio.fs    = require "nixio.fs"
+nixio.util  = require "nixio.util"
 local d0    = require "flukso.protocol.d0"
 
+local arg   = arg or {} -- needed when this code is not loaded via the interpreter
 local DEBUG = (arg[1] == '-d')
 
 local MAX_SENSORS  = tonumber(uci:get("flukso", "main", "max_sensors"))

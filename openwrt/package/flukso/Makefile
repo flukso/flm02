@@ -56,6 +56,8 @@ define Package/flukso/install
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rrd/*.lua $(1)/usr/lib/lua/rrd/
 	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/*.lua $(1)/usr/lib/lua/flukso/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso/protocol
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/protocol/*.lua $(1)/usr/lib/lua/flukso/protocol/
 
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/luad $(1)/usr/sbin/
@@ -63,6 +65,8 @@ define Package/flukso/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fluksod.lua $(1)/usr/sbin/
 	$(LN) /usr/sbin/luad $(1)/usr/sbin/spid
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/spid.lua $(1)/usr/sbin/
+	$(LN) /usr/sbin/luad $(1)/usr/sbin/parsed
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/parsed.lua $(1)/usr/sbin/
 
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/heartbeat.lua $(1)/usr/bin/heartbeat

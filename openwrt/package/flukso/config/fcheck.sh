@@ -20,5 +20,6 @@
 
 [ -z "$(ps | grep 'spi[d]')" ] && exit 1
 [ -z "$(ps | grep 'flukso[d]')" ] && exit 2
+[ -z "$(ps | grep 'parse[d]')" ] && exit 3
 
 exit 0

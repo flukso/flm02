@@ -94,6 +94,7 @@ start()
 
 	/usr/sbin/spid
 	/usr/sbin/fluksod
+	/usr/sbin/parsed
 
 	if [ $FIRSTBOOT -eq '1' ]
 	then
@@ -129,10 +130,12 @@ stop()
 {
 	crontab -u flukso -r
 
+	/usr/sbin/parsed -k
 	/usr/sbin/fluksod -k
 	/usr/sbin/spid -k
 
 	rm -rf /var/run/spid
 	rm -rf /var/run/fluksod
+	rm -rf /var/run/parsed
 }
 
