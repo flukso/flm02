@@ -4,7 +4,7 @@
     
     parsed.lua - The Flukso telegram parsing daemon
 
-    Copyright (C) 2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+    Copyright (C) 2013 Bart Van Der Meerssche <bart@flukso.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,13 +21,17 @@
 
 ]]--
 
-local dbg	= require "dbg"
-local nixio	= require "nixio"
+local dbg   = require "dbg"
+local uci   = require "luci.model.uci".cursor()
+local nixio = require "nixio"
 require "nixio.fs"
 require "nixio.util"
-local d0	= require "flukso.protocol.d0"
+local d0    = require "flukso.protocol.d0"
 
 local DEBUG = (arg[1] == '-d')
+
+local MAX_SENSORS  = tonumber(uci:get("flukso", "main", "max_sensors"))
+local MAX_PROV_SENSORS = tonumber(uci:get("flukso", "main", "max_provisioned_sensors"))
 
 --local DEV = "flukso/protocol/samples.d0"
 local DEV = "/dev/ttyS0"
@@ -35,22 +39,21 @@ local OUT = "/var/run/spid/delta/out"
 
 --nixio.fs.mkfifo(OUT, '644')
 local O_RDWR_NONBLOCK = nixio.open_flags('rdwr', 'nonblock')
---local fd = nixio.open(OUT, O_RDWR_NONBLOCK)
+local fd = nixio.open(OUT, O_RDWR_NONBLOCK)
 
 local OBIS = {
-	["1-0:1.8.1*255"] = { sensor=1, derive=false, sign= 1 },
-	["1-0:2.8.1*255"] = { sensor=1, derive=false, sign=-1 },
-	["1-0:1.8.2*255"] = { sensor=1, derive=false, sign= 1 },
-	["1-0:2.8.2*255"] = { sensor=1, derive=false, sign=-1 },
+	["1-0:1.8.1*255"] = { sensor=0, derive=false, sign= 1 },
+	["1-0:2.8.1*255"] = { sensor=0, derive=false, sign=-1 },
+	["1-0:1.8.2*255"] = { sensor=0, derive=false, sign= 1 },
+	["1-0:2.8.2*255"] = { sensor=0, derive=false, sign=-1 },
 
-	["1-0:1.7.0*255"] = { sensor=1, derive=true, sign= 1 },
-	["1-0:2.7.0*255"] = { sensor=1, derive=true, sign=-1 },
+	["1-0:1.7.0*255"] = { sensor=0, derive=true, sign= 1 },
+	["1-0:2.7.0*255"] = { sensor=0, derive=true, sign=-1 },
 
 	-- added for compatibility with Landys & Gyr E350 DSMR2.2+
-	["0-1:24.2.0*255"] = { sensor=4, derive=false, sign= 1 },
-	["0-1:24.2.1*255"] = { sensor=4, derive=false, sign= 1 },
+	["0-1:24.2.0*255"] = { sensor=0, derive=false, sign= 1 },
+	["0-1:24.2.1*255"] = { sensor=0, derive=false, sign= 1 },
 }
-
 
 local FACTOR = {
 	kW = 1000,
@@ -58,26 +61,44 @@ local FACTOR = {
 	m3 = 1000,
 }
 
+local function map_obis()
+	for i = MAX_SENSORS + 1, MAX_PROV_SENSORS do
+		-- stop at first non-provisioned sensor
+		if not uci:get("flukso", tostring(i), "enable") then
+			break
+		end
+
+		local obis = uci:get("flukso", tostring(i), "obis")
+
+		if obis then
+			for j = 1, #obis do
+				if OBIS[obis[j]] then
+					OBIS[obis[j]].sensor = i
+				end
+			end
+		end
+	end
+end
+
 local function msecs()
 	local secs, usecs = nixio.gettimeofday()
-	secs = secs % 10^6 -- wrap around at 99999 secs
+	secs = secs % 1e6 -- wrap around at 99999 secs
 	return secs * 1000 + math.floor(usecs / 1000)
 end
 
+map_obis()
 local get_telegram = d0.init(DEV)
 
 while true do
 	local sensor = {}
 	local telegram = assert(get_telegram(), "parser returned an empty telegram")
-	if DEBUG then dbg.vardump(telegram)
+	if DEBUG then dbg.vardump(telegram) end
 
 	for obis, map in pairs(OBIS) do
 		if telegram[obis] then
 			local value, unit = telegram[obis]:match("^%(([%d%.]+)%*([%w]+)%)$")
 
-			print(value, unit)
-
-			-- adapt to spid fifo message format
+			-- adapt to delta/out fifo message format
 			if value then
 				local fvalue = value * FACTOR[unit]
 
@@ -106,5 +127,6 @@ while true do
 	end
 
 	msg = table.concat(msg, " ") .. "\n"
+    print(msg)
 	fd:write(msg)
 end
