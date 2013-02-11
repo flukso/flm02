@@ -25,9 +25,12 @@ local dbg	= require "dbg"
 local nixio	= require "nixio"
 require "nixio.fs"
 require "nixio.util"
-local d0	= require "d0"
+local d0	= require "flukso.protocol.d0"
 
-local DEV = "samples.d0"
+local DEBUG = (arg[1] == '-d')
+
+--local DEV = "flukso/protocol/samples.d0"
+local DEV = "/dev/ttyS0"
 local OUT = "/var/run/spid/delta/out"
 
 --nixio.fs.mkfifo(OUT, '644')
@@ -43,6 +46,8 @@ local OBIS = {
 	["1-0:1.7.0*255"] = { sensor=1, derive=true, sign= 1 },
 	["1-0:2.7.0*255"] = { sensor=1, derive=true, sign=-1 },
 
+	-- added for compatibility with Landys & Gyr E350 DSMR2.2+
+	["0-1:24.2.0*255"] = { sensor=4, derive=false, sign= 1 },
 	["0-1:24.2.1*255"] = { sensor=4, derive=false, sign= 1 },
 }
 
@@ -64,7 +69,7 @@ local get_telegram = d0.init(DEV)
 while true do
 	local sensor = {}
 	local telegram = assert(get_telegram(), "parser returned an empty telegram")
-	dbg.vardump(telegram)
+	if DEBUG then dbg.vardump(telegram)
 
 	for obis, map in pairs(OBIS) do
 		if telegram[obis] then
@@ -89,8 +94,6 @@ while true do
 		end
 	end
 
-	dbg.vardump(sensor)
-
 	local msg = { os.time() }
 
 	for _key, entry in pairs(sensor) do
@@ -103,6 +106,5 @@ while true do
 	end
 
 	msg = table.concat(msg, " ") .. "\n"
-	print(msg)
---	fd:write(msg)
+	fd:write(msg)
 end
