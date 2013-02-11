@@ -50,11 +50,22 @@ local flukso = uci:get_all('flukso')
 local UART_TX_INVERT		= tonumber(flukso.main.uart_tx_invert)
 local UART_RX_INVERT		= tonumber(flukso.main.uart_rx_invert)
 local MAX_SENSORS			= tonumber(flukso.main.max_sensors)
+local MAX_PROV_SENSORS		= tonumber(flukso.main.max_provisioned_sensors)
 local MAX_ANALOG_SENSORS	= tonumber(flukso.main.max_analog_sensors)
 local ANALOG_ENABLE			= (MAX_ANALOG_SENSORS == 3) and 1 or 0
 local RESET_COUNTERS		= (flukso.main.reset_counters == '1')
 local WAN_ENABLED			= (flukso.daemon.enable_wan_branch == '1')
 local LAN_ENABLED			= (flukso.daemon.enable_lan_branch == '1')
+
+local function last_prov_sensor()
+	for i = MAX_PROV_SENSORS, MAX_ANALOG_SENSORS, -1 do
+		if flukso[tostring(i)].enable then
+			return i
+		end
+	end
+end
+
+local LAST_PROV_SENSOR      = last_prov_sensor()
 
 local METERCONST_FACTOR	= 0.449
 
@@ -373,7 +384,7 @@ local function create_symlinks()
 	nixio.fs.mkdirr(API_PATH)
 
 	-- generate new symlinks
-	for i = 1, MAX_SENSORS do
+	for i = 1, LAST_PROV_SENSOR do
 		if flukso[tostring(i)] ~= nil
 			and flukso[tostring(i)].enable == '1'
 			and flukso[tostring(i)].id
@@ -409,7 +420,7 @@ local function create_avahi_config()
 	avahi.head[6] = '    <type>_flukso._tcp</type>'
 	avahi.head[7] = '    <port>8080</port>'
 
-	for i = 1, MAX_SENSORS do
+	for i = 1, LAST_PROV_SENSOR do
 		if flukso[tostring(i)] ~= nil
 			and flukso[tostring(i)].enable == '1'
 			and flukso[tostring(i)].id
@@ -486,11 +497,11 @@ local function phone_home()
 
 	local err = false
 
-	for i = 1, MAX_SENSORS do
+	for i = 1, LAST_PROV_SENSOR do
 		if flukso[tostring(i)] ~= nil and flukso[tostring(i)].id then
 			local sensor_id = flukso[tostring(i)].id
 
-			if i ~= MAX_SENSORS then
+			if i ~= LAST_PROV_SENSOR then
 				options.headers['Connection'] = 'keep-alive'
 			else
 				options.headers['Connection'] = 'close'
