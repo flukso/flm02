@@ -70,6 +70,7 @@ define Package/flukso/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fdude.lua $(1)/usr/bin/fdude
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fbackup.lua $(1)/usr/bin/fbackup
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ftest.lua $(1)/usr/bin/ftest
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fp1.lua $(1)/usr/bin/fp1
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fcheck.sh $(1)/usr/bin/fcheck
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/restful.lua $(1)/usr/bin/restful
 
