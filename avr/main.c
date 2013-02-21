@@ -333,6 +333,9 @@ ISR(TIMER1_CAPT_vect)
 	disable_spi();
 	rfm12_spi_disable();
 
+	// force UART_TX_INV to 0	
+	PORTD &= ~(1<<PD6);
+
 	// throttle the cpu clock to draw less amps
 	// raises the number of bytes that can be written to EEPROM from 43 to 48
 	clock_prescale_set(clock_div_64);
