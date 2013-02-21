@@ -492,6 +492,10 @@ void ctrlCmdSet(uint8_t cmd)
 		setup_ar_uart();
 		setup_adc();
 		setup_pulse_input();
+		/* A high-to-low transition of UART_TX_INV = PD6 = AIN0 seems to inadvertently
+		   trigger a power-loss event. So clear this bogus flag right before re-enabling
+		   interrupts. */
+		FLAG_CLR_ICF1();
 		sei();
 
 		break;
