@@ -79,6 +79,14 @@ test_sensor_board()
 	wget -s -q "http://$IP:$PORT/cgi-bin/test?result=$RESULT"
 }
 
+set_ttyS0()
+{
+	stty -F /dev/ttyS0 9600 min 255 time 1 \
+		-icanon -isig -iexten -echo -brkint -icrnl -ignbrk \
+		-igncr -inlcr -inpck -istrip -ixon -opost parenb \
+		-inpck -parodd cs7 -cstopb
+}
+
 start()
 {
 	FIRSTBOOT=$(uci get system.@system[0].firstboot)
@@ -91,6 +99,7 @@ start()
 	fi
 
 	chmod 666 /dev/spidev0.0
+	set_ttyS0
 
 	/usr/sbin/spid
 	/usr/sbin/fluksod
