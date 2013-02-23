@@ -71,6 +71,7 @@ local function p1_prov_gas(i)
 	uci:set("flukso", tostring(i), "enable", "1")
 end
 
+uci:set("flukso", "main", "uart_rx_invert", "1")
 p1_prov_electricity(free_sensor())
 p1_prov_gas(free_sensor())
 uci:commit("flukso")
