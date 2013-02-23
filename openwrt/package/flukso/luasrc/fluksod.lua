@@ -138,7 +138,7 @@ function dispatch(wan_child, lan_child)
 				-- map index(+1!) to sensor id and sensor type
 				local sensor_id = FLUKSO[tostring(tolua(i))]['id']
 				local sensor_class = FLUKSO[tostring(tolua(i))]['class']
-				local sensor_derive = (FLUKSO[tostring(tulua(i))]['derive'] == '1')
+				local sensor_derive = (FLUKSO[tostring(tolua(i))]['derive'] == '1')
 
 				-- resume both branches
 				if WAN_ENABLED then
