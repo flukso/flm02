@@ -5,7 +5,7 @@ config settings fsync
 
 config settings main
 	option hw_major 2
-	option hw_minor 1
+	option hw_minor 2
 	option sw_major 1
 	option sw_minor 0
 	option uart_tx_invert 0
