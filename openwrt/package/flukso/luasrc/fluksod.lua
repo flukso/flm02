@@ -4,7 +4,7 @@
     
     fluksod.lua - Lua part of the Flukso daemon
 
-    Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+    Copyright (C) 2013 Bart Van Der Meerssche <bart@flukso.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ nixio.fs         = require 'nixio.fs'
 local uci        = require 'luci.model.uci'.cursor()
 local httpclient = require 'luci.httpclient'
 local data       = require 'flukso.data'
+local mosq       = require 'mosquitto'
 
 -- parse and load /etc/config/flukso
 local FLUKSO            = uci:get_all('flukso')
@@ -100,6 +101,22 @@ function resume(...)
 	end
 end
 
+-- mosquitto client params
+local MOSQ_ID           = DAEMON
+local MOSQ_CLN_SESSION  = true
+local MOSQ_HOST         = 'localhost'
+local MOSQ_PORT         = 1883
+local MOSQ_KEEPALIVE    = 60
+local MOSQ_TIMEOUT      = 0 -- return instantly from select call
+local MOSQ_MAX_PKTS     = 10 -- packets
+local MOSQ_QOS          = 0
+local MOSQ_RETAIN       = true
+
+-- connect to the MQTT broker
+mosq.init()
+local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
+mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE)
+
 function dispatch(wan_child, lan_child)
 	return coroutine.create(function()
 		local delta = {
@@ -123,6 +140,11 @@ function dispatch(wan_child, lan_child)
 		end
 
 		for line in delta.fdout:linesource() do
+			-- service the mosquitto loop
+			if not mqtt:loop(MOSQ_TIMEOUT, MOSQ_MAX_PKTS) then
+				mqtt:reconnect()
+			end
+
 			if DEBUG then
 				print(line)
 			end
@@ -164,7 +186,14 @@ function wan_buffer(child)
 		local threshold = os.time() + WAN_INTERVAL
 		local previous = {}
 
+		local topic_fmt = '/sensor/%s/counter'
+		local payload_fmt = '[%d,%d]'
+
 		while true do
+			local topic = string.format(topic_fmt, sensor_id)
+			local payload = string.format(payload_fmt, timestamp, counter)
+			mqtt:publish(topic, payload, MOSQ_QOS, MOSQ_RETAIN)
+
 			if not previous[sensor_id] then
 				previous[sensor_id] = {}
 				-- use the first received counter value as guard
@@ -291,6 +320,9 @@ function lan_buffer(child)
 		local threshold = os.time() + LAN_INTERVAL
 		local previous = {}
 
+		local topic_fmt = '/sensor/%s/flux'
+		local payload_fmt = '[%d,%d]'
+
 		local function diff(x, y)  -- calculates y - x
 			if y >= x then
 				return y - x
@@ -322,6 +354,10 @@ function lan_buffer(child)
 				end
 
 				if power then
+					local topic = string.format(topic_fmt, sensor_id)
+					local payload = string.format(payload_fmt, timestamp, power)
+					mqtt:publish(topic, payload, MOSQ_QOS, MOSQ_RETAIN)
+
 					measurements:add(sensor_id, timestamp, power)
 					previous[sensor_id].timestamp = timestamp
 				end
