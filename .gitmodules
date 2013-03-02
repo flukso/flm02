@@ -1,3 +1,3 @@
-[submodule "avr/rfm12"]
-	path = avr/rfm12
+[submodule "avr/rfm12/b"]
+	path = avr/rfm12/b
 	url = git@github.com:flukso/rfm12.git
