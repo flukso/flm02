@@ -48,25 +48,25 @@ load_config()
 	logger 'configuring flukso device and sensor ids at firstboot'
 }
 
+set_hw_version()
+{
+	MODEL=$(uci get system.@system[0].model)
+
+	if [ $MODEL == FLM02A ]
+	then
+		MINOR=1
+	elif [ $MODEL == FLM02B ]
+	then
+		MINOR=2
+	fi
+
+	uci set flukso.main.hw_minor=$MINOR
+	uci commit
+}
+
 program_sensor_board()
 {
-	AVRDUDE=/usr/bin/fdude
-
-	MCU=atmega168p
-	PROGRAMMER=gpio
-	FLAGS="-p $MCU -c $PROGRAMMER"
-	FUSES="-U lfuse:w:0x6E:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m"
-
-	TARGET=main
-	AVRDIR=/usr/bin/avr
-	HEXFILE="$AVRDIR/$TARGET.hex"
-	EEPFILE="$AVRDIR/$TARGET.eep"
-
-	FLASH="-U flash:w:$HEXFILE"
-	EEPROM="-U eeprom:w:$EEPFILE"
-
-	$AVRDUDE $FLAGS $FUSES $FLASH $EEPROM 2>1 >&- <&-
-
+	fdude 2>1 >&- <&-
 	logger 'flashing the sensor board at firstboot'
 }
 
@@ -96,15 +96,21 @@ start()
 	then
 		set_version
 		load_config
+		set_hw_version
 		program_sensor_board
 	fi
 
 	chmod 666 /dev/spidev0.0
-	set_ttyS0
-
 	/usr/sbin/spid
 	/usr/sbin/fluksod
-	/usr/sbin/parsed
+
+	MODEL=$(uci get system.@system[0].model)
+
+	if [ $MODEL == FLM02B ]
+	then
+		set_ttyS0
+		/usr/sbin/parsed
+	fi
 
 	if [ $FIRSTBOOT -eq '1' ]
 	then
@@ -140,12 +146,18 @@ stop()
 {
 	crontab -u flukso -r
 
-	/usr/sbin/parsed -k
-	/usr/sbin/fluksod -k
-	/usr/sbin/spid -k
+	MODEL=$(uci get system.@system[0].model)
 
-	rm -rf /var/run/spid
+	if [ $MODEL == FLM02B ]
+	then
+		/usr/sbin/parsed -k
+		rm -rf /var/run/parsed
+	fi
+
+	/usr/sbin/fluksod -k
 	rm -rf /var/run/fluksod
-	rm -rf /var/run/parsed
+
+	/usr/sbin/spid -k
+	rm -rf /var/run/spid
 }
 

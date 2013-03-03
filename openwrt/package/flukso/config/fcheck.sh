@@ -20,6 +20,12 @@
 
 [ -z "$(ps | grep 'spi[d]')" ] && exit 1
 [ -z "$(ps | grep 'flukso[d]')" ] && exit 2
-[ -z "$(ps | grep 'parse[d]')" ] && exit 3
+
+MODEL=$(uci get system.@system[0].model)
+
+if [ $MODEL == FLM02B ]
+then
+	[ -z "$(ps | grep 'parse[d]')" ] && exit 3
+fi
 
 exit 0
