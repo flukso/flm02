@@ -25,45 +25,52 @@
 local nixio = require 'nixio'
 local uci   = require 'luci.model.uci'.cursor()
 
+local AVRDUDE             = '/usr/bin/avrdude'
+local AVR_BIN             = '/usr/bin/avr/'
 local SPI_DEV             = '/dev/spidev0.0'
 local SPI_DAEMON_PID_FILE = '/var/run/spid/pid'
 local O_RDWR_NONBLOCK     = nixio.open_flags('rdwr', 'nonblock')
 local MODEL               = 'FLM02X'
 uci:foreach('system', 'system', function(x) MODEL = x.model end)
-local AVR_DIR        = arg[1] or '/usr/bin/avr'
 
 local spidev = nixio.open(SPI_DEV, O_RDWR_NONBLOCK)
 local exit = 0
 
-local function avrdude_cmd()
-	local opt = {'', '-p atmega168p'}
+local function avr_dir(subdir)
+	return arg[1] or AVR_BIN .. subdir
+end
+
+local function avrdude_args()
+	local opt = {'-patmega168p'}
 
 	if MODEL == 'FLM02A' then
-		opt[#opt+1] = '-c flm02a'
-		opt[#opt+1] = '-U lfuse:w:0xEC:m'
-		opt[#opt+1] = '-U hfuse:w:0xDE:m'
-		opt[#opt+1] = '-U efuse:w:0x01:m'
-		opt[#opt+1] = '-U flash:w:' .. AVR_DIR .. '/a/main.hex'
-		opt[#opt+1] = '-U eeprom:w:' .. AVR_DIR .. '/a/main.eep'
-		
+		opt[#opt+1] = '-cflm02a'
+		opt[#opt+1] = '-Ulfuse:w:0xEC:m'
+		opt[#opt+1] = '-Uhfuse:w:0xDE:m'
+		opt[#opt+1] = '-Uefuse:w:0x01:m'
+		opt[#opt+1] = '-Uflash:w:' .. avr_dir('a') .. '/main.hex'
+		opt[#opt+1] = '-Ueeprom:w:' .. avr_dir('a') .. '/main.eep'
+
 	elseif MODEL == 'FLM02B' then
-		opt[#opt+1] = '-c flm02b'
-		opt[#opt+1] = '-U lfuse:w:0x6E:m'
-		opt[#opt+1] = '-U hfuse:w:0xDE:m'
-		opt[#opt+1] = '-U efuse:w:0x01:m'
-		opt[#opt+1] = '-U flash:w:' .. AVR_DIR .. '/b/main.hex'
-		opt[#opt+1] = '-U eeprom:w:' .. AVR_DIR .. '/b/main.eep'
+		opt[#opt+1] = '-cflm02b'
+		opt[#opt+1] = '-Ulfuse:w:0x6E:m'
+		opt[#opt+1] = '-Uhfuse:w:0xDE:m'
+		opt[#opt+1] = '-Uefuse:w:0x01:m'
+		opt[#opt+1] = '-Uflash:w:' .. avr_dir('b') .. '/main.hex'
+		opt[#opt+1] = '-Ueeprom:w:' .. avr_dir('b') .. '/main.eep'
+
 	else
 		print('Unrecognised Fluksometer model')
 		exit = 3
 		return ''
 	end
 
-	return '/usr/bin/avrdude' .. table.concat(opt, ' ')
+	return opt
 end
 
 if spidev:lock('tlock') then
-	nixio.execp(avrdude_cmd())
+	print(AVRDUDE .. ' ' .. table.concat(avrdude_args(), ' '))
+	nixio.exece(AVRDUDE, avrdude_args(), {})
 else
 	print(string.format('Detected a lock on %s', SPI_DEV))
 
