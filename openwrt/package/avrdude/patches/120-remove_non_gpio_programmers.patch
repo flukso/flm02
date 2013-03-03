@@ -707,7 +707,7 @@ diff -urNad /tmp/avrdude-5.10/avrdude.conf.in avrdude-5.10/avrdude.conf.in
 -;
 -
 -programmer
-   id    = "gpio";
+   id    = "flm02a";
    desc  = "Use gpio_dev to bitbang GPIO lines";
    type  = gpio;
 @@ -843,58 +324,6 @@
