@@ -66,6 +66,8 @@ local function last_prov_sensor()
 end
 
 local LAST_PROV_SENSOR      = last_prov_sensor()
+local MODEL                 = 'FLM02X'
+uci:foreach('system', 'system', function(x) MODEL = x.model end)
 
 local METERCONST_FACTOR	= 0.449
 
@@ -554,7 +556,11 @@ local ctrl = ctrl_init()
 
 check_hw_version(ctrl)
 disable_all_sensors(ctrl)
-set_hardware_lines(ctrl)
+
+if MODEL == 'FLM02B' then
+	set_hardware_lines(ctrl)
+end
+
 set_phy_to_log(ctrl)
 set_meterconst(ctrl)
 
