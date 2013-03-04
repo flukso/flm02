@@ -114,6 +114,7 @@ start()
 
 	if [ $FIRSTBOOT -eq '1' ]
 	then
+		sleep 1
 		test_sensor_board
 
 		uci set system.@system[0].firstboot='0'
