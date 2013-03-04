@@ -121,7 +121,7 @@ CSTANDARD = -std=gnu99
 CDEFS = -DF_CPU=$(F_CPU)UL  
 
 # Debugging mode
-DBG = 1
+DBG = 0
 CDEFS += -D DBG=$(DBG)
 
 # Warn when a function marked for inlining could not be substituted
