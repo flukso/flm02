@@ -234,7 +234,6 @@ LDFLAGS += $(EXTMEMOPTS)
 # to get a full listing.
 #
 AVRDUDE_PROGRAMMER = usbtiny
-AVRDUDE_PROGRAMMER_R = gpio
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
 AVRDUDE_PORT = /dev/ttyUSB*    # programmer connected to serial device
@@ -261,11 +260,6 @@ AVRDUDE_FLAGS = -p $(MCU)p -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
 AVRDUDE_FLAGS += $(AVRDUDE_VERBOSE)
 AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
-
-AVRDUDE_FLAGS_R = -p $(MCU)p -c $(AVRDUDE_PROGRAMMER_R)
-AVRDUDE_FLAGS_R += $(AVRDUDE_NO_VERIFY)
-AVRDUDE_FLAGS_R += $(AVRDUDE_VERBOSE)
-AVRDUDE_FLAGS_R += $(AVRDUDE_ERASE_COUNTER)
 
 #---------------- Debugging Options ----------------
 
@@ -307,7 +301,6 @@ OBJDUMP = avr-objdump
 SIZE = avr-size
 NM = avr-nm
 AVRDUDE = avrdude
-AVRDUDE_R = fdude
 REMOVE = rm -f
 COPY = cp
 WINSHELL = cmd
@@ -407,14 +400,15 @@ program: $(TARGET).hex $(TARGET).eep
 # Program the device remotely.
 HOST = 192.168.255.1
 FLUKSO = /etc/init.d/flukso
+FDUDE = /usr/bin/fdude
 
 rprogram: $(TARGET).hex $(TARGET).eep
 	@scp $(TARGET).hex $(TARGET).eep root@$(HOST):/tmp
 	@ssh root@$(HOST) \
+	"PATH=/bin:/sbin:/usr/bin:/usr/sbin;" \
 	"echo +++ stopping the flukso daemon +++;" \
 	"$(FLUKSO) stop;" \
-	"cd /tmp;" \
-	"$(AVRDUDE_R) $(AVRDUDE_FLAGS_R) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM);" \
+	"$(FDUDE) /tmp;" \
 	"sleep 1;" \
 	"echo;" \
 	"echo +++ starting the flukso daemon +++;" \
