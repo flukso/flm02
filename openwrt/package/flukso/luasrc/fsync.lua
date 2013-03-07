@@ -5,7 +5,7 @@
     fsync.lua - synchronize /etc/config/flukso settings with the sensor board
                 via the spid ctrl fifos
 
-    Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+    Copyright (C) 2011-2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,75 +23,94 @@
 ]]--
 
 
-local dbg        = require 'dbg'
-local nixio      = require 'nixio'
-nixio.fs         = require 'nixio.fs'
-local uci        = require 'luci.model.uci'.cursor()
-local luci       = require 'luci'
-luci.json        = require 'luci.json'
-local httpclient = require 'luci.httpclient'
+local dbg 			= require 'dbg'
+local nixio			= require 'nixio'
+nixio.fs			= require 'nixio.fs'
+local uci			= require 'luci.model.uci'.cursor()
+local luci			= require 'luci'
+luci.json			= require 'luci.json'
+local httpclient	= require 'luci.httpclient'
 
 
-local HW_CHECK_OVERRIDE	 = (arg[1] == '-f')
+local HW_CHECK_OVERRIDE = (arg[1] == '-f')
 
-local CTRL_PATH		 = '/var/run/spid/ctrl'
-local CTRL_PATH_IN	 = CTRL_PATH .. '/in'
-local CTRL_PATH_OUT	 = CTRL_PATH .. '/out'
+local CTRL_PATH		= '/var/run/spid/ctrl'
+local CTRL_PATH_IN	= CTRL_PATH .. '/in'
+local CTRL_PATH_OUT	= CTRL_PATH .. '/out'
 
-local O_RDWR_NONBLOCK	 = nixio.open_flags('rdwr', 'nonblock')
-local O_RDWR_CREAT	 = nixio.open_flags('rdwr', 'creat')
-local POLLIN		 = nixio.poll_flags('in')
-local POLL_TIMEOUT_MS	 = 1000
-local MAX_TRIES		 = 5
+local O_RDWR_NONBLOCK	= nixio.open_flags('rdwr', 'nonblock')
+local O_RDWR_CREAT		= nixio.open_flags('rdwr', 'creat')
+local POLLIN			= nixio.poll_flags('in')
+local POLL_TIMEOUT_MS	= 1000
+local MAX_TRIES			= 5
 
 -- parse and load /etc/config/flukso
 local flukso = uci:get_all('flukso')
 
-local MAX_SENSORS	 = tonumber(flukso.main.max_sensors)
-local MAX_ANALOG_SENSORS = tonumber(flukso.main.max_analog_sensors)
-local RESET_COUNTERS	 = (flukso.main.reset_counters == '1')
-local WAN_ENABLED	 = (flukso.daemon.enable_wan_branch == '1')
-local LAN_ENABLED	 = (flukso.daemon.enable_lan_branch == '1')
+local UART_TX_INVERT		= tonumber(flukso.main.uart_tx_invert)
+local UART_RX_INVERT		= tonumber(flukso.main.uart_rx_invert)
+local MAX_SENSORS			= tonumber(flukso.main.max_sensors)
+local MAX_PROV_SENSORS		= tonumber(flukso.main.max_provisioned_sensors)
+local MAX_ANALOG_SENSORS	= tonumber(flukso.main.max_analog_sensors)
+local ANALOG_ENABLE			= (MAX_ANALOG_SENSORS == 3) and 1 or 0
+local RESET_COUNTERS		= (flukso.main.reset_counters == '1')
+local WAN_ENABLED			= (flukso.daemon.enable_wan_branch == '1')
+local LAN_ENABLED			= (flukso.daemon.enable_lan_branch == '1')
 
-local METERCONST_FACTOR	 = 0.449
+local function last_prov_sensor()
+	for i = MAX_PROV_SENSORS, MAX_ANALOG_SENSORS, -1 do
+		if flukso[tostring(i)].enable then
+			return i
+		end
+	end
+end
+
+local LAST_PROV_SENSOR      = last_prov_sensor()
+local MODEL                 = 'FLM02X'
+uci:foreach('system', 'system', function(x) MODEL = x.model end)
+
+local METERCONST_FACTOR	= 0.449
 
 -- sensor board commands
-local GET_HW_VERSION	 = 'gh'
-local GET_HW_VERSION_R	 = '^gh%s+(%d+)%s+(%d+)$'
-local SET_ENABLE	 = 'se %d %d'
-local SET_PHY_TO_LOG	 = 'sp' -- with [1..MAX_SENSORS] arguments
-local SET_METERCONST	 = 'sm %d %d'
-local SET_FRACTION	 = 'sf %d %d'
-local SET_COUNTER	 = 'sc %d %d'
-local COMMIT		 = 'ct'
+local GET_HW_VERSION	= 'gh'
+local GET_HW_VERSION_R	= '^gh%s+(%d+)%s+(%d+)$'
+local SET_ENABLE		= 'se %d %d'
+local SET_HW_LINES		= 'sk %d %d %d' -- ANALOG_EN, UART_RX_INV, UART_TX_INV
+local SET_PHY_TO_LOG	= 'sp' -- with [1..MAX_SENSORS] arguments
+local SET_METERCONST	= 'sm %d %d'
+local SET_FRACTION		= 'sf %d %d'
+local SET_COUNTER		= 'sc %d %d'
+local COMMIT			= 'ct'
 
 -- LAN settings
-local API_PATH		 = '/www/sensor/'
-local CGI_SCRIPT	 = '/usr/bin/restful'
-local AVAHI_PATH	 = '/etc/avahi/services/flukso.service'
+local API_PATH		= '/www/sensor/'
+local CGI_SCRIPT	= '/usr/bin/restful'
+local AVAHI_PATH	= '/etc/avahi/services/flukso.service'
 
 -- WAN settings
-local WAN_BASE_URL	 = flukso.daemon.wan_base_url .. 'sensor/'
-local WAN_KEY		 = '0123456789abcdef0123456789abcdef'
+local WAN_BASE_URL	= flukso.daemon.wan_base_url .. 'sensor/'
+local WAN_KEY		= '0123456789abcdef0123456789abcdef'
 uci:foreach('system', 'system', function(x) WAN_KEY = x.key end) -- quirky but it works
 
 -- https header helpers
-local FLUKSO_VERSION	 = '000'
+local FLUKSO_VERSION = '000'
 uci:foreach('system', 'system', function(x) FLUKSO_VERSION = x.version end)
 
-local USER_AGENT	 = 'Fluksometer v' .. FLUKSO_VERSION
-local CACERT		 = flukso.daemon.cacert
+local USER_AGENT	= 'Fluksometer v' .. FLUKSO_VERSION
+local CACERT		= flukso.daemon.cacert
 
 -- map exit codes to strings
-local EXIT_STRING	 = { [-1] = "no synchronisation",
-                              [0] = "successful",
-                              [1] = "unable to open ctrl fifos",
-                              [2] = "detected lock on ctrl fifos",
-                              [3] = "synchronisation with sensor board failed",
-                              [4] = "sensor board hardware compatibility check failed",
-                              [5] = "analog sensor numbering error",
-                              [6] = "port numbering error",
-                              [7] = "synchronisation with Flukso server failed" }
+local EXIT_STRING = {
+	[-1] = "no synchronisation",
+	 [0] = "successful",
+	 [1] = "unable to open ctrl fifos",
+	 [2] = "detected lock on ctrl fifos",
+	 [3] = "synchronisation with sensor board failed",
+	 [4] = "sensor board hardware compatibility check failed",
+	 [5] = "analog sensor numbering error",
+	 [6] = "port numbering error",
+	 [7] = "synchronisation with Flukso server failed"
+}
 
 
 --- Convert from Lua-style to c-style index.
@@ -236,6 +255,14 @@ local function disable_all_sensors(ctrl)
 	end
 end
 
+--- Set all configurable hardware lines.
+-- @param ctrl  	ctrl object
+-- @return		none 
+local function set_hardware_lines(ctrl)
+	local cmd = string.format(SET_HW_LINES, ANALOG_ENABLE, UART_RX_INVERT, UART_TX_INVERT)
+	send(ctrl, cmd)
+end
+
 --- Populate the physical (port) to logical (sensor) map on the sensor board.
 -- @param ctrl  	ctrl object
 -- @return		none 
@@ -359,7 +386,7 @@ local function create_symlinks()
 	nixio.fs.mkdirr(API_PATH)
 
 	-- generate new symlinks
-	for i = 1, MAX_SENSORS do
+	for i = 1, LAST_PROV_SENSOR do
 		if flukso[tostring(i)] ~= nil
 			and flukso[tostring(i)].enable == '1'
 			and flukso[tostring(i)].id
@@ -395,7 +422,7 @@ local function create_avahi_config()
 	avahi.head[6] = '    <type>_flukso._tcp</type>'
 	avahi.head[7] = '    <port>8080</port>'
 
-	for i = 1, MAX_SENSORS do
+	for i = 1, LAST_PROV_SENSOR do
 		if flukso[tostring(i)] ~= nil
 			and flukso[tostring(i)].enable == '1'
 			and flukso[tostring(i)].id
@@ -472,11 +499,11 @@ local function phone_home()
 
 	local err = false
 
-	for i = 1, MAX_SENSORS do
+	for i = 1, LAST_PROV_SENSOR do
 		if flukso[tostring(i)] ~= nil and flukso[tostring(i)].id then
 			local sensor_id = flukso[tostring(i)].id
 
-			if i ~= MAX_SENSORS then
+			if i ~= LAST_PROV_SENSOR then
 				options.headers['Connection'] = 'keep-alive'
 			else
 				options.headers['Connection'] = 'close'
@@ -529,6 +556,11 @@ local ctrl = ctrl_init()
 
 check_hw_version(ctrl)
 disable_all_sensors(ctrl)
+
+if MODEL == 'FLM02B' then
+	set_hardware_lines(ctrl)
+end
+
 set_phy_to_log(ctrl)
 set_meterconst(ctrl)
 

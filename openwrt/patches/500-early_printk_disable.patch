@@ -1,0 +1,10 @@
+--- a/arch/mips/Kconfig	    2012-11-12 13:42:23.009345718 +0100
++++ b/arch/mips/Kconfig	    2012-11-12 13:43:00.573344897 +0100
+@@ -70,7 +70,6 @@
+ 	select SYS_SUPPORTS_BIG_ENDIAN
+ 	select SYS_SUPPORTS_32BIT_KERNEL
+ 	select GENERIC_GPIO
+-	select SYS_HAS_EARLY_PRINTK
+ 	help
+ 	  Support for AR231x and AR531x based boards
+ 

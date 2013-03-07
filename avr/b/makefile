@@ -51,7 +51,7 @@
 
 # Sensor board versioning:
 HW_VERSION_MAJOR = 2
-HW_VERSION_MINOR = 1
+HW_VERSION_MINOR = 2
 SW_VERSION_MAJOR = 1
 SW_VERSION_MINOR = 0
 
@@ -64,8 +64,7 @@ MCU = atmega168
 #     processor frequency. You can then use this symbol in your source code to 
 #     calculate timings. Do NOT tack on a 'UL' at the end, this will be done
 #     automatically to create a 32-bit value in your source code.
-F_CPU = 3686400
-
+F_CPU = 16000000
 
 # Output format. (can be srec, ihex, binary)
 FORMAT = ihex
@@ -76,7 +75,7 @@ TARGET = main
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c buffer.c uart.c spi.c ctrl.c
+SRC = $(TARGET).c buffer.c ctrl.c rfm12.c
 
 
 # List Assembler source files here.
@@ -136,12 +135,6 @@ CDEFS += -DBOARD_ID=$(BOARD_ID)
 # Sensor board hw/sw major/minor version
 CDEFS += -DHW_VERSION_MAJOR=$(HW_VERSION_MAJOR) -DHW_VERSION_MINOR=$(HW_VERSION_MINOR)
 CDEFS += -DSW_VERSION_MAJOR=$(SW_VERSION_MAJOR) -DSW_VERSION_MINOR=$(SW_VERSION_MINOR)
-
-# uncomment and adapt these line if you want different UART library buffer size
-CDEFS += -DUART_RX_BUFFER_SIZE=256
-CDEFS += -DUART_TX_BUFFER_SIZE=64
-
-CDEFS += -DUART_DEFAULT_BAUD_RATE=115200
 
 # override default CTRL buffer sizes
 CDEFS += -DCTRL_RX_BUFFER_SIZE=32
@@ -241,14 +234,13 @@ LDFLAGS += $(EXTMEMOPTS)
 # to get a full listing.
 #
 AVRDUDE_PROGRAMMER = usbtiny
-AVRDUDE_PROGRAMMER_R = gpio
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
 AVRDUDE_PORT = /dev/ttyUSB*    # programmer connected to serial device
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
-AVRDUDE_WRITE_FUSES = -U lfuse:w:0xEC:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m
+AVRDUDE_WRITE_FUSES = -U lfuse:w:0x6E:m -U hfuse:w:0xDE:m -U efuse:w:0x01:m
 
 # Uncomment the following if you want avrdude's erase cycle counter.
 # Note that this counter needs to be initialized first using -Yn,
@@ -268,11 +260,6 @@ AVRDUDE_FLAGS = -p $(MCU)p -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
 AVRDUDE_FLAGS += $(AVRDUDE_VERBOSE)
 AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
-
-AVRDUDE_FLAGS_R = -p $(MCU)p -c $(AVRDUDE_PROGRAMMER_R)
-AVRDUDE_FLAGS_R += $(AVRDUDE_NO_VERIFY)
-AVRDUDE_FLAGS_R += $(AVRDUDE_VERBOSE)
-AVRDUDE_FLAGS_R += $(AVRDUDE_ERASE_COUNTER)
 
 #---------------- Debugging Options ----------------
 
@@ -314,7 +301,6 @@ OBJDUMP = avr-objdump
 SIZE = avr-size
 NM = avr-nm
 AVRDUDE = avrdude
-AVRDUDE_R = fdude
 REMOVE = rm -f
 COPY = cp
 WINSHELL = cmd
@@ -412,15 +398,17 @@ program: $(TARGET).hex $(TARGET).eep
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
 
 # Program the device remotely.
+HOST = 192.168.255.1
 FLUKSO = /etc/init.d/flukso
+FDUDE = /usr/bin/fdude
 
 rprogram: $(TARGET).hex $(TARGET).eep
-	@scp $(TARGET).hex $(TARGET).eep root@192.168.255.1:/tmp
-	@ssh root@192.168.255.1 \
+	@scp $(TARGET).hex $(TARGET).eep root@$(HOST):/tmp
+	@ssh root@$(HOST) \
+	"PATH=/bin:/sbin:/usr/bin:/usr/sbin;" \
 	"echo +++ stopping the flukso daemon +++;" \
 	"$(FLUKSO) stop;" \
-	"cd /tmp;" \
-	"$(AVRDUDE_R) $(AVRDUDE_FLAGS_R) $(AVRDUDE_WRITE_FUSES) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM);" \
+	"$(FDUDE) /tmp;" \
 	"sleep 1;" \
 	"echo;" \
 	"echo +++ starting the flukso daemon +++;" \

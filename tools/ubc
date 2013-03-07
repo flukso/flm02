@@ -28,6 +28,7 @@ TFLAG=
 BATCH="FLxx"
 SERIAL=1
 TARGET="192.168.255.1"
+BOOTL="bootloader/ap61-8mb-32mb.rom"
 
 while getopts 'b:s:t:h:?' OPTION
 do
@@ -70,5 +71,9 @@ xxd -p /tmp/radio.bin | xxd -r -p -s $((0x00F8)) - $PWD/$FN
 printf "+++ flash board config section +++\n"
 $PWD/fbc $TARGET $FN
 FBC=$?
+
+printf "+++ flash bootloader +++\n"
+$PWD/fbl $TARGET $BOOTL
+FBL=$?
 
 exit $((IBL + DRC + FBC))

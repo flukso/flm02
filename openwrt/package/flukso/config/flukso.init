@@ -14,14 +14,33 @@ set_version()
 
 load_config()
 {
+	MODEL_HEX=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11800)) -n 6 /dev/mtd6)
+	MODEL=$(hexdump -v -e '"%.6s"' -s $((0x11800)) -n 6 /dev/mtd6)
+	SERIAL=$(hexdump -v -e '"%.10s"' -s $((0x11806)) -n 10 /dev/mtd6)
+
+	if [ $MODEL_HEX != ffffffffffff ]
+	then
+		uci set system.@system[0].model=$MODEL
+		uci set system.@system[0].serial=$SERIAL
+	fi
+
 	uci set system.@system[0].key=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11000)) -n 16 /dev/mtd6)
 	uci set system.@system[0].device=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 16 /dev/mtd6)
 	uci set system.@system[0].hostname=flukso-$(hexdump -v -e '1/1 "%.2x"' -s $((0x11020)) -n 3 /dev/mtd6)
 
-	for i in `seq 6`;
+	for i in `seq 64`;
 	do
-		ADDRESS=0x110$((i+2))0
-		uci set flukso.$i.id=$(hexdump -v -e '1/1 "%.2x"' -s $((ADDRESS)) -n 16 /dev/mtd6)
+		ADDRESS=$((0x11020 + i * 0x10))
+		ID=$(hexdump -v -e '1/1 "%.2x"' -s $ADDRESS -n 16 /dev/mtd6)
+
+		if [ $ID == ffffffffffffffffffffffffffffffff ]
+		then
+			break
+		fi
+		
+		uci set flukso.$i=sensor
+		uci set flukso.$i.id=$ID
+		uci set flukso.main.max_provisioned_sensors=$i
 	done
 
 	uci commit
@@ -29,25 +48,25 @@ load_config()
 	logger 'configuring flukso device and sensor ids at firstboot'
 }
 
+set_hw_version()
+{
+	MODEL=$(uci get system.@system[0].model)
+
+	if [ $MODEL == FLM02A ]
+	then
+		MINOR=1
+	elif [ $MODEL == FLM02B ]
+	then
+		MINOR=2
+	fi
+
+	uci set flukso.main.hw_minor=$MINOR
+	uci commit
+}
+
 program_sensor_board()
 {
-	AVRDUDE=/usr/bin/fdude
-
-	MCU=atmega168p
-	PROGRAMMER=gpio
-	FLAGS="-p $MCU -c $PROGRAMMER"
-	FUSES="-U lfuse:w:0xEC:m -U hfuse:w:0xD6:m -U efuse:w:0x01:m"
-
-	TARGET=main
-	AVRDIR=/usr/bin/avr
-	HEXFILE="$AVRDIR/$TARGET.hex"
-	EEPFILE="$AVRDIR/$TARGET.eep"
-
-	FLASH="-U flash:w:$HEXFILE"
-	EEPROM="-U eeprom:w:$EEPFILE"
-
-	$AVRDUDE $FLAGS $FUSES $FLASH $EEPROM 2>1 >&- <&-
-
+	fdude 2>1 >&- <&-
 	logger 'flashing the sensor board at firstboot'
 }
 
@@ -61,6 +80,14 @@ test_sensor_board()
 	wget -s -q "http://$IP:$PORT/cgi-bin/test?result=$RESULT"
 }
 
+set_ttyS0()
+{
+	stty -F /dev/ttyS0 9600 min 255 time 1 \
+		-icanon -isig -iexten -echo -brkint -icrnl -ignbrk \
+		-igncr -inlcr -inpck -istrip -ixon -opost parenb \
+		-inpck -parodd cs7 -cstopb
+}
+
 start()
 {
 	FIRSTBOOT=$(uci get system.@system[0].firstboot)
@@ -69,16 +96,25 @@ start()
 	then
 		set_version
 		load_config
+		set_hw_version
 		program_sensor_board
 	fi
 
 	chmod 666 /dev/spidev0.0
-
 	/usr/sbin/spid
 	/usr/sbin/fluksod
 
+	MODEL=$(uci get system.@system[0].model)
+
+	if [ $MODEL == FLM02B ]
+	then
+		set_ttyS0
+		/usr/sbin/parsed
+	fi
+
 	if [ $FIRSTBOOT -eq '1' ]
 	then
+		sleep 1
 		test_sensor_board
 
 		uci set system.@system[0].firstboot='0'
@@ -111,10 +147,18 @@ stop()
 {
 	crontab -u flukso -r
 
-	/usr/sbin/fluksod -k
-	/usr/sbin/spid -k
+	MODEL=$(uci get system.@system[0].model)
 
-	rm -rf /var/run/spid
+	if [ $MODEL == FLM02B ]
+	then
+		/usr/sbin/parsed -k
+		rm -rf /var/run/parsed
+	fi
+
+	/usr/sbin/fluksod -k
 	rm -rf /var/run/fluksod
+
+	/usr/sbin/spid -k
+	rm -rf /var/run/spid
 }
 

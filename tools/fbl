@@ -1,0 +1,78 @@
+#!/usr/bin/perl -w
+#
+#   fbl -  flash bootloader
+#
+#   Copyright (C) 2013 Bart Van Der Meerssche <bart@flukso.net>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+use Net::Telnet ();
+
+my $bl = $ARGV[1] or die "Syntax: $0 <host> <bootloader>\n";
+my $host = $ARGV[0];
+
+my $t = new Net::Telnet (Port    => 9000,
+                         Timeout => 30);
+
+if (!defined($t)) {
+	print "new Net::Telnet failed\n";
+	exit(1);
+}
+
+my $ok;
+$ok = $t->errmode("return");
+$ok = $t->open($host);
+if(!defined($ok)) {
+	print "open('$host') failed\n";
+	$t->close();
+	exit(1);
+}
+
+$t->cmd("");
+sleep(1);
+
+# load the bootloader into RAM
+@out = $t->cmd(String => "load -r -b %{FREEMEMLO} $bl",
+               Prompt => "/RedBoot>/");
+
+print @out;
+
+if ($out[-1] =~ m/file not found/) {
+    exit(4);
+};
+
+sleep(1);
+
+# write bootloader to flash
+@out = $t->cmd(String => "fis create RedBoot",
+               Prompt => "/continue (y/n)?/");
+
+print @out;
+sleep(1);
+
+# An image named 'RedBoot' exists - continue (y/n)?
+@out = $t->cmd(String => "y",
+               Prompt => "/RedBoot>/");
+
+print @out;
+sleep(1);
+
+@out = $t->cmd(String => "fconfig boot_script_timeout 1",
+               Prompt => "/RedBoot>/");
+
+print @out;
+
+$t->close();
+exit(0);

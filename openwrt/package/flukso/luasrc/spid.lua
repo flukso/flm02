@@ -25,31 +25,35 @@ local dbg   = require 'dbg'
 local spi   = require 'flukso.spi'
 local nixio = require 'nixio'
 nixio.fs    = require 'nixio.fs'
+local uci   = require 'luci.model.uci':cursor()
 
 local arg = arg or {} -- needed when this code is not loaded via the interpreter
 
-local DEBUG			= (arg[1] == '-d')
+local DEBUG                 = (arg[1] == '-d')
+local MODEL                 = 'FLM02X'
+uci:foreach('system', 'system', function(x) MODEL = x.model end)
 
-local SPI_DEV			= '/dev/spidev0.0'
-local SPI_MAX_CLK_SPEED_HZ	= 1e6
-local SPI_MIN_BYTE_DELAY_US	= 250
-local SPI_TX_RX_DELAY_NS	= 2e7
-local SPI_CT_DELAY_NS		= 5e8
-local POLL_TIMEOUT_MS		= 100
 
-local UART_MAX_BYTES		= 256
+local SPI_DEV               = '/dev/spidev0.0'
+local SPI_MAX_CLK_SPEED_HZ  = 1e6
+local SPI_MIN_BYTE_DELAY_US = (MODEL == 'FLM02A') and 250 or 50
+local SPI_TX_RX_DELAY_NS    = (MODEL == 'FLM02A') and 2e7 or 5e6
+local SPI_CT_DELAY_NS       = 5e8
+local POLL_TIMEOUT_MS       = (MODEL == 'FLM02A') and 100 or 50
 
-local TIMERFD_ENABLE		= 1
-local TIMERFD_SEC		= 1
-local TIMERFD_NS		= 0
+local UART_MAX_BYTES        = 256
 
-local GET_DELTA			= 'gd'
+local TIMERFD_ENABLE        = 1
+local TIMERFD_SEC           = 1
+local TIMERFD_NS            = 0
 
-local DAEMON 			= os.getenv('DAEMON') or 'spid'
-local DAEMON_PATH 		= os.getenv('DAEMON_PATH') or '/var/run/' .. DAEMON
+local GET_DELTA             = 'gd'
 
-local O_RDWR_NONBLOCK		= nixio.open_flags('rdwr', 'nonblock')
-local POLLIN          		= nixio.poll_flags('in')
+local DAEMON                = os.getenv('DAEMON') or 'spid'
+local DAEMON_PATH           = os.getenv('DAEMON_PATH') or '/var/run/' .. DAEMON
+
+local O_RDWR_NONBLOCK       = nixio.open_flags('rdwr', 'nonblock')
+local POLLIN                = nixio.poll_flags('in')
 
 
 function mkfifos(input)
