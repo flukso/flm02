@@ -101,15 +101,15 @@ start()
 	fi
 
 	chmod 666 /dev/spidev0.0
-	/usr/sbin/spid
-	/usr/sbin/fluksod
+	/usr/sbin/spid -u flukso
+	/usr/sbin/fluksod -u flukso
 
 	MODEL=$(uci get system.@system[0].model)
 
 	if [ $MODEL == FLM02B ]
 	then
 		set_ttyS0
-		/usr/sbin/parsed
+		/usr/sbin/parsed -u flukso
 	fi
 
 	if [ $FIRSTBOOT -eq '1' ]
