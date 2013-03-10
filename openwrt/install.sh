@@ -69,6 +69,9 @@ patch -p0 < $REPO_PATH/patches/930-boot_crond_without_crontabs.patch
 # we don't need rdate, relying on ntpclient instead
 rm $BACKFIRE_PATH/package/base-files/files/etc/hotplug.d/iface/40-rdate
 
+# patch the hostapd package
+patch -p0 < $REPO_PATH/patches/940-wpa_action_hook.patch
+
 # and then build the Fluksometer firmware...
 echo 
 echo " ================================================= "
