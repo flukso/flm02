@@ -101,6 +101,7 @@ start()
 	fi
 
 	chmod 666 /dev/spidev0.0
+	/usr/sbin/supd
 	/usr/sbin/spid -u flukso
 	/usr/sbin/fluksod -u flukso
 
@@ -160,5 +161,8 @@ stop()
 
 	/usr/sbin/spid -k
 	rm -rf /var/run/spid
+
+	/usr/sbin/supd -k
+	rm -rf /var/run/supd
 }
 
