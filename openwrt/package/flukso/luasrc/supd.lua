@@ -34,11 +34,13 @@ nixio.setlogmask(LOGMASK)
 
 local DAEMON            = os.getenv('DAEMON') or 'supd'
 local DAEMON_PATH 	    = os.getenv('DAEMON_PATH') or '/var/run/' .. DAEMON
-local FIFO_PATH        = DAEMON_PATH .. '/event'
+local FIFO_PATH         = DAEMON_PATH .. '/event'
 
 local O_RDWR            = nixio.open_flags('rdwr')
 local O_RDWR_NONBLOCK   = nixio.open_flags('rdwr', 'nonblock')
 local O_RDWR_CREAT	    = nixio.open_flags('rdwr', 'creat')
+
+local ath_kmod_reload   = uci:get('system', 'event', 'ath_kmod_reload')
 
 nixio.fs.mkfifo(FIFO_PATH, '644')
 local fifo = nixio.open(FIFO_PATH, O_RDWR)
@@ -79,7 +81,12 @@ for line in fifo:linesource() do
 		disco:push(timestamp)
 
 		if disco:glitch() then
+			ath_kmod_reload = ath_kmod_reload + 1
+			uci:set('system', 'event', 'ath_kmod_reload', ath_kmod_reload)
+			uci:commit('system')
+
 			nixio.syslog('alert', 'Too many disconnects on itf ath0, reloading ath kmod')
+
 			os.execute('wifi down')
 			os.execute('rmmod ath_ahb')
 			os.execute('rmmod ath_hal')

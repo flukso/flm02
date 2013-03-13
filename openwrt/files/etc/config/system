@@ -29,3 +29,6 @@ config button
 	option handler  'mtd -r erase rootfs_data'
 	option min      60
 	option max      120
+
+config counter event
+	option ath_kmod_reload 0
