@@ -39,30 +39,31 @@ local httpclient = require 'luci.httpclient'
 
 
 -- parse and load /etc/config/flukso
-local FLUKSO		= uci:get_all('flukso')
+local FLUKSO          = uci:get_all('flukso')
 
 -- WAN settings
-local WAN_ENABLED	= (FLUKSO.daemon.enable_wan_branch == '1')
+local WAN_ENABLED     = (FLUKSO.daemon.enable_wan_branch == '1')
+local UPGRADE_ENABLED = (FLUKSO.daemon.enable_remote_upgrade == '1')
 
-local WAN_BASE_URL	= FLUKSO.daemon.wan_base_url .. 'device/'
-local WAN_KEY		= '0123456789abcdef0123456789abcdef'
+local WAN_BASE_URL    = FLUKSO.daemon.wan_base_url .. 'device/'
+local WAN_KEY         = '0123456789abcdef0123456789abcdef'
 uci:foreach('system', 'system', function(x) WAN_KEY = x.key end) -- quirky but it works
 
-local DEVICE		= '0123456789abcdef0123456789abcdef'
+local DEVICE          = '0123456789abcdef0123456789abcdef'
 uci:foreach('system', 'system', function(x) DEVICE = x.device end)
 
-local UPGRADE_URL	= FLUKSO.daemon.upgrade_url
+local UPGRADE_URL     = FLUKSO.daemon.upgrade_url
 
 -- https header helpers
-local FLUKSO_VERSION	= '000'
+local FLUKSO_VERSION  = '000'
 uci:foreach('system', 'system', function(x) FLUKSO_VERSION = x.version end)
 
-local USER_AGENT	= 'Fluksometer v' .. FLUKSO_VERSION
-local CACERT		= FLUKSO.daemon.cacert
+local USER_AGENT      = 'Fluksometer v' .. FLUKSO_VERSION
+local CACERT          = FLUKSO.daemon.cacert
 
 -- gzipped syslog tmp file
-local SYSLOG_TMP	= '/tmp/syslog.gz'
-local SYSLOG_GZIP	= 'logread | gzip > ' .. SYSLOG_TMP
+local SYSLOG_TMP      = '/tmp/syslog.gz'
+local SYSLOG_GZIP     = 'logread | gzip > ' .. SYSLOG_TMP
 
 -- collect relevant monitoring points
 local function collect_mp()
@@ -153,6 +154,10 @@ hash:update(response_json)
 if call_info.headers['X-Digest'] ~= hash:final() then
 	nixio.syslog('err', 'Incorrect digest in the heartbeat reply. Discard response.')
 	os.exit(4)
+end
+
+if not UPGRADE_ENABLED then
+	os.exit(5)
 end
 
 local response = luci.json.decode(response_json)
