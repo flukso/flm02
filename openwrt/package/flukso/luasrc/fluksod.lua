@@ -117,7 +117,7 @@ mosq.init()
 local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
 mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE)
 
-function dispatch(wan_child, lan_child)
+local function dispatch(wan_child, lan_child)
 	return coroutine.create(function()
 		local delta = {
 			fdin  = nixio.open(DELTA_PATH_IN, O_RDWR_NONBLOCK),
@@ -180,7 +180,7 @@ function dispatch(wan_child, lan_child)
 	end)
 end
 
-function wan_buffer(child)
+local function wan_buffer(child)
 	return coroutine.create(function(sensor_id, timestamp, counter)
 		local measurements = data.new()
 		local threshold = os.time() + WAN_INTERVAL
@@ -223,7 +223,7 @@ function wan_buffer(child)
 	end)
 end
 
-function filter(child, span, offset)
+local function filter(child, span, offset)
 	return coroutine.create(function(measurements)
 		while true do
 			measurements:filter(span, offset)
@@ -234,7 +234,7 @@ function filter(child, span, offset)
 end
 
 
-function send(child)
+local function send(child)
 	return coroutine.create(function(measurements)
 		local headers = {}
   		headers['Content-Type'] = 'application/json'
@@ -304,7 +304,7 @@ function send(child)
 	end)
 end
 
-function gc(child)
+local function gc(child)
 	return coroutine.create(function(measurements)
 		while true do
 			collectgarbage() -- force a complete garbage collection cycle
@@ -314,7 +314,7 @@ function gc(child)
 	end)
 end
 
-function lan_buffer(child)
+local function lan_buffer(child)
 	return coroutine.create(function(sensor_id, timestamp, power, counter, msec)
 		local measurements = data.new()
 		local threshold = os.time() + LAN_INTERVAL
@@ -373,7 +373,7 @@ function lan_buffer(child)
 	end)
 end
 
-function publish(child)
+local function publish(child)
 	return coroutine.create(function(measurements)
 		nixio.fs.mkdirr(LAN_PUBLISH_PATH)
 
@@ -400,7 +400,7 @@ function publish(child)
 	end)
 end
 
-function debug(child)
+local function debug(child)
 	return coroutine.create(function(measurements)
 		while true do
 			if DEBUG then
