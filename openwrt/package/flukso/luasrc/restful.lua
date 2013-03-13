@@ -59,10 +59,15 @@ if param.interval == "minute" and (param.unit == "watt" or param.unit == "lperda
 		pre, post =  (param.callback or param.jsonp_callback) .. "(", ");"
 	end
 
-	io.input(path .. sensor_id())
-	
 	io.write("Content-Type: application/json", "\n\n")                                              
-	io.write(pre, io.read("*all"), post)
+
+	-- if fluksod is not yet generating real-time readings for the sensor
+	-- then output an empty array
+	if pcall(io.input, path .. sensor_id()) then
+		io.write(pre, io.read("*all"), post)
+	else
+		io.write("[]")
+	end
 else
 	io.write("status: 400 Bad Request", "\n\n")
 	io.write("Malformed query string: interval, unit and version query parameters are required.")
