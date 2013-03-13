@@ -28,4 +28,6 @@ then
 	[ -z "$(ps | grep 'parse[d]')" ] && exit 3
 fi
 
+[ -z "$(ps | grep 'sup[d]')" ] && exit 4
+
 exit 0
