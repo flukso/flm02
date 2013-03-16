@@ -40,13 +40,12 @@ local O_RDWR            = nixio.open_flags('rdwr')
 local O_RDWR_NONBLOCK   = nixio.open_flags('rdwr', 'nonblock')
 local O_RDWR_CREAT	    = nixio.open_flags('rdwr', 'creat')
 
-local ath_kmod_reload   = uci:get('system', 'event', 'ath_kmod_reload')
-
 nixio.fs.mkfifo(FIFO_PATH, '644')
 local fifo = nixio.open(FIFO_PATH, O_RDWR)
 
 local disco = {
 	buffer = {0, 0, 0, 0},
+	ath_kmod_reload = uci:get('system', 'event', 'ath_kmod_reload'),
 
 	flush = function(self)
 		self.buffer = {0, 0, 0, 0}
@@ -63,6 +62,21 @@ local disco = {
 		end
 
 		return false
+	end,
+
+	reload = function(self)
+		self.ath_kmod_reload = self.ath_kmod_reload + 1
+		uci:set('system', 'event', 'ath_kmod_reload', self.ath_kmod_reload)
+		uci:commit('system')
+
+		nixio.syslog('alert', 'Too many disconnects on itf ath0, reloading ath kmod')
+
+		os.execute('wifi down')
+		os.execute('rmmod ath_ahb')
+		os.execute('rmmod ath_hal')
+		os.execute('insmod ath_hal')
+		os.execute('insmod ath_ahb')
+		os.execute('/etc/init.d/network restart')
 	end
 }
 
@@ -75,29 +89,20 @@ for line in fifo:linesource() do
 		print(timestamp, topic, event)
 	end
 
-	if event == 'CONNECTED' then
-		disco:flush()
-	elseif event == 'DISCONNECTED' then
-		disco:push(timestamp)
-
-		if disco:glitch() then
-			ath_kmod_reload = ath_kmod_reload + 1
-			uci:set('system', 'event', 'ath_kmod_reload', ath_kmod_reload)
-			uci:commit('system')
-
-			nixio.syslog('alert', 'Too many disconnects on itf ath0, reloading ath kmod')
-
-			os.execute('wifi down')
-			os.execute('rmmod ath_ahb')
-			os.execute('rmmod ath_hal')
-			os.execute('insmod ath_hal')
-			os.execute('insmod ath_ahb')
-			os.execute('/etc/init.d/network restart')
+	if topic == 'ath0' then
+		if event == 'CONNECTED' then
 			disco:flush()
-		end
-	end
+		elseif event == 'DISCONNECTED' then
+			disco:push(timestamp)
 
-	if DEBUG then
-		dbg.vardump(disco.buffer)
+			if disco:glitch() then
+				disco:reload()
+				disco:flush()
+			end
+		end
+
+		if DEBUG then
+			dbg.vardump(disco.buffer)
+		end
 	end
 end
