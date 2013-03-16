@@ -33,6 +33,7 @@ define Package/button/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/net_toggle $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/net_defaults $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/firmware_defaults $(1)/usr/sbin/
 endef
 
 $(eval $(call BuildPackage,button))

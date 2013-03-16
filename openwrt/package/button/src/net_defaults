@@ -1,17 +1,26 @@
 #!/bin/sh
 # Copyright (c) 2010-2011 flukso.net
 
+WIFI_LED=7
+GLOBE_LED=5
+
 cd /rom/etc/config
 cp firewall network wireless /etc/config
 
 logger 'returning to firewall, network and wireless defaults'
 
-gpioctl dirout 7
+gpioctl dirout $WIFI_LED
 
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
 do
-	gpioctl clear 7
-	gpioctl set 7
+	gpioctl clear $WIFI_LED
+	gpioctl set $WIFI_LED
 done
 
+gpioctl dirout $GLOBE_LED
+# inverted logic for globe led
+gpioctl set $GLOBE_LED
+
 /etc/init.d/network restart
+sleep 10
+/usr/bin/heartbeat 0

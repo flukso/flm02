@@ -1,0 +1,17 @@
+#!/bin/sh
+# Copyright (c) 2013 flukso.net
+
+WIFI_LED=7
+GLOBE_LED=5
+
+wifi down
+gpioctl dirout $WIFI_LED
+gpioctl clear $WIFI_LED
+
+gpioctl dirout $GLOBE_LED
+# inverted logic for globe led
+gpioctl set $GLOBE_LED
+
+/etc/init.d/flukso stop
+
+mtd -r erase rootfs_data

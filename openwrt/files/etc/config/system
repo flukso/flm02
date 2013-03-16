@@ -26,7 +26,7 @@ config button
 config button
 	option button   reset
 	option action   released
-	option handler  'mtd -r erase rootfs_data'
+	option handler  firmware_defaults
 	option min      60
 	option max      120
 
