@@ -81,9 +81,12 @@ local function collect_mp()
 
 	monitor.syslog = nixio.bin.b64encode(syslog_gz)
 
-	local device = luci.sys.net.defaultroute().device
-	monitor.ip = luci.util.exec("ifconfig " .. device):match("inet addr:([%d\.]*) ")
-	monitor.port = uci:get('uhttpd', 'restful', 'listen_http')[1]:match(":([%d]*)")
+	local defaultroute = luci.sys.net.defaultroute()
+	if defaultroute then
+		local device = defaultroute.device
+		monitor.ip = luci.util.exec("ifconfig " .. device):match("inet addr:([%d\.]*) ")
+		monitor.port = uci:get('uhttpd', 'restful', 'listen_http')[1]:match(":([%d]*)")
+	end
 
 	return monitor
 end
