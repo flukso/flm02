@@ -141,12 +141,12 @@ start()
 	$HEARTBEAT 1 >&- 2>&- <&-
 
 	# Configure cron
-	echo -e "$MINUTE * * * * $HEARTBEAT 0\n*/15 * * * * [ \$($FCHECK; echo \$?) -ne 0 ] && reboot" | crontab -u flukso -
+	echo -e "$MINUTE * * * * $HEARTBEAT 0\n*/15 * * * * $FCHECK" | crontab -
 }
 
 stop()
 {
-	crontab -u flukso -r
+	crontab -r
 
 	MODEL=$(uci get system.@system[0].model)
 
