@@ -10,6 +10,7 @@ unset COUNT
 unset INTERFACE_GLOBAL
 
 NTPC=`which ntpclient`
+SUPD_FIFO=/var/run/supd/event
 
 check_server() {
 	local hostname
@@ -37,7 +38,7 @@ set_drift() {
 }
 
 start_ntpclient() {
-	echo -e "*/15 * * * * /usr/bin/fntp" | crontab -u root -
+	[ -p $SUPD_FIFO ] && echo $(date +%s) ntp START > $SUPD_FIFO
 	config_foreach set_drift ntpdrift
 	config_foreach check_server ntpserver
 	[ -z "$SERVER" ] && exit 0
@@ -48,7 +49,7 @@ start_ntpclient() {
 stop_ntpclient() {
 	logger stopping ntpclient
 	killall ntpclient
-	crontab -u root -r	
+	[ -p $SUPD_FIFO ] && echo $(date +%s) ntp STOP > $SUPD_FIFO	
 }
 
 load_settings() {

@@ -24,6 +24,8 @@
 local dbg   = require 'dbg'
 local nixio = require 'nixio'
 nixio.fs    = require 'nixio.fs'
+local luci  = require 'luci'
+luci.sys    = require 'luci.sys'
 local uci   = require 'luci.model.uci'.cursor()
 
 local arg = arg or {} -- needed when this code is not loaded via the interpreter
@@ -40,8 +42,28 @@ local O_RDWR            = nixio.open_flags('rdwr')
 local O_RDWR_NONBLOCK   = nixio.open_flags('rdwr', 'nonblock')
 local O_RDWR_CREAT	    = nixio.open_flags('rdwr', 'creat')
 
+local POLLIN            = nixio.poll_flags('in')
+local POLL_TIMEOUT_MS   = -1 -- never
+
+local TIMERFD_SEC       = 300
+local TIMERFD_NS        = 0
+
 nixio.fs.mkfifo(FIFO_PATH, '644')
-local fifo = nixio.open(FIFO_PATH, O_RDWR)
+local fdin = nixio.open(FIFO_PATH, O_RDWR_NONBLOCK)
+local fifo = {
+	fd      = fdin,
+	events  = POLLIN,
+	revents = 0,
+	line    = fdin:linesource()
+}
+
+local timer = {
+	fd      = nixio.timerfd(TIMERFD_SEC, TIMERFD_NS, TIMERFD_SEC, TIMERFD_NS),
+	events  = POLLIN,
+	revents = 0
+}
+
+local fds = { fifo, timer }
 
 local disco = {
 	buffer = {0, 0, 0, 0},
@@ -77,32 +99,83 @@ local disco = {
 		os.execute('insmod ath_hal')
 		os.execute('insmod ath_ahb')
 		os.execute('/etc/init.d/network restart')
-	end
-}
+	end,
 
-for line in fifo:linesource() do
-	local timestamp, topic, event = line:match('^(%d+)%s+(%w+)%s+(%w+)$')
-	timestamp = tonumber(timestamp)
-	nixio.syslog('info', string.format('Received event %s for %s', event, topic))
-
-	if DEBUG then
-		print(timestamp, topic, event)
-	end
-
-	if topic == 'ath0' then
+	loop = function(self, event, timestamp)
 		if event == 'CONNECTED' then
-			disco:flush()
+			self:flush()
 		elseif event == 'DISCONNECTED' then
-			disco:push(timestamp)
+			self:push(timestamp)
 
-			if disco:glitch() then
-				disco:reload()
-				disco:flush()
+			if self:glitch() then
+				self:reload()
+				self:flush()
 			end
 		end
 
 		if DEBUG then
-			dbg.vardump(disco.buffer)
+			dbg.vardump(self.buffer)
+		end
+	end
+}
+
+local ntp = {
+	on = false,
+
+	running = function(self)
+		local ps = luci.sys.process.list()
+		for k, proc in pairs(ps) do
+			if proc.COMMAND:find('ntpclient') then
+				self.on = true
+				break
+			end
+		end
+	end,
+
+	check = function(self)
+		if self.on then
+			if DEBUG then
+				print('checking ntpclient')
+			end
+
+			os.execute('fntp')
+		end
+	end,
+
+	loop = function(self, event)
+		if event == 'START' then
+               self.on = true
+		elseif event == 'STOP' then
+               self.on = false
+		end
+	end
+}
+
+ntp:running()
+
+while true do
+	local poll = nixio.poll(fds, POLL_TIMEOUT_MS)
+
+	if not poll then      -- poll == -1
+	elseif poll == 0 then -- poll timed out
+	elseif poll > 0 then
+		if fifo.revents == POLLIN then
+			local timestamp, topic, event = fifo.line():match('^(%d+)%s+(%w+)%s+(%w+)$')
+			timestamp = tonumber(timestamp)
+			nixio.syslog('info', string.format('Received event %s for %s', event, topic))
+
+			if DEBUG then
+				print(timestamp, topic, event)
+			end
+
+			if topic == 'ath0' then
+				disco:loop(event, timestamp)
+			elseif topic == 'ntp' then
+				ntp:loop(event)
+			end
+		elseif timer.revents == POLLIN then
+			timer.fd:numexp() -- reset the numexp counter
+			ntp:check()
 		end
 	end
 end
