@@ -24,7 +24,7 @@ define Package/lua-mosquitto
     SECTION:=lang
     CATEGORY:=Languages
     TITLE:=Lua-mosquitto
-    DEPENDS:=+libmosquitto-nossl +lua
+    DEPENDS:=+libmosquitto +lua
     MAINTAINER:=Bart Van Der Meerssche <bart@flukso.net>
 endef
 
