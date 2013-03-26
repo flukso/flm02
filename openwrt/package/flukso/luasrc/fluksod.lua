@@ -94,9 +94,9 @@ local LAN_ID_TO_FACTOR  = { }
 uci:foreach('flukso', 'sensor', function(x) LAN_ID_TO_FACTOR[x.id] = LAN_FACTOR[x['type']] end)
 
 local LAN_UNIT = {
-	['electricity']     = { counter = 'Wh', flux =     'W' },
-	['water']           = { counter =  'L', flux = 'L/day' },
-	['gas']             = { counter =  'L', flux = 'L.day' }
+	['electricity']     = { counter = 'Wh', gauge =     'W' },
+	['water']           = { counter =  'L', gauge = 'L/day' },
+	['gas']             = { counter =  'L', gauge = 'L.day' }
 }
 
 local LAN_ID_TO_UNIT = { }
@@ -330,7 +330,7 @@ local function lan_buffer(child)
 		local threshold = os.time() + LAN_INTERVAL
 		local previous = {}
 
-		local topic_fmt = '/sensor/%s/flux'
+		local topic_fmt = '/sensor/%s/gauge'
 		local payload_fmt = '[%d,%d,"%s"]'
 
 		local function diff(x, y)  -- calculates y - x
@@ -365,7 +365,7 @@ local function lan_buffer(child)
 
 				if power then
 					local topic = string.format(topic_fmt, sensor_id)
-					local unit = LAN_ID_TO_UNIT[sensor_id].flux
+					local unit = LAN_ID_TO_UNIT[sensor_id].gauge
 					local payload = string.format(payload_fmt, timestamp, power, unit)
 					mqtt:publish(topic, payload, MOSQ_QOS, MOSQ_RETAIN)
 
