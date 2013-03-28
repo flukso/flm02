@@ -65,9 +65,81 @@ local timer = {
 
 local fds = { fifo, timer }
 
+local wifi = {
+	on = false,
+	buffer = {},
+	ath_kmod_reload = uci:get('system', 'event', 'ath_kmod_reload'),
+
+	init = function(self)
+		local cmd = 'wpa_cli -p /var/run/wpa_supplicant-ath0 -i ath0 status'
+		local pattern = 'wpa_state=(%a+)\n'
+		local status = luci.sys.exec(cmd):match(pattern)
+
+		if status == 'COMPLETED' then
+			self.on = true
+		end
+	end,
+
+	flush = function(self)
+		self.buffer = {}
+	end,
+
+	push = function(self)
+		self.buffer[#self.buffer + 1] = true
+	end,
+
+	glitch = function(self)
+		if #self.buffer > 2 then
+			return true
+		else
+			return false
+		end
+	end,
+
+	check = function(self)
+		if self.on then
+			if DEBUG then
+				print('checking wifi connection')
+			end
+
+			if not luci.sys.net.defaultroute() and not luci.sys.net.defaultroute6() then
+				self:push()
+
+				if self:glitch() then
+					nixio.syslog('alert', 'No default routes on itf ath0, reloading ath kmod')
+					self:flush()
+					self:reload()
+				end
+			end
+		end
+	end,
+
+	reload = function(self)
+		self.ath_kmod_reload = self.ath_kmod_reload + 1
+		uci:set('system', 'event', 'ath_kmod_reload', self.ath_kmod_reload)
+		uci:commit('system')
+
+		os.execute('wifi down')
+		os.execute('rmmod ath_ahb')
+		os.execute('rmmod ath_hal')
+		os.execute('insmod ath_hal')
+		os.execute('insmod ath_ahb')
+		os.execute('/etc/init.d/network restart')
+	end,
+
+	loop = function(self, event)
+		if event == 'CONNECTED' then
+			self:flush()
+			self.on = true
+		elseif event == 'DISCONNECTED' then
+			self.on = false
+		end
+	end
+}
+
+
 local disco = {
 	buffer = {0, 0, 0, 0},
-	ath_kmod_reload = uci:get('system', 'event', 'ath_kmod_reload'),
 
 	flush = function(self)
 		self.buffer = {0, 0, 0, 0}
@@ -81,24 +153,9 @@ local disco = {
 	glitch = function(self)
 		if self.buffer[#self.buffer] - self.buffer[1] < 60 then
 			return true
+		else
+			return false
 		end
-
-		return false
-	end,
-
-	reload = function(self)
-		self.ath_kmod_reload = self.ath_kmod_reload + 1
-		uci:set('system', 'event', 'ath_kmod_reload', self.ath_kmod_reload)
-		uci:commit('system')
-
-		nixio.syslog('alert', 'Too many disconnects on itf ath0, reloading ath kmod')
-
-		os.execute('wifi down')
-		os.execute('rmmod ath_ahb')
-		os.execute('rmmod ath_hal')
-		os.execute('insmod ath_hal')
-		os.execute('insmod ath_ahb')
-		os.execute('/etc/init.d/network restart')
 	end,
 
 	loop = function(self, event, timestamp)
@@ -108,8 +165,9 @@ local disco = {
 			self:push(timestamp)
 
 			if self:glitch() then
-				self:reload()
+				nixio.syslog('alert', 'Too many disconnects on itf ath0, reloading ath kmod')
 				self:flush()
+				wifi:reload()
 			end
 		end
 
@@ -122,7 +180,7 @@ local disco = {
 local ntp = {
 	on = false,
 
-	running = function(self)
+	init = function(self)
 		local ps = luci.sys.process.list()
 		for k, proc in pairs(ps) do
 			if proc.COMMAND:find('ntpclient') then
@@ -151,7 +209,8 @@ local ntp = {
 	end
 }
 
-ntp:running()
+wifi:init()
+ntp:init()
 
 while true do
 	local poll = nixio.poll(fds, POLL_TIMEOUT_MS)
@@ -169,12 +228,14 @@ while true do
 			end
 
 			if topic == 'ath0' then
+				wifi:loop(event)
 				disco:loop(event, timestamp)
 			elseif topic == 'ntp' then
 				ntp:loop(event)
 			end
 		elseif timer.revents == POLLIN then
 			timer.fd:numexp() -- reset the numexp counter
+			wifi:check()
 			ntp:check()
 		end
 	end
