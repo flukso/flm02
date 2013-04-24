@@ -128,6 +128,6 @@ while true do
 	end
 
 	msg = table.concat(msg, " ") .. "\n"
-    print(msg)
+	if DEBUG then print(msg) end
 	fd:write(msg)
 end
