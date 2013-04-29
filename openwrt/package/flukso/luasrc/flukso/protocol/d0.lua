@@ -41,8 +41,8 @@ require "nixio.util"
 local string = string
 local coroutine = coroutine
 
-local getfenv, setmetatable, tonumber, pairs =
-      getfenv, setmetatable, tonumber, pairs
+local getfenv, setmetatable, tonumber, tostring, pairs =
+      getfenv, setmetatable, tonumber, tostring, pairs
 
 module (...)
 local modenv = getfenv()
@@ -95,12 +95,28 @@ local function start(mfg, version, model)
 	telegram = {
 		mfg = mfg,
 		version = version,
-		model = model
+		model = model,
+		length = #mfg + #tostring(version) + #model,
+		check = false
 	}
 end
 
 local function finish()
 	if telegram then
+		if length then
+			if telegram.length == length then
+				sync = true
+				telegram.check = true
+			else
+				-- the first telegram might have been corrupted
+				if not sync then
+					length = telegram.length
+				end				
+			end
+		else
+			length = telegram.length
+		end
+
 		local mbus_profile_generic = "^0%-%d+:24%.3%.%d+%*?%d*$"
 		local mbus_object = "^%b()%b()%b()%b()%((%d+)%-(%d+):(%d+)%.(%d+)%.(%d+)%*?(%d*)%)%((.+)%)%(([%d%.]+)%)$"
 		local cosem_value_tpl = "(%s*%s)"
@@ -130,6 +146,10 @@ local COSEM = {
 }
 
 local function parse(line)
+	if telegram then
+		telegram.length = telegram.length + #line
+	end
+
 	for pattern, process in pairs(COSEM) do
 		local A, B, C, D, E, F, data = line:match(pattern)
 
@@ -147,6 +167,8 @@ function init(dev)
 			local fd = nixio.open(dev, O_RDWR_NONBLOCK)
 			local telegram = nil
 			local last = nil
+			local length = nil
+			local sync = false
 
 			for line in fd:linesource() do
 				parse(line)

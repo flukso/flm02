@@ -95,39 +95,42 @@ while true do
 	local telegram = assert(get_telegram(), "parser returned an empty telegram")
 	if DEBUG then dbg.vardump(telegram) end
 
-	for obis, map in pairs(OBIS) do
-		if telegram[obis] then
-			local value, unit = telegram[obis]:match("^%(([%d%.]+)%*([%w]+)%)$")
+	-- do not process corrupted telegrams
+	if telegram.check then
+		for obis, map in pairs(OBIS) do
+			if telegram[obis] then
+				local value, unit = telegram[obis]:match("^%(([%d%.]+)%*([%w]+)%)$")
 
-			-- adapt to delta/out fifo message format
-			if value then
-				local fvalue = value * FACTOR[unit]
+				-- adapt to delta/out fifo message format
+				if value then
+					local fvalue = value * FACTOR[unit]
 
-				if not sensor[map.sensor] then
-					sensor[map.sensor] = { map.sensor - 1, 0, nil }
-				end
+					if not sensor[map.sensor] then
+						sensor[map.sensor] = { map.sensor - 1, 0, nil }
+					end
 
-				if map.derive then
-					sensor[map.sensor][3] = (sensor[map.sensor][3] or 0) + map.sign*fvalue
-				else
-					sensor[map.sensor][2] = sensor[map.sensor][2] + map.sign*fvalue
+					if map.derive then
+						sensor[map.sensor][3] = (sensor[map.sensor][3] or 0) + map.sign*fvalue
+					else
+						sensor[map.sensor][2] = sensor[map.sensor][2] + map.sign*fvalue
+					end
 				end
 			end
 		end
-	end
 
-	local msg = { os.time() }
+		local msg = { os.time() }
 
-	for _key, entry in pairs(sensor) do
-		if not entry[3] then
-			-- we're dealing with a 'pulse' like sensor, so add the msec timestamp
-			entry[3] = msecs()
+		for _key, entry in pairs(sensor) do
+			if not entry[3] then
+				-- we're dealing with a 'pulse' like sensor, so add the msec timestamp
+				entry[3] = msecs()
+			end
+
+			msg[#msg + 1] = table.concat(entry, " ")
 		end
 
-		msg[#msg + 1] = table.concat(entry, " ")
+		msg = table.concat(msg, " ") .. "\n"
+		if DEBUG then print(msg) end
+		fd:write(msg)
 	end
-
-	msg = table.concat(msg, " ") .. "\n"
-	if DEBUG then print(msg) end
-	fd:write(msg)
 end
