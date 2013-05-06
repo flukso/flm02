@@ -97,7 +97,7 @@ local function start(mfg, version, model)
 		version = version,
 		model = model,
 		length = #mfg + #tostring(version) + #model,
-		check = false
+		check = true
 	}
 end
 
@@ -106,8 +106,9 @@ local function finish()
 		if length then
 			if telegram.length == length then
 				sync = true
-				telegram.check = true
 			else
+				telegram.check = false
+
 				-- the first telegram might have been corrupted
 				if not sync then
 					length = telegram.length
@@ -146,15 +147,24 @@ local COSEM = {
 }
 
 local function parse(line)
-	if telegram then
-		telegram.length = telegram.length + #line
-	end
+	local match = false
 
 	for pattern, process in pairs(COSEM) do
 		local A, B, C, D, E, F, data = line:match(pattern)
 
 		if A then
 			process(A, B, C, D, E, F, data)
+			match = true
+		end
+	end
+
+	if telegram then
+		telegram.length = telegram.length + #line
+
+		-- not being able to match a specific line
+		-- means we're dealing with a corrupted telegram
+		if not match and #line > 0 then
+			telegram.check = false
 		end
 	end
 end
