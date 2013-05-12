@@ -1,0 +1,11 @@
+--- a/uhttpd-cgi.c	2013-03-14 11:42:31.512072581 +0100
++++ b/uhttpd-cgi.c	2013-05-11 22:10:35.293132931 +0200
+@@ -317,6 +317,8 @@
+ 						setenv("CONTENT_LENGTH", req->headers[i+1], 1);
+ 				}
+ 
++				/* kill process after time-out to prevent uhttpd lock-up */
++				alarm((unsigned int)cl->server->conf->script_timeout);
+ 
+ 				/* execute child code ... */
+ 				if( chdir(pi->root) )
