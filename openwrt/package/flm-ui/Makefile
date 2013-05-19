@@ -22,7 +22,7 @@ define Package/flm-ui
     SECTION:=flukso
     CATEGORY:=Flukso
     TITLE:=Flm-ui
-    DEPENDS:=
+    DEPENDS:=+luci-admin-rpc
     MAINTAINER:=Bart Van Der Meerssche <bart@flukso.net>
 endef
 
