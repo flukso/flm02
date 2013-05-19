@@ -55,10 +55,6 @@ rm $BACKFIRE_PATH/package/lua/patches/400-luaposix_5.1.4-embedded.patch
 rm $BACKFIRE_PATH/package/lua/patches/500-eglibc_config.patch
 cp patches/600-lua-tablecreate.patch $BACKFIRE_PATH/package/lua/patches
 
-# patch the uhttpd package
-mkdir $BACKFIRE_PATH/package/uhttpd/patches
-cp patches/610-kill_cgi_process_after_timeout.patch $BACKFIRE_PATH/package/uhttpd/patches
-
 # copy flash utility to the tools dir
 cp ../tools/ap51-flash $BACKFIRE_PATH/tools
 
@@ -75,6 +71,10 @@ rm $BACKFIRE_PATH/package/base-files/files/etc/hotplug.d/iface/40-rdate
 
 # patch the hostapd package
 patch -p0 < $REPO_PATH/patches/940-wpa_action_hook.patch
+
+# patch the uhttpd package
+patch -p0 < $REPO_PATH/patches/950-kill_cgi_process_after_timeout.patch
+
 
 # and then build the Fluksometer firmware...
 echo 

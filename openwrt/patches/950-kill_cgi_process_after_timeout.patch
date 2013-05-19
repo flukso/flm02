@@ -1,5 +1,5 @@
---- a/uhttpd-cgi.c	2013-03-14 11:42:31.512072581 +0100
-+++ b/uhttpd-cgi.c	2013-05-11 22:10:35.293132931 +0200
+--- package/uhttpd/src/uhttpd-cgi.c	2013-03-14 11:42:31.512072581 +0100
++++ package/uhttpd/src/uhttpd-cgi.c	2013-05-11 22:10:35.293132931 +0200
 @@ -317,6 +317,8 @@
  						setenv("CONTENT_LENGTH", req->headers[i+1], 1);
  				}
