@@ -26,19 +26,12 @@
 #define _GNU_SOURCE 1
 #endif
 
-#ifdef OPENWRT_BUILD
-#define DAEMON_USER   "flukso"
-#define DAEMON_GROUP  "flukso"
-#else
-#define DAEMON_USER   "icarus75"
-#define DAEMON_GROUP  "icarus75"
-#endif
-
 #define DAEMON_VARRUN "/var/run"
 
 #define SUP_ALLOWED_RESTARTS 10
 #define SUP_MAX_SECONDS 60
 
+#include <stdbool.h>
 #include <pwd.h>
 #include <grp.h>
 #include <unistd.h>
@@ -58,15 +51,9 @@
 #include <libdaemon/dpid.h>
 #include <libdaemon/dexec.h>
 
-#ifdef OPENWRT_BUILD
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
-#else
-#include <lua5.1/lua.h>
-#include <lua5.1/lualib.h>
-#include <lua5.1/lauxlib.h>
-#endif
 
 struct restart_s {
 	int i;
@@ -119,22 +106,22 @@ static const char *daemon_pid_file_proc_override(void)
 	return fn;
 }
 
-static int drop_root(void)
+static int drop_root(char *user)
 {
 	struct passwd *pw;
 	struct group * gr;
 
-	if (!(pw = getpwnam(DAEMON_USER))) {
-		daemon_log(LOG_ERR, "Failed to find user '"DAEMON_USER"'");
+	if (!(pw = getpwnam(user))) {
+		daemon_log(LOG_ERR, "Failed to find user '%s'", user);
 		return -1;
 	}
 
-	if (!(gr = getgrnam(DAEMON_GROUP))) {
-		daemon_log(LOG_ERR, "Failed to find group '"DAEMON_GROUP"'");
+	if (!(gr = getgrnam(user))) {
+		daemon_log(LOG_ERR, "Failed to find group '%s'", user);
 		return -1;
 	}
 
-	if (initgroups(DAEMON_USER, gr->gr_gid) != 0) {
+	if (initgroups(user, gr->gr_gid) != 0) {
 		daemon_log(LOG_ERR, "Failed to change group list: %s", strerror(errno));
 		return -1;
 	}
@@ -156,7 +143,7 @@ static int drop_root(void)
 	return 0;
 }
 
-static int make_runtime_dir(char **pruntime_path)
+static int make_runtime_dir(char **pruntime_path, char *user)
 {
 	int r = -1;
 	mode_t u;
@@ -168,13 +155,13 @@ static int make_runtime_dir(char **pruntime_path)
 
 	asprintf(pruntime_path, "%s/%s", DAEMON_VARRUN, daemon_log_ident);
 
-	if (!(pw = getpwnam(DAEMON_USER))) {
-		daemon_log(LOG_ERR, "Failed to find user '"DAEMON_USER"'");
+	if (!(pw = getpwnam(user))) {
+		daemon_log(LOG_ERR, "Failed to find user '%s'", user);
 		goto fail;
 	}
 
-	if (!(gr = getgrnam(DAEMON_GROUP))) {
-		daemon_log(LOG_ERR, "Failed to find group '"DAEMON_GROUP"'");
+	if (!(gr = getgrnam(user))) {
+		daemon_log(LOG_ERR, "Failed to find group '%s'", user);
 		goto fail;
 	}
 
@@ -215,6 +202,21 @@ int main(int argc, char *argv[])
 	char *luad_path = NULL;
 	char *runtime_path = NULL;
 
+	int opt;
+	bool kill = false;
+	char *user = "root";
+
+	while ((opt = getopt(argc, argv, "ku:")) != -1) {
+		switch (opt) {
+			case 'k':
+				kill = true;
+				break;
+			case 'u':
+				user = optarg;
+				break;
+		}
+	}
+
 	/* Reset signal handlers */
 	if (daemon_reset_sigs(-1) < 0) {
 		daemon_log(LOG_ERR, "Failed to reset all signal handlers: %s", strerror(errno));
@@ -234,7 +236,7 @@ int main(int argc, char *argv[])
 	daemon_pid_file_proc = daemon_pid_file_proc_override;
 
 	/* Check if we are called with -k parameter */
-	if (argc >= 2 && !strcmp(argv[1], "-k")) {
+	if (kill) {
 		int ret;
 
 		/* Kill daemon with SIGTERM */
@@ -295,13 +297,13 @@ int main(int argc, char *argv[])
 		}
 
 		/* Create the daemon runtime dir */
-		if (make_runtime_dir(&runtime_path) < 0) {
+		if (make_runtime_dir(&runtime_path, user) < 0) {
 			goto finish;
 		}
 
-		/* Drop root priviledges */
-		if (drop_root() < 0) {
-			daemon_log(LOG_ERR, "Could not drop root privileges for %s/%s", DAEMON_USER, DAEMON_GROUP);
+		/* Drop root privileges */
+		if (drop_root(user) < 0) {
+			daemon_log(LOG_ERR, "Could not drop root privileges for %s/%s", user, user);
 			goto finish;
 		}
 

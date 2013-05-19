@@ -1,0 +1,13 @@
+--- a/src/swap.cpp	2012-04-30 23:36:43.740300088 +0200
++++ b/src/swap.cpp	2012-04-30 23:37:21.788299255 +0200
+@@ -111,10 +111,6 @@
+     if (fd == -1)
+         return -1;
+ 
+-#if (defined (ZMQ_HAVE_LINUX) && !defined (ZMQ_HAVE_ANDROID))
+-    //  Enable more aggresive read-ahead optimization.
+-    posix_fadvise (fd, 0, filesize, POSIX_FADV_SEQUENTIAL);
+-#endif
+     return 0;
+ }
+ 

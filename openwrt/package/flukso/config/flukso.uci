@@ -5,9 +5,11 @@ config settings fsync
 
 config settings main
 	option hw_major 2
-	option hw_minor 1
+	option hw_minor 2
 	option sw_major 1
 	option sw_minor 0
+	option uart_tx_invert 0
+	option uart_rx_invert 0
 	option max_sensors 6
 	option max_analog_sensors 3
 	option reset_counters 0
@@ -16,7 +18,8 @@ config settings main
 config settings daemon
 	option logmask info
 	option enable_wan_branch 1
-	option enable_lan_branch 0
+	option enable_lan_branch 1
+	option enable_remote_upgrade 1
 	option wan_base_url https://api.flukso.net/
 	option upgrade_url http://www.flukso.net/files/upgrade/
 	option cacert /etc/ssl/certs/flukso.ca.crt

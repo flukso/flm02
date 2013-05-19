@@ -1,6 +1,9 @@
 #!/bin/sh
 # Copyright (c) 2010-2011 flukso.net
 
+WIFI_LED=7
+GLOBE_LED=5
+
 to_wifi ()
 {
 	uci set firewall.@zone[1].input=REJECT
@@ -11,6 +14,7 @@ to_wifi ()
 	uci set wireless.@wifi-iface[0].mode=sta
 	uci commit
 	logger 'toggled to wifi mode'
+	gpioctl set $WIFI_LED
 }
 
 to_eth ()
@@ -23,8 +27,16 @@ to_eth ()
 	uci set wireless.@wifi-iface[0].mode=ap
 	uci commit
 	logger 'toggled to eth mode'
+	gpioctl clear $WIFI_LED
 }
 
+
+wifi down
+
+gpioctl dirout $WIFI_LED
+gpioctl dirout $GLOBE_LED
+#inverted logic for globe led
+gpioctl set $GLOBE_LED
 
 MODE=$(uci get network.wan.ifname)
 
@@ -36,12 +48,6 @@ then
 	to_eth
 fi
 
-gpioctl dirout 7
-
-for i in 1 2 3 4 5
-do
-	gpioctl clear 7
-	gpioctl set 7
-done
-
 /etc/init.d/network restart
+sleep 10
+/usr/bin/heartbeat 0

@@ -53,13 +53,21 @@ fi
 
 if [ -d $BATCH ]
 then
-	cd $BATCH
+	cd $BATCH-FLM02B
 else
 	printf "$BATCH directory does not exist.\n"
 	exit 3
 fi
 
-printf "serial;device;key;sensor_hw_version;sensor1;sensor2;sensor3;sensor4;sensor5;sensor6\n" >> $BATCH.sc
+printf "serial;device;key;sensor_hw_version;" >> $BATCH.sc
+printf "sensor1;sensor2;sensor3;sensor4;sensor5;sensor6;sensor7;sensor8;" >> $BATCH.sc
+printf "sensor9;sensor10;sensor11;sensor12;sensor13;sensor14;sensor15;sensor16;" >> $BATCH.sc
+printf "sensor17;sensor18;sensor19;sensor20;sensor21;sensor22;sensor23;sensor24;" >> $BATCH.sc
+printf "sensor25;sensor26;sensor27;sensor28;sensor29;sensor30;sensor31;sensor32;" >> $BATCH.sc
+printf "sensor33;sensor34;sensor35;sensor36;sensor37;sensor38;sensor39;sensor40;" >> $BATCH.sc
+printf "sensor41;sensor42;sensor43;sensor44;sensor45;sensor46;sensor47;sensor48;" >> $BATCH.sc
+printf "sensor49;sensor50;sensor51;sensor52;sensor53;sensor54;sensor55;sensor56;" >> $BATCH.sc
+printf "sensor57;sensor58;sensor59;sensor60;sensor61;sensor62;sensor63;sensor64\n" >> $BATCH.sc
 
 for FN in $BATCH'0'*
 do
@@ -68,12 +76,12 @@ do
 	printf "$(hexdump -v -e '1/1 "%.2x"' -s $((0x1000)) -n 16 $FN);" >> $BATCH.sc
 	printf "$VERSION;" >> $BATCH.sc
 
-	for i in `seq 6`;
+	for i in `seq 64`;
 	do
-		ADDRESS=0x10$((i+2))0
-		printf "$(hexdump -v -e '1/1 "%.2x"' -s $((ADDRESS)) -n 16 $FN)" >> $BATCH.sc
+		ADDRESS=$((0x1000 + (i+2) * 0x10))
+		printf "$(hexdump -v -e '1/1 "%.2x"' -s $ADDRESS -n 16 $FN)" >> $BATCH.sc
 
-		if [ $i -ne 6 ]
+		if [ $i -ne 64 ]
 		then
 			printf ";" >> $BATCH.sc
 		else

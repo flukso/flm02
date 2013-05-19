@@ -71,7 +71,16 @@ end
 function encode(msg)
 	local numtohex = nixio.bin.numtohex
 
-	local noarg_cmd = { gd = true, gh = true, gs = true, gp = true, gw = true, gb = true, ct = true }
+	local noarg_cmd = {
+		gd = true,
+		gh = true,
+		gs = true,
+		gp = true,
+		gw = true,
+		gb = true,
+		gk = true,
+		ct = true
+	}
 
 	local function argcheck(argc)
 		if argc ~= #msg.parsed then
@@ -95,6 +104,10 @@ function encode(msg)
 	if noarg_cmd[msg.parsed.cmd] then
 		msg.encoded = msg.parsed.cmd
 
+	elseif msg.parsed.cmd == 'rt' and argcheck(2) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
+                                     .. numtohex(msg.parsed[2], 1)
+
 	elseif msg.parsed.cmd == 'ge' and argcheck(1) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
 
@@ -109,15 +122,15 @@ function encode(msg)
 
 	elseif msg.parsed.cmd == 'sh' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 2)
-                                             .. numtohex(msg.parsed[2], 1)
+                                     .. numtohex(msg.parsed[2], 1)
 
 	elseif msg.parsed.cmd == 'ss' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
-                                             .. numtohex(msg.parsed[2], 1)
+                                     .. numtohex(msg.parsed[2], 1)
 
 	elseif msg.parsed.cmd == 'se' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
-                                             .. numtohex(msg.parsed[2], 1)
+                                     .. numtohex(msg.parsed[2], 1)
 
 	elseif msg.parsed.cmd == 'sp' and argcheck(6) then
 		msg.encoded = msg.parsed.cmd
@@ -128,21 +141,28 @@ function encode(msg)
 
 	elseif msg.parsed.cmd == 'sc' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
-                                             .. numtohex(msg.parsed[2], 4)
+                                     .. numtohex(msg.parsed[2], 4)
 
 	elseif msg.parsed.cmd == 'sm' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
-                                             .. numtohex(msg.parsed[2], 2)
+                                     .. numtohex(msg.parsed[2], 2)
 
 	elseif msg.parsed.cmd == 'sf' and argcheck(2) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
-                                             .. numtohex(msg.parsed[2], 2)
+                                     .. numtohex(msg.parsed[2], 2)
 
 	elseif msg.parsed.cmd == 'sw' and argcheck(1) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 2)
 
 	elseif msg.parsed.cmd == 'sb' and argcheck(1) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 2)
+
+	elseif msg.parsed.cmd == 'sk' and argcheck(3) then
+		msg.encoded = msg.parsed.cmd
+
+		for i = 1, 3 do
+			msg.encoded = msg.encoded .. numtohex(msg.parsed[i], 1)
+		end
 
 	else
 		return
@@ -219,6 +239,12 @@ function decode(msg)
 
 			msg.decoded.delta = os.time() .. ' ' .. table.concat(msg.decoded, ' ')
 
+		elseif msg.decoded.cmd == 'rt' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
+			msg.decoded[2] = hextonum(msg.decoded.args:sub(3, 4))
+
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
+
 		elseif msg.decoded.cmd == 'gh' or msg.decoded.cmd == 'sh' then
 			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 4))
 			msg.decoded[2] = hextonum(msg.decoded.args:sub(5, 6))
@@ -269,6 +295,13 @@ function decode(msg)
 
 		elseif msg.decoded.cmd == 'gb' or msg.decoded.cmd == 'sb' then
 			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 4))
+
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
+
+		elseif msg.decoded.cmd == 'gk' or msg.decoded.cmd == 'sk' then
+			for i = 1, 3 do
+				msg.decoded[i] = hextonum(msg.decoded.args:sub(i*2 - 1, i*2))
+			end
 
 			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 

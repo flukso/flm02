@@ -1,0 +1,11 @@
+--- a/mosquitto.conf	2013-02-11 10:00:03.000000000 +0100
++++ b/mosquitto.conf	2013-02-24 11:26:40.922846641 +0100
+@@ -39,7 +39,7 @@
+ # If run as a non-root user, this setting has no effect.
+ # Note that on Windows this has no effect and so mosquitto should 
+ # be started by the user you wish it to run as.
+-#user mosquitto
++user flukso
+ 
+ # The maximum number of QoS 1 and 2 messages currently inflight per 
+ # client.

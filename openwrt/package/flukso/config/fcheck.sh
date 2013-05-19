@@ -18,7 +18,18 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-[ -z "$(ps | grep 'spi[d]')" ] && exit 1
-[ -z "$(ps | grep 'flukso[d]')" ] && exit 2
+STATUS=0
 
-exit 0
+[ -z "$(ps | grep 'spi[d]')" ] && STATUS=1
+[ -z "$(ps | grep 'flukso[d]')" ] && STATUS=2
+
+MODEL=$(uci get system.@system[0].model)
+
+if [ $MODEL == FLM02B ]
+then
+	[ -z "$(ps | grep 'parse[d]')" ] && STATUS=3
+fi
+
+[ -z "$(ps | grep 'sup[d]')" ] && STATUS=4
+
+[ $STATUS -ne 0 ] && /etc/init.d/flukso restart

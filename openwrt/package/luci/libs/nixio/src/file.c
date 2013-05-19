@@ -115,6 +115,22 @@ static int nixio_open_flags(lua_State *L) {
 	return 1;
 }
 
+static int nixio_fd_wrap(lua_State *L) {
+	int fd = luaL_checkint(L, 1);
+
+	int *udata = lua_newuserdata(L, sizeof(int));
+	if (!udata) {
+		return luaL_error(L, "out of memory");
+	}
+
+	*udata = fd;
+
+	luaL_getmetatable(L, NIXIO_FILE_META);
+	lua_setmetatable(L, -2);
+
+	return 1;
+}
+
 static int nixio_dup(lua_State *L) {
 	int oldfd = nixio__checkfd(L, 1);
 	int newfd = (lua_gettop(L) > 1) ? nixio__checkfd(L, 2) : -1;
@@ -389,6 +405,7 @@ static const luaL_reg R[] = {
 	{"dup",			nixio_dup},
 	{"open",		nixio_open},
 	{"open_flags",	nixio_open_flags},
+	{"fd_wrap",		nixio_fd_wrap},
 	{"pipe",		nixio_pipe},
 	{NULL,			NULL}
 };

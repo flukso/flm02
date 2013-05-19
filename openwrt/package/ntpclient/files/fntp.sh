@@ -20,7 +20,7 @@
 
 . /etc/hotplug.d/iface/20-ntpclient
 
-[ -z "$(ps | grep 'ntpclien[t]')" ] \
-	&& { logger ntpclient needed a kicking; start_ntpclient; }
+[ -z "$(ps | grep 'ntpclien[t]')" -o $(date '+%s') -lt 1234567890 ] \
+	&& { logger ntpclient needed a kicking; stop_ntpclient; start_ntpclient; }
 
 exit 0

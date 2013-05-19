@@ -1,18 +1,28 @@
 diff -urNad /tmp/avrdude-5.10/avrdude.conf.in avrdude-5.10/avrdude.conf.in
 --- /tmp/avrdude-5.10/avrdude.conf.in	2010-08-06 13:53:20.883965102 +0200
 +++ avrdude-5.10/avrdude.conf.in	2010-08-06 13:11:12.803965267 +0200
-@@ -833,6 +833,16 @@
+@@ -833,6 +833,26 @@
    miso  = 8;
  ;
  
 +programmer
-+  id    = "gpio";
++  id    = "flm02a";
 +  desc  = "Use gpio_dev to bitbang GPIO lines";
 +  type  = gpio;
-+  reset = 0;
++  reset = ~0;
++  sck   = ~3;
++  mosi  = 1;
++  miso  = 2;
++;
++
++programmer
++  id    = "flm02b";
++  desc  = "Use gpio_dev to bitbang GPIO lines";
++  type  = gpio;
++  reset = ~0;
 +  sck   = 3;
 +  mosi  = 1;
-+  miso  = 2;  
++  miso  = 2;
 +;
 +
  # Same as above, different name

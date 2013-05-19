@@ -54,6 +54,20 @@ config rule
 	option dest_port	5353
 	option target		ACCEPT
 
+#Allow access to plain MQTT on the wan itf
+config rule
+	option src		wan
+	option proto		tcp
+	option dest_port	1883
+	option target		ACCEPT
+
+#Allow access to MQTT/SSL on the wan itf
+config rule
+	option src		wan
+	option proto		tcp
+	option dest_port	8883
+	option target		ACCEPT
+
 # include a file with users custom iptables rules
 config include
 	option path /etc/firewall.user
