@@ -96,7 +96,7 @@ uci:foreach('flukso', 'sensor', function(x) LAN_ID_TO_FACTOR[x.id] = LAN_FACTOR[
 local LAN_UNIT = {
 	['electricity']     = { counter = 'Wh', gauge =     'W' },
 	['water']           = { counter =  'L', gauge = 'L/day' },
-	['gas']             = { counter =  'L', gauge = 'L.day' }
+	['gas']             = { counter =  'L', gauge = 'L/day' }
 }
 
 local LAN_ID_TO_UNIT = { }
