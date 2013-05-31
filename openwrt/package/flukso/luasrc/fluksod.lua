@@ -158,10 +158,10 @@ local function dispatch(wan_child, lan_child)
 				print(line)
 			end
 
-			local timestamp, data = line:match('^(%d+)%s+([%d%s]+)$')
+			local timestamp, data = line:match('^(%d+)%s+([%-%d%s]+)$')
 			timestamp = tonumber(timestamp)
 
-			for i, counter, extra in data:gmatch('(%d+)%s+(%d+)%s+(%d+)') do
+			for i, counter, extra in data:gmatch('(%d+)%s+([%-%d]+)%s+([%-%d]+)') do
 				i = tonumber(i)
 				counter = tonumber(counter)
 				extra = tonumber(extra)
