@@ -24,6 +24,7 @@
 
 #include "global.h"
 #include "main.h"
+#include "debug.h"
 #include "buffer.h"
 #include "ctrl.h"
 #include "encode.h"
@@ -352,6 +353,10 @@ void ctrlCmdGet(uint8_t cmd)
 			ctrlWriteCharToTxBuffer((port_config >> i) & 0x01);		
 		}
 		break;
+
+	case 'i':		/* illuminate LED */
+		ctrlWriteCharToTxBuffer(port_led);
+		break;
 	}
 }
 
@@ -499,6 +504,14 @@ void ctrlCmdSet(uint8_t cmd)
 		sei();
 
 		break;
+
+	case 'i':		/* illuminate LED */
+		ctrlReadCharFromRxBuffer(&port_led);
+		ctrlWriteCharToTxBuffer(port_led);
+		/* when issuing this command when in SPI_PORT, the LED will be off
+		   so we force it into the on state */
+		DBG_LED_ON();
+		break;
 	}
 }
 
@@ -508,6 +521,7 @@ void ctrlCmdCommit(void)
 	eeprom_update_block((const void*)&version, (void*)&version_eep, sizeof(version));
 	eeprom_update_block((const void*)&event, (void*)&event_eep, sizeof(event));
 	eeprom_update_block((const void*)&port_config, (void*)&port_config_eep, sizeof(port_config));
+	eeprom_update_block((const void*)&port_led, (void*)&port_led_eep, sizeof(port_led));
 	eeprom_update_block((const void*)&enabled, (void*)&enabled_eep, sizeof(enabled));
 	eeprom_update_block((const void*)&phy_to_log, (void*)&phy_to_log_eep, sizeof(phy_to_log));
 	eeprom_update_block((const void*)&sensor, (void*)&sensor_eep, sizeof(sensor));

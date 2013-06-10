@@ -115,6 +115,9 @@ extern uint8_t max_analog_sensors;
 extern uint8_t EEMEM port_config_eep;
 extern uint8_t port_config;
 
+extern uint8_t EEMEM port_led_eep;
+extern uint8_t port_led;
+
 extern uint8_t EEMEM enabled_eep;
 extern uint8_t enabled;
 

@@ -60,6 +60,9 @@ uint8_t max_analog_sensors = DEFAULT_MAX_ANALOG_SENSORS;
 uint8_t EEMEM port_config_eep = ANALOG_EN;
 uint8_t port_config;
 
+uint8_t EEMEM port_led_eep = SPI_PORT;
+uint8_t port_led;
+
 uint8_t EEMEM enabled_eep = DISABLE_ALL_SENSORS;
 uint8_t enabled;
 
@@ -82,6 +85,11 @@ volatile state_t state[MAX_SENSORS];
 
 time_t time = {0, 0};
 
+static inline bool port_led_ctrl(uint8_t i)
+{
+    return i == port_led;
+}
+
 ISR(SPI_STC_vect)
 {
 	uint8_t spi_rx, spi_tx, rx, tx; 
@@ -91,7 +99,9 @@ ISR(SPI_STC_vect)
 	// the SPI is double-buffered, requiring two NO_OPs when switching from Tx to Rx
 	if (spi_status & (SPI_NO_OP_1 | SPI_NO_OP_2)) {
 		spi_status--;
-		DBG_LED_DELAY_ON();
+		if (port_led_ctrl(SPI_PORT)) {
+			DBG_LED_DELAY_ON();
+		}
 		goto finish;
 	}
 
@@ -158,11 +168,15 @@ ISR(SPI_STC_vect)
 		case SPI_FORWARD_TO_UART_PORT:
 			spi_status |= SPI_TO_FROM_UART;
 			rfm12_tx_occupy();
-			DBG_LED_OFF();
+			if (port_led_ctrl(SPI_PORT)) {
+				DBG_LED_OFF();
+			}
 			break;
 		case SPI_FORWARD_TO_CTRL_PORT:
 			spi_status &= ~SPI_TO_FROM_UART;
-			DBG_LED_OFF();
+			if (port_led_ctrl(SPI_PORT)) {
+				DBG_LED_OFF();
+			}
 			break;
 		default:
 			if (spi_status & SPI_HIGH_HEX) {
@@ -243,12 +257,20 @@ ISR(PCINT1_vect)
 		if (high_to_low(state[i], pinc, i)) {
 			state[i].flags &= ~STATE_PULSE_HIGH;
 
-			if (port_enabled(i))
+			if (port_enabled(i)) {
 				register_pulse(&sensor[i], &state[i]);
+			}
+			if (port_led_ctrl(i)) {
+				DBG_LED_OFF();
+			}
 		}
 
 		if (low_to_high(state[i], pinc, i)) {
 			state[i].flags |= STATE_PULSE_HIGH;
+
+			if (port_led_ctrl(i)) {
+				DBG_LED_ON();
+			}
 		}		
 	}
 
@@ -363,6 +385,7 @@ static inline void setup_datastructs(void)
 	eeprom_read_block((void*)&version, (const void*)&version_eep, sizeof(version));
 	eeprom_read_block((void*)&event, (const void*)&event_eep, sizeof(event));
 	eeprom_read_block((void*)&port_config, (const void*)&port_config_eep, sizeof(port_config));
+	eeprom_read_block((void*)&port_led, (const void*)&port_led_eep, sizeof(port_led));
 	eeprom_read_block((void*)&enabled, (const void*)&enabled_eep, sizeof(enabled));
 	eeprom_read_block((void*)&phy_to_log, (const void*)&phy_to_log_eep, sizeof(phy_to_log));
 	eeprom_read_block((void*)&sensor, (const void*)&sensor_eep, sizeof(sensor));
