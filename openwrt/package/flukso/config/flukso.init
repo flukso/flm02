@@ -85,7 +85,7 @@ set_ttyS0()
 	stty -F /dev/ttyS0 9600 min 255 time 1 \
 		-icanon -isig -iexten -echo -brkint -icrnl -ignbrk \
 		-igncr -inlcr -inpck -istrip -ixon -opost parenb \
-		-inpck -parodd cs7 -cstopb
+		inpck -parodd cs7 -cstopb
 }
 
 start()
