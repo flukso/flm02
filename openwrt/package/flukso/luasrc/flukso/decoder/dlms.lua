@@ -2,9 +2,9 @@
 
 --[[
     
-    d0.lua - Flukso DLMS/D0 parser
+    dlms.lua - Flukso DLMS/D0 decoder
 
-    Copyright (C) 2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+    Copyright (C) 2013 Bart Van Der Meerssche <bart@flukso.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -146,7 +146,7 @@ local COSEM = {
 	["^(!)"] = finish
 }
 
-local function parse(line)
+local function decode(line)
 	local match = false
 
 	for pattern, process in pairs(COSEM) do
@@ -181,7 +181,7 @@ function init(dev)
 			local sync = false
 
 			for line in fd:linesource() do
-				parse(line)
+				decode(line)
 			end
 		end)
 end

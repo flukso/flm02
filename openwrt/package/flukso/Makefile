@@ -59,8 +59,8 @@ define Package/flukso/install
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rrd/*.lua $(1)/usr/lib/lua/rrd/
 	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/*.lua $(1)/usr/lib/lua/flukso/
-	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso/protocol
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/protocol/*.lua $(1)/usr/lib/lua/flukso/protocol/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso/decoder
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/decoder/*.lua $(1)/usr/lib/lua/flukso/decoder/
 
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/luad $(1)/usr/sbin/

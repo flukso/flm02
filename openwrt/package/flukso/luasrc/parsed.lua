@@ -26,7 +26,6 @@ local uci   = require "luci.model.uci".cursor()
 local nixio = require "nixio"
 nixio.fs    = require "nixio.fs"
 nixio.util  = require "nixio.util"
-local d0    = require "flukso.protocol.d0"
 
 local arg   = arg or {} -- needed when this code is not loaded via the interpreter
 local DEBUG = (arg[1] == '-d')
@@ -62,6 +61,23 @@ local FACTOR = {
 	m3 = 1000,
 }
 
+local function get_protocol()
+	for i = MAX_SENSORS + 1, MAX_PROV_SENSORS do
+		-- stop at first non-provisioned sensor
+		if not uci:get("flukso", tostring(i), "enable") then
+			break
+		end
+
+		local protocol = uci:get("flukso", tostring(i), "protocol")
+
+		if protocol then
+			return protocol
+		end
+	end
+
+	return nil
+end
+
 local function map_obis()
 	for i = MAX_SENSORS + 1, MAX_PROV_SENSORS do
 		-- stop at first non-provisioned sensor
@@ -87,12 +103,15 @@ local function msecs()
 	return secs * 1000 + math.floor(usecs / 1000)
 end
 
+local protocol = get_protocol() or "dlms"
+local decoder = require ("flukso.decoder." .. protocol)
+
 map_obis()
-local get_telegram = d0.init(DEV)
+local get_telegram = decoder.init(DEV)
 
 while true do
 	local sensor = {}
-	local telegram = assert(get_telegram(), "parser returned an empty telegram")
+	local telegram = assert(get_telegram(), "decoder returned an empty telegram")
 	if DEBUG then dbg.vardump(telegram) end
 
 	-- do not process corrupted telegrams
