@@ -80,13 +80,22 @@ test_sensor_board()
 	wget -s -q "http://$IP:$PORT/cgi-bin/test?result=$RESULT"
 }
 
-set_ttyS0()
+set_ttyS0_B()
 {
 	stty -F /dev/ttyS0 9600 min 255 time 1 \
 		-icanon -isig -iexten -echo -brkint -icrnl -ignbrk \
 		-igncr -inlcr -inpck -istrip -ixon -opost parenb \
 		inpck -parodd cs7 -cstopb
 }
+
+set_ttyS0_C()
+{
+	stty -F /dev/ttyS0 1200 min 255 time 1 \
+		-icanon -isig -iexten -echo -brkint -icrnl -ignbrk \
+		-igncr -inlcr -inpck -istrip -ixon -opost parenb \
+		inpck -parodd cs7 -cstopb
+}
+
 
 start()
 {
@@ -109,9 +118,16 @@ start()
 
 	if [ $MODEL == FLM02B ]
 	then
-		set_ttyS0
+		set_ttyS0_B
 		/usr/sbin/parsed -u flukso
 	fi
+
+	if [ $MODEL == FLM02C ]
+	then
+		set_ttyS0_C
+		/usr/sbin/parsed -u flukso
+	fi
+
 
 	if [ $FIRSTBOOT -eq '1' ]
 	then
@@ -150,7 +166,7 @@ stop()
 
 	MODEL=$(uci get system.@system[0].model)
 
-	if [ $MODEL == FLM02B ]
+	if [ $MODEL == FLM02B -o $MODEL == FLM02C ]
 	then
 		/usr/sbin/parsed -k
 		rm -rf /var/run/parsed

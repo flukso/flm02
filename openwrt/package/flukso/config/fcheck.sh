@@ -25,7 +25,7 @@ STATUS=0
 
 MODEL=$(uci get system.@system[0].model)
 
-if [ $MODEL == FLM02B ]
+if [ $MODEL == FLM02B -o $MODEL == FLM02C ]
 then
 	[ -z "$(ps | grep 'parse[d]')" ] && STATUS=3
 fi

@@ -53,10 +53,27 @@ local OBIS = {
 	-- added for compatibility with Landys & Gyr E350 DSMR2.2+
 	["0-1:24.2.0*255"] = { sensor=0, derive=false, sign= 1 },
 	["0-1:24.2.1*255"] = { sensor=0, derive=false, sign= 1 },
+
+	-- étiquettes du télé-info client
+	["BASE"]    = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["HCHC"]    = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["HCHP"]    = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["EJPHN"]   = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["EJPHPM"]  = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHCJB"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHPJB"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHCJW"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHPJW"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHCJR"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHPJR"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	-- puissance apparente!
+	["PAPP"]    = { sensor=0, derive=true,  sign= 1, unit="W"  }
 }
 
 local FACTOR = {
+	W = 1,
 	kW = 1000,
+	Wh = 1,
 	kWh = 1000,
 	m3 = 1000,
 }
@@ -118,7 +135,13 @@ while true do
 	if telegram.check then
 		for obis, map in pairs(OBIS) do
 			if telegram[obis] then
-				local value, unit = telegram[obis]:match("^%(([%d%.]+)%*([%w]+)%)$")
+				local value, unit
+
+				if protocol == "dlms" then
+					value, unit = telegram[obis]:match("^%(([%d%.]+)%*([%w]+)%)$")
+				elseif protocol == "tic" then
+					value, unit = telegram[obis], map.unit
+				end
 
 				-- adapt to delta/out fifo message format
 				if value then
