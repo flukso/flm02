@@ -40,3 +40,4 @@ cp ../tools/ap51-flash $INSTALL_PATH/tools
 cd $INSTALL_PATH
 patch -p0 < $REPO_PATH/patches/920-add-make-flash-option.patch
 patch -p0 < $REPO_PATH/patches/921-add-make-publish-option.patch
+patch -p0 < $REPO_PATH/patches/925-add_mac_address_to_radio0.patch
