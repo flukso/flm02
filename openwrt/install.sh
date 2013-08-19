@@ -33,5 +33,10 @@ svn co svn://svn.openwrt.org/openwrt/branches/attitude_adjustment $INSTALL_PATH
 #cp .config $INSTALL_PATH
 cp -r files $INSTALL_PATH
 
+# copy flash utility to the tools dir
+cp ../tools/ap51-flash $INSTALL_PATH/tools
+
 # patch files of the OpenWRT build system
 cd $INSTALL_PATH
+patch -p0 < $REPO_PATH/patches/920-add-make-flash-option.patch
+patch -p0 < $REPO_PATH/patches/921-add-make-publish-option.patch
