@@ -1,5 +1,6 @@
+
 config system
-	option timezone     UTC
+	option timezone	    UTC
 	option model        FLM02A
 	option serial       unknown
 	option hostname     flukso
@@ -9,26 +10,39 @@ config system
 	option restore      0
 	option cronloglevel 1
 
-config button
-	option button   reset
-	option action   released
-	option handler  net_toggle
-	option min      2
-	option max      5
+config timeserver ntp
+	list server	0.openwrt.pool.ntp.org
+	list server	1.openwrt.pool.ntp.org
+	list server	2.openwrt.pool.ntp.org
+	list server	3.openwrt.pool.ntp.org
 
 config button
-	option button   reset
-	option action   released
-	option handler  net_defaults
-	option min      10
-	option max      30
+	option button	reset
+	option action	released
+	option handler	net_toggle
+	option min	2
+	option max	5
+ 
+config button
+	option button	reset
+	option action	released
+	option handler	net_defaults
+	option min	10
+	option max	30
 
 config button
-	option button   reset
-	option action   released
-	option handler  firmware_defaults
-	option min      60
-	option max      120
+	option button	reset
+	option action	released
+	option handler	firmware_defaults
+	option min	60
+	option max	120
+
+config led led_wlan
+	option name	wlan
+	option sysfs	wlan
+	option trigger	netdev
+	option dev	wlan0
+	option mode	'link tx rx'
 
 config counter event
-	option ath_kmod_reload 0
+	option ath_kmod_reload	0

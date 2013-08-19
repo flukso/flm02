@@ -31,7 +31,7 @@ svn co svn://svn.openwrt.org/openwrt/branches/attitude_adjustment $INSTALL_PATH
 
 # copy over the build config settings and the files directory
 #cp .config $INSTALL_PATH
-#cp -r files $INSTALL_PATH
+cp -r files $INSTALL_PATH
 
 # patch files of the OpenWRT build system
 cd $INSTALL_PATH
