@@ -30,7 +30,7 @@ svn co svn://svn.openwrt.org/openwrt/branches/attitude_adjustment $INSTALL_PATH
 # add patches to the atheros target
 
 # copy over the build config settings and the files directory
-#cp .config $INSTALL_PATH
+cp .config $INSTALL_PATH
 cp -r files $INSTALL_PATH
 
 # copy flash utility to the tools dir
