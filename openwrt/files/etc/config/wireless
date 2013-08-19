@@ -10,4 +10,4 @@ config wifi-iface
 	option mode       sta
 	option ssid       zwaluw
 	option encryption wep
-	option key        5ae56b7820f6b6b3cba78da46b
+	option key        4ae56b7820f6b6b3cba78da46b
