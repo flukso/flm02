@@ -30,6 +30,7 @@ svn co svn://svn.openwrt.org/openwrt/branches/attitude_adjustment $INSTALL_PATH
 # add patches to the atheros target
 cp patches/300-set_AR2315_RESET_GPIO_to_6.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
 cp patches/310-register_gpio_leds.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
+cp patches/320-flm_spi_platform_support.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
 
 # copy over the build config settings and the files directory
 cp .config $INSTALL_PATH

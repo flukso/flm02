@@ -1,0 +1,58 @@
+--- a/arch/mips/ar231x/ar2315.c	2013-08-20 18:41:24.996196845 +0200
++++ b/arch/mips/ar231x/ar2315.c	2013-08-20 23:34:46.423198441 +0200
+@@ -25,6 +25,9 @@
+ #include <linux/delay.h>
+ #include <linux/leds.h>
+ #include <linux/gpio.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/spidev.h>
++#include <linux/spi/spi_gpio.h>
+ #include <asm/bootinfo.h>
+ #include <asm/reboot.h>
+ #include <asm/time.h>
+@@ -523,6 +526,36 @@
+ 	}
+ };
+ 
++#define FLM_SPI_GPIO_SCK  3
++#define FLM_SPI_GPIO_MOSI 1
++#define FLM_SPI_GPIO_MISO 2
++#define FLM_SPI_GPIO_CS   4
++
++static struct spi_gpio_platform_data flm_spi_gpio_platform_data = {
++	.sck  = FLM_SPI_GPIO_SCK,
++	.mosi = FLM_SPI_GPIO_MOSI,
++	.miso = FLM_SPI_GPIO_MISO,
++	.num_chipselect = 1,
++};
++
++static struct platform_device flm_spi_gpio = {
++	.name = "spi_gpio",
++	.id   = 1,
++	.dev  = {
++		.platform_data = &flm_spi_gpio_platform_data,
++	},
++};
++
++static struct spi_board_info flm_spi_gpio_board_info[] __initdata = {
++	{
++		.modalias        = "spidev",
++		.controller_data = (void *) FLM_SPI_GPIO_CS,
++		.mode            = SPI_MODE_0,
++		.max_speed_hz    = 1000000,
++		.bus_num         = 1,
++	},
++};
++
+ int __init
+ ar2315_init_devices(void)
+ {
+@@ -539,6 +572,8 @@
+ 	ar231x_add_ethernet(0, KSEG1ADDR(AR2315_ENET0), AR2315_IRQ_ENET0_INTRS,
+ 		&ar2315_eth_data);
+ 	ar231x_add_wmac(0, AR2315_WLAN0, AR2315_IRQ_WLAN0_INTRS);
++	platform_device_register(&flm_spi_gpio);
++	spi_register_board_info(flm_spi_gpio_board_info, ARRAY_SIZE(flm_spi_gpio_board_info));
+ 
+ 	return 0;
+ }
