@@ -1,9 +1,0 @@
-# Put your custom commands here that should be executed once
-# the system init finished. By default this file does nothing.
-
-echo 5 > /sys/class/gpio/export
-# set the globe led pin (=GPIO 5) direction to output
-# turn the globe led pin off (inverted logic)
-echo high > /sys/class/gpio/gpio5/direction
-
-exit 0
