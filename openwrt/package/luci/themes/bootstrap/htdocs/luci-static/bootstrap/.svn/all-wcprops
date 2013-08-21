@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/9623/luci/branches/luci-0.11/themes/bootstrap/htdocs/luci-static/bootstrap
+END
+html5.js
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/9349/luci/branches/luci-0.11/themes/bootstrap/htdocs/luci-static/bootstrap/html5.js
+END
+cascade.css
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/9623/luci/branches/luci-0.11/themes/bootstrap/htdocs/luci-static/bootstrap/cascade.css
+END
+favicon.ico
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/9349/luci/branches/luci-0.11/themes/bootstrap/htdocs/luci-static/bootstrap/favicon.ico
+END

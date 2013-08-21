@@ -1,125 +1,149 @@
 K 25
 svn:wc:ra_dav:version-url
-V 99
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics
+V 100
+/!svn/ver/9623/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics
 END
 interface.lua
 K 25
 svn:wc:ra_dav:version-url
-V 113
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/interface.lua
+V 114
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/interface.lua
 END
 iptables.lua
 K 25
 svn:wc:ra_dav:version-url
-V 112
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/iptables.lua
+V 113
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/iptables.lua
 END
 unixsock.lua
 K 25
 svn:wc:ra_dav:version-url
-V 112
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/unixsock.lua
+V 113
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/unixsock.lua
 END
 netlink.lua
 K 25
 svn:wc:ra_dav:version-url
-V 111
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/netlink.lua
+V 112
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/netlink.lua
+END
+nut.lua
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/9558/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/nut.lua
 END
 processes.lua
 K 25
 svn:wc:ra_dav:version-url
-V 113
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/processes.lua
+V 114
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/processes.lua
+END
+memory.lua
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/memory.lua
 END
 load.lua
 K 25
 svn:wc:ra_dav:version-url
-V 108
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/load.lua
+V 109
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/load.lua
+END
+conntrack.lua
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/conntrack.lua
+END
+olsrd.lua
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/!svn/ver/9623/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/olsrd.lua
 END
 exec.lua
 K 25
 svn:wc:ra_dav:version-url
-V 108
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/exec.lua
+V 109
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/exec.lua
 END
 dns.lua
 K 25
 svn:wc:ra_dav:version-url
-V 107
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/dns.lua
+V 108
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/dns.lua
 END
 rrdtool.lua
 K 25
 svn:wc:ra_dav:version-url
-V 111
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/rrdtool.lua
+V 112
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/rrdtool.lua
 END
 email.lua
 K 25
 svn:wc:ra_dav:version-url
-V 109
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/email.lua
+V 110
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/email.lua
 END
 cpu.lua
 K 25
 svn:wc:ra_dav:version-url
-V 107
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/cpu.lua
+V 108
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/cpu.lua
 END
 tcpconns.lua
 K 25
 svn:wc:ra_dav:version-url
-V 112
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/tcpconns.lua
-END
-network.lua
-K 25
-svn:wc:ra_dav:version-url
-V 111
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/network.lua
+V 113
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/tcpconns.lua
 END
 df.lua
 K 25
 svn:wc:ra_dav:version-url
-V 106
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/df.lua
+V 107
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/df.lua
 END
 collectd.lua
 K 25
 svn:wc:ra_dav:version-url
+V 113
+/!svn/ver/9558/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/collectd.lua
+END
+network.lua
+K 25
+svn:wc:ra_dav:version-url
 V 112
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/collectd.lua
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/network.lua
 END
 disk.lua
 K 25
 svn:wc:ra_dav:version-url
-V 108
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/disk.lua
+V 109
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/disk.lua
+END
+iwinfo.lua
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/iwinfo.lua
 END
 irq.lua
 K 25
 svn:wc:ra_dav:version-url
-V 107
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/irq.lua
+V 108
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/irq.lua
 END
 csv.lua
 K 25
 svn:wc:ra_dav:version-url
-V 107
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/csv.lua
+V 108
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/csv.lua
 END
 ping.lua
 K 25
 svn:wc:ra_dav:version-url
-V 108
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/ping.lua
-END
-wireless.lua
-K 25
-svn:wc:ra_dav:version-url
-V 112
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-statistics/luasrc/model/cbi/luci_statistics/wireless.lua
+V 109
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/model/cbi/luci_statistics/ping.lua
 END

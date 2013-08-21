@@ -9,22 +9,28 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: processes.lua 2226 2008-06-01 23:52:07Z jow $
+$Id: processes.lua 7996 2011-11-28 15:54:51Z soma $
 
 ]]--
 
-m = Map("luci_statistics")
+m = Map("luci_statistics",
+	translate("Processes Plugin Configuration"),
+	translate(
+		"The processes plugin collects informations like cpu time, " ..
+		"page faults and memory usage of selected processes."
+	))
 
 -- collectd_processes config section
 s = m:section( NamedSection, "collectd_processes", "luci_statistics" )
 
 -- collectd_processes.enable
-enable = s:option( Flag, "enable" )
+enable = s:option( Flag, "enable", translate("Enable this plugin") )
 enable.default = 0
 
 -- collectd_processes.processes (Process)
-processes = s:option( Value, "Processes" )
-processes.default = "olsrd bmxd httpd dnsmasq dropbear tinc"
+processes = s:option( Value, "Processes", translate("Monitor processes"),
+	translate("Processes to monitor separated by space") )
 processes:depends( "enable", 1 )
+processes.default = "uhttpd dropbear dnsmasq"
 
 return m

@@ -1,98 +1,85 @@
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: LuCI: samba\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-05-19 19:36+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2012-08-15 13:48+0300\n"
+"Last-Translator: Roman A. aka BasicXP <x12ozmouse@ya.ru>\n"
+"Language-Team: Russian <x12ozmouse@ya.ru>\n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.1.1\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
+"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Pootle 2.0.4\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 
-#. Network Shares
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:1
-msgid "samba"
-msgstr ""
+msgid "Allow guests"
+msgstr "Разрешить гостевой вход"
 
-#. Hostname
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:2
-msgid "samba_samba_name"
+msgid "Allow system users to reach their home directories via network shares"
 msgstr ""
+"Разрешить пользователям получать доступ к их домашним директориям через сеть"
 
-#. Description
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:3
-msgid "samba_samba_description"
-msgstr ""
+msgid "Allowed users"
+msgstr "Разрешённые пользователи"
 
-#. Workgroup
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:4
-msgid "samba_samba_workgroup"
-msgstr ""
+msgid "Create mask"
+msgstr "Создать маску"
 
-#. Share home-directories
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:5
-msgid "samba_samba_homes"
-msgstr ""
+msgid "Description"
+msgstr "Описание"
 
-#. System users can reach their home directories via network shares.
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:6
-msgid "samba_samba_homes_desc"
-msgstr ""
+msgid "Directory mask"
+msgstr "Маска директории"
 
-#. Shared Directories
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:7
-msgid "samba_sambashare"
-msgstr ""
+msgid "Edit Template"
+msgstr "Редактировать шаблон"
 
-#. Shared Directory
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:8
-msgid "samba_sambashare_path"
-msgstr ""
+msgid "Edit the template that is used for generating the samba configuration."
+msgstr "Редактировать шаблон, используемый для генерации конфигурации samba."
 
-#. Physical Path
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:9
-msgid "samba_sambashare_path_desc"
-msgstr ""
+msgid "General Settings"
+msgstr "Общие настройки"
 
-#. Allowed Users
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:10
-msgid "samba_sambashare_users"
-msgstr ""
+msgid "Hostname"
+msgstr "Имя хоста"
 
-#. optional
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:11
-msgid "samba_sambashare_users_desc"
-msgstr ""
+msgid "Mask for new directories"
+msgstr "Маска для новых директорий"
 
-#. Read Only
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:12
-msgid "samba_sambashare_readonly"
-msgstr ""
+msgid "Mask for new files"
+msgstr "Маска для новых файлов"
 
-#. Allow Guests
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:13
-msgid "samba_sambashare_guestok"
-msgstr ""
+msgid "Name"
+msgstr "Имя"
 
-#. Create Mask
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:14
-msgid "samba_sambashare_createmask"
-msgstr ""
+msgid "Network Shares"
+msgstr "Сетевые ресурсы"
 
-#. Mask for new files
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:15
-msgid "samba_sambashare_createmask_desc"
-msgstr ""
+msgid "Path"
+msgstr "Путь"
 
-#. Directory Mask
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:16
-msgid "samba_sambashare_dirmask"
-msgstr ""
+msgid "Read-only"
+msgstr "Только для чтения"
 
-#. Mask for new directories
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:17
-msgid "samba_sambashare_dirmask_desc"
+msgid "Share home-directories"
+msgstr "Совместно использовать домашние директории"
+
+msgid "Shared Directories"
+msgstr "Совместно используемые директории"
+
+msgid ""
+"This is the content of the file '/etc/samba/smb.conf.template' from which "
+"your samba configuration will be generated. Values enclosed by pipe symbols "
+"('|') should not be changed. They get their values from the 'General "
+"Settings' tab."
 msgstr ""
+"Это содержимое файла '/etc/samba/smb.conf.template', из которого "
+"генерируется конфигурация samba. Значения, заключённые в символы \"|\", не "
+"должны быть изменены. Они будут автоматически заменены на значения из "
+"вкладки 'Общие настройки'."
+
+msgid "Workgroup"
+msgstr "Рабочая группа"

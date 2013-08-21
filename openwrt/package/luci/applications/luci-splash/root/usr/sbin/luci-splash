@@ -14,7 +14,7 @@ local limit_up = 0
 local limit_down = 0
 
 function lock()
-	os.execute("lock -w /var/run/luci_splash.lock && lock /var/run/luci_splash.lock")
+	os.execute("lock /var/run/luci_splash.lock")
 end
 
 function unlock()
@@ -191,6 +191,10 @@ function ipt_delete_all(args, comp, off)
 	end
 end
 
+-- Convert mac to uci-compatible section name
+function convert_mac_to_secname(mac)
+	return string.gsub(mac, ":", "")
+end
 
 -- Add a lease to state and invoke add_rule
 function add_lease(mac, arp, no_uci)
@@ -208,7 +212,7 @@ function add_lease(mac, arp, no_uci)
 	-- Add lease if there is an ip addr
 	if ipaddr then
 		if not no_uci then
-			uci:section("luci_splash", "lease", nil, {
+			uci:section("luci_splash", "lease", convert_mac_to_secname(mac), {
 				mac    = mac,
 				ipaddr = ipaddr,
 				start  = os.time()
@@ -241,7 +245,7 @@ end
 
 -- Add a whitelist entry
 function add_whitelist(mac)
-	uci:section("luci_splash", "whitelist", nil, { mac = mac })
+	uci:section("luci_splash", "whitelist", convert_mac_to_secname(mac), { mac = mac })
 	uci:save("luci_splash")
 	uci:commit("luci_splash")
 	add_whitelist_rule(mac)
@@ -250,7 +254,7 @@ end
 
 -- Add a blacklist entry
 function add_blacklist(mac)
-	uci:section("luci_splash", "blacklist", nil, { mac = mac })
+	uci:section("luci_splash", "blacklist", convert_mac_to_secname(mac), { mac = mac })
 	uci:save("luci_splash")
 	uci:commit("luci_splash")
 	add_blacklist_rule(mac)
@@ -315,7 +319,6 @@ end
 -- Add blacklist rules
 function add_blacklist_rule(mac)
 	os.execute("iptables -t filter -I luci_splash_filter -m mac --mac-source %q -j DROP" % mac)
-	os.execute("iptables -t nat    -I luci_splash_leases -m mac --mac-source %q -j DROP" % mac)
 end
 
 
@@ -343,7 +346,7 @@ function sync()
 				remove_lease_rule(v.mac, v.ipaddr)
 			else
 				-- Rewrite state
-				uci:section("luci_splash", "lease", nil, {		
+				uci:section("luci_splash", "lease", convert_mac_to_secname(v.mac), {		
 					mac    = v.mac,
 					ipaddr = v.ipaddr,
 					start  = v.start
@@ -380,7 +383,7 @@ function list()
 	-- Get current arp cache
 	local arpcache = { }
 	for _, entry in ipairs(net.arptable()) do
-		arpcache[entry["HW address"]:lower()] = { entry["Device"], entry["IP address"] }
+		arpcache[entry["HW address"]:lower()] = { entry["Device"]:lower(), entry["IP address"]:lower() }
 	end
 
 	-- Find traffic usage
@@ -410,7 +413,7 @@ function list()
 		if s[".type"] == "lease" and s.mac then
 			local ti, to = traffic(s)
 			local mac = s.mac:lower()
-			local arp = arpcache[mac]:lower()
+			local arp = arpcache[mac]
 			print(string.format(
 				"%-17s  %-15s  %-9s  %3dm  %-7s  %7dKB  %7dKB",
 				mac, s.ipaddr, "leased",
@@ -426,11 +429,11 @@ function list()
 	) do
 		if (s[".type"] == "whitelist" or s[".type"] == "blacklist") and s.mac then
 			local mac = s.mac:lower()
-			local arp = arpcache[mac]:lower()
+			local arp = arpcache[mac]
 			print(string.format(
 				"%-17s  %-15s  %-9s  %4s  %-7s  %9s  %9s",
-				mac, arp and arp[2] or "?", s[".type"], "- ",
-				arp and arp[1] or "?", "-", "-"
+				mac, arp and arp[2] or "?", s[".type"],
+				"- ", arp and arp[1] or "?", "-", "-"
 			))
 		end
 	end

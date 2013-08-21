@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/4830/luci/branches/luci-0.9/i18n/japanese
+V 52
+/!svn/ver/9349/luci/branches/luci-0.11/i18n/japanese
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 60
-/!svn/ver/4830/luci/branches/luci-0.9/i18n/japanese/Makefile
+V 61
+/!svn/ver/9349/luci/branches/luci-0.11/i18n/japanese/Makefile
 END

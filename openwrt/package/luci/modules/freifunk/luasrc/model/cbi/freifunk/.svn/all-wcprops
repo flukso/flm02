@@ -1,23 +1,35 @@
 K 25
 svn:wc:ra_dav:version-url
-V 80
-/!svn/ver/5164/luci/branches/luci-0.9/modules/freifunk/luasrc/model/cbi/freifunk
+V 81
+/!svn/ver/9623/luci/branches/luci-0.11/modules/freifunk/luasrc/model/cbi/freifunk
 END
-public_status.lua
-K 25
-svn:wc:ra_dav:version-url
-V 98
-/!svn/ver/5164/luci/branches/luci-0.9/modules/freifunk/luasrc/model/cbi/freifunk/public_status.lua
-END
-freifunk.lua
+profile.lua
 K 25
 svn:wc:ra_dav:version-url
 V 93
-/!svn/ver/4830/luci/branches/luci-0.9/modules/freifunk/luasrc/model/cbi/freifunk/freifunk.lua
+/!svn/ver/9558/luci/branches/luci-0.11/modules/freifunk/luasrc/model/cbi/freifunk/profile.lua
+END
+basics.lua
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/9558/luci/branches/luci-0.11/modules/freifunk/luasrc/model/cbi/freifunk/basics.lua
+END
+user_index.lua
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/9558/luci/branches/luci-0.11/modules/freifunk/luasrc/model/cbi/freifunk/user_index.lua
+END
+profile_expert.lua
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/9558/luci/branches/luci-0.11/modules/freifunk/luasrc/model/cbi/freifunk/profile_expert.lua
 END
 contact.lua
 K 25
 svn:wc:ra_dav:version-url
-V 92
-/!svn/ver/4830/luci/branches/luci-0.9/modules/freifunk/luasrc/model/cbi/freifunk/contact.lua
+V 93
+/!svn/ver/9623/luci/branches/luci-0.11/modules/freifunk/luasrc/model/cbi/freifunk/contact.lua
 END

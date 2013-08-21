@@ -2,14 +2,13 @@
 
 Luci statistics - statistics controller module
 (c) 2008 Freifunk Leipzig / Jo-Philipp Wich <xm@leipzig.freifunk.net>
+(c) 2012 Jo-Philipp Wich <xm@subsignal.org>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
-
-$Id: luci_statistics.lua 6029 2010-04-05 17:46:20Z jow $
 
 ]]--
 
@@ -19,15 +18,7 @@ function index()
 
 	require("nixio.fs")
 	require("luci.util")
-	require("luci.i18n")
 	require("luci.statistics.datatree")
-
-	-- load language files
-	luci.i18n.loadc("rrdtool")
-	luci.i18n.loadc("statistics")
-
-	-- get rrd data tree
-	local tree = luci.statistics.datatree.Instance()
 
 	-- override entry(): check for existance <plugin>.so where <plugin> is derived from the called path
 	function _entry( path, ... )
@@ -37,42 +28,65 @@ function index()
 		end
 	end
 
-	-- override i18n(): try to translate stat_<str> or fall back to <str>
-	function _i18n( str )
-		return luci.i18n.translate( "stat_" .. str, str )
-	end
+	local labels = {
+		s_output	= _("Output plugins"),
+		s_system	= _("System plugins"),
+		s_network	= _("Network plugins"),
+
+		conntrack	= _("Conntrack"),
+		cpu			= _("Processor"),
+		csv			= _("CSV Output"),
+		df			= _("Disk Space Usage"),
+		disk		= _("Disk Usage"),
+		dns			= _("DNS"),
+		email		= _("Email"),
+		exec		= _("Exec"),
+		interface	= _("Interfaces"),
+		iptables	= _("Firewall"),
+		irq			= _("Interrupts"),
+		iwinfo		= _("Wireless"),
+		load		= _("System Load"),
+		memory		= _("Memory"),
+		netlink		= _("Netlink"),
+		network		= _("Network"),
+		nut			= _("UPS"),
+		olsrd		= _("OLSRd"),
+		ping		= _("Ping"),
+		processes	= _("Processes"),
+		rrdtool		= _("RRDTool"),
+		tcpconns	= _("TCP Connections"),
+		unixsock	= _("UnixSock")
+	}
 
 	-- our collectd menu
 	local collectd_menu = {
-		output  = { "rrdtool", "network", "unixsock", "csv" },
-		system  = { "exec", "email", "cpu", "df", "disk", "irq", "processes", "load" },
-		network = { "interface", "netlink", "iptables", "tcpconns", "ping", "dns", "wireless" }
+		output  = { "csv", "network", "rrdtool", "unixsock" },
+		system  = { "cpu", "df", "disk", "email", "exec", "irq", "load", "memory", "nut", "processes" },
+		network = { "conntrack", "dns", "interface", "iptables", "netlink", "olsrd", "ping", "tcpconns", "iwinfo" }
 	}
 
 	-- create toplevel menu nodes
-	local st = entry({"admin", "statistics"},             call("statistics_index"),        _i18n("statistics"), 80)
-	st.i18n = "statistics"
+	local st = entry({"admin", "statistics"}, template("admin_statistics/index"), _("Statistics"), 80)
 	st.index = true
-	
-	entry({"admin", "statistics", "collectd"}, cbi("luci_statistics/collectd"), _i18n("collectd"),   10).subindex = true
-	
+
+	entry({"admin", "statistics", "collectd"}, cbi("luci_statistics/collectd"), _("Collectd"), 10).subindex = true
+
 
 	-- populate collectd plugin menu
 	local index = 1
 	for section, plugins in luci.util.kspairs( collectd_menu ) do
-		entry(
+		local e = entry(
 			{ "admin", "statistics", "collectd", section },
-			call( "statistics_" .. section .. "plugins" ),
-			_i18n( section .. "plugins" ),
-			index * 10
-		).index = true
+			firstchild(), labels["s_"..section], index * 10
+		)
+
+		e.index = true
 
 		for j, plugin in luci.util.vspairs( plugins ) do
 			_entry(
 				{ "admin", "statistics", "collectd", section, plugin },
 				cbi("luci_statistics/" .. plugin ),
-				_i18n( plugin ),
-				j * 10
+				labels[plugin], j * 10
 			)
 		end
 
@@ -80,15 +94,19 @@ function index()
 	end
 
 	-- output views
-	local page = entry( { "admin", "statistics", "graph" }, call("statistics_index"), _i18n("graphs"), 80)
-	      page.i18n     = "statistics"
+	local page = entry( { "admin", "statistics", "graph" }, template("admin_statistics/index"), _("Graphs"), 80)
 	      page.setuser  = "nobody"
 	      page.setgroup = "nogroup"
 
 	local vars = luci.http.formvalue(nil, true)
 	local span = vars.timespan or nil
+	local host = vars.host or nil
 
-	for i, plugin in luci.util.vspairs( tree:plugins() ) do
+	-- get rrd data tree
+	local tree = luci.statistics.datatree.Instance(host)
+
+	local _, plugin, idx
+	for _, plugin, idx in luci.util.vspairs( tree:plugins() ) do
 
 		-- get plugin instances
 		local instances = tree:plugin_instances( plugin )
@@ -96,56 +114,22 @@ function index()
 		-- plugin menu entry
 		entry(
 			{ "admin", "statistics", "graph", plugin },
-			call("statistics_render"), _i18n( plugin ), i
-		).query = { timespan = span }
+			call("statistics_render"), labels[plugin], idx
+		).query = { timespan = span , host = host }
 
 		-- if more then one instance is found then generate submenu
 		if #instances > 1 then
-			for j, inst in luci.util.vspairs(instances) do
+			local _, inst, idx2
+			for _, inst, idx2 in luci.util.vspairs(instances) do
 				-- instance menu entry
 				entry(
 					{ "admin", "statistics", "graph", plugin, inst },
-					call("statistics_render"), inst, j
-				).query = { timespan = span }
+					call("statistics_render"), inst, idx2
+				).query = { timespan = span , host = host }
 			end
 		end
 	end
 end
-
-function statistics_index()
-	luci.template.render("admin_statistics/index")
-end
-
-function statistics_outputplugins()
-	local plugins = { }
-
-	for i, p in ipairs({ "rrdtool", "network", "unixsock", "csv" }) do
-		plugins[p] = luci.i18n.translate( "stat_" .. p, p )
-	end
-
-	luci.template.render("admin_statistics/outputplugins", {plugins=plugins})
-end
-
-function statistics_systemplugins()
-	local plugins = { }
-
-	for i, p in ipairs({ "exec", "email", "df", "disk", "irq", "processes", "cpu" }) do
-		plugins[p] = luci.i18n.translate( "stat_" .. p, p )
-	end
-
-	luci.template.render("admin_statistics/systemplugins", {plugins=plugins})
-end
-
-function statistics_networkplugins()
-	local plugins = { }
-
-	for i, p in ipairs({ "interface", "netlink", "iptables", "tcpconns", "ping", "dns", "wireless" }) do
-		plugins[p] = luci.i18n.translate( "stat_" .. p, p )
-	end
-
-	luci.template.render("admin_statistics/networkplugins", {plugins=plugins})
-end
-
 
 function statistics_render()
 
@@ -159,7 +143,13 @@ function statistics_render()
 	local uci   = luci.model.uci.cursor()
 	local spans = luci.util.split( uci:get( "luci_statistics", "collectd_rrdtool", "RRATimespans" ), "%s+", nil, true )
 	local span  = vars.timespan or uci:get( "luci_statistics", "rrdtool", "default_timespan" ) or spans[1]
-	local graph = luci.statistics.rrdtool.Graph( luci.util.parse_units( span ) )
+	local host  = vars.host     or uci:get( "luci_statistics", "collectd", "Hostname" ) or luci.sys.hostname()
+	local opts = { host = vars.host }
+	local graph = luci.statistics.rrdtool.Graph( luci.util.parse_units( span ), opts )
+	local hosts = graph.tree:host_instances()
+
+	local is_index = false
+	local i, p, inst, idx
 
 	-- deliver image
 	if vars.img then
@@ -186,18 +176,22 @@ function statistics_render()
 
 	-- no instance requested, find all instances
 	if #instances == 0 then
-		instances = { graph.tree:plugin_instances( plugin )[1] }
+		--instances = { graph.tree:plugin_instances( plugin )[1] }
+		instances = graph.tree:plugin_instances( plugin )
+		is_index = true
 
 	-- index instance requested
 	elseif instances[1] == "-" then
 		instances[1] = ""
+		is_index = true
 	end
 
 
 	-- render graphs
-	for i, inst in ipairs( instances ) do
-		for i, img in ipairs( graph:render( plugin, inst ) ) do
+	for i, inst in luci.util.vspairs( instances ) do
+		for i, img in luci.util.vspairs( graph:render( plugin, inst, is_index ) ) do
 			table.insert( images, graph:strippngpath( img ) )
+			images[images[#images]] = inst
 		end
 	end
 
@@ -205,6 +199,9 @@ function statistics_render()
 		images           = images,
 		plugin           = plugin,
 		timespans        = spans,
-		current_timespan = span
+		current_timespan = span,
+		hosts            = hosts,
+		current_host     = host,
+		is_index         = is_index
 	} )
 end

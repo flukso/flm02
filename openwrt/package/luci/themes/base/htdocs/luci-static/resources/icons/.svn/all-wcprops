@@ -1,0 +1,155 @@
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons
+END
+bridge.png
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/bridge.png
+END
+tunnel_disabled.png
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/tunnel_disabled.png
+END
+signal-0-25.png
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/signal-0-25.png
+END
+loading.gif
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/loading.gif
+END
+wifi.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/wifi.png
+END
+vlan.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/vlan.png
+END
+switch.png
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/switch.png
+END
+signal-75-100.png
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/signal-75-100.png
+END
+ethernet_disabled.png
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/ethernet_disabled.png
+END
+tunnel.png
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/tunnel.png
+END
+wifi_big_disabled.png
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/wifi_big_disabled.png
+END
+signal-none.png
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/signal-none.png
+END
+signal-0.png
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/signal-0.png
+END
+port_down.png
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/port_down.png
+END
+ethernet.png
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/ethernet.png
+END
+wifi_big.png
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/wifi_big.png
+END
+encryption_disabled.png
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/encryption_disabled.png
+END
+signal-25-50.png
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/signal-25-50.png
+END
+bridge_disabled.png
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/bridge_disabled.png
+END
+wifi_disabled.png
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/wifi_disabled.png
+END
+vlan_disabled.png
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/vlan_disabled.png
+END
+signal-50-75.png
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/signal-50-75.png
+END
+port_up.png
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/port_up.png
+END
+switch_disabled.png
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/switch_disabled.png
+END
+encryption.png
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/9349/luci/branches/luci-0.11/themes/base/htdocs/luci-static/resources/icons/encryption.png
+END

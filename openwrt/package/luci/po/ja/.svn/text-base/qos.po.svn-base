@@ -1,103 +1,105 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-05-19 19:36+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2010-03-25 22:10+0100\n"
+"PO-Revision-Date: 2011-10-28 11:02+0200\n"
+"Last-Translator: Kentaro <kentaro.matsuyama@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.1.1\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Pootle 2.0.4\n"
 
-#. Quality of Service
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:1
-msgid "qos"
+msgid "Calculate overhead"
+msgstr "オーバーヘッドを考慮する"
+
+msgid "Classification Rules"
+msgstr "区分ルール"
+
+msgid "Classification group"
+msgstr "区分グループ"
+
+msgid "Destination host"
+msgstr "宛先ホスト"
+
+msgid "Downlink"
 msgstr ""
 
-#. With QoS you can priorize network traffic selected by adresses, ports or services.
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:2
-msgid "qos_desc"
+msgid "Download speed (kbit/s)"
+msgstr "ダウンロード速度 (kbit/s)"
+
+msgid "Enable"
+msgstr "有効"
+
+msgid "Half-duplex"
+msgstr "半二重"
+
+msgid "Interfaces"
+msgstr "インターフェース"
+
+msgid "Internet Connection"
 msgstr ""
 
-#. Classification
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:3
-msgid "qos_interface_classgroup"
+msgid "Number of bytes"
+msgstr "バイト数"
+
+msgid "Ports"
+msgstr "ポート"
+
+msgid "Protocol"
+msgstr "プロトコル"
+
+msgid "QoS"
 msgstr ""
 
-#. Calculate Overhead
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:4
-msgid "qos_interface_overhead"
+msgid "Quality of Service"
+msgstr "Quality of Service"
+
+msgid "Service"
+msgstr "サービス"
+
+msgid "Source host"
+msgstr "送信元ホスト"
+
+msgid "Target"
+msgstr "対象"
+
+msgid "Uplink"
 msgstr ""
 
-#. Downlink
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:5
-msgid "qos_interface_download"
+msgid "Upload speed (kbit/s)"
+msgstr "アップロード速度 (kbit/s)"
+
+msgid ""
+"With <abbr title=\"Quality of Service\">QoS</abbr> you can prioritize "
+"network traffic selected by addresses, ports or services."
+msgstr ""
+"<abbr title=\"Quality of Service\">QoS</abbr>はアドレス、ポート、サービスで区"
+"別して、ネットワークトラフィックに優先度を付与することが可能です。"
+
+msgid "all"
+msgstr "全て"
+
+msgid "allf"
 msgstr ""
 
-#. Uplink
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:6
-msgid "qos_interface_upload"
-msgstr ""
+msgid "default"
+msgstr "標準"
 
-#. Prioritization
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:7
-msgid "qos_classify"
-msgstr ""
+msgid "express"
+msgstr "高速"
 
-#. Priority
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:8
-msgid "qos_classify_target"
-msgstr ""
+msgid "low"
+msgstr "低速"
 
-#. Source address
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:9
-msgid "qos_classify_srchost"
-msgstr ""
+msgid "normal"
+msgstr "標準"
 
-#. source network / source host
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:10
-msgid "qos_classify_srchost_dest"
-msgstr ""
+msgid "priority"
+msgstr "最優先"
 
-#. Target address
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:11
-msgid "qos_classify_dsthost"
-msgstr ""
-
-#. target network / target host
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:12
-msgid "qos_classify_dsthost_dest"
-msgstr ""
-
-#. portrange
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:13
-msgid "qos_classify_portrange"
-msgstr ""
-
-#. low
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:14
-msgid "qos_bulk"
-msgstr ""
-
-#. normal
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:15
-msgid "qos_normal"
-msgstr ""
-
-#. express
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:16
-msgid "qos_express"
-msgstr ""
-
-#. priority
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:17
-msgid "qos_priority"
-msgstr ""
-
-#. Bytes sent
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:18
 msgid "qos_connbytes"
 msgstr ""

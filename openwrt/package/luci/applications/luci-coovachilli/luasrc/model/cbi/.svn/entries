@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-coovachilli/luasrc/model/cbi
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-coovachilli/luasrc/model/cbi
 http://svn.luci.subsignal.org
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:15.448086Z
+2013-08-21T21:15:26.578359Z
 deb72bf7fc6627e8de7b29df648d5a37
 2008-09-25T00:42:55.693934Z
 3438
@@ -66,7 +66,7 @@ file
 
 
 
-2010-09-19T09:58:15.448086Z
+2013-08-21T21:15:26.578359Z
 3bb4613a01e7a08f7f271b3efe4759b3
 2008-12-23T21:57:34.661829Z
 3943
@@ -100,7 +100,7 @@ file
 
 
 
-2010-09-19T09:58:15.448086Z
+2013-08-21T21:15:26.578359Z
 93d36318acec783490e2a6a4a546af0c
 2008-09-25T10:12:21.026451Z
 3442
@@ -134,7 +134,7 @@ file
 
 
 
-2010-09-19T09:58:15.448086Z
+2013-08-21T21:15:26.578359Z
 01225cd9fd920d7433dc9493f4af0fc9
 2008-09-25T12:11:56.220897Z
 3445

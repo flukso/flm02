@@ -22,7 +22,7 @@
 #include <errno.h>
 #include <signal.h>
 
-#define VERSION 0.3
+#define VERSION 0.4
 
 
 /* pushes nil, error number and errstring on the stack */
@@ -133,6 +133,7 @@ NIXIO_API int luaopen_nixio(lua_State *L) {
 	nixio_open_sockopt(L);
 	nixio_open_bind(L);
 	nixio_open_address(L);
+	nixio_open_protoent(L);
 	nixio_open_poll(L);
 	nixio_open_io(L);
 	nixio_open_splice(L);
@@ -142,7 +143,6 @@ NIXIO_API int luaopen_nixio(lua_State *L) {
 	nixio_open_bin(L);
 	nixio_open_fs(L);
 	nixio_open_user(L);
-	nixio_open_spi(L);
 
 #ifndef NO_TLS
 	nixio_open_tls_crypto(L);
@@ -199,6 +199,8 @@ NIXIO_API int luaopen_nixio(lua_State *L) {
 	NIXIO_PUSH_CONSTANT(SIGSEGV);
 
 #ifndef __WINNT__
+	NIXIO_PUSH_CONSTANT(EALREADY);
+	NIXIO_PUSH_CONSTANT(EINPROGRESS);
 	NIXIO_PUSH_CONSTANT(EWOULDBLOCK);
 	NIXIO_PUSH_CONSTANT(ELOOP);
 	NIXIO_PUSH_CONSTANT(EOVERFLOW);

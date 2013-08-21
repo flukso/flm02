@@ -10,23 +10,21 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: ddns.lua 5990 2010-03-29 21:35:29Z jow $
+$Id: ddns.lua 9558 2012-12-18 13:58:22Z jow $
 ]]--
+
 module("luci.controller.ddns", package.seeall)
 
 function index()
-	require("luci.i18n")
-	luci.i18n.loadc("ddns")
 	if not nixio.fs.access("/etc/config/ddns") then
 		return
 	end
 	
-	local page = entry({"admin", "services", "ddns"}, cbi("ddns/ddns"), luci.i18n.translate("ddns"), 60)
-	page.i18n = "ddns"
+	local page
+
+	page = entry({"admin", "services", "ddns"}, cbi("ddns/ddns"), _("Dynamic DNS"), 60)
 	page.dependent = true
-	
-	
-	local page = entry({"mini", "network", "ddns"}, cbi("ddns/ddns", {autoapply=true}), luci.i18n.translate("ddns"), 60)
-	page.i18n = "ddns"
+
+	page = entry({"mini", "network", "ddns"}, cbi("ddns/ddns", {autoapply=true}), _("Dynamic DNS"), 60)
 	page.dependent = true
 end

@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 62
-/!svn/ver/5144/luci/branches/luci-0.9/libs/web/root/etc/config
+V 63
+/!svn/ver/9349/luci/branches/luci-0.11/libs/web/root/etc/config
 END
 luci
 K 25
 svn:wc:ra_dav:version-url
-V 67
-/!svn/ver/5144/luci/branches/luci-0.9/libs/web/root/etc/config/luci
+V 68
+/!svn/ver/9349/luci/branches/luci-0.11/libs/web/root/etc/config/luci
 END

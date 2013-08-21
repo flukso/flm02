@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx-voicemail
+END
+COPYING
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx-voicemail/COPYING
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx-voicemail/Makefile
+END

@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/contrib/package/freifunk-p2pblock/files
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/contrib/package/freifunk-p2pblock/files
 http://svn.luci.subsignal.org
 
 
 
-2010-04-05T17:46:20.798880Z
-6029
+2012-12-18T13:58:22.625226Z
+9558
 jow
 
 
@@ -32,12 +32,11 @@ file
 
 
 
-2010-09-19T09:58:18.648069Z
-cee6070962b47dd9c0040bbeb3d53ea1
-2010-04-05T17:46:20.798880Z
-6029
+2013-08-21T21:15:31.018359Z
+a4d64f687a9ca83005c3f61219171d9e
+2012-12-18T13:58:22.625226Z
+9558
 jow
-has-props
 
 
 
@@ -58,7 +57,8 @@ has-props
 
 
 
-2763
+
+2801
 
 freifunk-p2pblock.config
 file
@@ -66,7 +66,7 @@ file
 
 
 
-2010-09-19T09:58:18.648069Z
+2013-08-21T21:15:31.018359Z
 fa5cd3948b28ee86ecda6a9c6ba94aec
 2009-06-07T22:08:59.260059Z
 4802

@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/view/niu/system
+END
+reboot.htm
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/view/niu/system/reboot.htm
+END
+backup.htm
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/view/niu/system/backup.htm
+END
+upgrade.htm
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/view/niu/system/upgrade.htm
+END

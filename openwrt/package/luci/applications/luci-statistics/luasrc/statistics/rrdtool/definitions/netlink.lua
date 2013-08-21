@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: netlink.lua 2274 2008-06-03 23:15:16Z jow $
+$Id: netlink.lua 8044 2011-12-05 14:09:24Z jow $
 
 ]]--
 
@@ -21,6 +21,8 @@ function rrdargs( graph, plugin, plugin_instance )
 	-- traffic diagram
 	--
 	local traffic = {
+		title = "%H: Netlink - Transfer on %pi",
+		vlabel = "Bytes/s",
 
 		-- diagram data description
 		data = {
@@ -50,6 +52,8 @@ function rrdargs( graph, plugin, plugin_instance )
 	-- packet diagram
 	--
 	local packets = {
+		title = "%H: Netlink - Packets on %pi",
+		vlabel = "Packets/s", detail = true,
 
 		-- diagram data description
 		data = {
@@ -118,6 +122,8 @@ function rrdargs( graph, plugin, plugin_instance )
 	-- multicast diagram
 	--
 	local multicast = {
+		title = "%H: Netlink - Multicast on %pi",
+		vlabel = "Packets/s", detail = true,
 
 		-- diagram data description
 		data = {
@@ -140,6 +146,8 @@ function rrdargs( graph, plugin, plugin_instance )
 	-- collision diagram
 	--
 	local collisions = {
+		title = "%H: Netlink - Collisions on %pi",
+		vlabel = "Collisions/s", detail = true,
 
 		-- diagram data description
 		data = {
@@ -162,6 +170,8 @@ function rrdargs( graph, plugin, plugin_instance )
 	-- error diagram
 	--
 	local errors = {
+		title = "%H: Netlink - Errors on %pi",
+		vlabel = "Errors/s", detail = true,
 
 		-- diagram data description
 		data = {

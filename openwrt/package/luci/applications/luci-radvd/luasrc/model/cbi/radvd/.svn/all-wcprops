@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-radvd/luasrc/model/cbi/radvd
+END
+interface.lua
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-radvd/luasrc/model/cbi/radvd/interface.lua
+END
+dnssl.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-radvd/luasrc/model/cbi/radvd/dnssl.lua
+END
+rdnss.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-radvd/luasrc/model/cbi/radvd/rdnss.lua
+END
+prefix.lua
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-radvd/luasrc/model/cbi/radvd/prefix.lua
+END
+route.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-radvd/luasrc/model/cbi/radvd/route.lua
+END

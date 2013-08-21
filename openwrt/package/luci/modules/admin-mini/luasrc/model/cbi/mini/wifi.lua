@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: wifi.lua 6029 2010-04-05 17:46:20Z jow $
+$Id: wifi.lua 8953 2012-08-08 20:07:36Z jow $
 ]]--
 
 -- Data init --
@@ -27,7 +27,6 @@ end
 
 local wlcursor = luci.model.uci.cursor_state()
 local wireless = wlcursor:get_all("wireless")
-local wifidata = sys.wifi.getiwconfig()
 local wifidevs = {}
 local ifaces = {}
 
@@ -45,24 +44,154 @@ wlcursor:foreach("wireless", "wifi-device",
 
 -- Main Map --
 
-m = Map("wireless", translate("wifi"), translate("a_w_devices1"))
+m = Map("wireless", translate("Wifi"), translate("Here you can configure installed wifi devices."))
 m:chain("network")
+
+
+-- Status Table --
+s = m:section(Table, ifaces, translate("Networks"))
+
+link = s:option(DummyValue, "_link", translate("Link"))
+function link.cfgvalue(self, section)
+	local ifname = self.map:get(section, "ifname")
+	local iwinfo = sys.wifi.getiwinfo(ifname)
+	return iwinfo and "%d/%d" %{ iwinfo.quality, iwinfo.quality_max } or "-"
+end
+
+essid = s:option(DummyValue, "ssid", "ESSID")
+
+bssid = s:option(DummyValue, "_bsiid", "BSSID")
+function bssid.cfgvalue(self, section)
+	local ifname = self.map:get(section, "ifname")
+	local iwinfo = sys.wifi.getiwinfo(ifname)
+	return iwinfo and iwinfo.bssid or "-"
+end
+
+channel = s:option(DummyValue, "channel", translate("Channel"))
+function channel.cfgvalue(self, section)
+	return wireless[self.map:get(section, "device")].channel
+end
+
+protocol = s:option(DummyValue, "_mode", translate("Protocol"))
+function protocol.cfgvalue(self, section)
+	local mode = wireless[self.map:get(section, "device")].mode
+	return mode and "802." .. mode
+end
+
+mode = s:option(DummyValue, "mode", translate("Mode"))
+encryption = s:option(DummyValue, "encryption", translate("<abbr title=\"Encrypted\">Encr.</abbr>"))
+
+power = s:option(DummyValue, "_power", translate("Power"))
+function power.cfgvalue(self, section)
+	local ifname = self.map:get(section, "ifname")
+	local iwinfo = sys.wifi.getiwinfo(ifname)
+	return iwinfo and "%d dBm" % iwinfo.txpower or "-"
+end
+
+scan = s:option(Button, "_scan", translate("Scan"))
+scan.inputstyle = "find"
+
+function scan.cfgvalue(self, section)
+	return self.map:get(section, "ifname") or false
+end
+
+-- WLAN-Scan-Table --
+
+t2 = m:section(Table, {}, translate("<abbr title=\"Wireless Local Area Network\">WLAN</abbr>-Scan"), translate("Wifi networks in your local environment"))
+
+function scan.write(self, section)
+	m.autoapply = false
+	t2.render = t2._render
+	local ifname = self.map:get(section, "ifname")
+	local iwinfo = sys.wifi.getiwinfo(ifname)
+	if iwinfo then
+		local _, cell
+		for _, cell in ipairs(iwinfo.scanlist) do
+			t2.data[#t2.data+1] = {
+				Quality = "%d/%d" %{ cell.quality, cell.quality_max },
+				ESSID   = cell.ssid,
+				Address = cell.bssid,
+				Mode    = cell.mode,
+				["Encryption key"] = cell.encryption.enabled and "On" or "Off",
+				["Signal level"]   = "%d dBm" % cell.signal,
+				["Noise level"]    = "%d dBm" % iwinfo.noise
+			}
+		end
+	end
+end
+
+t2._render = t2.render
+t2.render = function() end
+
+t2:option(DummyValue, "Quality", translate("Link"))
+essid = t2:option(DummyValue, "ESSID", "ESSID")
+function essid.cfgvalue(self, section)
+	return self.map:get(section, "ESSID")
+end
+
+t2:option(DummyValue, "Address", "BSSID")
+t2:option(DummyValue, "Mode", translate("Mode"))
+chan = t2:option(DummyValue, "channel", translate("Channel"))
+function chan.cfgvalue(self, section)
+	return self.map:get(section, "Channel")
+	    or self.map:get(section, "Frequency")
+	    or "-"
+end
+
+t2:option(DummyValue, "Encryption key", translate("<abbr title=\"Encrypted\">Encr.</abbr>"))
+
+t2:option(DummyValue, "Signal level", translate("Signal"))
+
+t2:option(DummyValue, "Noise level", translate("Noise"))
+
 
 
 if #wifidevs < 1 then
 	return m
 end
 
+-- Config Section --
+
+s = m:section(NamedSection, wifidevs[1], "wifi-device", translate("Devices"))
+s.addremove = false
+
+en = s:option(Flag, "disabled", translate("enable"))
+en.rmempty = false
+en.enabled = "0"
+en.disabled = "1"
+
+function en.cfgvalue(self, section)
+	return Flag.cfgvalue(self, section) or "0"
+end
+
+
 local hwtype = m:get(wifidevs[1], "type")
 
+if hwtype == "atheros" then
+	mode = s:option(ListValue, "hwmode", translate("Mode"))
+	mode.override_values = true
+	mode:value("", "auto")
+	mode:value("11b", "802.11b")
+	mode:value("11g", "802.11g")
+	mode:value("11a", "802.11a")
+	mode:value("11bg", "802.11b+g")
+	mode.rmempty = true
+end
 
-s = m:section(TypedSection, "wifi-iface", "")
+
+ch = s:option(Value, "channel", translate("Channel"))
+for i=1, 14 do
+	ch:value(i, i .. " (2.4 GHz)")
+end
+
+
+s = m:section(TypedSection, "wifi-iface", translate("Local Network"))
 s.anonymous = true
 s.addremove = false
 
-s:option(Value, "ssid", translate("a_w_netid"))
+s:option(Value, "ssid", translate("Network Name (<abbr title=\"Extended Service Set Identifier\">ESSID</abbr>)"))
 
-bssid = s:option(Value, "bssid", translate("wifi_bssid"))
+bssid = s:option(Value, "bssid", translate("<abbr title=\"Basic Service Set Identifier\">BSSID</abbr>"))
 
 local devs = {}
 luci.model.uci.cursor():foreach("wireless", "wifi-device",
@@ -71,12 +200,37 @@ luci.model.uci.cursor():foreach("wireless", "wifi-device",
 	end)
 
 if #devs > 1 then
-	device = s:option(DummyValue, "device", translate("device"))
+	device = s:option(DummyValue, "device", translate("Device"))
 else
 	s.defaults.device = devs[1]
 end
 
-encr = s:option(ListValue, "encryption", translate("encryption"))
+mode = s:option(ListValue, "mode", translate("Mode"))
+mode.override_values = true
+mode:value("ap", translate("Provide (Access Point)"))
+mode:value("adhoc", translate("Independent (Ad-Hoc)"))
+mode:value("sta", translate("Join (Client)"))
+
+function mode.write(self, section, value)
+	if value == "sta" then
+		local oldif = m.uci:get("network", "wan", "ifname")
+		if oldif and oldif ~= " " then
+			m.uci:set("network", "wan", "_ifname", oldif)
+		end
+		m.uci:set("network", "wan", "ifname", " ")
+
+		self.map:set(section, "network", "wan")
+	else
+		if m.uci:get("network", "wan", "_ifname") then
+			m.uci:set("network", "wan", "ifname", m.uci:get("network", "wan", "_ifname"))
+		end
+		self.map:set(section, "network", "lan")
+	end
+
+	return ListValue.write(self, section, value)
+end
+
+encr = s:option(ListValue, "encryption", translate("Encryption"))
 encr.override_values = true
 encr:value("none", "No Encryption")
 encr:value("wep", "WEP")
@@ -97,16 +251,25 @@ if hwtype == "atheros" or hwtype == "mac80211" then
 		encr:value("psk-mixed", "WPA-PSK/WPA2-PSK Mixed Mode", {mode="ap"}, {mode="adhoc"})
 		encr:value("wpa", "WPA-Radius", {mode="ap"})
 		encr:value("wpa2", "WPA2-Radius", {mode="ap"})
-		encr.description = translate("wifi_wpareq")
+		encr.description = translate(
+			"WPA-Encryption requires wpa_supplicant (for client mode) or hostapd (for AP " ..
+			"and ad-hoc mode) to be installed."
+		)
 	elseif not hostapd and supplicant then
 		encr:value("psk", "WPA-PSK", {mode="sta"})
 		encr:value("psk2", "WPA2-PSK", {mode="sta"})
 		encr:value("psk-mixed", "WPA-PSK/WPA2-PSK Mixed Mode", {mode="sta"})
-		-- encr:value("wpa", "WPA-EAP", {mode="sta"})
-		-- encr:value("wpa2", "WPA2-EAP", {mode="sta"})
-		-- encr.description = translate("wifi_wpareq")
+		encr:value("wpa", "WPA-EAP", {mode="sta"})
+		encr:value("wpa2", "WPA2-EAP", {mode="sta"})
+		encr.description = translate(
+			"WPA-Encryption requires wpa_supplicant (for client mode) or hostapd (for AP " ..
+			"and ad-hoc mode) to be installed."
+		)		
 	else
-		encr.description = translate("wifi_wpareq")
+		encr.description = translate(
+			"WPA-Encryption requires wpa_supplicant (for client mode) or hostapd (for AP " ..
+			"and ad-hoc mode) to be installed."
+		)
 	end
 elseif hwtype == "broadcom" then
 	encr:value("psk", "WPA-PSK")
@@ -114,7 +277,7 @@ elseif hwtype == "broadcom" then
 	encr:value("psk+psk2", "WPA-PSK/WPA2-PSK Mixed Mode")
 end
 
-key = s:option(Value, "key", translate("key"))
+key = s:option(Value, "key", translate("Key"))
 key:depends("encryption", "wep")
 key:depends("encryption", "psk")
 key:depends("encryption", "psk2")
@@ -123,74 +286,46 @@ key:depends("encryption", "psk-mixed")
 key:depends({mode="ap", encryption="wpa"})
 key:depends({mode="ap", encryption="wpa2"})
 key.rmempty = true
--- key.password = true
-key.description = translate('wifi_keyreq')
+key.password = true
 
-function key:validate(value, section)
-	function string.tohex(x)
-		local hex = ''
-		for c in x:gmatch('(.)') do hex = hex .. string.format("%02x", c:byte()) end
-		return hex
-	end
-
-	function string.hexcheck(x)
-		return #(x:match('%x*')) == #x and x
-	end
-
-	if encr:formvalue(section) == 'wep' then
-		if #value == 5 or #value == 13 then
-			return value:tohex()
-		elseif #value == 10 or #value == 26 then
-			return value:hexcheck()
-		else
-			return nil
-		end
-	elseif encr:formvalue(section) == 'psk' or encr:formvalue(section) == 'psk2' then
-		return #value > 7 and #value < 64 and value
-	else
-		return value
-	end
-end
-
---[[
-server = s:option(Value, "server", translate("a_w_radiussrv"))
+server = s:option(Value, "server", translate("Radius-Server"))
 server:depends({mode="ap", encryption="wpa"})
 server:depends({mode="ap", encryption="wpa2"})
 server.rmempty = true
 
-port = s:option(Value, "port", translate("a_w_radiusport"))
+port = s:option(Value, "port", translate("Radius-Port"))
 port:depends({mode="ap", encryption="wpa"})
 port:depends({mode="ap", encryption="wpa2"})
 port.rmempty = true
 
 
 if hwtype == "atheros" or hwtype == "mac80211" then
-	nasid = s:option(Value, "nasid", translate("a_w_nasid"))
+	nasid = s:option(Value, "nasid", translate("NAS ID"))
 	nasid:depends({mode="ap", encryption="wpa"})
 	nasid:depends({mode="ap", encryption="wpa2"})
 	nasid.rmempty = true
 
-	eaptype = s:option(ListValue, "eap_type", translate("a_w_eaptype"))
+	eaptype = s:option(ListValue, "eap_type", translate("EAP-Method"))
 	eaptype:value("TLS")
 	eaptype:value("TTLS")
 	eaptype:value("PEAP")
 	eaptype:depends({mode="sta", encryption="wpa"})
 	eaptype:depends({mode="sta", encryption="wpa2"})
 
-	cacert = s:option(FileUpload, "ca_cert", translate("a_w_cacert"))
+	cacert = s:option(FileUpload, "ca_cert", translate("Path to CA-Certificate"))
 	cacert:depends({mode="sta", encryption="wpa"})
 	cacert:depends({mode="sta", encryption="wpa2"})
 
-	privkey = s:option(FileUpload, "priv_key", translate("a_w_tlsprivkey"))
+	privkey = s:option(FileUpload, "priv_key", translate("Path to Private Key"))
 	privkey:depends({mode="sta", eap_type="TLS", encryption="wpa2"})
 	privkey:depends({mode="sta", eap_type="TLS", encryption="wpa"})
 
-	privkeypwd = s:option(Value, "priv_key_pwd", translate("a_w_tlsprivkeypwd"))
+	privkeypwd = s:option(Value, "priv_key_pwd", translate("Password of Private Key"))
 	privkeypwd:depends({mode="sta", eap_type="TLS", encryption="wpa2"})
 	privkeypwd:depends({mode="sta", eap_type="TLS", encryption="wpa"})
 
 
-	auth = s:option(Value, "auth", translate("a_w_peapauth"))
+	auth = s:option(Value, "auth", translate("Authentication"))
 	auth:value("PAP")
 	auth:value("CHAP")
 	auth:value("MSCHAP")
@@ -201,13 +336,13 @@ if hwtype == "atheros" or hwtype == "mac80211" then
 	auth:depends({mode="sta", eap_type="TTLS", encryption="wpa"})
 
 
-	identity = s:option(Value, "identity", translate("a_w_peapidentity"))
+	identity = s:option(Value, "identity", translate("Identity"))
 	identity:depends({mode="sta", eap_type="PEAP", encryption="wpa2"})
 	identity:depends({mode="sta", eap_type="PEAP", encryption="wpa"})
 	identity:depends({mode="sta", eap_type="TTLS", encryption="wpa2"})
 	identity:depends({mode="sta", eap_type="TTLS", encryption="wpa"})
 
-	password = s:option(Value, "password", translate("a_w_peappassword"))
+	password = s:option(Value, "password", translate("Password"))
 	password:depends({mode="sta", eap_type="PEAP", encryption="wpa2"})
 	password:depends({mode="sta", eap_type="PEAP", encryption="wpa"})
 	password:depends({mode="sta", eap_type="TTLS", encryption="wpa2"})
@@ -216,15 +351,14 @@ end
 
 
 if hwtype == "atheros" or hwtype == "broadcom" then
-	iso = s:option(Flag, "isolate", translate("a_w_apisolation"), translate("a_w_apisolation1"))
+	iso = s:option(Flag, "isolate", translate("AP-Isolation"), translate("Prevents Client to Client communication"))
 	iso.rmempty = true
 	iso:depends("mode", "ap")
 
-	hide = s:option(Flag, "hidden", translate("a_w_hideessid"))
+	hide = s:option(Flag, "hidden", translate("Hide <abbr title=\"Extended Service Set Identifier\">ESSID</abbr>"))
 	hide.rmempty = true
 	hide:depends("mode", "ap")
 end
-]]--
 
 if hwtype == "mac80211" or hwtype == "atheros" then
 	bssid:depends({mode="adhoc"})

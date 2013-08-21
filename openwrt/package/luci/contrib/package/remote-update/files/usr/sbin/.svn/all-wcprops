@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 82
-/!svn/ver/5573/luci/branches/luci-0.9/contrib/package/remote-update/files/usr/sbin
+V 83
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/remote-update/files/usr/sbin
 END
 remote-update
 K 25
 svn:wc:ra_dav:version-url
-V 96
-/!svn/ver/5573/luci/branches/luci-0.9/contrib/package/remote-update/files/usr/sbin/remote-update
+V 97
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/remote-update/files/usr/sbin/remote-update
 END

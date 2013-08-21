@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs/sys/luasrc/sys/zoneinfo
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/libs/sys/luasrc/sys/zoneinfo
 http://svn.luci.subsignal.org
 
 
 
-2009-07-23T03:32:30.949216Z
-5118
+2011-11-10T11:21:13.378407Z
+7909
 jow
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2010-09-19T09:58:18.437067Z
-505a7e160e30e8d0693cbb58f1e7a6bc
-2009-07-23T03:32:30.949216Z
-5118
+2013-08-21T21:15:30.806359Z
+e75df6ef49965ba7261fec4778b03f23
+2011-11-10T11:21:13.378407Z
+7909
 jow
 has-props
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-4294
+3904
 
 tzdata.lua
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2010-09-19T09:58:18.437067Z
-4215585fbf6c85cf9f85e3a474aa87fc
-2009-07-23T03:32:30.949216Z
-5118
+2013-08-21T21:15:30.806359Z
+c2b51d15cadbd043720d8df5ec2a381b
+2011-11-10T11:21:13.378407Z
+7909
 jow
 has-props
 
@@ -92,5 +92,5 @@ has-props
 
 
 
-16778
+16813
 

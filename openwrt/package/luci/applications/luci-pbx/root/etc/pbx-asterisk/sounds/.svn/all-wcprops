@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/root/etc/pbx-asterisk/sounds
+END
+agent-alreadyon.gsm
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/root/etc/pbx-asterisk/sounds/agent-alreadyon.gsm
+END
+auth-thankyou.gsm
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/root/etc/pbx-asterisk/sounds/auth-thankyou.gsm
+END
+agent-pass.gsm
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/root/etc/pbx-asterisk/sounds/agent-pass.gsm
+END
+agent-incorrect.gsm
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/root/etc/pbx-asterisk/sounds/agent-incorrect.gsm
+END

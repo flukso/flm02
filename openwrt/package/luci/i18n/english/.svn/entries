@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/i18n/english
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/i18n/english
 http://svn.luci.subsignal.org
 
 
 
-2009-05-19T02:41:14.902661Z
-4562
+2011-11-30T15:11:15.387178Z
+8031
 jow
 has-props
 
@@ -29,12 +29,6 @@ ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 root
 dir
 
-src
-dir
-
-luasrc
-dir
-
 ipkg
 dir
 
@@ -44,10 +38,10 @@ file
 
 
 
-2010-09-19T09:58:13.816067Z
-76816dd79438e97293f5ec9aa180f6e2
-2009-05-19T02:41:14.902661Z
-4562
+2013-08-21T21:15:25.754359Z
+95741562bc2bf6da999f6f0d58e6ad26
+2009-11-01T14:30:02.324409Z
+5486
 jow
 
 
@@ -70,5 +64,5 @@ jow
 
 
 
-115
+84
 

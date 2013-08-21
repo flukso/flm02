@@ -5,7 +5,7 @@ Description:
 Server Gateway Interface for CGI
 
 FileId:
-$Id: cgi.lua 6029 2010-04-05 17:46:20Z jow $
+$Id: cgi.lua 6535 2010-11-23 01:02:21Z soma $
 
 License:
 Copyright 2008 Steven Barth <steven@midlink.org>
@@ -23,6 +23,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ]]--
+exectime = os.clock()
 module("luci.sgi.cgi", package.seeall)
 local ltn12 = require("luci.ltn12")
 require("nixio.util")
@@ -87,6 +88,7 @@ function run()
 				active = false
 			elseif id == 6 then
 				data1:copyz(nixio.stdout, data2)
+				data1:close()
 			end
 		end
 	end

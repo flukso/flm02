@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_system
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_system
 http://svn.luci.subsignal.org
 
 
 
-2010-03-08T00:13:43.605698Z
-5738
+2012-12-18T13:58:22.625226Z
+9558
 jow
 
 
@@ -26,17 +26,17 @@ jow
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-ipkg.htm
+backupfiles.htm
 file
 
 
 
 
-2010-09-19T09:58:19.089068Z
-36f1044cf519d744544aca431cd3a221
-2008-08-14T17:16:56.173680Z
-2819
-Cyrus
+2013-08-21T21:15:31.754359Z
+1f724a39442c24f7a0457f7538e37517
+2011-10-24T01:10:34.744136Z
+7773
+jow
 has-props
 
 
@@ -58,7 +58,41 @@ has-props
 
 
 
-618
+630
+
+ipkg.htm
+file
+
+
+
+
+2013-08-21T21:15:31.754359Z
+596ce5cceed07ffa7768e76a73a6df21
+2011-10-24T01:10:34.744136Z
+7773
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+623
 
 reboot.htm
 file
@@ -66,10 +100,10 @@ file
 
 
 
-2010-09-19T09:58:19.089068Z
-d52f817efd568bf33af1d6b58b86ca09
-2008-10-07T13:10:24.227006Z
-3529
+2013-08-21T21:15:31.754359Z
+199e83d8fc45080b024626b858ff8786
+2009-10-31T15:54:11.121111Z
+5448
 jow
 has-props
 
@@ -92,7 +126,41 @@ has-props
 
 
 
-933
+1037
+
+clock_status.htm
+file
+
+
+
+
+2013-08-21T21:15:31.754359Z
+59156262165ac79a317ca3e488f2fbbf
+2011-10-24T01:10:34.744136Z
+7773
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+906
 
 packages.htm
 file
@@ -100,10 +168,10 @@ file
 
 
 
-2010-09-19T09:58:19.093067Z
-d557a3b46b874527f2a4f8bc95514e4b
-2010-03-08T00:13:43.605698Z
-5738
+2013-08-21T21:15:31.754359Z
+9196431c732fdc5c89eb532088337058
+2012-12-18T13:58:22.625226Z
+9558
 jow
 has-props
 
@@ -126,7 +194,41 @@ has-props
 
 
 
-6606
+7744
+
+flashops.htm
+file
+
+
+
+
+2013-08-21T21:15:31.754359Z
+35f585d939f3b1a7af350b352f831981
+2011-10-26T23:43:04.787521Z
+7798
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4011
 
 applyreboot.htm
 file
@@ -134,11 +236,11 @@ file
 
 
 
-2010-09-19T09:58:19.093067Z
-0435be97619b5bd5f20528a5f1cbb903
-2008-10-07T13:10:24.227006Z
-3529
-jow
+2013-08-21T21:15:31.754359Z
+b3cd6d7694e967982ec4aa78e4d74f1e
+2012-07-01T20:05:05.143378Z
+8847
+dgolle
 has-props
 
 
@@ -160,41 +262,7 @@ has-props
 
 
 
-697
-
-backup.htm
-file
-
-
-
-
-2010-09-19T09:58:19.093067Z
-e1c2a04a2b34ad5c954022b218d901e2
-2008-10-07T13:10:24.227006Z
-3529
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1125
+1673
 
 upgrade.htm
 file
@@ -202,10 +270,10 @@ file
 
 
 
-2010-09-19T09:58:19.093067Z
-452bec5a812f4b144cd442eeeeb34c8a
-2009-05-13T23:46:56.720926Z
-4520
+2013-08-21T21:15:31.754359Z
+314520f881323e504bd8165da84a667e
+2011-10-26T23:43:04.787521Z
+7798
 jow
 has-props
 
@@ -228,5 +296,5 @@ has-props
 
 
 
-3679
+1931
 

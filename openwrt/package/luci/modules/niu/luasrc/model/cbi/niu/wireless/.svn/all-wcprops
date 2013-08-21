@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/wireless
+END
+ap.lua
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/wireless/ap.lua
+END
+apdevice.lua
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/wireless/apdevice.lua
+END
+ap1.lua
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/wireless/ap1.lua
+END
+brdevice.lua
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/wireless/brdevice.lua
+END
+bridge.lua
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/wireless/bridge.lua
+END

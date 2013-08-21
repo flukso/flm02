@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 84
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-siitwizard/luasrc/controller
+V 85
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-siitwizard/luasrc/controller
 END
 siitwizard.lua
 K 25
 svn:wc:ra_dav:version-url
-V 99
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-siitwizard/luasrc/controller/siitwizard.lua
+V 100
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-siitwizard/luasrc/controller/siitwizard.lua
 END

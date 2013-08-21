@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/themes/freifunk-bno/htdocs/luci-static/freifunk-bno
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/themes/freifunk-bno/htdocs/luci-static/freifunk-bno
 http://svn.luci.subsignal.org
 
 
 
-2008-10-07T15:47:32.109847Z
-3531
+2012-12-18T13:58:22.625226Z
+9558
 jow
 
 
@@ -35,10 +35,10 @@ file
 
 
 
-2010-09-19T09:58:14.037068Z
-7d214e4cdbf9abecf9be4d33542bf48e
-2008-10-07T15:47:32.109847Z
-3531
+2013-08-21T21:15:26.234359Z
+561d84e4716a938f9d3ae94551e19d41
+2012-12-18T13:58:22.625226Z
+9558
 jow
 
 
@@ -61,5 +61,5 @@ jow
 
 
 
-11554
+14183
 

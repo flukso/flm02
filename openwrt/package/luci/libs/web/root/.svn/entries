@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs/web/root
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/libs/web/root
 http://svn.luci.subsignal.org
 
 
 
-2009-07-26T21:28:44.880487Z
-5144
+2010-10-12T05:15:32.599892Z
+6281
 jow
 
 
@@ -25,6 +25,9 @@ jow
 
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+lib
+dir
 
 etc
 dir

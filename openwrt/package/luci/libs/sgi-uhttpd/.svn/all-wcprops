@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/5930/luci/branches/luci-0.9/libs/sgi-uhttpd
+V 54
+/!svn/ver/9349/luci/branches/luci-0.11/libs/sgi-uhttpd
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 62
-/!svn/ver/5930/luci/branches/luci-0.9/libs/sgi-uhttpd/Makefile
+V 63
+/!svn/ver/9349/luci/branches/luci-0.11/libs/sgi-uhttpd/Makefile
 END

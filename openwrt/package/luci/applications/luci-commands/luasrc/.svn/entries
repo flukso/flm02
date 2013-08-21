@@ -1,0 +1,37 @@
+10
+
+dir
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-commands/luasrc
+http://svn.luci.subsignal.org
+
+
+
+2012-11-26T12:53:43.730041Z
+9507
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+model
+dir
+
+controller
+dir
+
+view
+dir
+

@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 73
-/!svn/ver/6029/luci/branches/luci-0.9/modules/freifunk/htdocs/luci-static
+V 74
+/!svn/ver/9655/luci/branches/luci-0.11/modules/freifunk/htdocs/luci-static
 END
 flashing.html
 K 25
 svn:wc:ra_dav:version-url
-V 87
-/!svn/ver/6029/luci/branches/luci-0.9/modules/freifunk/htdocs/luci-static/flashing.html
+V 88
+/!svn/ver/9349/luci/branches/luci-0.11/modules/freifunk/htdocs/luci-static/flashing.html
 END

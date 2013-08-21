@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 84
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-polipo/root/etc/uci-defaults
+V 85
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-polipo/root/etc/uci-defaults
 END
 luci-polipo
 K 25
 svn:wc:ra_dav:version-url
-V 96
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-polipo/root/etc/uci-defaults/luci-polipo
+V 97
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-polipo/root/etc/uci-defaults/luci-polipo
 END

@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs/fastindex
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/libs/fastindex
 http://svn.luci.subsignal.org
 
 
@@ -35,7 +35,7 @@ file
 
 
 
-2010-09-19T09:58:16.261069Z
+2013-08-21T21:15:27.786359Z
 fc39374679b1570c0278f7fc898dacba
 2008-06-14T14:12:12.902729Z
 2369

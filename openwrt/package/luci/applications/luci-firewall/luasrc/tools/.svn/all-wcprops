@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-firewall/luasrc/tools
+END
+firewall.lua
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-firewall/luasrc/tools/firewall.lua
+END

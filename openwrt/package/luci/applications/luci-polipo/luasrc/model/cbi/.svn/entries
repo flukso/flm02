@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-polipo/luasrc/model/cbi
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-polipo/luasrc/model/cbi
 http://svn.luci.subsignal.org
 
 
 
-2008-11-05T23:05:09.429281Z
-3720
+2010-12-05T03:09:06.333441Z
+6613
 jow
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2010-09-19T09:58:15.541069Z
-6583ae3e36812dabbd96ee5423c7531b
-2008-11-05T23:05:09.429281Z
-3720
+2013-08-21T21:15:27.538359Z
+f6d356270af31b166234403ff7610492
+2010-12-05T03:09:06.333441Z
+6613
 jow
 has-props
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1883
+6004
 

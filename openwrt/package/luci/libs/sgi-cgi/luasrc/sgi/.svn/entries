@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs/sgi-cgi/luasrc/sgi
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/libs/sgi-cgi/luasrc/sgi
 http://svn.luci.subsignal.org
 
 
 
-2010-04-05T17:46:20.798880Z
-6029
-jow
+2010-11-23T01:02:21.031642Z
+6535
+soma
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2010-09-19T09:58:16.161068Z
-8aae958e5685b7fd924152e1adf8d07c
-2010-04-05T17:46:20.798880Z
-6029
-jow
+2013-08-21T21:15:27.686359Z
+4a6eded2fb24d282985f403dafe9e9b0
+2010-11-23T01:02:21.031642Z
+6535
+soma
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-2260
+2301
 

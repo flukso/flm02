@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules/admin-full/luasrc/model/cbi/admin_system
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules/admin-full/luasrc/model/cbi/admin_system
 http://svn.luci.subsignal.org
 
 
 
-2010-03-27T23:52:06.989582Z
-5968
-jow
+2013-02-26T21:20:22.130474Z
+9672
+dgolle
 
 
 
@@ -26,16 +26,19 @@ jow
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
+fstab
+dir
+
 fstab.lua
 file
 
 
 
 
-2010-09-19T09:58:19.001067Z
-fc3079f66ffd25768ada9e06dd7adbc6
-2009-07-23T03:32:30.949216Z
-5118
+2013-08-21T21:15:31.634359Z
+d078ff3d34755d036767f2490446dd99
+2010-11-27T04:55:38.603785Z
+6562
 jow
 has-props
 
@@ -58,19 +61,19 @@ has-props
 
 
 
-2776
+4650
 
-passwd.lua
+startup.lua
 file
 
 
 
 
-2010-09-19T09:58:19.001067Z
-3c58c5fed767398bb04ccfb68164b39d
-2008-12-07T13:26:34.076989Z
-3863
-Cyrus
+2013-08-21T21:15:31.634359Z
+95aee52da4d39fa811f5921cba8421fa
+2013-02-26T21:20:22.130474Z
+9672
+dgolle
 has-props
 
 
@@ -92,7 +95,7 @@ has-props
 
 
 
-1108
+2852
 
 system.lua
 file
@@ -100,10 +103,10 @@ file
 
 
 
-2010-09-19T09:58:19.001067Z
-ccc436c3e4d04694241adb153ea6b379
-2010-03-27T23:52:06.989582Z
-5968
+2013-08-21T21:15:31.634359Z
+350d19f2d24f35d4a85e52c8b6841bf3
+2012-09-28T19:08:47.957724Z
+9339
 jow
 has-props
 
@@ -126,41 +129,7 @@ has-props
 
 
 
-2927
-
-processes.lua
-file
-
-
-
-
-2010-09-19T09:58:19.005068Z
-3b885849ee261f744a781081199a9175
-2008-08-17T23:47:38.482984Z
-2880
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1457
+5693
 
 leds.lua
 file
@@ -168,10 +137,10 @@ file
 
 
 
-2010-09-19T09:58:19.005068Z
-86f434b17278b0e09831ffa6c353a3e7
-2009-07-23T03:32:30.949216Z
-5118
+2013-08-21T21:15:31.634359Z
+d869df734f7a55861cd187417e56c4e6
+2011-05-09T12:51:01.231229Z
+7037
 jow
 has-props
 
@@ -194,18 +163,18 @@ has-props
 
 
 
-1809
+3313
 
-sshkeys.lua
+admin.lua
 file
 
 
 
 
-2010-09-19T09:58:19.005068Z
-b954092ef73f4a06ef5893954245a364
-2009-07-23T03:32:30.949216Z
-5118
+2013-08-21T21:15:31.634359Z
+a9a15bfc16837549e21e11afce81479a
+2012-01-06T16:42:02.502422Z
+8153
 jow
 has-props
 
@@ -228,7 +197,75 @@ has-props
 
 
 
-860
+3398
+
+backupfiles.lua
+file
+
+
+
+
+2013-08-21T21:15:31.634359Z
+488198bacfe6dde2c6883340bd6ac92e
+2011-10-26T23:43:04.787521Z
+7798
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2706
+
+crontab.lua
+file
+
+
+
+
+2013-08-21T21:15:31.634359Z
+28bc07261433f9d1c7c5d7b93bb7aa38
+2011-10-26T00:58:12.214867Z
+7785
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+933
 
 ipkg.lua
 file
@@ -236,10 +273,10 @@ file
 
 
 
-2010-09-19T09:58:19.005068Z
-cd35801ad2867655cf562efbddea7eb1
-2009-07-23T03:32:30.949216Z
-5118
+2013-08-21T21:15:31.634359Z
+dbaa6816297731369b8c3c53296284fe
+2011-10-24T01:10:34.744136Z
+7773
 jow
 has-props
 
@@ -262,7 +299,7 @@ has-props
 
 
 
-826
+832
 
 buttons.lua
 file
@@ -270,10 +307,10 @@ file
 
 
 
-2010-09-19T09:58:19.009081Z
-3e698f86480e973ad75825a54accbc69
-2008-08-17T23:47:38.482984Z
-2880
+2013-08-21T21:15:31.634359Z
+019d44f409d42c57f0a7165fe31e3e91
+2009-11-01T01:37:03.279727Z
+5472
 jow
 has-props
 
@@ -296,5 +333,5 @@ has-props
 
 
 
-720
+1015
 

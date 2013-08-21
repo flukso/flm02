@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-meshwizard/ipkg
+END
+postinst
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-meshwizard/ipkg/postinst
+END

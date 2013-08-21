@@ -1,53 +1,53 @@
 K 25
 svn:wc:ra_dav:version-url
-V 96
-/!svn/ver/4830/luci/branches/luci-0.9/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images
+V 97
+/!svn/ver/9349/luci/branches/luci-0.11/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images
 END
 bgoption.png
 K 25
 svn:wc:ra_dav:version-url
-V 109
-/!svn/ver/4830/luci/branches/luci-0.9/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/bgoption.png
+V 110
+/!svn/ver/9349/luci/branches/luci-0.11/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/bgoption.png
 END
 header-left.gif
 K 25
 svn:wc:ra_dav:version-url
-V 112
-/!svn/ver/4830/luci/branches/luci-0.9/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/header-left.gif
+V 113
+/!svn/ver/9349/luci/branches/luci-0.11/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/header-left.gif
 END
 logo.gif
 K 25
 svn:wc:ra_dav:version-url
-V 105
-/!svn/ver/4830/luci/branches/luci-0.9/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/logo.gif
+V 106
+/!svn/ver/9349/luci/branches/luci-0.11/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/logo.gif
 END
 main-back.png
 K 25
 svn:wc:ra_dav:version-url
-V 110
-/!svn/ver/4830/luci/branches/luci-0.9/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/main-back.png
+V 111
+/!svn/ver/9349/luci/branches/luci-0.11/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/main-back.png
 END
 header-right.gif
 K 25
 svn:wc:ra_dav:version-url
-V 113
-/!svn/ver/4830/luci/branches/luci-0.9/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/header-right.gif
+V 114
+/!svn/ver/9349/luci/branches/luci-0.11/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/header-right.gif
 END
 header-back.gif
 K 25
 svn:wc:ra_dav:version-url
-V 112
-/!svn/ver/4830/luci/branches/luci-0.9/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/header-back.gif
+V 113
+/!svn/ver/9349/luci/branches/luci-0.11/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/header-back.gif
 END
 schriftzug.gif
 K 25
 svn:wc:ra_dav:version-url
-V 111
-/!svn/ver/4830/luci/branches/luci-0.9/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/schriftzug.gif
+V 112
+/!svn/ver/9349/luci/branches/luci-0.11/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/schriftzug.gif
 END
 favicon.ico
 K 25
 svn:wc:ra_dav:version-url
-V 108
-/!svn/ver/4830/luci/branches/luci-0.9/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/favicon.ico
+V 109
+/!svn/ver/9349/luci/branches/luci-0.11/themes/freifunk-bno/htdocs/luci-static/freifunk-bno/images/favicon.ico
 END

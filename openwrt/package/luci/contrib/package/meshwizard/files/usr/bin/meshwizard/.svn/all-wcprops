@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/9623/luci/branches/luci-0.11/contrib/package/meshwizard/files/usr/bin/meshwizard
+END
+functions.sh
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/meshwizard/files/usr/bin/meshwizard/functions.sh
+END
+wizard.sh
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/meshwizard/files/usr/bin/meshwizard/wizard.sh
+END

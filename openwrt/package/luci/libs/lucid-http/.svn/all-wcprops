@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/5912/luci/branches/luci-0.9/libs/lucid-http
+V 54
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid-http
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 62
-/!svn/ver/4830/luci/branches/luci-0.9/libs/lucid-http/Makefile
+V 63
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid-http/Makefile
 END

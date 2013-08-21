@@ -1,23 +1,41 @@
 K 25
 svn:wc:ra_dav:version-url
-V 75
-/!svn/ver/4951/luci/branches/luci-0.9/modules/freifunk/luasrc/view/freifunk
+V 76
+/!svn/ver/9623/luci/branches/luci-0.11/modules/freifunk/luasrc/view/freifunk
+END
+profile_error.htm
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/9349/luci/branches/luci-0.11/modules/freifunk/luasrc/view/freifunk/profile_error.htm
 END
 contact.htm
 K 25
 svn:wc:ra_dav:version-url
-V 87
-/!svn/ver/4830/luci/branches/luci-0.9/modules/freifunk/luasrc/view/freifunk/contact.htm
+V 88
+/!svn/ver/9623/luci/branches/luci-0.11/modules/freifunk/luasrc/view/freifunk/contact.htm
 END
 remote_update.htm
 K 25
 svn:wc:ra_dav:version-url
-V 93
-/!svn/ver/4951/luci/branches/luci-0.9/modules/freifunk/luasrc/view/freifunk/remote_update.htm
+V 94
+/!svn/ver/9349/luci/branches/luci-0.11/modules/freifunk/luasrc/view/freifunk/remote_update.htm
+END
+adminindex.htm
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9558/luci/branches/luci-0.11/modules/freifunk/luasrc/view/freifunk/adminindex.htm
+END
+public_status.htm
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/9349/luci/branches/luci-0.11/modules/freifunk/luasrc/view/freifunk/public_status.htm
 END
 index.htm
 K 25
 svn:wc:ra_dav:version-url
-V 85
-/!svn/ver/4830/luci/branches/luci-0.9/modules/freifunk/luasrc/view/freifunk/index.htm
+V 86
+/!svn/ver/9349/luci/branches/luci-0.11/modules/freifunk/luasrc/view/freifunk/index.htm
 END

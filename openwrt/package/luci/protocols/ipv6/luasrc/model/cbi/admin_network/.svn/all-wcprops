@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/9854/luci/branches/luci-0.11/protocols/ipv6/luasrc/model/cbi/admin_network
+END
+proto_6to4.lua
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/9846/luci/branches/luci-0.11/protocols/ipv6/luasrc/model/cbi/admin_network/proto_6to4.lua
+END
+proto_6in4.lua
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/9846/luci/branches/luci-0.11/protocols/ipv6/luasrc/model/cbi/admin_network/proto_6in4.lua
+END
+proto_dslite.lua
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/9854/luci/branches/luci-0.11/protocols/ipv6/luasrc/model/cbi/admin_network/proto_dslite.lua
+END
+proto_dhcpv6.lua
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/9851/luci/branches/luci-0.11/protocols/ipv6/luasrc/model/cbi/admin_network/proto_dhcpv6.lua
+END
+proto_6rd.lua
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/9846/luci/branches/luci-0.11/protocols/ipv6/luasrc/model/cbi/admin_network/proto_6rd.lua
+END

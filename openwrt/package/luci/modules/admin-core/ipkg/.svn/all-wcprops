@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 61
-/!svn/ver/6026/luci/branches/luci-0.9/modules/admin-core/ipkg
+V 62
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-core/ipkg
 END
 postinst
 K 25
 svn:wc:ra_dav:version-url
-V 70
-/!svn/ver/6026/luci/branches/luci-0.9/modules/admin-core/ipkg/postinst
+V 71
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-core/ipkg/postinst
 END

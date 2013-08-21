@@ -5,7 +5,7 @@ Description:
 Main class
 
 FileId:
-$Id: init.lua 4537 2009-05-17 01:56:15Z jow $
+$Id: init.lua 7365 2011-08-13 09:52:50Z jow $
 
 License:
 Copyright 2008 Steven Barth <steven@midlink.org>
@@ -35,5 +35,5 @@ module "luci"
 
 local v = require "luci.version"
 
-__version__ = v.luciversion or "0.9"
+__version__ = v.luciversion or "trunk"
 __appname__ = v.luciname    or "LuCI"

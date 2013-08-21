@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 55
-/!svn/ver/6029/luci/branches/luci-0.9/libs/lucid/luasrc
+V 56
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid/luasrc
 END
 lucid.lua
 K 25
 svn:wc:ra_dav:version-url
-V 65
-/!svn/ver/5164/luci/branches/luci-0.9/libs/lucid/luasrc/lucid.lua
+V 66
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid/luasrc/lucid.lua
 END

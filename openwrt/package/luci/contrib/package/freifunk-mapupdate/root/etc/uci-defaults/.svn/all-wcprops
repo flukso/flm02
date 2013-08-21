@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/freifunk-mapupdate/root/etc/uci-defaults
+END
+freifunk-mapupdate
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/freifunk-mapupdate/root/etc/uci-defaults/freifunk-mapupdate
+END

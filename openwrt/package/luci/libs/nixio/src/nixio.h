@@ -111,6 +111,7 @@ void nixio_open_socket(lua_State *L);
 void nixio_open_sockopt(lua_State *L);
 void nixio_open_bind(lua_State *L);
 void nixio_open_address(lua_State *L);
+void nixio_open_protoent(lua_State *L);
 void nixio_open_poll(lua_State *L);
 void nixio_open_io(lua_State *L);
 void nixio_open_splice(lua_State *L);
@@ -120,7 +121,6 @@ void nixio_open_bit(lua_State *L);
 void nixio_open_bin(lua_State *L);
 void nixio_open_fs(lua_State *L);
 void nixio_open_user(lua_State *L);
-void nixio_open_spi(lua_State *L);
 
 #ifndef NO_TLS
 void nixio_open_tls_crypto(lua_State *L);

@@ -43,6 +43,8 @@ local SSTATE = "/tmp/.lucid_store"
 
 --- Starts a new LuCId superprocess.
 function start()
+	state:revert(UCINAME, "main")
+
 	prepare()
 
 	local detach = cursor:get(UCINAME, "main", "daemonize")
@@ -134,7 +136,6 @@ function run()
 			end
 		elseif stat == 0 then
 			ifaddrs = nixio.getifaddrs()
-			collectgarbage("collect")
 		end
 		
 		for _, cb in ipairs(tickt) do
@@ -143,9 +144,13 @@ function run()
 		
 		local pid, stat, code = nixio.wait(-1, "nohang")
 		while pid and pid > 0 do
-			tcount = tcount - 1
-			if tpids[pid] and tpids[pid] ~= true then
-				tpids[pid](pid, stat, code)
+			nixio.syslog("info", "Buried thread: " .. pid)
+			if tpids[pid] then
+				tcount = tcount - 1
+				if tpids[pid] ~= true then
+					tpids[pid](pid, stat, code)
+				end
+				tpids[pid] = nil
 			end
 			pid, stat, code = nixio.wait(-1, "nohang")
 		end
@@ -226,10 +231,13 @@ function create_process(threadcb, waitcb)
 	if threadlimit and tcount >= threadlimit then
 		nixio.syslog("warning", "Cannot create thread: process limit reached")
 		return nil
+	else
+		collectgarbage("collect")
 	end
 	local pid, code, err = nixio.fork()
 	if pid and pid ~= 0 then
-		tpids[pid] = waitcb
+		nixio.syslog("info", "Created thread: " .. pid)
+		tpids[pid] = waitcb or true
 		tcount = tcount + 1
 	elseif pid == 0 then
 		local code = threadcb()

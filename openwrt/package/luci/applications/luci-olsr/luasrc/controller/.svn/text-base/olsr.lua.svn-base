@@ -5,52 +5,73 @@ function index()
 		return
 	end
 
-	require("luci.i18n").loadc("olsr")
-	local i18n = luci.i18n.translate
-
 	local page  = node("admin", "status", "olsr")
-	page.target = call("action_index")
-	page.title  = "OLSR"
-	page.i18n   = "olsr"
+	page.target = template("status-olsr/overview")
+	page.title  = _("OLSR")
 	page.subindex = true
+
+	local page  = node("admin", "status", "olsr", "neighbors")
+	page.target = call("action_neigh")
+	page.title  = _("Neighbours")
+	page.subindex = true
+	page.order  = 5
 
 	local page  = node("admin", "status", "olsr", "routes")
 	page.target = call("action_routes")
-	page.title  = i18n("olsr_routes", "Routen")
+	page.title  = _("Routes")
 	page.order  = 10
 
 	local page  = node("admin", "status", "olsr", "topology")
 	page.target = call("action_topology")
-	page.title  = i18n("olsr_topology", "Topologie")
+	page.title  = _("Topology")
 	page.order  = 20
 
 	local page  = node("admin", "status", "olsr", "hna")
 	page.target = call("action_hna")
-	page.title  = "HNA"
+	page.title  = _("HNA")
 	page.order  = 30
 
 	local page  = node("admin", "status", "olsr", "mid")
 	page.target = call("action_mid")
-	page.title  = "MID"
+	page.title  = _("MID")
 	page.order  = 50
+
+	local page  = node("admin", "status", "olsr", "smartgw")
+	page.target = call("action_smartgw")
+	page.title  = _("SmartGW")
+	page.order  = 60
+
+	local page  = node("admin", "status", "olsr", "interfaces")
+        page.target = call("action_interfaces")
+        page.title  = _("Interfaces")
+        page.order  = 70
 
 	local ol = entry(
 		{"admin", "services", "olsrd"},
 		cbi("olsr/olsrd"), "OLSR"
 	)
-	ol.i18n = "olsr"
 	ol.subindex = true
 
 	entry(
+		{"admin", "services", "olsrd", "iface"},
+		cbi("olsr/olsrdiface")
+	).leaf = true
+
+	entry(
 		{"admin", "services", "olsrd", "hna"},
-		cbi("olsr/olsrdhna"), "HNA Announcements"
+		cbi("olsr/olsrdhna"), _("HNA Announcements")
 	)
 
 	oplg = entry(
 		{"admin", "services", "olsrd", "plugins"},
-		cbi("olsr/olsrdplugins"), "Plugins"
+		cbi("olsr/olsrdplugins"), _("Plugins")
 	)
-	oplg.i18n = "olsr"
+
+	odsp = entry(
+		{"admin", "services", "olsrd", "display"},
+		cbi("olsr/olsrddisplay"), _("Display")
+		)
+
 	oplg.leaf = true
 	oplg.subindex = true
 
@@ -67,7 +88,21 @@ function index()
 	)
 end
 
-function action_index()
+local function compare_links(a, b)
+	local c = tonumber(a.Cost)
+	local d = tonumber(b.Cost)
+
+	if not c or c == 0 then
+		return false
+	end
+
+	if not d or d == 0 then
+		return true
+	end
+	return c < d
+end
+
+function action_neigh(json)
 	local data = fetch_txtinfo("links")
 
 	if not data or not data.Links then
@@ -75,24 +110,9 @@ function action_index()
 		return nil
 	end
 
-	local function compare(a, b)
-		local c = tonumber(a.Cost)
-		local d = tonumber(b.Cost)
+	table.sort(data.Links, compare_links)
 
-		if not c or c == 0 then
-			return false
-		end
-
-		if not d or d == 0 then
-			return true
-		end
-
-		return c < d
-	end
-
-	table.sort(data.Links, compare)
-
-	luci.template.render("status-olsr/index", {links=data.Links})
+	luci.template.render("status-olsr/neighbors", {links=data.Links})
 end
 
 function action_routes()
@@ -174,52 +194,179 @@ function action_mid()
 	luci.template.render("status-olsr/mid", {mids=data.MID})
 end
 
+function action_smartgw()
+        local data = fetch_txtinfo("gateways")
+
+        if not data or not data.Gateways then
+                luci.template.render("status-olsr/error_olsr")
+                return nil
+        end
+
+        local function compare(a, b)
+                return a["ETX"] < b["ETX"]
+        end
+
+        table.sort(data.Gateways, compare)
+
+        luci.template.render("status-olsr/smartgw", {gws=data.Gateways})
+end
+
+function action_interfaces()
+        local data = fetch_txtinfo("interfaces")
+
+        if not data or not data.Interfaces then
+                luci.template.render("status-olsr/error_olsr")
+                return nil
+        end
+
+        luci.template.render("status-olsr/interfaces", {iface=data.Interfaces})
+end
 
 -- Internal
 function fetch_txtinfo(otable)
 	require("luci.sys")
+	local uci = require "luci.model.uci".cursor_state()
+	local resolve = uci:get("luci_olsr", "general", "resolve")
 	otable = otable or ""
-	local rawdata = luci.sys.httpget("http://127.0.0.1:2006/"..otable)
-
-	if #rawdata == 0 then
-		if nixio.fs.access("/proc/net/ipv6_route", "r") then
-			rawdata = luci.sys.httpget("http://[::1]:2006/"..otable)
-			if #rawdata == 0 then
-				return nil
-			end
-		else
-			return nil
-		end
-	end
-
+ 	local rawdata = luci.sys.httpget("http://127.0.0.1:2006/"..otable)
+ 	local rawdatav6 = luci.sys.httpget("http://[::1]:2006/"..otable)
 	local data = {}
+	local dataindex = 0
+	local name = ""
+	local defaultgw
 
-	local tables = luci.util.split(luci.util.trim(rawdata), "\r?\n\r?\n", nil, true)
+	if #rawdata ~= 0 then
+		local tables = luci.util.split(luci.util.trim(rawdata), "\r?\n\r?\n", nil, true)
 
+		if otable == "links" then
+			local route = {}
+			luci.sys.net.routes(function(r) if r.dest:prefix() == 0 then defaultgw = r.gateway:string() end end)
+		end
 
-	for i, tbl in ipairs(tables) do
-		local lines = luci.util.split(tbl, "\r?\n", nil, true)
-		local name  = table.remove(lines, 1):sub(8)
-		local keys  = luci.util.split(table.remove(lines, 1), "\t")
-		local split = #keys - 1
-
-		data[name] = {}
-
-		for j, line in ipairs(lines) do
-			local fields = luci.util.split(line, "\t", split)
-			data[name][j] = {}
-			for k, key in pairs(keys) do
-				data[name][j][key] = fields[k]
+		for i, tbl in ipairs(tables) do
+			local lines = luci.util.split(tbl, "\r?\n", nil, true)
+			name  = table.remove(lines, 1):sub(8)
+			local keys  = luci.util.split(table.remove(lines, 1), "\t")
+			local split = #keys - 1
+			if not data[name] then
+				data[name] = {}
 			end
 
-			if data[name][j].Linkcost then
-				data[name][j].LinkQuality,
-				data[name][j].NLQ,
-				data[name][j].ETX =
-				data[name][j].Linkcost:match("([%w.]+)/([%w.]+)[%s]+([%w.]+)")
+			for j, line in ipairs(lines) do
+				dataindex = ( dataindex + 1 )
+				di = dataindex
+				local fields = luci.util.split(line, "\t", split)
+				data[name][di] = {}
+				for k, key in pairs(keys) do
+					if key == "Remote IP" or key == "Dest. IP" or key == "Gateway IP" or key == "Gateway" then
+						data[name][di][key] = fields[k]
+						if resolve == "1" then
+							hostname = nixio.getnameinfo(fields[k], "inet")
+							if hostname then
+								data[name][di]["Hostname"] = hostname
+							end
+						end
+						if key == "Remote IP" and defaultgw then
+							if defaultgw == fields[k] then
+								data[name][di]["defaultgw"] = 1
+							end
+						end
+					elseif key == "Local IP" then
+						data[name][di][key] = fields[k]
+						data[name][di]['Local Device'] = fields[k]
+						uci:foreach("network", "interface",
+							function(s)
+								localip = string.gsub(fields[k], '	', '')
+								if s.ipaddr == localip then
+									data[name][di]['Local Device'] = s['.name'] or interface
+								end
+							end)
+					elseif key == "Interface" then
+						data[name][di][key] = fields[k]
+						uci:foreach("network", "interface",
+						function(s)
+							interface = string.gsub(fields[k], '	', '')
+							if s.ifname == interface then
+								data[name][di][key] = s['.name'] or interface
+							end
+						end)
+					else
+					    data[name][di][key] = fields[k]
+			        end
+				end
+				if data[name][di].Linkcost then
+					data[name][di].LinkQuality,
+					data[name][di].NLQ,
+					data[name][di].ETX =
+					data[name][di].Linkcost:match("([%w.]+)/([%w.]+)[%s]+([%w.]+)")
+				end
 			end
 		end
 	end
 
-	return data
+	if #rawdatav6 ~= 0 then
+		local tables = luci.util.split(luci.util.trim(rawdatav6), "\r?\n\r?\n", nil, true)
+		for i, tbl in ipairs(tables) do
+			local lines = luci.util.split(tbl, "\r?\n", nil, true)
+			name  = table.remove(lines, 1):sub(8)
+			local keys  = luci.util.split(table.remove(lines, 1), "\t")
+			local split = #keys - 1
+			if not data[name] then
+				data[name] = {}
+			end
+			for j, line in ipairs(lines) do
+				dataindex = ( dataindex + 1 )
+				di = dataindex
+				local fields = luci.util.split(line, "\t", split)
+				data[name][di] = {}
+				for k, key in pairs(keys) do
+					if key == "Remote IP" then
+						data[name][di][key] = "[" .. fields[k] .. "]"
+						if resolve == "1" then
+							hostname = nixio.getnameinfo(fields[k], "inet6")
+							if hostname then
+								data[name][di]["Hostname"] = hostname
+							end
+						end
+					elseif key == "Local IP" then
+						data[name][di][key] = fields[k]
+						data[name][di]['Local Device'] = fields[k]
+						uci:foreach("network", "interface",
+						function(s)
+							local localip = string.gsub(fields[k], '	', ''):upper()
+							if s.ip6addr then
+								s.ip6addr = luci.ip.IPv6(s.ip6addr):string()
+								local ip6addr = string.gsub(s.ip6addr, '\/.*', '')
+								if ip6addr == localip then
+									data[name][di]['Local Device'] = s['.name'] or s.interface
+								end
+							end
+						end)
+					elseif key == "Dest. IP" then
+						data[name][di][key] = "[" .. fields[k] .. "]"
+					elseif key == "Last hop IP" then
+						data[name][di][key] = "[" .. fields[k] .. "]"
+					elseif key == "IP address" then
+						data[name][di][key] = "[" .. fields[k] .. "]"
+					elseif key == "Gateway" then
+						data[name][di][key] = "[" .. fields[k] .. "]"
+					else
+						data[name][di][key] = fields[k]
+					end
+				end
+
+				if data[name][di].Linkcost then
+					data[name][di].LinkQuality,
+					data[name][di].NLQ,
+					data[name][di].ETX =
+					data[name][di].Linkcost:match("([%w.]+)/([%w.]+)[%s]+([%w.]+)")
+				end
+			end
+		end
+	end
+
+
+	if data then
+	    return data
+	end
 end

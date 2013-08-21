@@ -1,173 +1,283 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-05-28 02:08+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2012-03-18 16:25+0200\n"
+"Last-Translator: Vasilis <acinonyx@openwrt.gr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.1.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Pootle 2.0.4\n"
 
-#. Tinyproxy
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:1
-msgid "tinyproxy"
+msgid ""
+"<em>Via proxy</em> routes requests to the given target via the specifed "
+"upstream proxy, <em>Reject access</em> disables any upstream proxy for the "
+"target"
+msgstr ""
+"Το <em>μέσω proxy</em> δρομολογεί αιτήσεις προς τον συγκεκριμένο προορισμό "
+"μέσω του καθοριζόμενου διαμεσολαβητή ανωτέρου επιπέδου, Το <em>απόρριψη "
+"πρόσβασης</em> απενεργοποιεί τη χρήση διαμεσολαβητή ανωτέρου επιπέδου για το "
+"συγκεκριμένο προορισμό"
+
+msgid ""
+"Adds an \"X-Tinyproxy\" HTTP header with the client IP address to forwarded "
+"requests"
+msgstr ""
+"Προσθέτει μια κεφαλίδα HTTP \"X-Tinyproxy\" με τη διεύθυνση IP του πελάτη "
+"στις προωθούμενες αιτήσεις"
+
+msgid "Allowed clients"
+msgstr "Επιτρεπόμενοι πελάτες"
+
+msgid "Allowed connect ports"
+msgstr "Επιτρεπόμενες θύρες σύνδεσης"
+
+#, fuzzy
+msgid "Bind address"
+msgstr "Διεύθυνση στην οποία ακούει η υπηρεσία"
+
+msgid ""
+"By default, basic POSIX expressions are used for filtering. Enable this to "
+"activate extended regular expressions"
+msgstr ""
+"Προεπιλεγμένα, χρησιμοποιούνται απλές κανονικές εκφράσεις POSIX για το "
+"φιλτράρισμα. Ενεργοποιήστε αυτή την επιλογή για να χρησιμοποιούνται "
+"εκτεταμένες κανονικές εκφράσεις"
+
+msgid ""
+"By default, filter strings are treated as case-insensitive. Enable this to "
+"make the matching case-sensitive"
+msgstr ""
+"Προεπιλεγμένα, το φιλτράρισμα με συμβολοσειρές γίνεται χωρίς διάκριση πεζών "
+"κεφαλαίων. Ενεργοποιήστε αυτή την επιλογή για να γίνεται διάκριση πεζών "
+"κεφαλαίων"
+
+msgid ""
+"By default, filtering is done based on domain names. Enable this to match "
+"against URLs instead"
+msgstr ""
+"Προεπιλεγμένα, το φιλτράρισμα γίνεται βάσει του ονόματος τομέα. "
+"Ενεργοποιήστε αυτή την επιλογή για να γίνεται βάσει URL"
+
+msgid ""
+"By default, the filter rules act as blacklist. Enable this option to only "
+"allow matched URLs or domain names"
+msgstr ""
+"Προεπιλεγμένα, οι κανόνες φιλτραρίσματος λειτουργούν ως μαύρη λίστα. "
+"Ενεργοποιήστε αυτή την επιλογή ώστε να επιτρέπονται μόνο τα ονόματα τομέα ή "
+"URLs που ταιριάζουν"
+
+msgid ""
+"Can be either an IP address or range, a domain name or \".\" for any host "
+"without domain"
+msgstr ""
+"Μπορεί να είναι μια IP διεύθυνση ή εύρος, ένα όνομα τομέα ή \".\" για "
+"οποιοδήποτε σύστημα χωρίς όνομα τομέα"
+
+msgid "Configuration"
 msgstr ""
 
-#. Tinyproxy is a small and fast non-caching HTTP(S)-Proxy
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:2
-msgid "tinyproxy_desc"
+msgid "Connection timeout"
+msgstr "Χρονικό όριο σύνδεσης"
+
+msgid "Default deny"
+msgstr "Άρνηση προεπιλεγμένα"
+
+msgid "Enable Tinyproxy server"
+msgstr "Ενεργοποίηση διαμεσολαβητή Tinyproxy"
+
+msgid "Error page"
+msgstr "Σελίδα σφάλματος"
+
+msgid "Failed to retrieve statistics from url:"
 msgstr ""
 
-#. Allow access from
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:3
-msgid "tinyproxy_tinyproxy_allow"
+msgid "Filter by RegExp"
+msgstr "Φιλτράρισμα με Κανονικές Εκφράσεις"
+
+msgid "Filter by URLs"
+msgstr "Φιλτράρισμα με URL"
+
+msgid "Filter case-sensitive"
+msgstr "Φιλτράρισμα με διάκριση πεζών/κεφαλαίων"
+
+msgid "Filter file"
+msgstr "Αρχείο φίλτρων"
+
+msgid "Filtering and ACLs"
+msgstr "Φιλτράρισμα και λίστες ελέγχου πρόσβασης"
+
+msgid "General settings"
+msgstr "Γενικές ρυθμίσεις"
+
+msgid "Group"
+msgstr "Ομάδα"
+
+msgid "HTML template file to serve for stat host requests"
+msgstr ""
+"Αρχείο προτύπου HTML που στέλνεται σε αιτήσεις για στατιστικά του συστήματος"
+
+msgid "HTML template file to serve when HTTP errors occur"
+msgstr "Αρχείο προτύπου HTML που στέλνεται όταν προκύπτουν σφάλματα HTML"
+
+msgid "Header whitelist"
+msgstr "Λευκή λίστα κεφαλίδων"
+
+msgid ""
+"List of IP addresses or ranges which are allowed to use the proxy server"
+msgstr ""
+"Λίστα διευθύνσεων IP ή εύρη αυτών στις οποίες επιτρέπεται η χρήση του "
+"διαμεσολαβητή"
+
+msgid ""
+"List of allowed ports for the CONNECT method. A single value \"0\" allows "
+"all ports"
 msgstr ""
 
-#. Allowed headers for anonymous proxy
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:4
-msgid "tinyproxy_tinyproxy_anonymous"
+msgid "Listen address"
 msgstr ""
 
-#. Bind outgoing traffic to address
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:5
-msgid "tinyproxy_tinyproxy_bind"
+msgid "Listen port"
 msgstr ""
 
-#. Ports allowed for CONNECT method
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:6
-msgid "tinyproxy_tinyproxy_connectport"
+msgid "Log file"
 msgstr ""
 
-#. 0 = disabled, empty = all
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:7
-msgid "tinyproxy_tinyproxy_connectport_desc"
+msgid "Log file to use for dumping messages"
 msgstr ""
 
-#. Error document
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:8
-msgid "tinyproxy_tinyproxy_defaulterrorfile"
+msgid "Log level"
 msgstr ""
 
-#. Filter list
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:9
-msgid "tinyproxy_tinyproxy_filter"
+msgid "Logging verbosity of the Tinyproxy process"
 msgstr ""
 
-#. Case sensitive filters
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:10
-msgid "tinyproxy_tinyproxy_filtercasesensitive"
+msgid "Max. clients"
 msgstr ""
 
-#. Filter list is a whitelist
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:11
-msgid "tinyproxy_tinyproxy_filterdefaultdeny"
+msgid "Max. requests per server"
 msgstr ""
 
-#. Extended regular expression filters
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:12
-msgid "tinyproxy_tinyproxy_filterextended"
+msgid "Max. spare servers"
 msgstr ""
 
-#. Filter URLs instead of domains
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:13
-msgid "tinyproxy_tinyproxy_filterurls"
+msgid "Maximum allowed number of concurrently connected clients"
 msgstr ""
 
-#. Listen on address
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:14
-msgid "tinyproxy_tinyproxy_listen"
+msgid ""
+"Maximum allowed number of requests per process. If it is exeeded, the "
+"process is restarted. Zero means unlimited."
 msgstr ""
 
-#. Logfile
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:15
-msgid "tinyproxy_tinyproxy_logfile"
+msgid "Maximum number of prepared idle processes"
 msgstr ""
 
-#. Log level
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:16
-msgid "tinyproxy_tinyproxy_loglevel"
+msgid "Maximum number of seconds an inactive connection is held open"
 msgstr ""
 
-#. Maximum number of clients
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:17
-msgid "tinyproxy_tinyproxy_maxclients"
+msgid "Min. spare servers"
 msgstr ""
 
-#. Maximum requests per thread
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:18
-msgid "tinyproxy_tinyproxy_maxrequestsperchild"
+msgid "Minimum number of prepared idle processes"
 msgstr ""
 
-#. Max. spare servers
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:19
-msgid "tinyproxy_tinyproxy_maxspareservers"
+msgid "Number of idle processes to start when launching Tinyproxy"
 msgstr ""
 
-#. Min. spare servers
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:20
-msgid "tinyproxy_tinyproxy_minspareservers"
+msgid "Plaintext file with URLs or domains to filter. One entry per line"
 msgstr ""
 
-#. Spare servers to start with
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:21
-msgid "tinyproxy_tinyproxy_startservers"
+msgid "Policy"
 msgstr ""
 
-#. Statistic document
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:22
-msgid "tinyproxy_tinyproxy_statfile"
+msgid "Privacy settings"
 msgstr ""
 
-#. Write to syslog
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:23
-msgid "tinyproxy_tinyproxy_syslog"
+msgid "Reject access"
 msgstr ""
 
-#. Connection Timeout
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:24
-msgid "tinyproxy_tinyproxy_timeout"
+msgid "Server Settings"
 msgstr ""
 
-#. Value of Via-Header
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:25
-msgid "tinyproxy_tinyproxy_viaproxyname"
+msgid "Server limits"
 msgstr ""
 
-#. Include client IP
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:26
-msgid "tinyproxy_tinyproxy_xtinyproxy"
+msgid ""
+"Specifies HTTP header names which are allowed to pass-through, all others "
+"are discarded. Leave empty to disable header filtering"
 msgstr ""
 
-#. Via proxy
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:27
-msgid "tinyproxy_type_proxy"
+msgid "Specifies the HTTP port Tinyproxy is listening on for requests"
 msgstr ""
 
-#. Reject access
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:28
-msgid "tinyproxy_type_reject"
+msgid "Specifies the Tinyproxy hostname to use in the Via HTTP header"
 msgstr ""
 
-#. Upstream Control
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:29
-msgid "tinyproxy_upstream"
+msgid ""
+"Specifies the address Tinyproxy binds to for outbound forwarded requests"
 msgstr ""
 
-#. Target host
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:30
-msgid "tinyproxy_upstream_target"
+msgid "Specifies the addresses Tinyproxy is listening on for requests"
 msgstr ""
 
-#. Type
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:31
-msgid "tinyproxy_upstream_type"
+msgid "Specifies the group name the Tinyproxy process is running as"
 msgstr ""
 
-#. Upstream Proxy
-#: applications/luci-tinyproxy/luasrc/i18n/tinyproxy.en.lua:32
-msgid "tinyproxy_upstream_via"
+msgid ""
+"Specifies the upstream proxy to use for accessing the target host. Format is "
+"<code>address:port</code>"
+msgstr ""
+
+msgid "Specifies the user name the Tinyproxy process is running as"
+msgstr ""
+
+msgid "Start spare servers"
+msgstr ""
+
+msgid "Statistics page"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Target host"
+msgstr ""
+
+msgid "Tinyproxy"
+msgstr ""
+
+msgid "Tinyproxy Status"
+msgstr ""
+
+msgid "Tinyproxy is a small and fast non-caching HTTP(S)-Proxy"
+msgstr ""
+
+msgid "Upstream Proxies"
+msgstr ""
+
+msgid ""
+"Upstream proxy rules define proxy servers to use when accessing certain IP "
+"addresses or domains."
+msgstr ""
+
+msgid "Use syslog"
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Via hostname"
+msgstr ""
+
+msgid "Via proxy"
+msgstr ""
+
+msgid "Writes log messages to syslog instead of a log file"
+msgstr ""
+
+msgid "X-Tinyproxy header"
 msgstr ""

@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/themes/freifunk-bno/ipkg
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/themes/freifunk-bno/ipkg
 http://svn.luci.subsignal.org
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:14.060068Z
+2013-08-21T21:15:26.250359Z
 d4031f2182f495ed35073d251ea415d9
 2008-09-29T19:10:51.799707Z
 3464

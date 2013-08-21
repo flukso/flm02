@@ -1,11 +1,17 @@
 K 25
 svn:wc:ra_dav:version-url
-V 46
-/!svn/ver/6082/luci/branches/luci-0.9/libs/web
+V 47
+/!svn/ver/9847/luci/branches/luci-0.11/libs/web
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 55
-/!svn/ver/5118/luci/branches/luci-0.9/libs/web/Makefile
+V 56
+/!svn/ver/9558/luci/branches/luci-0.11/libs/web/Makefile
+END
+standalone.mk
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/9558/luci/branches/luci-0.11/libs/web/standalone.mk
 END

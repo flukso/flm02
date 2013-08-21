@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: ip.lua 5197 2009-08-05 01:38:44Z jow $
+$Id: ip.lua 8142 2012-01-01 15:51:37Z jow $
 
 ]]--
 
@@ -220,7 +220,7 @@ function IPv6(address, netmask)
 	end
 
 	local borderl = address:sub(1, 1) == ":" and 2 or 1
-	local borderh, zeroh, chunk, block
+	local borderh, zeroh, chunk, block, i
 
 	if #address > 45 then return nil end
 
@@ -297,6 +297,7 @@ function Hex( hex, prefix, family, swap )
 	local len  = __maxlen(family)
 	local tmp  = ""
 	local data = { }
+	local i
 
 	for i = 1, (len/4) - #hex do tmp = tmp .. '0' end
 
@@ -334,11 +335,40 @@ function cidr.is4( self )
 	return self[1] == FAMILY_INET4
 end
 
+--- Test whether this instance is an IPv4 RFC1918 private address
+-- @return	Boolean indicating whether this instance is an RFC1918 address
+function cidr.is4rfc1918( self )
+	if self[1] == FAMILY_INET4 then
+		return ((self[2][1] >= 0x0A00) and (self[2][1] <= 0x0AFF)) or
+		       ((self[2][1] >= 0xAC10) and (self[2][1] <= 0xAC1F)) or
+		        (self[2][1] == 0xC0A8)
+	end
+	return false
+end
+
+--- Test whether this instance is an IPv4 link-local address (Zeroconf)
+-- @return	Boolean indicating whether this instance is IPv4 link-local
+function cidr.is4linklocal( self )
+	if self[1] == FAMILY_INET4 then
+		return (self[2][1] == 0xA9FE)
+	end
+	return false
+end
+
 --- Test whether the instance is a IPv6 address.
 -- @return	Boolean indicating a IPv6 address type
 -- @see		cidr.is4
 function cidr.is6( self )
 	return self[1] == FAMILY_INET6
+end
+
+--- Test whether this instance is an IPv6 link-local address
+-- @return	Boolean indicating whether this instance is IPv6 link-local
+function cidr.is6linklocal( self )
+	if self[1] == FAMILY_INET6 then
+		return (self[2][1] >= 0xFE80) and (self[2][1] <= 0xFEBF)
+	end
+	return false
 end
 
 --- Return a corresponding string representation of the instance.
@@ -374,6 +404,7 @@ end
 -- @see			cidr.equal
 function cidr.lower( self, addr )
 	assert( self[1] == addr[1], "Can't compare IPv4 and IPv6 addresses" )
+	local i
 	for i = 1, #self[2] do
 		if self[2][i] ~= addr[2][i] then
 			return self[2][i] < addr[2][i]
@@ -391,6 +422,7 @@ end
 -- @see			cidr.equal
 function cidr.higher( self, addr )
 	assert( self[1] == addr[1], "Can't compare IPv4 and IPv6 addresses" )
+	local i
 	for i = 1, #self[2] do
 		if self[2][i] ~= addr[2][i] then
 			return self[2][i] > addr[2][i]
@@ -408,6 +440,7 @@ end
 -- @see			cidr.higher
 function cidr.equal( self, addr )
 	assert( self[1] == addr[1], "Can't compare IPv4 and IPv6 addresses" )
+	local i
 	for i = 1, #self[2] do
 		if self[2][i] ~= addr[2][i] then
 			return false
@@ -431,6 +464,7 @@ function cidr.prefix( self, mask )
 
 		if not obj then return nil end
 
+		local _, word
 		for _, word in ipairs(obj[2]) do
 			if word == 0xFFFF then
 				prefix = prefix + 16
@@ -460,6 +494,7 @@ function cidr.network( self, bits )
 	local data = { }
 	bits = bits or self[3]
 
+	local i
 	for i = 1, math.floor( bits / 16 ) do
 		data[#data+1] = self[2][i]
 	end
@@ -549,6 +584,7 @@ end
 -- @return			CIDR representing the new address or nil on overflow error
 -- @see				cidr.sub
 function cidr.add( self, amount, inplace )
+	local pos
 	local data   = { unpack(self[2]) }
 	local shorts = __array16( amount, self[1] )
 
@@ -580,6 +616,7 @@ end
 -- @return			CIDR representing the new address or nil on underflow error
 -- @see				cidr.add
 function cidr.sub( self, amount, inplace )
+	local pos
 	local data   = { unpack(self[2]) }
 	local shorts = __array16( amount, self[1] )
 
@@ -620,6 +657,7 @@ end
 -- @see			cidr.minhost
 function cidr.maxhost( self )
 	if self[3] <= __sublen(self[1]) then
+		local i
 		local data   = { unpack(self[2]) }
 		local offset = math.floor( self[3] / 16 ) + 1
 

@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-hd-idle/root/etc/uci-defaults
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-hd-idle/root/etc/uci-defaults
 http://svn.luci.subsignal.org
 
 
 
-2008-10-02T13:52:28.159774Z
-3482
+2011-01-14T17:48:44.090565Z
+6728
 jow
 
 
@@ -32,11 +32,12 @@ file
 
 
 
-2010-09-19T09:58:15.609069Z
-f3970f1c366f2f825dbfda7d7f138cb9
-2008-10-02T13:52:28.159774Z
-3482
+2013-08-21T21:15:26.754359Z
+3d2b0b5a8c9b41e407e6f75ac21a62e1
+2011-01-14T17:48:44.090565Z
+6728
 jow
+has-props
 
 
 
@@ -57,6 +58,5 @@ jow
 
 
 
-
-129
+190
 

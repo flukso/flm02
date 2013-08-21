@@ -1,98 +1,81 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-05-19 19:36+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2011-11-03 18:09+0200\n"
+"Last-Translator: Kentaro <kentaro.matsuyama@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.1.1\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Pootle 2.0.4\n"
 
-#. Network Shares
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:1
-msgid "samba"
-msgstr ""
+msgid "Allow guests"
+msgstr "ゲストアクセスを許可"
 
-#. Hostname
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:2
-msgid "samba_samba_name"
-msgstr ""
+msgid "Allow system users to reach their home directories via network shares"
+msgstr "sambaを介してユーザーのホームディレクトリへのアクセスを許可します"
 
-#. Description
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:3
-msgid "samba_samba_description"
-msgstr ""
+msgid "Allowed users"
+msgstr "許可されたユーザー"
 
-#. Workgroup
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:4
-msgid "samba_samba_workgroup"
-msgstr ""
+msgid "Create mask"
+msgstr "マスクの作成"
 
-#. Share home-directories
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:5
-msgid "samba_samba_homes"
-msgstr ""
+msgid "Description"
+msgstr "説明"
 
-#. System users can reach their home directories via network shares.
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:6
-msgid "samba_samba_homes_desc"
-msgstr ""
+msgid "Directory mask"
+msgstr "ディレクトリのマスク"
 
-#. Shared Directories
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:7
-msgid "samba_sambashare"
-msgstr ""
+msgid "Edit Template"
+msgstr "テンプレートの編集"
 
-#. Shared Directory
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:8
-msgid "samba_sambashare_path"
-msgstr ""
+msgid "Edit the template that is used for generating the samba configuration."
+msgstr "samba設定を生成するテンプレートを編集します。"
 
-#. Physical Path
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:9
-msgid "samba_sambashare_path_desc"
-msgstr ""
+msgid "General Settings"
+msgstr "一般設定"
 
-#. Allowed Users
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:10
-msgid "samba_sambashare_users"
-msgstr ""
+msgid "Hostname"
+msgstr "ホスト名"
 
-#. optional
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:11
-msgid "samba_sambashare_users_desc"
-msgstr ""
+msgid "Mask for new directories"
+msgstr "新規ディレクトリのマスク"
 
-#. Read Only
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:12
-msgid "samba_sambashare_readonly"
-msgstr ""
+msgid "Mask for new files"
+msgstr "新規ファイルのマスク"
 
-#. Allow Guests
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:13
-msgid "samba_sambashare_guestok"
-msgstr ""
+msgid "Name"
+msgstr "名前"
 
-#. Create Mask
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:14
-msgid "samba_sambashare_createmask"
-msgstr ""
+msgid "Network Shares"
+msgstr "ネットワーク共有"
 
-#. Mask for new files
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:15
-msgid "samba_sambashare_createmask_desc"
-msgstr ""
+msgid "Path"
+msgstr "パス"
 
-#. Directory Mask
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:16
-msgid "samba_sambashare_dirmask"
-msgstr ""
+msgid "Read-only"
+msgstr "読み込みのみ"
 
-#. Mask for new directories
-#: applications/luci-samba/luasrc/i18n/samba.en.lua:17
-msgid "samba_sambashare_dirmask_desc"
+msgid "Share home-directories"
+msgstr "ホームディレクトリの共有"
+
+msgid "Shared Directories"
+msgstr "共有ディレクトリ"
+
+msgid ""
+"This is the content of the file '/etc/samba/smb.conf.template' from which "
+"your samba configuration will be generated. Values enclosed by pipe symbols "
+"('|') should not be changed. They get their values from the 'General "
+"Settings' tab."
 msgstr ""
+"これは、samba設定を生成するための'/etc/samba/smb.conf.template' ファイルの内"
+"容です。パイプ('|')で閉じられた値は変更しないでください。これらの値は'一般設"
+"定'タブ内の値によって置き換えられます。"
+
+msgid "Workgroup"
+msgstr "ワークグループ"

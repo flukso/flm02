@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx-voicemail/root/etc/pbx-voicemail
+END
+pbx-msmtprc-account-auth.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx-voicemail/root/etc/pbx-voicemail/pbx-msmtprc-account-auth.TEMPLATE
+END
+pbx-msmtprc-account.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 122
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx-voicemail/root/etc/pbx-voicemail/pbx-msmtprc-account.TEMPLATE
+END
+pbx-msmtprc-account-default.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 130
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx-voicemail/root/etc/pbx-voicemail/pbx-msmtprc-account-default.TEMPLATE
+END
+pbx-send-voicemail
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx-voicemail/root/etc/pbx-voicemail/pbx-send-voicemail
+END
+pbx-msmtprc-defaults.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 123
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx-voicemail/root/etc/pbx-voicemail/pbx-msmtprc-defaults.TEMPLATE
+END

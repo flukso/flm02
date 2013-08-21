@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules/admin-core
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules/admin-core
 http://svn.luci.subsignal.org
 
 
 
-2010-04-05T17:39:35.710942Z
-6026
-jow
+2013-06-24T12:01:11.016062Z
+9857
+Cyrus
 has-props
 
 
@@ -41,7 +41,7 @@ file
 
 
 
-2010-09-19T09:58:19.357068Z
+2013-08-21T21:15:31.910359Z
 ec5666919ab9e4d439fdf0e4944342a7
 2008-05-08T15:37:41.550511Z
 2030

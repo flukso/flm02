@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-mmc-over-gpio/root/etc/uci-defaults
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-mmc-over-gpio/root/etc/uci-defaults
 http://svn.luci.subsignal.org
 
 
 
-2008-10-27T23:07:46.474055Z
-3635
+2011-01-14T17:48:44.090565Z
+6728
 jow
 
 
@@ -26,17 +26,18 @@ jow
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-luci-mmc_over_gpio
+luci-mmc-over-gpio
 file
 
 
 
 
-2010-09-19T09:58:15.952069Z
-d4fd043ec834af068ab7491cda97f956
-2008-10-27T23:07:46.474055Z
-3635
+2013-08-21T21:15:26.970359Z
+8d5d7c1d1d1e97a39dc78477182f9ebc
+2011-01-14T17:48:44.090565Z
+6728
 jow
+has-props
 
 
 
@@ -57,6 +58,5 @@ jow
 
 
 
-
-129
+214
 

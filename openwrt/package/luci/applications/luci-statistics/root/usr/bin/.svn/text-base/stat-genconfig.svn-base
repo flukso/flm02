@@ -162,9 +162,9 @@ function config_network( c )
 
 				if host then
 					if port then
-						str = str .. "\t" .. key .. " " .. host .. " " .. port .. "\n"
+						str = str .. "\t" .. key .. " \"" .. host .. "\" \"" .. port .. "\"\n"
 					else
-						str = str .. "\t" .. key .. " " .. host .. "\n"
+						str = str .. "\t" .. key .. " \"" .. host .. "\"\n"
 					end
 				end
 						end
@@ -200,15 +200,19 @@ function _list_expand( c, l, nopad )
 end
 
 function _expand( s, n, nopad )
-	if type(s) == "string" then
-		local str = ""
+	local str = ""
 
+	if type(s) == "string" then
 		for i, v in ipairs( luci.util.split( s, "%s+", nil, true ) ) do
 			str = str .. _string( v, n, nopad )
 		end
-
-		return str
+	elseif type(s) == "table" then
+		for i, v in ipairs(s) do
+			str = str .. _string( v, n, nopad )
+		end
 	end
+
+	return str
 end
 
 function _bool( s, n, nopad )
@@ -233,8 +237,8 @@ function _string( s, n, nopad )
 	if not nopad then pad = "\t" end
 
 	if s then
-		if s:find("[^%d]") then
-			if not s:find("[^%w]") then
+		if s:find("[^%d]") or n == "Port" then
+			if not s:find("[^%w]") and n ~= "Port" then
 				str = pad .. n .. " " .. luci.util.trim(s)
 			else
 				str = pad .. n .. ' "' .. luci.util.trim(s) .. '"'
@@ -253,6 +257,12 @@ end
 plugins = {
 	collectd = {
 		{ "BaseDir", "Include", "PIDFile", "PluginDir", "TypesDB", "Interval", "ReadThreads", "Hostname" },
+		{ },
+		{ }
+	},
+
+	conntrack = {
+		{ },
 		{ },
 		{ }
 	},
@@ -309,6 +319,12 @@ plugins = {
 		{ "Irqs" }
 	},
 
+	iwinfo = {
+		{ },
+		{ "IgnoreSelected" },
+		{ "Interfaces" }
+	},
+
 	load	= {
 		{ },
 		{ },
@@ -321,6 +337,18 @@ plugins = {
 		{ }
 	},
 
+	madwifi = {
+		{ "WatchSet" },
+		{ },
+		{ "Interfaces", "WatchAdds" }
+	},
+
+	memory = { 
+		{ },
+		{ },
+		{ }
+	},
+
 	netlink	= {
 		{ },
 		{ "IgnoreSelected" },
@@ -329,8 +357,20 @@ plugins = {
 
 	network	= config_network,
 
+	nut = {
+		{ "UPS" },
+		{ },
+		{ }
+	},
+
+	olsrd = {
+		{ "Host", "Port", "CollectLinks","CollectRoutes","CollectTopology"},
+		{ },
+		{ }
+	},
+
 	ping	= {
-		{ "TTL" },
+		{ "TTL", "Interval" },
 		{ },
 		{ "Hosts" }
 	},

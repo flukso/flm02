@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets
+END
+iframe.lua
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets/iframe.lua
+END
+widget.lua
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets/widget.lua
+END
+html.lua
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets/html.lua
+END
+search.lua
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets/search.lua
+END
+heightwidth.lua
+K 25
+svn:wc:ra_dav:version-url
+V 123
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets/heightwidth.lua
+END
+rssfeed.lua
+K 25
+svn:wc:ra_dav:version-url
+V 119
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets/rssfeed.lua
+END
+widgets_overview.lua
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets/widgets_overview.lua
+END

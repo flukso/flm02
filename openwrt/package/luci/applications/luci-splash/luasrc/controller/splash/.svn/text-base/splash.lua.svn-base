@@ -1,13 +1,26 @@
 module("luci.controller.splash.splash", package.seeall)
 
-function index()
-	entry({"admin", "services", "splash"}, cbi("splash/splash"), "Client-Splash")
+local uci = luci.model.uci.cursor()
+local util = require "luci.util"
 
-	node("splash").target = call("action_dispatch")
+function index()
+	entry({"admin", "services", "splash"}, cbi("splash/splash"), _("Client-Splash"), 90)
+	entry({"admin", "services", "splash", "splashtext" }, form("splash/splashtext"), _("Splashtext"), 10)
+
+	local e
+	
+	e = node("splash")
+	e.target = call("action_dispatch")
+
 	node("splash", "activate").target = call("action_activate")
 	node("splash", "splash").target   = template("splash_splash/splash")
+	node("splash", "blocked").target  = template("splash/blocked")
 
-	entry({"admin", "status", "splash"}, call("action_status_admin"), "Client-Splash")
+	entry({"admin", "status", "splash"}, call("action_status_admin"), _("Client-Splash"))
+
+	local page  = node("splash", "publicstatus")
+	page.target = call("action_status_public")
+	page.leaf   = true
 end
 
 function action_dispatch()
@@ -29,12 +42,28 @@ function action_dispatch()
 	end
 end
 
+function blacklist()
+	leased_macs = { }
+	uci:foreach("luci_splash", "blacklist",
+	        function(s) leased_macs[s.mac:lower()] = true
+	end)
+	return leased_macs
+end
+
 function action_activate()
 	local ip = luci.http.getenv("REMOTE_ADDR") or "127.0.0.1"
 	local mac = luci.sys.net.ip4mac(ip:match("^[\[::ffff:]*(%d+.%d+%.%d+%.%d+)\]*$"))
+	local blacklisted = false
 	if mac and luci.http.formvalue("accept") then
-		os.execute("luci-splash lease "..mac.." >/dev/null 2>&1")
-		luci.http.redirect(luci.model.uci.cursor():get("freifunk", "community", "homepage"))
+		uci:foreach("luci_splash", "blacklist",
+        	        function(s) if s.mac:lower() == mac or s.mac == mac then blacklisted = true end
+	        end)
+		if blacklisted then	
+			luci.http.redirect(luci.dispatcher.build_url("splash" ,"blocked"))
+		else
+			os.execute("luci-splash lease "..mac.." >/dev/null 2>&1")
+			luci.http.redirect(luci.model.uci.cursor():get("freifunk", "community", "homepage"))
+		end
 	else
 		luci.http.redirect(luci.dispatcher.build_url())
 	end
@@ -85,4 +114,8 @@ function action_status_admin()
 	end
 
 	luci.template.render("admin_status/splash", { is_admin = true })
+end
+
+function action_status_public()
+	luci.template.render("admin_status/splash", { is_admin = false })
 end

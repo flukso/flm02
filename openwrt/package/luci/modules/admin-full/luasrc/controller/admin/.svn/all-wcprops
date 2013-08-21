@@ -1,47 +1,41 @@
 K 25
 svn:wc:ra_dav:version-url
-V 80
-/!svn/ver/5938/luci/branches/luci-0.9/modules/admin-full/luasrc/controller/admin
+V 81
+/!svn/ver/9845/luci/branches/luci-0.11/modules/admin-full/luasrc/controller/admin
 END
 uci.lua
 K 25
 svn:wc:ra_dav:version-url
-V 88
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/controller/admin/uci.lua
+V 89
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/controller/admin/uci.lua
 END
 filebrowser.lua
 K 25
 svn:wc:ra_dav:version-url
-V 96
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/controller/admin/filebrowser.lua
-END
-services.lua
-K 25
-svn:wc:ra_dav:version-url
-V 93
-/!svn/ver/5118/luci/branches/luci-0.9/modules/admin-full/luasrc/controller/admin/services.lua
+V 97
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/controller/admin/filebrowser.lua
 END
 status.lua
 K 25
 svn:wc:ra_dav:version-url
-V 91
-/!svn/ver/5118/luci/branches/luci-0.9/modules/admin-full/luasrc/controller/admin/status.lua
+V 92
+/!svn/ver/9558/luci/branches/luci-0.11/modules/admin-full/luasrc/controller/admin/status.lua
 END
 system.lua
 K 25
 svn:wc:ra_dav:version-url
-V 91
-/!svn/ver/5938/luci/branches/luci-0.9/modules/admin-full/luasrc/controller/admin/system.lua
+V 92
+/!svn/ver/9570/luci/branches/luci-0.11/modules/admin-full/luasrc/controller/admin/system.lua
 END
 index.lua
 K 25
 svn:wc:ra_dav:version-url
-V 90
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/controller/admin/index.lua
+V 91
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/controller/admin/index.lua
 END
 network.lua
 K 25
 svn:wc:ra_dav:version-url
-V 92
-/!svn/ver/5752/luci/branches/luci-0.9/modules/admin-full/luasrc/controller/admin/network.lua
+V 93
+/!svn/ver/9845/luci/branches/luci-0.11/modules/admin-full/luasrc/controller/admin/network.lua
 END

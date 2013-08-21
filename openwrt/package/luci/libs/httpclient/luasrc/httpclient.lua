@@ -18,9 +18,6 @@ local nixio = require "nixio"
 local ltn12 = require "luci.ltn12"
 local util = require "luci.util"
 local table = require "table"
-local coroutine = require "coroutine"
-local string = require "string"
-local os = require "os"
 local http = require "luci.http.protocol"
 local date = require "luci.http.protocol.date"
 
@@ -95,7 +92,7 @@ function request_to_source(uri, options)
 	if not status then
 		return status, response, buffer
 	elseif status ~= 200 and status ~= 206 then
-		return nil, status, response
+		return nil, status, buffer
 	end
 	
 	if response.headers["Transfer-Encoding"] == "chunked" then
@@ -105,79 +102,19 @@ function request_to_source(uri, options)
 	end
 end
 
-function create_persistent()
-	return coroutine.wrap(function(uri, options)
-		local function globe_on()
-			os.execute("gpioctl clear 5 > /dev/null")
-		end
-
-		local function globe_off()
-			os.execute("gpioctl set 5 > /dev/null")
-		end
-
-		local status, response, buffer, sock
-
-		local function yield(...)
-			-- request_raw() will only return a socket userdatum after a successful call
-			-- a nil socket value implies that the socket has already been closed and
-			-- thus cannot be re-used for future calls
-			--
-			-- so the only case where we have to explicitely close the socket is when
-			-- the Connection header says so and a non-nil socket userdatum is returned
-			-- by request_raw()
-			if sock and options.headers["Connection"] == "close" then
-				sock:close()
-			end
-
-			return coroutine.yield(...)
-		end
-	
-		while true do
-			local output = {}
-
-			globe_off()
-			status, response, buffer, sock = request_raw(uri, options, sock)
-
-			if not status then
-				uri, options = yield(nil, response or "", buffer)
-
-			elseif status ~= 200 and status ~= 206 then
-				if status == 204 then
-					globe_on()
-				end
-	
-				uri, options = yield(nil, status, response)
-
-			else
-				globe_on()
-
-				local content_length = tonumber(response.headers["Content-Length"])
-				local bytes_read = 0
-
-				if content_length > 0 then
-					local source = ltn12.source.cat(ltn12.source.string(buffer), sock:blocksource())
-					local sink = ltn12.sink.table(output)
-
-					while bytes_read < content_length do
-						ltn12.pump.step(source, sink)
-						bytes_read = bytes_read + output[#output]:len()
-					end
-
-					uri, options = yield(table.concat(output), status, response)
-				else
-					uri, options = yield("", status, response)
-				end
-			end
-		end
-	end)
-end
-
 --
 -- GET HTTP-resource
 --
-function request_raw(uri, options, sock)
+function request_raw(uri, options)
 	options = options or {}
-	local pr, host, port, path = uri:match("(%w+)://([%w-.]+):?([0-9]*)(.*)")
+	local pr, auth, host, port, path
+	if uri:find("@") then
+		pr, auth, host, port, path =
+			uri:match("(%w+)://(.+)@([%w-.]+):?([0-9]*)(.*)")
+	else
+		pr, host, port, path = uri:match("(%w+)://([%w-.]+):?([0-9]*)(.*)")
+	end
+
 	if not host then
 		return nil, -1, "unable to parse URI"
 	end
@@ -197,36 +134,25 @@ function request_raw(uri, options, sock)
 	if headers.Connection == nil then
 		headers.Connection = "close"
 	end
-
-	-- in case of a persistent connection, the sock object will be passed as arg to request_raw
-	if not sock then
-		local code, msg
-		sock, code, msg = nixio.connect(host, port)
-
-		if not sock then
-			return nil, code, msg
-		end
+	
+	if auth and not headers.Authorization then
+		headers.Authorization = "Basic " .. nixio.bin.b64encode(auth)
 	end
 
+	local sock, code, msg = nixio.connect(host, port)
+	if not sock then
+		return nil, code, msg
+	end
+	
 	sock:setsockopt("socket", "sndtimeo", options.sndtimeo or 15)
 	sock:setsockopt("socket", "rcvtimeo", options.rcvtimeo or 15)
-
-	-- if tls_socket, then we're dealing with a persistent tls connection so skip this part	
-	if pr == "https" and not sock:is_tls_socket() then
+	
+	if pr == "https" then
 		local tls = options.tls_context or nixio.tls()
-		local tls_context_set_verify = options.tls_context_set_verify or "none"
-
-		if tls_context_set_verify == "peer" then
-			tls:set_verify("peer")
-			tls:set_verify_locations(options.cacert)
-		elseif tls_context_set_verify == "none" then
-			tls:set_verify("none")
-		end
-
 		sock = tls:create(sock)
-		local stat, code, err = sock:connect()
+		local stat, code, error = sock:connect()
 		if not stat then
-			return stat, code, err
+			return stat, code, error
 		end
 	end
 
@@ -268,7 +194,7 @@ function request_raw(uri, options, sock)
 			local cdo = c.flags.domain
 			local cpa = c.flags.path
 			if   (cdo == host or cdo == "."..host or host:sub(-#cdo) == cdo) 
-			 and (cpa == "/" or cpa .. "/" == path:sub(#cpa+1))
+			 and (cpa == path or cpa == "/" or cpa .. "/" == path:sub(#cpa+1))
 			 and (not c.flags.secure or pr == "https")
 			then
 				message[#message+1] = "Cookie: " .. c.key .. "=" .. c.value
@@ -294,11 +220,11 @@ function request_raw(uri, options, sock)
 	
 	-- Create source and fetch response
 	local linesrc = sock:linesource()
-	local line, code, err = linesrc()
+	local line, code, error = linesrc()
 	
 	if not line then
 		sock:close()
-		return nil, code, err
+		return nil, code, error
 	end
 	
 	local protocol, status, msg = line:match("^([%w./]+) ([0-9]+) (.*)")
@@ -316,9 +242,9 @@ function request_raw(uri, options, sock)
 	while line and line ~= "" do
 		local key, val = line:match("^([%w-]+)%s?:%s?(.*)")
 		if key and key ~= "Status" then
-			if type(response[key]) == "string" then
+			if type(response.headers[key]) == "string" then
 				response.headers[key] = {response.headers[key], val}
-			elseif type(response[key]) == "table" then
+			elseif type(response.headers[key]) == "table" then
 				response.headers[key][#response.headers[key]+1] = val
 			else
 				response.headers[key] = val

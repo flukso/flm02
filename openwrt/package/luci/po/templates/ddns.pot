@@ -1,44 +1,73 @@
-#  ddns.pot
-#  generated from ./applications/luci-ddns/luasrc/i18n/ddns.en.lua
 msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8"
 
-#. Dynamic DNS
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:1
-msgid "ddns"
+msgid "Check for changed IP every"
 msgstr ""
 
-#. Dynamic DNS allows that your router can be reached with a fixed hostname while having a dynamically changing IP-Address.
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:2
-msgid "ddns_desc"
+msgid "Check-time unit"
 msgstr ""
 
-#. Source of IP-Address
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:3
-msgid "ddns_service_ipsource"
+msgid "Custom update-URL"
 msgstr ""
 
-#. Check for changed IP every
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:4
-msgid "ddns_service_checkinterval"
+msgid "Dynamic DNS"
 msgstr ""
 
-#. Check-Time unit
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:5
-msgid "ddns_service_checkunit"
+msgid ""
+"Dynamic DNS allows that your router can be reached with a fixed hostname "
+"while having a dynamically changing IP address."
 msgstr ""
 
-#. Force update every
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:6
-msgid "ddns_service_forceinterval"
+msgid "Enable"
 msgstr ""
 
-#. Force-Time unit
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:7
-msgid "ddns_service_forceunit"
+msgid "Event interface"
 msgstr ""
 
-#. Custom Update-URL
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:8
-msgid "ddns_service_updateurl"
+msgid "Force update every"
+msgstr ""
+
+msgid "Force-time unit"
+msgstr ""
+
+msgid "Hostname"
+msgstr ""
+
+msgid "Interface"
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "On which interface up should start the ddns script process."
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Service"
+msgstr ""
+
+msgid "Source of IP address"
+msgstr ""
+
+msgid "URL"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "custom"
+msgstr ""
+
+msgid "h"
+msgstr ""
+
+msgid "interface"
+msgstr ""
+
+msgid "min"
+msgstr ""
+
+msgid "network"
 msgstr ""

@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules/admin-full
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules/admin-full
 http://svn.luci.subsignal.org
 
 
 
-2010-04-07T21:59:19.852681Z
-6036
-jow
+2013-06-24T12:01:15.346372Z
+9858
+Cyrus
 has-props
 
 
@@ -26,6 +26,12 @@ has-props
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
+htdocs
+dir
+
+src
+dir
+
 luasrc
 dir
 
@@ -35,11 +41,11 @@ file
 
 
 
-2010-09-19T09:58:19.097067Z
-ec5666919ab9e4d439fdf0e4944342a7
-2008-07-15T08:47:36.642916Z
-2576
-Cyrus
+2013-08-21T21:15:31.754359Z
+32d40a6b4a6291a801c5f141d674e913
+2012-03-13T21:10:18.590104Z
+8350
+jow
 
 
 
@@ -61,5 +67,5 @@ Cyrus
 
 
 
-59
+545
 

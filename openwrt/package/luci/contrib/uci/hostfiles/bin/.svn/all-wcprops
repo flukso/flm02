@@ -1,17 +1,17 @@
 K 25
 svn:wc:ra_dav:version-url
-V 63
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/bin
+V 64
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/bin
 END
 uci
 K 25
 svn:wc:ra_dav:version-url
-V 67
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/bin/uci
+V 68
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/bin/uci
 END
 uci-defaults
 K 25
 svn:wc:ra_dav:version-url
-V 76
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/bin/uci-defaults
+V 77
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/bin/uci-defaults
 END

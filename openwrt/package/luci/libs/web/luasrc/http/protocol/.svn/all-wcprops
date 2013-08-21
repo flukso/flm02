@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/9349/luci/branches/luci-0.11/libs/web/luasrc/http/protocol
+END
+conditionals.lua
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9349/luci/branches/luci-0.11/libs/web/luasrc/http/protocol/conditionals.lua
+END
+mime.lua
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/9349/luci/branches/luci-0.11/libs/web/luasrc/http/protocol/mime.lua
+END
+date.lua
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/9349/luci/branches/luci-0.11/libs/web/luasrc/http/protocol/date.lua
+END

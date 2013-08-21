@@ -16,15 +16,12 @@ $Id$
 module("luci.controller.mini.system", package.seeall)
 
 function index()
-	luci.i18n.loadc("admin-core")
-	local i18n = luci.i18n.translate
-
-	entry({"mini", "system"}, alias("mini", "system", "index"), i18n("system"), 40).index = true
-	entry({"mini", "system", "index"}, cbi("mini/system", {autoapply=true}), i18n("general"), 1)
-	entry({"mini", "system", "passwd"}, form("mini/passwd"), i18n("a_s_changepw"), 10)
-	entry({"mini", "system", "backup"}, call("action_backup"), i18n("a_s_backup"), 80)
-	entry({"mini", "system", "upgrade"}, call("action_upgrade"), i18n("admin_upgrade"), 90)
-	entry({"mini", "system", "reboot"}, call("action_reboot"), i18n("reboot"), 100)
+	entry({"mini", "system"}, alias("mini", "system", "index"), _("System"), 40).index = true
+	entry({"mini", "system", "index"}, cbi("mini/system", {autoapply=true}), _("General"), 1)
+	entry({"mini", "system", "passwd"}, form("mini/passwd"), _("Admin Password"), 10)
+	entry({"mini", "system", "backup"}, call("action_backup"), _("Backup / Restore"), 80)
+	entry({"mini", "system", "upgrade"}, call("action_upgrade"), _("Flash Firmware"), 90)
+	entry({"mini", "system", "reboot"}, call("action_reboot"), _("Reboot"), 100)
 end
 
 function action_backup()
@@ -84,7 +81,7 @@ function action_upgrade()
 	local function image_supported()
 		-- XXX: yay...
 		return ( 0 == os.execute(
-			". /etc/functions.sh; " ..
+			". /lib/functions.sh; " ..
 			"include /lib/upgrade; " ..
 			"platform_check_image %q >/dev/null"
 				% tmpfile
@@ -154,19 +151,11 @@ function action_upgrade()
 
 			-- Now invoke sysupgrade
 			local keepcfg = keep_avail and luci.http.formvalue("keepcfg") == "1"
-			local fd = io.popen("/sbin/luci-flash %s %q" %{
+			local flash = ltn12_popen("/sbin/luci-flash %s %q" %{
 				keepcfg and "-k %q" % _keep_pattern() or "", tmpfile
 			})
 
-			if fd then
-				while true do
-					local ln = fd:read("*l")
-					if not ln then break end
-					luci.http.write(ln .. "\n")
-					io.flush()
-				end
-				fd:close()
-			end
+			luci.ltn12.pump.all(flash, luci.http.write)
 
 			-- Make sure the device is rebooted
 			luci.sys.reboot()
@@ -186,7 +175,7 @@ function action_upgrade()
 			nixio.fs.unlink(tmpfile)
 		end
 			
-		luci.template.render("admin_system/upgrade", {
+		luci.template.render("mini/upgrade", {
 			step=1,
 			bad_image=(has_image and not has_support or false),
 			keepavail=keep_avail,
@@ -195,7 +184,7 @@ function action_upgrade()
 
 	-- Step 2: present uploaded file, show checksum, confirmation
 	elseif step == 2 then
-		luci.template.render("admin_system/upgrade", {
+		luci.template.render("mini/upgrade", {
 			step=2,
 			checksum=image_checksum(),
 			filesize=nixio.fs.stat(tmpfile).size,
@@ -205,7 +194,7 @@ function action_upgrade()
 	
 	-- Step 3: load iframe which calls the actual flash procedure
 	elseif step == 3 then
-		luci.template.render("admin_system/upgrade", {
+		luci.template.render("mini/upgrade", {
 			step=3,
 			keepconfig=(keep_avail and luci.http.formvalue("keepcfg") == "1")
 		} )

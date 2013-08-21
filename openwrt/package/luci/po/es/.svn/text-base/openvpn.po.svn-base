@@ -1,963 +1,558 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-06-10 03:41+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2012-09-15 21:51+0200\n"
+"Last-Translator: José Vicente <josevteg@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.1.1\n"
-
-#. OpenVPN
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:1
-msgid "openvpn"
-msgstr ""
-
-#. Switch to basic configuration
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:3
-msgid "openvpn_switch_basic"
-msgstr ""
-
-#. Switch to advanced configuration
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:4
-msgid "openvpn_switch_advanced"
-msgstr ""
-
-#. Enabled
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:6
-msgid "openvpn_enable"
-msgstr ""
-
-#. Started
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:7
-msgid "openvpn_active"
-msgstr ""
-
-#. no
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:8
-msgid "openvpn_active_no"
-msgstr ""
-
-#. yes (%i)
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:9
-msgid "openvpn_active_yes"
-msgstr ""
-
-#. Port
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:10
-msgid "openvpn_port"
-msgstr ""
-
-#. Protocol
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:11
-msgid "openvpn_proto"
-msgstr ""
-
-#. Instance \"%s\"
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:13
-msgid "openvpn_instance"
-msgstr ""
-
-#. OpenVPN instances
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:15
-msgid "openvpn_overview"
-msgstr ""
-
-#. Below is a list of configured OpenVPN instances and their current state
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:16
-msgid "openvpn_overview_desc"
-msgstr ""
-
-#. Daemon configuration
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:18
-msgid "openvpn_service"
-msgstr ""
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Pootle 2.0.6\n"
 
-#. Networking options
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:19
-msgid "openvpn_networking"
-msgstr ""
+msgid "%s"
+msgstr "%s"
 
-#. VPN options
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:20
-msgid "openvpn_vpn"
-msgstr ""
+msgid "'net30', 'p2p', or 'subnet'"
+msgstr "'net30', 'p2p', o 'subnet'"
 
-#. Cryptography settings
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:21
-msgid "openvpn_cryptography"
-msgstr ""
+msgid "Accept options pushed from server"
+msgstr "Aceptar opciones envidadas desde el servidor"
 
-#. Read configuration options from file
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:23
-msgid "openvpn_param_config"
-msgstr ""
+msgid "Add"
+msgstr "Añadir"
 
-#. Local host name or ip address
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:24
-msgid "openvpn_param_local"
-msgstr ""
+msgid "Add route after establishing connection"
+msgstr "Añadir la ruta tras establecer la conexión"
 
-#. Remote host name or ip address
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:25
-msgid "openvpn_param_remote"
-msgstr ""
+msgid "Additional authentication over TLS"
+msgstr "Autentificación adicional con TLS"
 
-#. Randomly choose remote server
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:26
-msgid "openvpn_param_remote_random"
-msgstr ""
+msgid "Allow client-to-client traffic"
+msgstr "Permitir el tráfico cliente-a-cliente"
 
-#. Major mode
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:27
-msgid "openvpn_param_mode"
-msgstr ""
+msgid "Allow multiple clients with same certificate"
+msgstr "Permitir múltiples clientes con el mismo certificado"
 
-#. Use protocol
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:28
-msgid "openvpn_param_proto"
-msgstr ""
+msgid "Allow only one session"
+msgstr "Permitir sólo una sesión"
 
-#. Connection retry interval
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:29
-msgid "openvpn_param_connect_retry"
-msgstr ""
+msgid "Allow remote to change its IP or port"
+msgstr "Permitir al conectado cambiar su IP o puerto"
 
-#. Connection timeout
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:30
-msgid "openvpn_param_connect_timeout"
-msgstr ""
+msgid "Allowed maximum of connected clients"
+msgstr "Máximo de clientes conectados"
 
-#. Maximum connection attempt retries
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:31
-msgid "openvpn_param_connect_retry_max"
-msgstr ""
+msgid "Allowed maximum of internal"
+msgstr "Máximo de internos"
 
-#. Try to sense proxy settings automatically
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:32
-msgid "openvpn_param_auto_proxy"
-msgstr ""
+msgid "Allowed maximum of new connections"
+msgstr "Máximo de nuevas conexiones"
 
-#. Connect to remote host
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:33
-msgid "openvpn_param_http_proxy"
-msgstr ""
+msgid "Append log to file"
+msgstr "Unir registro al fichero"
 
-#. Retry indefinitely on HTTP proxy errors
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:34
-msgid "openvpn_param_http_proxy_retry"
-msgstr ""
+msgid "Authenticate using username/password"
+msgstr "Autentificar con nombre usuario y contraseña"
 
-#. Proxy timeout in seconds
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:35
-msgid "openvpn_param_http_proxy_timeout"
-msgstr ""
+msgid "Automatically redirect default route"
+msgstr "Redirigir automáticamente la ruta por defecto"
 
-#. Set extended HTTP proxy options
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:36
-msgid "openvpn_param_http_proxy_option"
-msgstr ""
+msgid "Below is a list of configured OpenVPN instances and their current state"
+msgstr "Instancias OpenVPN configuradas y estado actual"
 
-#. Connect through Socks5 proxy
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:37
-msgid "openvpn_param_socks_proxy"
-msgstr ""
+msgid "Call down cmd/script before TUN/TAP close"
+msgstr "Comando/script a llamar al cerrar el dispositivo TUn/TAP"
 
-#. Retry indefinitely on Socks proxy errors
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:38
-msgid "openvpn_param_socks_proxy_retry"
-msgstr ""
+msgid "Certificate authority"
+msgstr "Autoridad certificativa"
 
-#. If hostname resolve fails, retry
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:39
-msgid "openvpn_param_resolv_retry"
-msgstr ""
+msgid "Change process priority"
+msgstr "Cambiar la prioridad del proceso"
 
-#. Allow remote to change its IP or port
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:40
-msgid "openvpn_param_float"
-msgstr ""
+msgid "Change to directory before initialization"
+msgstr "Cambiar a este directorio antes de inicializar"
 
-#. Execute shell command on remote ip change
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:41
-msgid "openvpn_param_ipchange"
-msgstr ""
+msgid "Check peer certificate against a CRL"
+msgstr "Comprobar certificados contra un CRL"
 
-#. TCP/UDP port # for both local and remote
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:42
-msgid "openvpn_param_port"
-msgstr ""
+msgid "Chroot to directory after initialization"
+msgstr "Restringir a este directorio tras inicializar"
 
-#. TCP/UDP port # for local (default=1194)
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:43
-msgid "openvpn_param_lport"
-msgstr ""
+msgid "Client is disabled"
+msgstr "Cliente desactivado"
 
-#. TCP/UDP port # for remote (default=1194)
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:44
-msgid "openvpn_param_rport"
-msgstr ""
+msgid "Configuration category"
+msgstr "Categoría de configuración"
 
-#. Bind to local address and port
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:45
-msgid "openvpn_param_bind"
-msgstr ""
+msgid "Configure client mode"
+msgstr "Configurar el modo cliente"
 
-#. Do not bind to local address and port
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:46
-msgid "openvpn_param_nobind"
-msgstr ""
+msgid "Configure server bridge"
+msgstr "Configurar el puente servidor"
 
-#. tun/tap device
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:47
-msgid "openvpn_param_dev"
-msgstr ""
+msgid "Configure server mode"
+msgstr "Configurar el modo servidor"
 
-#. Type of used device
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:48
-msgid "openvpn_param_dev_type"
-msgstr ""
+msgid "Connect through Socks5 proxy"
+msgstr "Conectar por un proxy Socks5"
 
-#. Use tun/tap device node
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:49
-msgid "openvpn_param_dev_node"
-msgstr ""
+msgid "Connect to remote host through an HTTP proxy"
+msgstr "Conectar a la máquina remota usando un proxy HTTP"
 
-#. Set the link layer address of the tap device
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:50
-msgid "openvpn_param_lladdr"
-msgstr ""
+msgid "Connection retry interval"
+msgstr "Intervalo de reconexión"
 
-#. 'net30', 'p2p', or 'subnet'
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:51
-msgid "openvpn_param_topology"
-msgstr ""
+msgid "Cryptography"
+msgstr "Criptografía"
 
-#. Make tun device IPv6 capable
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:52
-msgid "openvpn_param_tun_ipv6"
-msgstr ""
+msgid "Daemonize after initialization"
+msgstr "Demonizar tras inicialización"
 
-#. Configure device to use IP address
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:53
-msgid "openvpn_param_ifconfig"
-msgstr ""
+msgid "Delay n seconds after connection"
+msgstr "Espera tras conexión (segundos)"
 
-#. Don't actually execute ifconfig
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:54
-msgid "openvpn_param_ifconfig_noexec"
-msgstr ""
+msgid "Delay tun/tap open and up script execution"
+msgstr "Espera para la apertura TUN/TAP y ejecución del script de arranque"
 
-#. Don't warn on ifconfig inconsistencies
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:55
-msgid "openvpn_param_ifconfig_nowarn"
-msgstr ""
+msgid "Diffie Hellman parameters"
+msgstr "Parámetros Diffie-Hellman"
 
-#. Add route after establishing connection
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:56
-msgid "openvpn_param_route"
-msgstr ""
+msgid "Directory for custom client config files"
+msgstr "Directorio de configuraciones personalizadas"
 
-#. Specify a default gateway for routes
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:57
-msgid "openvpn_param_route_gateway"
-msgstr ""
+msgid "Disable Paging"
+msgstr "Desactivar paginación"
 
-#. Specify a default metric for routes
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:58
-msgid "openvpn_param_route_metric"
-msgstr ""
+msgid "Disable cipher initialisation vector"
+msgstr "Desactivar vector de inicialización de cifrado"
 
-#. Delay n seconds after connection 
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:59
-msgid "openvpn_param_route_delay"
-msgstr ""
+msgid "Disable options consistency check"
+msgstr "Desactivar comprobación de consistencia de opciones"
 
-#. Execute shell cmd after routes are added
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:60
-msgid "openvpn_param_route_up"
-msgstr ""
+msgid "Disable replay protection"
+msgstr "Desactivar la protección contra reproducción"
 
-#. Don't add routes automatically
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:61
-msgid "openvpn_param_route_noexec"
-msgstr ""
+msgid "Do not bind to local address and port"
+msgstr "No asociar a un puerto y dirección locales"
 
-#. Don't pull options from server
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:62
-msgid "openvpn_param_route_nopull"
-msgstr ""
+msgid "Don't actually execute ifconfig"
+msgstr "No ejecutar ifconfig"
 
-#. Automatically redirect default route
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:63
-msgid "openvpn_param_redirect_gateway"
-msgstr ""
+msgid "Don't add routes automatically"
+msgstr "No añadir rutas automáticamente"
 
-#. Pass environment variables to script
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:64
-msgid "openvpn_param_setenv"
-msgstr ""
+msgid "Don't cache --askpass or --auth-user-pass passwords"
+msgstr "No guardar las contraseñas --askpass o --auth-user-pass"
 
-#. Shaping for peer bandwidth
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:65
-msgid "openvpn_param_shaper"
-msgstr ""
+msgid "Don't inherit global push options"
+msgstr "No heredar opciones push globales"
 
-#. Set timeouts in server mode
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:66
-msgid "openvpn_param_keepalive"
-msgstr ""
+msgid "Don't log timestamps"
+msgstr "No guardar en registro horas"
 
-#. tun/tap inactivity timeout
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:67
-msgid "openvpn_param_inactive"
-msgstr ""
+msgid "Don't re-read key on restart"
+msgstr "No releer la clave al rearrancar"
 
-#. Remote ping timeout
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:68
-msgid "openvpn_param_ping_exit"
-msgstr ""
+msgid "Don't require client certificate"
+msgstr "No es necesario certificado cliente"
 
-#. Restart after remote ping timeout
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:69
-msgid "openvpn_param_ping_restart"
-msgstr ""
+msgid "Don't use adaptive lzo compression"
+msgstr "No usar compresión adaptativa LZO"
 
-#. Only process ping timeouts if routes exist
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:70
-msgid "openvpn_param_ping_timer_rem"
-msgstr ""
+msgid "Don't warn on ifconfig inconsistencies"
+msgstr "No avisar de inconsistencias en ifconfig"
 
-#. Ping remote every n seconds over TCP/UDP port
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:71
-msgid "openvpn_param_ping"
-msgstr ""
+msgid "Echo parameters to log"
+msgstr "Guardar parámetros en el registro"
 
-#. Configure a multi-homed UDP server
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:72
-msgid "openvpn_param_multihome"
-msgstr ""
+msgid "Empirically measure MTU"
+msgstr "Medir MTU empíricamente"
 
-#. Optimize TUN/TAP/UDP writes
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:73
-msgid "openvpn_param_fast_io"
-msgstr ""
+msgid "Enable OpenSSL hardware crypto engines"
+msgstr "Motor criptográfico por hardware OpenSSL"
 
-#. Remap SIGUSR1 signals
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:74
-msgid "openvpn_param_remap_usr1"
-msgstr ""
+msgid "Enable Path MTU discovery"
+msgstr "Detección de MTU"
 
-#. Keep tun/tap device open on restart
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:75
-msgid "openvpn_param_persist_tun"
-msgstr ""
+msgid "Enable Static Key encryption mode (non-TLS)"
+msgstr "Modo de encriptado de clave estática (no-TLS)"
 
-#. Keep remote IP address on restart
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:76
-msgid "openvpn_param_persist_remote_ip"
-msgstr ""
+msgid "Enable TLS and assume client role"
+msgstr "Activar TLS y asumir el papel de cliente"
 
-#. Keep local IP address on restart
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:77
-msgid "openvpn_param_persist_local_ip"
-msgstr ""
+msgid "Enable TLS and assume server role"
+msgstr "Activar TLS y asumir el papel de servidor"
 
-#. Don't re-read key on restart
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:78
-msgid "openvpn_param_persist_key"
-msgstr ""
+msgid "Enable internal datagram fragmentation"
+msgstr "Fragmentación de datagramas interna"
 
-#. TOS passthrough (applies to IPv4 only)
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:79
-msgid "openvpn_param_passtos"
-msgstr ""
+msgid "Enable management interface on <em>IP</em> <em>port</em>"
+msgstr "Interfaz de gestión en <em>IP</em> <em>puerto</em>"
 
-#. Set tun/tap device MTU
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:80
-msgid "openvpn_param_tun_mtu"
-msgstr ""
+msgid "Enabled"
+msgstr "Activado"
 
-#. Set tun/tap device overhead
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:81
-msgid "openvpn_param_tun_mtu_extra"
-msgstr ""
+msgid "Encryption cipher for packets"
+msgstr "Cifra de encriptación de paquetes"
 
-#. Set TCP/UDP MTU
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:82
-msgid "openvpn_param_link_mtu"
-msgstr ""
+msgid "Execute shell cmd after routes are added"
+msgstr "Comandos a ejecutar tras añadir rutas"
 
-#. Enable Path MTU discovery
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:83
-msgid "openvpn_param_mtu_disc"
-msgstr ""
+msgid "Execute shell command on remote ip change"
+msgstr "Comando a ejecutar si se cambia la IP remota"
 
-#. Empirically measure MTU
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:84
-msgid "openvpn_param_mtu_test"
+msgid ""
+"Executed in server mode on new client connections, when the client is still "
+"untrusted"
 msgstr ""
+"Ejecutado en modo servidor en nuevas conexiones de clientes, cuando no se "
+"confía aún en el cliente"
 
-#. Enable internal datagram fragmentation
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:85
-msgid "openvpn_param_fragment"
+msgid ""
+"Executed in server mode whenever an IPv4 address/route or MAC address is "
+"added to OpenVPN's internal routing table"
 msgstr ""
+"Ejecutado en modo servidor cuando una ruta, dirección IPv4 o dirección MAC "
+"se añade a la tabla de rutas interna de OpenVPN"
 
-#. Set upper bound on TCP MSS
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:86
-msgid "openvpn_param_mssfix"
-msgstr ""
+msgid "Exit on TLS negotiation failure"
+msgstr "Salir si falla la negociación"
 
-#. Set the TCP/UDP send buffer size
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:87
-msgid "openvpn_param_sndbuf"
-msgstr ""
+msgid "Get PEM password from controlling tty before we daemonize"
+msgstr "Obtener la clave PEM del tty de control antes de demonizar"
 
-#. Set the TCP/UDP receive buffer size
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:88
-msgid "openvpn_param_rcvbuf"
-msgstr ""
+msgid "HMAC authentication for packets"
+msgstr "Autentificación HMAC de paquetes"
 
-#. Set tun/tap TX queue length
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:89
-msgid "openvpn_param_txqueuelen"
-msgstr ""
+msgid "Handling of authentication failures"
+msgstr "Gestión de fallos de autentificación"
 
-#. Disable Paging
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:90
-msgid "openvpn_param_mlock"
+msgid ""
+"Helper directive to simplify the expression of --ping and --ping-restart in "
+"server mode configurations"
 msgstr ""
+"Directriz para simplificar la expresión de --ping y --ping-restart en "
+"configuraciones en modo servido"
 
-#. Shell cmd to execute after tun device open
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:91
-msgid "openvpn_param_up"
-msgstr ""
+msgid "If hostname resolve fails, retry"
+msgstr "Reintentar si falla la resolución de nombre de máquina"
 
-#. Delay tun/tap open and up script execution
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:92
-msgid "openvpn_param_up_delay"
-msgstr ""
+msgid "Instance \"%s\""
+msgstr "Instancia \"%s\""
 
-#. Shell cmd to run after tun device close
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:93
-msgid "openvpn_param_down"
-msgstr ""
+msgid "Invalid"
+msgstr "No válido"
 
-#. Call down cmd/script before TUN/TAP close
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:94
-msgid "openvpn_param_down_pre"
-msgstr ""
+msgid "Keep local IP address on restart"
+msgstr "Mantener la dirección IP local al rearrancar"
 
-#. Run up/down scripts for all restarts
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:95
-msgid "openvpn_param_up_restart"
-msgstr ""
+msgid "Keep remote IP address on restart"
+msgstr "Mantener la dirección IP remota al rearrancar"
 
-#. Set UID to user
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:96
-msgid "openvpn_param_user"
-msgstr ""
+msgid "Keep tun/tap device open on restart"
+msgstr "Mantener el dispositivo TUN/TAP abierto al rearrancar"
 
-#. Set GID to group
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:97
-msgid "openvpn_param_group"
-msgstr ""
+msgid "Key transition window"
+msgstr "Ventana de transición de clave"
 
-#. Chroot to directory after initialization
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:98
-msgid "openvpn_param_chroot"
-msgstr ""
+msgid "Limit repeated log messages"
+msgstr "Limitar mensajes repetidos al registro"
 
-#. Change to directory before initialization
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:99
-msgid "openvpn_param_cd"
-msgstr ""
+msgid "Local certificate"
+msgstr "Certificado local"
 
-#. Daemonize after initialization
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:100
-msgid "openvpn_param_daemon"
-msgstr ""
+msgid "Local host name or ip address"
+msgstr "Nombre de máquina local o dirección IP"
 
-#. Output to syslog and do not daemonize
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:101
-msgid "openvpn_param_syslog"
-msgstr ""
+msgid "Local private key"
+msgstr "Clave privada local"
 
-#. Run as an inetd or xinetd server
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:102
-msgid "openvpn_param_inetd"
-msgstr ""
+msgid "Major mode"
+msgstr "Modo principal"
 
-#. Write log to file
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:103
-msgid "openvpn_param_log"
-msgstr ""
+msgid "Make tun device IPv6 capable"
+msgstr "Habilitar IPv6 en dispositivo TUN"
 
-#. Append log to file
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:104
-msgid "openvpn_param_log_append"
-msgstr ""
+msgid "Maximum number of queued TCP output packets"
+msgstr "Paquetes máximos en la cola de salida TCP"
 
-#. Don't log timestamps
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:105
-msgid "openvpn_param_suppress_timestamps"
-msgstr ""
+msgid "Networking"
+msgstr "Red"
 
-#. Write process ID to file
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:106
-msgid "openvpn_param_writepid"
-msgstr ""
+msgid "Number of allocated broadcast buffers"
+msgstr "Número de buffers de propagación"
 
-#. Change process priority
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:107
-msgid "openvpn_param_nice"
-msgstr ""
+msgid "Number of lines for log file history"
+msgstr "Líneas en el fichero de registro histórico"
 
-#. Echo parameters to log
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:108
-msgid "openvpn_param_echo"
-msgstr ""
+msgid "Only accept connections from given X509 name"
+msgstr "Aceptar solo conexiones desde este nombre X509"
 
-#. Set output verbosity
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:109
-msgid "openvpn_param_verb"
-msgstr ""
+msgid "Only process ping timeouts if routes exist"
+msgstr "Procesa solo las esperas a ping si existe la ruta"
 
-#. Limit repeated log messages
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:110
-msgid "openvpn_param_mute"
-msgstr ""
+msgid "OpenVPN"
+msgstr "OpenVPN"
 
-#. Write status to file every n seconds
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:111
-msgid "openvpn_param_status"
-msgstr ""
+msgid "OpenVPN instances"
+msgstr "Instancias OpenVPN"
 
-#. Status file format version
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:112
-msgid "openvpn_param_status_version"
-msgstr ""
+msgid "Optimize TUN/TAP/UDP writes"
+msgstr "Optimizar escrituras TUN/TAP/UDP"
 
-#. Disable options consistency check
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:113
-msgid "openvpn_param_disable_occ"
-msgstr ""
+msgid "Output to syslog and do not daemonize"
+msgstr "Escribir en SysLog y no demonizar"
 
-#. Special stress testing mode
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:114
-msgid "openvpn_param_gremlin"
-msgstr ""
+msgid "Overview"
+msgstr "Resumen"
 
-#. Use fast LZO compression
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:115
-msgid "openvpn_param_comp_lzo"
-msgstr ""
+msgid "PKCS#12 file containing keys"
+msgstr "Fichero PKCS#12 de claves"
 
-#. Don't use adaptive lzo compression
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:116
-msgid "openvpn_param_comp_noadapt"
-msgstr ""
+msgid "Pass environment variables to script"
+msgstr "Pasar variables de entorno al script"
 
-#. Enable management interface on <em>IP</em> <em>port</em>
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:117
-msgid "openvpn_param_management"
-msgstr ""
+msgid "Persist replay-protection state"
+msgstr "Estado continuo de protección antireproducción"
 
-#. Management interface will connect as a TCP client
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:118
-msgid "openvpn_param_management_client"
-msgstr ""
+msgid "Persist/unpersist ifconfig-pool"
+msgstr "Mantener/no mantener el listado de interfaces"
 
-#. Query management channel for private key
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:119
-msgid "openvpn_param_management_query_passwords"
-msgstr ""
+msgid "Ping remote every n seconds over TCP/UDP port"
+msgstr "Ping al remoto cada n segundos sobre un puerto TCP/UDP"
 
-#. Start OpenVPN in a hibernating state
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:120
-msgid "openvpn_param_management_hold"
-msgstr ""
+msgid "Policy level over usage of external programs and scripts"
+msgstr "Política sobre el uso de programas externos y scripts"
 
-#. Issue SIGUSR1 on management disconnect
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:121
-msgid "openvpn_param_management_signal"
-msgstr ""
+msgid "Port"
+msgstr "Puerto"
 
-#. Forget passwords on management disconnect
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:122
-msgid "openvpn_param_management_forget_disconnect"
-msgstr ""
+msgid "Protocol"
+msgstr "Protocolo"
 
-#. Number of lines for log file history
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:123
-msgid "openvpn_param_management_log_cache"
-msgstr ""
+msgid "Proxy timeout in seconds"
+msgstr "Espera del proxy en segundos"
 
-#. Load plug-in module
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:124
-msgid "openvpn_param_plugin"
-msgstr ""
+msgid "Push an ifconfig option to remote"
+msgstr "Enviar un opción de ifconfig al puesto remoto"
 
-#. Configure server mode
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:125
-msgid "openvpn_param_server"
-msgstr ""
+msgid "Push options to peer"
+msgstr "Enviar opciones al otro"
 
-#. Configure server bridge
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:126
-msgid "openvpn_param_server_bridge"
-msgstr ""
+msgid "Query management channel for private key"
+msgstr "Consulta el canal de gestión por la clave privada"
 
-#. Push options to peer
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:127
-msgid "openvpn_param_push"
-msgstr ""
+msgid "Randomly choose remote server"
+msgstr "Elegir aleatoriamente un servidor remoto"
 
-#. Don't inherit global push options
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:128
-msgid "openvpn_param_push_reset"
-msgstr ""
+msgid "Refuse connection if no custom client config"
+msgstr "Rechazar conexión si no tiene un fichero de conexión personalizado"
 
-#. Set aside a pool of subnets
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:129
-msgid "openvpn_param_ifconfig_pool"
-msgstr ""
+msgid "Remap SIGUSR1 signals"
+msgstr "Redirigir señales SIGUSR1"
 
-#. Use individual addresses rather than /30 subnets
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:130
-msgid "openvpn_param_ifconfig_pool_linear"
-msgstr ""
+msgid "Remote host name or ip address"
+msgstr "Nombre de máquina remota o dirección IP"
 
-#. Persist/unpersist ifconfig-pool
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:131
-msgid "openvpn_param_ifconfig_pool_persist"
-msgstr ""
+msgid "Remote ping timeout"
+msgstr "Espera a ping remoto"
 
-#. Push an ifconfig option to remote
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:132
-msgid "openvpn_param_ifconfig_push"
-msgstr ""
+msgid "Renegotiate data chan. key after bytes"
+msgstr "Bytes tras los que renegociar la clave del canal del datos"
 
-#. Route subnet to client
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:133
-msgid "openvpn_param_iroute"
-msgstr ""
+msgid "Renegotiate data chan. key after packets"
+msgstr "Paquetes tras los que renegociar la clave del canal del datos"
 
-#. Client is disabled
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:134
-msgid "openvpn_param_disable"
-msgstr ""
+msgid "Renegotiate data chan. key after seconds"
+msgstr "Segundos tras los que renegociar la clave del canal del datos"
 
-#. Don't require client certificate
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:135
-msgid "openvpn_param_client_cert_not_required"
-msgstr ""
+msgid "Replay protection sliding window size"
+msgstr "Tamaño de la ventana deslizante de la protección de reproducción"
 
-#. Use username as common name
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:136
-msgid "openvpn_param_username_as_common_name"
-msgstr ""
+msgid "Require explicit designation on certificate"
+msgstr "Designación explícita de certificado"
 
-#. Script to verify interactive authentication
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:137
-msgid "openvpn_param_auth_user_pass_verify"
-msgstr ""
+msgid "Require explicit key usage on certificate"
+msgstr "Clave de uso explícita de certificado"
 
-#. Allow client-to-client traffic
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:138
-msgid "openvpn_param_client_to_client"
-msgstr ""
+msgid "Restart after remote ping timeout"
+msgstr "Rearrancar tras espera del ping remoto"
 
-#. Allow multiple clients with same certificate
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:139
-msgid "openvpn_param_duplicate_cn"
-msgstr ""
+msgid "Retransmit timeout on TLS control channel"
+msgstr "Espera de retransmisión en el canal de control TLS"
 
-#. Run script cmd on client connection
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:140
-msgid "openvpn_param_client_connect"
-msgstr ""
+msgid "Retry indefinitely on HTTP proxy errors"
+msgstr "Reintentar indefinidamente en errores del proxy HTTP"
 
-#. Run script cmd on client disconnection
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:141
-msgid "openvpn_param_client_disconnect"
-msgstr ""
+msgid "Retry indefinitely on Socks proxy errors"
+msgstr "Reintentar indefinidamente en errores del proxy Socks"
 
-#. Directory for custom client config files
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:142
-msgid "openvpn_param_client_config_dir"
-msgstr ""
+msgid "Route subnet to client"
+msgstr "Enrutar subred a cliente"
 
-#. Refuse connection if no custom client config
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:143
-msgid "openvpn_param_ccd_exclusive"
-msgstr ""
+msgid "Run as an inetd or xinetd server"
+msgstr "Ejecutar como servidor inetd o xinetd"
 
-#. Temporary directory for client-connect return file
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:144
-msgid "openvpn_param_tmp_dir"
-msgstr ""
+msgid "Run script cmd on client connection"
+msgstr "Script a ejecutar tras una conexión de cliente"
 
-#. Set size of real and virtual address hash tables
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:145
-msgid "openvpn_param_hash_size"
-msgstr ""
+msgid "Run script cmd on client disconnection"
+msgstr "Script a ejecutar tras una desconexión de cliente"
 
-#. Number of allocated broadcast buffers
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:146
-msgid "openvpn_param_bcast_buffers"
-msgstr ""
+msgid "Run up/down scripts for all restarts"
+msgstr "Ejecutar scripts de activación/desactivación en todos los rearranques"
 
-#. Maximum number of queued TCP output packets
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:147
-msgid "openvpn_param_tcp_queue_limit"
-msgstr ""
+msgid "Send notification to peer on disconnect"
+msgstr "Enviar notificación al otro en caso de desconexión"
 
-#. Script to validate client virtual addresses
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:148
-msgid "openvpn_param_learn_address"
-msgstr ""
+msgid "Service"
+msgstr "Servicio"
 
-#. Allowed maximum of new connections
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:149
-msgid "openvpn_param_connect_freq"
-msgstr ""
+msgid "Set GID to group"
+msgstr "GID del grupo"
 
-#. Allowed maximum of connected clients
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:150
-msgid "openvpn_param_max_clients"
-msgstr ""
+msgid "Set TCP/UDP MTU"
+msgstr "MTU TCP/UDP"
 
-#. Allowed maximum of internal
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:151
-msgid "openvpn_param_max_routes_per_client"
-msgstr ""
+msgid "Set UID to user"
+msgstr "UID del usuario"
 
-#. Proxy incoming HTTPS sessions
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:152
-msgid "openvpn_param_port_share"
-msgstr ""
+msgid "Set aside a pool of subnets"
+msgstr "Reservar un bloque de subredes"
 
-#. Configure client mode
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:153
-msgid "openvpn_param_client"
-msgstr ""
+msgid "Set extended HTTP proxy options"
+msgstr "Opciones HTTP extendidas del proxy"
 
-#. Authenticate using username/password
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:154
-msgid "openvpn_param_auth_user_pass"
-msgstr ""
+msgid "Set output verbosity"
+msgstr "Nivel de detalle de mensajes"
 
-#. Accept options pushed from server
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:155
-msgid "openvpn_param_pull"
-msgstr ""
+msgid "Set size of real and virtual address hash tables"
+msgstr "Tamaño de las tablas real y virtual de hashes"
 
-#. Handling of authentication failures
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:156
-msgid "openvpn_param_auth_retry"
-msgstr ""
+msgid "Set the TCP/UDP receive buffer size"
+msgstr "Tamaño del búfer de recepción TCP/UDP"
 
-#. Send notification to peer on disconnect
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:157
-msgid "openvpn_param_explicit_exit_notify"
-msgstr ""
+msgid "Set the TCP/UDP send buffer size"
+msgstr "Tamaño del búfer de envío TCP/UDP"
 
-#. Enable Static Key encryption mode (non-TLS)
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:158
-msgid "openvpn_param_secret"
-msgstr ""
+msgid "Set tun/tap TX queue length"
+msgstr "Longitud de la cola de transmisión TUN/TAP"
 
-#. HMAC authentication for packets
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:159
-msgid "openvpn_param_auth"
-msgstr ""
+msgid "Set tun/tap adapter parameters"
+msgstr "Parámetros del adaptador TUN/TAP"
 
-#. Encryption cipher for packets
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:160
-msgid "openvpn_param_cipher"
-msgstr ""
+msgid "Set tun/tap device MTU"
+msgstr "MTU del dispositivo TUN/TAP"
 
-#. Size of cipher key
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:161
-msgid "openvpn_param_keysize"
-msgstr ""
+msgid "Set tun/tap device overhead"
+msgstr "Sobrecarga del dispositivo TUN/TAP"
 
-#. Enable OpenSSL hardware crypto engines
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:162
-msgid "openvpn_param_engine"
-msgstr ""
+msgid "Set upper bound on TCP MSS"
+msgstr "Límite superior de MSS de TCP"
 
-#. Disable replay protection
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:163
-msgid "openvpn_param_no_replay"
-msgstr ""
+msgid "Shaping for peer bandwidth"
+msgstr "Adaptar ancho de banda de clientes"
 
-#. Silence the output of replay warnings
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:164
-msgid "openvpn_param_mute_replay_warnings"
-msgstr ""
+msgid "Shell cmd to execute after tun device open"
+msgstr "Comando shell a ejecutar tras abrir el dispositivo TUN"
 
-#. Replay protection sliding window size
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:165
-msgid "openvpn_param_replay_window"
-msgstr ""
+msgid "Shell cmd to run after tun device close"
+msgstr "Comando shell a ejecutar tras cerrar el dispositivo TUN"
 
-#. Disable cipher initialisation vector
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:166
-msgid "openvpn_param_no_iv"
-msgstr ""
+msgid "Shell command to verify X509 name"
+msgstr "Comando shell a ejecutar para verificar un nombre X509"
 
-#. Persist replay-protection state
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:167
-msgid "openvpn_param_replay_persist"
-msgstr ""
+msgid "Silence the output of replay warnings"
+msgstr "No mostrar avisos de reproducción"
 
-#. Run a self-test of crypto features
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:168
-msgid "openvpn_param_test_crypto"
-msgstr ""
+msgid "Size of cipher key"
+msgstr "Tamaño de la clave de cifrado"
 
-#. Enable TLS and assume server role
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:169
-msgid "openvpn_param_tls_server"
-msgstr ""
+msgid "Specify a default gateway for routes"
+msgstr "Gateway por defecto"
 
-#. Enable TLS and assume client role
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:170
-msgid "openvpn_param_tls_client"
-msgstr ""
+msgid "Start OpenVPN in a hibernating state"
+msgstr "Arrancar OpenVPN en estado hibernado"
 
-#. Data channel key exchange method
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:171
-msgid "openvpn_param_key_method"
-msgstr ""
+msgid "Start/Stop"
+msgstr "Arrancar/Parar"
 
-#. Certificate authority
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:172
-msgid "openvpn_param_ca"
-msgstr ""
+msgid "Started"
+msgstr "Arrancado"
 
-#. Directory of trusted certificates (CAs and CRLs)
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:173
-msgid "openvpn_param_capath"
-msgstr ""
+msgid "Status file format version"
+msgstr "Versión del formato del fichero de estado"
 
-#. Diffie Hellman parameters
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:174
-msgid "openvpn_param_dh"
-msgstr ""
+msgid "Switch to advanced configuration »"
+msgstr "Cambiar a configuración avanzada »"
 
-#. Local certificate
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:175
-msgid "openvpn_param_cert"
-msgstr ""
+msgid "TCP/UDP port # for both local and remote"
+msgstr "Número de puerto TCP/UDP para local y remoto"
 
-#. Local private key
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:176
-msgid "openvpn_param_key"
-msgstr ""
+msgid "TCP/UDP port # for local (default=1194)"
+msgstr "Número de puerto TCP/UDP para local (default=1194)"
 
-#. PKCS#12 file containing keys
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:177
-msgid "openvpn_param_pkcs12"
-msgstr ""
+msgid "TCP/UDP port # for remote (default=1194)"
+msgstr "Número de puerto TCP/UDP para remoto (default=1194)"
 
-#. TLS cipher
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:178
-msgid "openvpn_param_tls_cipher"
-msgstr ""
+msgid "TLS cipher"
+msgstr "Cifra TLS"
 
-#. Retransmit timeout on TLS control channel
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:179
-msgid "openvpn_param_tls_timeout"
-msgstr ""
+msgid "TOS passthrough (applies to IPv4 only)"
+msgstr "Paso a través TOS (sólo para IPv4)"
 
-#. Renegotiate data chan. key after bytes
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:180
-msgid "openvpn_param_reneg_bytes"
+msgid "Temporary directory for client-connect return file"
 msgstr ""
+"Directorio temporal para el fichero de retorno de la conexión del cliente"
 
-#. Renegotiate data chan. key after packets
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:181
-msgid "openvpn_param_reneg_pkts"
-msgstr ""
+msgid "Timeframe for key exchange"
+msgstr "Tiempo de intercambio de clave"
 
-#. Renegotiate data chan. key after seconds
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:182
-msgid "openvpn_param_reneg_sec"
-msgstr ""
+msgid "Type of used device"
+msgstr "Tipo de dispositivo usado"
 
-#. Timeframe for key exchange
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:183
-msgid "openvpn_param_hand_window"
-msgstr ""
+msgid "Use fast LZO compression"
+msgstr "Compresión rápida LZO"
 
-#. Key transition window
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:184
-msgid "openvpn_param_tran_window"
-msgstr ""
+msgid "Use individual addresses rather than /30 subnets"
+msgstr "Direcciones individuales en vez de subredes /30"
 
-#. Allow only one session
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:185
-msgid "openvpn_param_single_session"
-msgstr ""
+msgid "Use protocol"
+msgstr "Protocolo"
 
-#. Exit on TLS negotiation failure
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:186
-msgid "openvpn_param_tls_exit"
-msgstr ""
+msgid "Use tun/tap device node"
+msgstr "Nodo de dispositivo TUN/TAP"
 
-#. Additional authentication over TLS
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:187
-msgid "openvpn_param_tls_auth"
-msgstr ""
+msgid "Use username as common name"
+msgstr "Nombre de usuario como nombre común"
 
-#. Get PEM password from controlling tty before we daemonize
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:188
-msgid "openvpn_param_askpass"
-msgstr ""
+msgid "VPN"
+msgstr "VPN"
 
-#. Don't cache --askpass or --auth-user-pass passwords
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:189
-msgid "openvpn_param_auth_nocache"
-msgstr ""
+msgid "Write log to file"
+msgstr "Escribir registro a fichero"
 
-#. Check peer certificate against a CRL
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:190
-msgid "openvpn_param_crl_verify"
-msgstr ""
+msgid "Write process ID to file"
+msgstr "Escribir ID del proceso a fichero"
 
-#. Shell command to verify X509 name
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:191
-msgid "openvpn_param_tls_verify"
-msgstr ""
+msgid "Write status to file every n seconds"
+msgstr "Segundos tras los que escribir el fichero de estado"
 
-#. Only accept connections from given X509 name
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:192
-msgid "openvpn_param_tls_remote"
-msgstr ""
+msgid "no"
+msgstr "no"
 
-#. Require explicit designation on certificate
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:193
-msgid "openvpn_param_ns_cert_type"
-msgstr ""
+msgid "tun/tap device"
+msgstr "dispositivo TUN/TAP"
 
-#. Require explicit key usage on certificate
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:194
-msgid "openvpn_param_remote_cert_ku"
-msgstr ""
+msgid "tun/tap inactivity timeout"
+msgstr "Espera de inactividad tun/tap"
 
-#. Require extended explicit key usage on certificate
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:195
-msgid "openvpn_param_remote_cert_eku"
-msgstr ""
+msgid "yes (%i)"
+msgstr "sí (%i)"
 
-#. Require normal and extended key usage on certificate
-#: applications/luci-openvpn/luasrc/i18n/openvpn.en.lua:196
-msgid "openvpn_param_remote_cert_tls"
-msgstr ""
+msgid "« Switch to basic configuration"
+msgstr "« Cambiar a configuración básica"

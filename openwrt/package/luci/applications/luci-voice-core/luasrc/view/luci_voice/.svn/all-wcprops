@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-voice-core/luasrc/view/luci_voice
+END
+phone_index.htm
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-voice-core/luasrc/view/luci_voice/phone_index.htm
+END
+index.htm
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-voice-core/luasrc/view/luci_voice/index.htm
+END

@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/contrib/package/freifunk-firewall/files/etc
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/contrib/package/freifunk-firewall/files/etc
 http://svn.luci.subsignal.org
 
 
 
-2009-08-27T00:06:30.374233Z
-5311
-jow
+2011-10-27T14:40:45.155725Z
+7807
+soma
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2010-09-19T09:58:18.720073Z
-9721a5f6fc6ed5919792334e14ca8903
-2009-06-16T22:45:06.923862Z
-4860
-jow
+2013-08-21T21:15:31.102359Z
+26304b0d27042781e0c0c2738f964681
+2011-10-27T14:40:45.155725Z
+7807
+soma
 has-props
 
 
@@ -61,5 +61,5 @@ has-props
 
 
 
-1838
+1297
 

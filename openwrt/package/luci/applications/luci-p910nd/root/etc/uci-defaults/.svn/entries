@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-p910nd/root/etc/uci-defaults
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-p910nd/root/etc/uci-defaults
 http://svn.luci.subsignal.org
 
 
 
-2008-09-16T11:16:04.503155Z
-3337
+2011-01-14T17:48:44.090565Z
+6728
 jow
 
 
@@ -32,11 +32,12 @@ file
 
 
 
-2010-09-19T09:58:15.661068Z
-61381f33772f37012d70d223155fdeda
-2008-09-16T11:16:04.503155Z
-3337
+2013-08-21T21:15:26.810359Z
+6f4b3a37c675136ad9e312a7e8a6ac64
+2011-01-14T17:48:44.090565Z
+6728
 jow
+has-props
 
 
 
@@ -57,6 +58,5 @@ jow
 
 
 
-
-108
+186
 

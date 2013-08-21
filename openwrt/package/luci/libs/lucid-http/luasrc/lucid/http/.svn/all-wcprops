@@ -1,29 +1,29 @@
 K 25
 svn:wc:ra_dav:version-url
-V 71
-/!svn/ver/5912/luci/branches/luci-0.9/libs/lucid-http/luasrc/lucid/http
+V 72
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid-http/luasrc/lucid/http
 END
 DirectoryPublisher.lua
 K 25
 svn:wc:ra_dav:version-url
-V 94
-/!svn/ver/5912/luci/branches/luci-0.9/libs/lucid-http/luasrc/lucid/http/DirectoryPublisher.lua
+V 95
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid-http/luasrc/lucid/http/DirectoryPublisher.lua
 END
 Redirector.lua
 K 25
 svn:wc:ra_dav:version-url
-V 86
-/!svn/ver/5912/luci/branches/luci-0.9/libs/lucid-http/luasrc/lucid/http/Redirector.lua
+V 87
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid-http/luasrc/lucid/http/Redirector.lua
 END
 server.lua
 K 25
 svn:wc:ra_dav:version-url
-V 82
-/!svn/ver/5164/luci/branches/luci-0.9/libs/lucid-http/luasrc/lucid/http/server.lua
+V 83
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid-http/luasrc/lucid/http/server.lua
 END
 LuciWebPublisher.lua
 K 25
 svn:wc:ra_dav:version-url
-V 92
-/!svn/ver/5912/luci/branches/luci-0.9/libs/lucid-http/luasrc/lucid/http/LuciWebPublisher.lua
+V 93
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid-http/luasrc/lucid/http/LuciWebPublisher.lua
 END

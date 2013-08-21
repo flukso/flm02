@@ -1,44 +1,38 @@
-#  ushare.pot
-#  generated from ./applications/luci-ushare/luasrc/i18n/ushare.en.lua
 msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8"
 
-#. Content directories
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:1
-msgid "content_directories"
+msgid "Content directories"
 msgstr ""
 
-#. Disable telnet console
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:2
-msgid "disable_telnet"
+msgid "Disable telnet console"
 msgstr ""
 
-#. Disable webinterface
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:3
-msgid "disable_webif"
+msgid "Disable webinterface"
 msgstr ""
 
-#. Options
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:4
-msgid "options"
+msgid "Enable"
 msgstr ""
 
-#. Servername
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:5
-msgid "servername"
+msgid "Interface"
 msgstr ""
 
-#. Settings
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:6
-msgid "settings"
+msgid "Options"
 msgstr ""
 
-#. uShare
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:7
-msgid "ushare"
+msgid "Servername"
 msgstr ""
 
-#. uShare
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:8
-msgid "ushare_desc"
+msgid "Settings"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "uShare"
+msgstr ""
+
+msgid ""
+"uShare is a UPnP (TM) A/V & DLNA Media Server. It implements the server "
+"component that provides UPnP media devices with information on available "
+"multimedia files."
 msgstr ""

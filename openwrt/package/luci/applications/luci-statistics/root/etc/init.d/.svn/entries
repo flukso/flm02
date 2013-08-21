@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-statistics/root/etc/init.d
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-statistics/root/etc/init.d
 http://svn.luci.subsignal.org
 
 
 
-2010-02-28T23:46:32.443187Z
-5703
+2010-02-28T20:59:23.647481Z
+5697
 jow
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2010-09-19T09:58:15.085068Z
+2013-08-21T21:15:27.254359Z
 6e78687133e33a73e4d301dc056d4074
-2010-02-28T23:46:32.443187Z
-5703
+2010-02-28T20:59:23.647481Z
+5697
 jow
 has-props
 

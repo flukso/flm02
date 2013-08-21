@@ -9,8 +9,9 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: fstab.lua 5118 2009-07-23 03:32:30Z jow $
+$Id: fstab.lua 6562 2010-11-27 04:55:38Z jow $
 ]]--
+
 require("luci.tools.webadmin")
 
 local fs   = require "nixio.fs"
@@ -29,17 +30,17 @@ for i, dev in ipairs(devices) do
 end
 
 
-m = Map("fstab", translate("a_s_fstab"))
+m = Map("fstab", translate("Mount Points"))
 
 local mounts = luci.sys.mounts()
 
-v = m:section(Table, mounts, translate("a_s_fstab_active"))
+v = m:section(Table, mounts, translate("Mounted file systems"))
 
-fs = v:option(DummyValue, "fs", translate("filesystem"))
+fs = v:option(DummyValue, "fs", translate("Filesystem"))
 
-mp = v:option(DummyValue, "mountpoint", translate("a_s_fstab_mountpoint"))
+mp = v:option(DummyValue, "mountpoint", translate("Mount Point"))
 
-avail = v:option(DummyValue, "avail", translate("a_s_fstab_avail"))
+avail = v:option(DummyValue, "avail", translate("Available"))
 function avail.cfgvalue(self, section)
 	return luci.tools.webadmin.byte_format(
 		( tonumber(mounts[section].available) or 0 ) * 1024
@@ -48,7 +49,7 @@ function avail.cfgvalue(self, section)
 	)
 end
 
-used = v:option(DummyValue, "used", translate("a_s_fstab_used"))
+used = v:option(DummyValue, "used", translate("Used"))
 function used.cfgvalue(self, section)
 	return ( mounts[section].percent or "0%" ) .. " (" ..
 	luci.tools.webadmin.byte_format(
@@ -58,31 +59,98 @@ end
 
 
 
-mount = m:section(TypedSection, "mount", translate("a_s_fstab_mountpoints"), translate("a_s_fstab_mountpoints1"))
+mount = m:section(TypedSection, "mount", translate("Mount Points"), translate("Mount Points define at which point a memory device will be attached to the filesystem"))
 mount.anonymous = true
 mount.addremove = true
 mount.template = "cbi/tblsection"
+mount.extedit  = luci.dispatcher.build_url("admin/system/fstab/mount/%s")
 
-mount:option(Flag, "enabled", translate("enable")).rmempty = false
-dev = mount:option(Value, "device", translate("device"), translate("a_s_fstab_device1"))
-for i, d in ipairs(devices) do
-	dev:value(d, size[d] and "%s (%s MB)" % {d, size[d]})
+mount.create = function(...)
+	local sid = TypedSection.create(...)
+	if sid then
+		luci.http.redirect(mount.extedit % sid)
+		return
+	end
 end
 
-mount:option(Value, "target", translate("a_s_fstab_mountpoint"))
-mount:option(Value, "fstype", translate("filesystem"), translate("a_s_fstab_fs1"))
-mount:option(Value, "options", translate("options"), translatef("manpage", "siehe '%s' manpage", "mount"))
+
+mount:option(Flag, "enabled", translate("Enabled")).rmempty = false
+
+dev = mount:option(DummyValue, "device", translate("Device"))
+dev.cfgvalue = function(self, section)
+	local v
+
+	v = m.uci:get("fstab", section, "uuid")
+	if v then return "UUID: %s" % v end
+
+	v = m.uci:get("fstab", section, "label")
+	if v then return "Label: %s" % v end
+
+	v = Value.cfgvalue(self, section) or "?"
+	return size[v] and "%s (%s MB)" % {v, size[v]} or v
+end
+
+mp = mount:option(DummyValue, "target", translate("Mount Point"))
+mp.cfgvalue = function(self, section)
+	if m.uci:get("fstab", section, "is_rootfs") == "1" then
+		return "/overlay"
+	else
+		return Value.cfgvalue(self, section) or "?"
+	end
+end
+
+fs = mount:option(DummyValue, "fstype", translate("Filesystem"))
+fs.cfgvalue = function(self, section)
+	return Value.cfgvalue(self, section) or "?"
+end
+
+op = mount:option(DummyValue, "options", translate("Options"))
+op.cfgvalue = function(self, section)
+	return Value.cfgvalue(self, section) or "defaults"
+end
+
+rf = mount:option(DummyValue, "is_rootfs", translate("Root"))
+rf.cfgvalue = function(self, section)
+	return Value.cfgvalue(self, section) == "1"
+		and translate("yes") or translate("no")
+end
+
+ck = mount:option(DummyValue, "enabled_fsck", translate("Check"))
+ck.cfgvalue = function(self, section)
+	return Value.cfgvalue(self, section) == "1"
+		and translate("yes") or translate("no")
+end
 
 
-swap = m:section(TypedSection, "swap", "SWAP", translate("a_s_fstab_swap1"))
+swap = m:section(TypedSection, "swap", "SWAP", translate("If your physical memory is insufficient unused data can be temporarily swapped to a swap-device resulting in a higher amount of usable <abbr title=\"Random Access Memory\">RAM</abbr>. Be aware that swapping data is a very slow process as the swap-device cannot be accessed with the high datarates of the <abbr title=\"Random Access Memory\">RAM</abbr>."))
 swap.anonymous = true
 swap.addremove = true
 swap.template = "cbi/tblsection"
+swap.extedit  = luci.dispatcher.build_url("admin/system/fstab/swap/%s")
 
-swap:option(Flag, "enabled", translate("enable")).rmempty = false
-dev = swap:option(Value, "device", translate("device"), translate("a_s_fstab_device1"))
-for i, d in ipairs(devices) do
-	dev:value(d, size[d] and "%s (%s MB)" % {d, size[d]})
+swap.create = function(...)
+	local sid = TypedSection.create(...)
+	if sid then
+		luci.http.redirect(swap.extedit % sid)
+		return
+	end
+end
+
+
+swap:option(Flag, "enabled", translate("Enabled")).rmempty = false
+
+dev = swap:option(DummyValue, "device", translate("Device"))
+dev.cfgvalue = function(self, section)
+	local v
+
+	v = m.uci:get("fstab", section, "uuid")
+	if v then return "UUID: %s" % v end
+
+	v = m.uci:get("fstab", section, "label")
+	if v then return "Label: %s" % v end
+
+	v = Value.cfgvalue(self, section) or "?"
+	return size[v] and "%s (%s MB)" % {v, size[v]} or v
 end
 
 return m

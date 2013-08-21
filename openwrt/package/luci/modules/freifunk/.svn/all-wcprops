@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 54
-/!svn/ver/6029/luci/branches/luci-0.9/modules/freifunk
+V 55
+/!svn/ver/9655/luci/branches/luci-0.11/modules/freifunk
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 63
-/!svn/ver/4830/luci/branches/luci-0.9/modules/freifunk/Makefile
+V 64
+/!svn/ver/9349/luci/branches/luci-0.11/modules/freifunk/Makefile
 END

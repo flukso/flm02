@@ -1,0 +1,6 @@
+K 13
+svn:mergeinfo
+V 181
+/luci/branches/luci-0.8/contrib/package/freifunk-gwcheck:4367-4369
+/luci/trunk/contrib/package/freifunk-gwcheck:9351,9353-9354,9356-9360,9365-9385,9399-9402,9412-9626,9648-9649,9654
+END

@@ -10,15 +10,15 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: passwd.lua 3863 2008-12-07 13:26:34Z Cyrus $
+$Id: passwd.lua 5448 2009-10-31 15:54:11Z jow $
 ]]--
-f = SimpleForm("password", translate("a_s_changepw"), translate("a_s_changepw1"))
+f = SimpleForm("password", translate("Admin Password"), translate("Change the password of the system administrator (User <code>root</code>)"))
 
-pw1 = f:field(Value, "pw1", translate("password"))
+pw1 = f:field(Value, "pw1", translate("Password"))
 pw1.password = true
 pw1.rmempty = false
 
-pw2 = f:field(Value, "pw2", translate("confirmation"))
+pw2 = f:field(Value, "pw2", translate("Confirmation"))
 pw2.password = true
 pw2.rmempty = false
 
@@ -31,9 +31,9 @@ function f.handle(self, state, data)
 		local stat = luci.sys.user.setpasswd("root", data.pw1) == 0
 		
 		if stat then
-			f.message = translate("a_s_changepw_changed")
+			f.message = translate("Password successfully changed")
 		else
-			f.errmessage = translate("unknownerror")
+			f.errmessage = translate("Unknown Error")
 		end
 		
 		data.pw1 = nil

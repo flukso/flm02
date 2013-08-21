@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs/core/luasrc/model
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/libs/core/luasrc/model
 http://svn.luci.subsignal.org
 
 
 
-2008-08-06T19:51:48.192716Z
-2730
+2013-06-24T12:00:33.588288Z
+9850
 Cyrus
 
 
@@ -26,6 +26,108 @@ Cyrus
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-uci
+uci.lua
+file
+
+
+
+
+2013-08-21T21:15:30.582359Z
+9ac7dab64309203b0d0b10672fd5bd7e
+2011-12-20T19:02:14.771681Z
+8127
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+10693
+
+firewall.lua
+file
+
+
+
+
+2013-08-21T21:15:30.582359Z
+95e8be331e802ebb7735d8e6f4a4624a
+2012-12-18T13:58:22.625226Z
+9558
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11156
+
+network
 dir
+
+network.lua
+file
+
+
+
+
+2013-08-21T21:15:30.582359Z
+a9178b293d58a967f17857448d4ab69d
+2013-06-24T12:00:33.588288Z
+9850
+Cyrus
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+33420
 

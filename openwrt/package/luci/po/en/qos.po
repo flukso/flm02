@@ -1,104 +1,103 @@
-#  qos.po
-#  generated from ./applications/luci-qos/luasrc/i18n/qos.en.lua
+#, fuzzy
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2009-05-19 20:58+0200\n"
-"Last-Translator: Jo-Philipp Wich <xm@subsignal.org>\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-03-25 22:10+0100\n"
+"PO-Revision-Date: 2010-03-25 22:10+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"X-Generator: Pootle 1.1.0\n"
+"Content-Transfer-Encoding: 8bit\n"
 
-#. Quality of Service
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:1
-msgid "qos"
+msgid "Calculate overhead"
+msgstr "Calculate overhead"
+
+msgid "Classification Rules"
+msgstr "Classification Rules"
+
+msgid "Classification group"
+msgstr "Classification group"
+
+msgid "Destination host"
+msgstr "Destination host"
+
+msgid "Downlink"
+msgstr ""
+
+msgid "Download speed (kbit/s)"
+msgstr "Download speed (kbit/s)"
+
+msgid "Enable"
+msgstr "Enable"
+
+msgid "Half-duplex"
+msgstr "Half-duplex"
+
+msgid "Interfaces"
+msgstr "Interfaces"
+
+msgid "Internet Connection"
+msgstr ""
+
+msgid "Number of bytes"
+msgstr "Number of bytes"
+
+msgid "Ports"
+msgstr "Ports"
+
+msgid "Protocol"
+msgstr "Protocol"
+
+msgid "QoS"
+msgstr ""
+
+msgid "Quality of Service"
 msgstr "Quality of Service"
 
-#. With QoS you can priorize network traffic selected by adresses, ports or services.
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:2
-msgid "qos_desc"
+msgid "Service"
+msgstr "Service"
+
+msgid "Source host"
+msgstr "Source host"
+
+msgid "Target"
+msgstr "Target"
+
+msgid "Uplink"
 msgstr ""
-"With QoS you can priorize network traffic selected by adresses, ports or "
-"services."
 
-#. Classification
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:3
-msgid "qos_interface_classgroup"
-msgstr "Classification"
+msgid "Upload speed (kbit/s)"
+msgstr "Upload speed (kbit/s)"
 
-#. Calculate Overhead
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:4
-msgid "qos_interface_overhead"
-msgstr "Calculate Overhead"
+msgid ""
+"With <abbr title=\"Quality of Service\">QoS</abbr> you can prioritize "
+"network traffic selected by addresses, ports or services."
+msgstr ""
+"With <abbr title=\"Quality of Service\">QoS</abbr> you can prioritize "
+"network traffic selected by addresses, ports or services."
 
-#. Half-Duplex
-msgid "qos_interface_halfduplex"
-msgstr "Half-Duplex"
+msgid "all"
+msgstr "all"
 
-#. Downlink
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:5
-msgid "qos_interface_download"
-msgstr "Downlink"
+msgid "allf"
+msgstr ""
 
-#. Uplink
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:6
-msgid "qos_interface_upload"
-msgstr "Uplink"
+msgid "default"
+msgstr "default"
 
-#. Prioritization
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:7
-msgid "qos_classify"
-msgstr "Prioritization"
-
-#. Priority
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:8
-msgid "qos_classify_target"
-msgstr "Priority"
-
-#. Source address
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:9
-msgid "qos_classify_srchost"
-msgstr "Source address"
-
-#. source network / source host
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:10
-msgid "qos_classify_srchost_dest"
-msgstr "source network / source host"
-
-#. Target address
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:11
-msgid "qos_classify_dsthost"
-msgstr "Target address"
-
-#. target network / target host
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:12
-msgid "qos_classify_dsthost_dest"
-msgstr "target network / target host"
-
-#. portrange
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:13
-msgid "qos_classify_portrange"
-msgstr "portrange"
-
-#. low
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:14
-msgid "qos_bulk"
-msgstr "low"
-
-#. normal
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:15
-msgid "qos_normal"
-msgstr "normal"
-
-#. express
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:16
-msgid "qos_express"
+msgid "express"
 msgstr "express"
 
-#. priority
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:17
-msgid "qos_priority"
+msgid "low"
+msgstr "low"
+
+msgid "normal"
+msgstr "normal"
+
+msgid "priority"
 msgstr "priority"
 
-#. Bytes sent
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:18
 msgid "qos_connbytes"
-msgstr "Bytes sent"
+msgstr ""

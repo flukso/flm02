@@ -1,7 +1,7 @@
 <%#
 LuCI - Lua Configuration Interface
 Copyright 2008 Steven Barth <steven@midlink.org>
-Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+Copyright 2008-2012 Jo-Philipp Wich <xm@subsignal.org>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,38 +12,43 @@ You may obtain a copy of the License at
 $Id$
 
 -%>
-<%+header%>
-<% luci.i18n.loadc("sysauth") %>
 
-<form method="post" action="<%=luci.util.pcdata(luci.http.getenv("REQUEST_URI"))%>">
+<%+header%>
+
+<form method="post" action="<%=pcdata(luci.http.getenv("REQUEST_URI"))%>">
 	<div class="cbi-map">
-		<h2><a id="content" name="content"><%:sysauth_head%></a></h2>
+		<h2><a id="content" name="content"><%:Authorization Required%></a></h2>
 		<div class="cbi-map-descr">
-			<%:sysauth_prompt%>
+			<%:Please enter your username and password.%>
 			<%- if fuser then %>
-			<div class="error"><%:sysauth_failed%></div>
+			<div class="error"><%:Invalid username and/or password! Please try again.%></div>
 			<br />
 			<% end -%>
 		</div>
 		<fieldset class="cbi-section"><fieldset class="cbi-section-node">
 			<div class="cbi-value">
-				<label class="cbi-value-title"><%:username%></label>
+				<label class="cbi-value-title"><%:Username%></label>
 				<div class="cbi-value-field">
 					<input class="cbi-input-user" type="text" name="username" value="<%=duser%>" />
 				</div>
 			</div>
-			<div class="cbi-value">
-				<label class="cbi-value-title"><%:password%></label>
+			<div class="cbi-value cbi-value-last">
+				<label class="cbi-value-title"><%:Password%></label>
 				<div class="cbi-value-field">
-					<input class="cbi-input-password" type="password" name="password" />
+					<input id="focus_password" class="cbi-input-password" type="password" name="password" />
 				</div>
 			</div>
 		</fieldset></fieldset>
 	</div>
 
 	<div>
-		<input type="submit" value="<%:login%>" class="cbi-button cbi-button-apply" />
-		<input type="reset" value="<%:reset%>" class="cbi-button cbi-button-reset" />
+		<input type="submit" value="<%:Login%>" class="cbi-button cbi-button-apply" />
+		<input type="reset" value="<%:Reset%>" class="cbi-button cbi-button-reset" />
 	</div>
 </form>
+<script type="text/javascript">//<![CDATA[
+	var input = document.getElementById('focus_password');
+	if (input)
+		input.focus();
+//]]></script>
 <%+footer%>

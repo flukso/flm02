@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules/admin-core/root/etc
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules/admin-core/root/etc
 http://svn.luci.subsignal.org
 
 
 
-2010-03-27T02:45:36.636257Z
-5943
-jow
+2011-09-08T15:44:56.378351Z
+7481
+soma
 
 
 
@@ -25,9 +25,6 @@ jow
 
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
-
-config
-dir
 
 init.d
 dir

@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/!svn/ver/9570/luci/branches/luci-0.11/modules/failsafe/luasrc/controller/failsafe
+END
+failsafe.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/9570/luci/branches/luci-0.11/modules/failsafe/luasrc/controller/failsafe/failsafe.lua
+END

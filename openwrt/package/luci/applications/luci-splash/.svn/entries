@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-splash
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-splash
 http://svn.luci.subsignal.org
 
 
 
-2010-04-05T17:46:20.798880Z
-6029
+2012-12-18T13:58:22.625226Z
+9558
 jow
 has-props
 
@@ -44,11 +44,11 @@ file
 
 
 
-2010-09-19T09:58:15.404069Z
-1935c4ac4d35bcbcd3f731902bda691b
-2009-05-19T02:18:28.983459Z
-4560
-jow
+2013-08-21T21:15:27.442359Z
+031523840b7ddf132842641e4b166da3
+2011-10-18T09:23:27.169671Z
+7747
+soma
 
 
 
@@ -70,5 +70,5 @@ jow
 
 
 
-67
+73
 

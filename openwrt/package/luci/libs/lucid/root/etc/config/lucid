@@ -11,11 +11,11 @@ config DirectoryPublisher webroot
 	option physical /www
 	option virtual ''
 	option domain ''
-	option home 1
 	
 config LuciWebPublisher luciweb
 	option name 'LuCI Webapplication'
 	option physical ''
+	option home 1
 	list virtual /luci
 	list virtual /cgi-bin/luci
 	option domain ''
@@ -41,7 +41,7 @@ config daemon https
 	list publisher luciweb
 	option nokeepalive 1
 	option memlimit 1572864
-	option enabled 0
+	option enabled 1
 	option tls maincert
 	option encryption enable
 

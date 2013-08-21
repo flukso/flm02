@@ -1,59 +1,59 @@
 K 25
 svn:wc:ra_dav:version-url
-V 60
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/httpd
+V 61
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/httpd
 END
 kepler.patch
 K 25
 svn:wc:ra_dav:version-url
-V 73
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/httpd/kepler.patch
+V 74
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/httpd/kepler.patch
 END
 proc.c
 K 25
 svn:wc:ra_dav:version-url
-V 67
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/httpd/proc.c
+V 68
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/httpd/proc.c
 END
 Config.in
 K 25
 svn:wc:ra_dav:version-url
-V 70
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/httpd/Config.in
+V 71
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/httpd/Config.in
 END
 kepler-1.1-snapshot-20070521-1825.tar.gz
 K 25
 svn:wc:ra_dav:version-url
-V 101
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/httpd/kepler-1.1-snapshot-20070521-1825.tar.gz
+V 102
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/httpd/kepler-1.1-snapshot-20070521-1825.tar.gz
 END
 tdate_parse.c
 K 25
 svn:wc:ra_dav:version-url
-V 74
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/httpd/tdate_parse.c
+V 75
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/httpd/tdate_parse.c
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 69
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/httpd/Makefile
+V 70
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/httpd/Makefile
 END
 axhttpd.c
 K 25
 svn:wc:ra_dav:version-url
-V 70
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/httpd/axhttpd.c
+V 71
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/httpd/axhttpd.c
 END
 axhttp.h
 K 25
 svn:wc:ra_dav:version-url
-V 69
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/httpd/axhttp.h
+V 70
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/httpd/axhttp.h
 END
 htpasswd.c
 K 25
 svn:wc:ra_dav:version-url
-V 71
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/httpd/htpasswd.c
+V 72
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/httpd/htpasswd.c
 END

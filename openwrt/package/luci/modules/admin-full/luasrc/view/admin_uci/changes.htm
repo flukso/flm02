@@ -9,35 +9,42 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: changes.htm 3870 2008-12-07 21:27:11Z jow $
+$Id: changes.htm 9014 2012-08-14 13:08:18Z jow $
 
 -%>
 
 <%+header%>
 
-<h2><a id="content" name="content"><%:config%></a></h2>
-<p><strong><%:changes%>:</strong></p>
+<h2><a id="content" name="content"><%:Configuration%> / <%:Changes%></a></h2>
 
-<div class="cbi-section">
-	<code><%=changes%></code>
-</div>
+<% if changes then %>
+	<%+admin_uci/changelog%>
+	<%- uci_changelog(changes) -%>
+<% else %>
+	<p><strong><%:There are no pending changes!%></strong></p>
+<% end %>
 
 <div class="cbi-page-actions">
+	<% local r = luci.http.formvalue("redir"); if r and #r > 0 then %>
 	<div style="float:left">
-		<form class="inline" method="get" action="<%=luci.util.pcdata(luci.http.formvalue("redir"))%>">
-			<input class="cbi-button" style="float:left; margin:0" type="submit" value="« <%:back%>" />
+		<form class="inline" method="get" action="<%=luci.util.pcdata(r)%>">
+			<input class="cbi-button cbi-button-link" style="float:left; margin:0" type="submit" value="<%:Back%>" />
 		</form>
 	</div>
+	<% end %>
 
 	<div style="text-align:right">
 		<form class="inline" method="get" action="<%=controller%>/admin/uci/apply">
-			<input class="cbi-button cbi-button-apply" type="submit" value="<%:apply%>" />
+			<input type="hidden" name="redir" value="<%=pcdata(luci.http.formvalue("redir"))%>" />
+			<input class="cbi-button cbi-button-apply" type="submit" value="<%:Apply%>" />
 		</form>
 		<form class="inline" method="get" action="<%=controller%>/admin/uci/saveapply">
-			<input class="cbi-button cbi-button-save" type="submit" value="<%:saveapply%>" />
+			<input type="hidden" name="redir" value="<%=pcdata(luci.http.formvalue("redir"))%>" />
+			<input class="cbi-button cbi-button-save" type="submit" value="<%:Save & Apply%>" />
 		</form>
 		<form class="inline" method="get" action="<%=controller%>/admin/uci/revert">
-			<input class="cbi-button cbi-button-reset" type="submit" value="<%:revert%>" />
+			<input type="hidden" name="redir" value="<%=pcdata(luci.http.formvalue("redir"))%>" />
+			<input class="cbi-button cbi-button-reset" type="submit" value="<%:Revert%>" />
 		</form>
 	</div>
 </div>

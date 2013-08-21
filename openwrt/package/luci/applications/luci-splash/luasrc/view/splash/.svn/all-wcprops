@@ -1,11 +1,17 @@
 K 25
 svn:wc:ra_dav:version-url
-V 81
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-splash/luasrc/view/splash
+V 82
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-splash/luasrc/view/splash
 END
 splash.htm
 K 25
 svn:wc:ra_dav:version-url
-V 92
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-splash/luasrc/view/splash/splash.htm
+V 93
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-splash/luasrc/view/splash/splash.htm
+END
+blocked.htm
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-splash/luasrc/view/splash/blocked.htm
 END

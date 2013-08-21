@@ -9,23 +9,30 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: buttons.lua 2880 2008-08-17 23:47:38Z jow $
+$Id: buttons.lua 5472 2009-11-01 01:37:03Z jow $
 ]]--
-m = Map("system", translate("buttons"), translate("buttons_desc"))
+
+m = Map("system", translate("Buttons"),
+	translate("This page allows the configuration of custom button actions"))
 
 s = m:section(TypedSection, "button", "")
 s.anonymous = true
 s.addremove = true
 
-s:option(Value, "button")
+s:option(Value, "button", translate("Name"))
 
-act = s:option(ListValue, "action")
+act = s:option(ListValue, "action",
+	translate("Action"),
+	translate("Specifies the button state to handle"))
+
 act:value("released")
 
-s:option(Value, "handler")
+s:option(Value, "handler",
+	translate("Handler"),
+	translate("Path to executable which handles the button event"))
 
-min = s:option(Value, "min")
+min = s:option(Value, "min", translate("Minimum hold time"))
 min.rmempty = true
 
-max = s:option(Value, "max")
+max = s:option(Value, "max", translate("Maximum hold time"))
 max.rmempty = true

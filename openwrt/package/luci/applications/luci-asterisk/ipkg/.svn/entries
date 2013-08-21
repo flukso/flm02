@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-asterisk/ipkg
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-asterisk/ipkg
 http://svn.luci.subsignal.org
 
 
 
-2009-06-08T20:00:50.244792Z
-4806
-jow
+2010-07-01T09:52:12.010450Z
+6201
+acinonyx
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2010-09-19T09:58:14.788070Z
-41ffd7376524f52cc6a1f9b03cb65f01
-2009-06-08T20:00:50.244792Z
-4806
-jow
+2013-08-21T21:15:26.514359Z
+3181fa865c9547f0e33fc16cb1a57340
+2010-07-01T09:52:12.010450Z
+6201
+acinonyx
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-184
+192
 

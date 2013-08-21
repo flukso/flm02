@@ -1,48 +1,50 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-05-19 19:36+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2010-04-14 10:33+0200\n"
+"PO-Revision-Date: 2012-11-14 14:40+0200\n"
+"Last-Translator: Kentaro <kentaro.matsuyama@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.1.1\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Pootle 2.0.6\n"
 
-#. Disk
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:1
-msgid "disk"
-msgstr ""
+msgid "Disk"
+msgstr "ディスク"
 
-#. Enable debug
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:2
-msgid "enable_debug"
-msgstr ""
+msgid "Enable"
+msgstr "有効"
 
-#. hd-idle
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:3
-msgid "hd_idle"
-msgstr ""
+msgid "Enable debug"
+msgstr "デバッグを有効にする"
 
-#. hd-idle is a utility program for spinning-down external disks after a period of idle time.
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:4
-msgid "hd_idle_desc"
-msgstr ""
+msgid "Idle-time"
+msgstr "アイドル時間"
 
-#. Idle-Time
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:5
-msgid "idle_time_interval"
-msgstr ""
+msgid "Idle-time unit"
+msgstr "アイドル時間 (単位)"
 
-#. Idle-Time unit
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:6
-msgid "idle_time_unit"
-msgstr ""
+msgid "Settings"
+msgstr "設定"
 
-#. Settings
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:7
-msgid "settings"
+# Hours
+msgid "h"
+msgstr "時"
+
+msgid "hd-idle"
+msgstr "hd-idle"
+
+msgid ""
+"hd-idle is a utility program for spinning-down external disks after a period "
+"of idle time."
 msgstr ""
+"hd-idleはアイドル時に外部ディスクをスピンダウンさせるための、ユーティリティプ"
+"ログラムです。"
+
+# Minutes (not minimum)
+msgid "min"
+msgstr "分"

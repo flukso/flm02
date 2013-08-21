@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/contrib/luadoc/lua/luadoc/taglet
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/contrib/luadoc/lua/luadoc/taglet
 http://svn.luci.subsignal.org
 
 
 
-2009-06-22T10:23:21.843672Z
-4891
-jow
+2009-06-21T13:42:26.066504Z
+4889
+Cyrus
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2010-09-19T09:58:18.600068Z
+2013-08-21T21:15:30.946359Z
 0cbc49f7c80f36810f2d80c0c9db8c9e
-2009-06-22T10:23:21.843672Z
-4891
-jow
+2009-06-21T13:42:26.066504Z
+4889
+Cyrus
 
 
 

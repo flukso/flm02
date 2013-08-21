@@ -9,26 +9,32 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: irq.lua 2226 2008-06-01 23:52:07Z jow $
+$Id: irq.lua 7987 2011-11-28 04:19:38Z jow $
 
 ]]--
 
-m = Map("luci_statistics")
+m = Map("luci_statistics",
+	translate("IRQ Plugin Configuration"),
+	translate(
+		"The irq plugin will monitor the rate of issues per second for " ..
+		"each selected interrupt. If no interrupt is selected then all " ..
+		"interrupts are monitored."
+	))
 
 -- collectd_irq config section
 s = m:section( NamedSection, "collectd_irq", "luci_statistics" )
 
 -- collectd_irq.enable
-enable = s:option( Flag, "enable" )
+enable = s:option( Flag, "enable", translate("Enable this plugin") )
 enable.default = 0
 
 -- collectd_irq.irqs (Irq)
-irqs = s:option( Value, "Irqs" )
+irqs = s:option( Value, "Irqs", translate("Monitor interrupts") )
 irqs.optional = true
 irqs:depends( "enable", 1 )
 
 -- collectd_irq.ignoreselected (IgnoreSelected)
-ignoreselected = s:option( Flag, "IgnoreSelected" )
+ignoreselected = s:option( Flag, "IgnoreSelected", translate("Monitor all except specified") )
 ignoreselected.default  = 0
 ignoreselected.optional = "true"
 ignoreselected:depends( "enable", 1 )

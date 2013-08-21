@@ -2,49 +2,49 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-05-19 19:36+0200\n"
-"PO-Revision-Date: 2009-05-20 11:15+0200\n"
-"Last-Translator: Jose Monteiro <jm@unimos.net>\n"
+"POT-Creation-Date: 2010-04-14 10:33+0200\n"
+"PO-Revision-Date: 2011-10-08 03:12+0200\n"
+"Last-Translator: luizluca <luizluca@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Pootle 1.1.0\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Pootle 2.0.4\n"
 
-#. Disk
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:1
-msgid "disk"
+msgid "Disk"
 msgstr "Disco"
 
-#. Enable debug
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:2
-msgid "enable_debug"
-msgstr "Activar debug"
+msgid "Enable"
+msgstr "Habilitar"
 
-#. hd-idle
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:3
-msgid "hd_idle"
-msgstr "Hd-idle"
+msgid "Enable debug"
+msgstr "Ativar depuração"
 
-#. hd-idle is a utility program for spinning-down external disks after a period of idle time.
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:4
-msgid "hd_idle_desc"
-msgstr ""
-"Hd-idle é um programa utilitário para activar o modo &quot;economia de "
-"energia&quot; (spinning-down) de discos externos após um período de "
-"ociosidade."
-
-#. Idle-Time
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:5
-msgid "idle_time_interval"
+msgid "Idle-time"
 msgstr "Tempo de ociosidade"
 
-#. Idle-Time unit
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:6
-msgid "idle_time_unit"
-msgstr "Unidade do tempo de ociosidade"
+msgid "Idle-time unit"
+msgstr "Unidade do tempo da ociosidade"
 
-#. Settings
-#: applications/luci-hd_idle/luasrc/i18n/hd_idle.en.lua:7
-msgid "settings"
+msgid "Settings"
 msgstr "Configurações"
+
+# Hours
+msgid "h"
+msgstr "horas"
+
+msgid "hd-idle"
+msgstr "Hd-idle"
+
+msgid ""
+"hd-idle is a utility program for spinning-down external disks after a period "
+"of idle time."
+msgstr ""
+"Hd-idle é um programa utilitário para ativar o modo \"economia de energia"
+"\" (spinning-down) de discos externos após um período de ociosidade."
+
+# Minutes (not minimum)
+msgid "min"
+msgstr "minutos"

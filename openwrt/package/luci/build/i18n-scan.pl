@@ -2,54 +2,38 @@
 
 use strict;
 use warnings;
-use Text::Balanced qw(extract_codeblock);
+use Text::Balanced qw(extract_bracketed extract_delimited extract_tagged);
 
-@ARGV == 1 || die "Usage: $0 <source direcory>\n";
+@ARGV >= 1 || die "Usage: $0 <source direcory>\n";
 
 
-sub _parse
+my %stringtable;
+
+sub dec_lua_str
 {
-	my ( $code ) = @_;
-	my ( $k, $v );
-	
-	if( $code =~ s/^<%:-?\s*(.+)\s*%>/$1/s )
-	{
-		my ( $key, @text ) = split /[\n\s]+/, $code;
+	my $s = shift;
+	$s =~ s/[\s\n]+/ /g;
+	$s =~ s/\\n/\n/g;
+	$s =~ s/\\t/\t/g;
+	$s =~ s/\\(.)/$1/g;
+	$s =~ s/^ //;
+	$s =~ s/ $//;
+	return $s;
+}
 
-		$k = $key;
-		$v = join ' ', @text;
-	}
-	elsif( $code =~ s/^\(\s*(.+)\s*\)/$1/s )
-	{
-		if( $code =~ /^(?:"(\w+)"|'(\w+)')\s*,\s*(?:"(.+?)"|'(.+?)')/s )
-		{
-			$k = $1 || $2;
-			$v = $3 || $4 || '';
-			$v =~ s/\s+/ /sg;
-		}
-		elsif( $code =~ /^(?:"(\w+)"|'(\w+)')/ )
-		{
-			$k = $1 || $2;
-			$v = '';
-		}
-		else
-		{
-			return ();
-		}
-	}
-	else
-	{
-		return ();
-	}
-
-	$v =~ s/\\"/"/g;
-	$v =~ s/"/\\"/g;
-	
-	return ( $k, $v );
+sub dec_tpl_str
+{
+	my $s = shift;
+	$s =~ s/-$//;
+	$s =~ s/[\s\n]+/ /g;
+	$s =~ s/^ //;
+	$s =~ s/ $//;
+	$s =~ s/\\/\\\\/g;
+	return $s;
 }
 
 
-if( open F, "find $ARGV[0] -type f -name '*.htm' -or -name '*.lua' |" )
+if( open F, "find @ARGV -type f '(' -name '*.htm' -o -name '*.lua' ')' |" )
 {
 	while( defined( my $file = readline F ) )
 	{
@@ -57,52 +41,88 @@ if( open F, "find $ARGV[0] -type f -name '*.htm' -or -name '*.lua' |" )
 
 		if( open S, "< $file" )
 		{
-			my $text = '';
-			$text .= $_ foreach( readline S );
+			local $/ = undef;
+			my $raw = <S>;
+			close S;
 
-			while(
-				$text =~ s/
-					^ .*?
-					(?:
-						(?: translate f? | i18n )
-						[\s\n]* ( \( )
-					|
-						( \<%: -? )
-					)
-				/$1 || $2/segx
-			) {
-				my $code;
 
-				( $code, $text ) = extract_codeblock( $text, '', '^', '()' );
-				if( ! $code ) {
-					( $code, $text ) = extract_codeblock( $text, '', '^', '<>' );
-				}
+			my $text = $raw;
 
-				if( ! $code ) {
-					# Corner case:
-					$text =~ s/(#[^\n]*)%>/$1\n%>/;
-					( $code, $text ) = extract_codeblock( $text, '<>', '^' );
-					if( ! $code ) {
-						last;
-					}
-				}
+			while( $text =~ s/ ^ .*? (?:translate|translatef|i18n|_) [\n\s]* \( /(/sgx )
+			{
+				( my $code, $text ) = extract_bracketed($text, q{('")});
 
-				my ( $k, $v ) = _parse( $code );
-				if( $k && defined($v) )
+				$code =~ s/\\\n/ /g;
+				$code =~ s/^\([\n\s]*//;
+				$code =~ s/[\n\s]*\)$//;
+
+				my $res = "";
+				my $sub = "";
+
+				if( $code =~ /^['"]/ )
 				{
-					if( $v )
+					while( defined $sub )
 					{
-						printf "#. %s\n", $v || $k;
-					}
+						( $sub, $code ) = extract_delimited($code, q{'"}, q{\s*(?:\.\.\s*)?});
 
-					printf "msgid \"%s\"\nmsgstr \"%s\"\n\n",
-						$k, $v;
+						if( defined $sub && length($sub) > 2 )
+						{
+							$res .= substr $sub, 1, length($sub) - 2;
+						}
+						else
+						{
+							undef $sub;
+						}
+					}
 				}
+				elsif( $code =~ /^(\[=*\[)/ )
+				{
+					my $stag = quotemeta $1;
+					my $etag = $stag;
+					   $etag =~ s/\[/]/g;
+
+					( $res ) = extract_tagged($code, $stag, $etag);
+
+					$res =~ s/^$stag//;
+					$res =~ s/$etag$//;
+				}
+
+				$res = dec_lua_str($res);
+				$stringtable{$res}++ if $res;
 			}
 
-			close S;
+
+			$text = $raw;
+
+			while( $text =~ s/ ^ .*? <% -? [:_] /<%/sgx )
+			{
+				( my $code, $text ) = extract_tagged($text, '<%', '%>');
+
+				if( defined $code )
+				{
+					$code = dec_tpl_str(substr $code, 2, length($code) - 4);
+					$stringtable{$code}++;
+				}
+			}
 		}
 	}
 
 	close F;
+}
+
+
+if( open C, "| msgcat -" )
+{
+	printf C "msgid \"\"\nmsgstr \"Content-Type: text/plain; charset=UTF-8\"\n\n";
+
+	foreach my $key ( sort keys %stringtable )
+	{
+		if( length $key )
+		{
+			$key =~ s/"/\\"/g;
+			printf C "msgid \"%s\"\nmsgstr \"\"\n\n", $key;
+		}
+	}
+
+	close C;
 }

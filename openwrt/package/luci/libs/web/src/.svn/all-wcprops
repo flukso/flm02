@@ -1,29 +1,59 @@
 K 25
 svn:wc:ra_dav:version-url
-V 50
-/!svn/ver/5196/luci/branches/luci-0.9/libs/web/src
+V 51
+/!svn/ver/9655/luci/branches/luci-0.11/libs/web/src
+END
+template_utils.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/9558/luci/branches/luci-0.11/libs/web/src/template_utils.h
+END
+template_lmo.c
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/9655/luci/branches/luci-0.11/libs/web/src/template_lmo.c
 END
 template_lualib.c
 K 25
 svn:wc:ra_dav:version-url
-V 68
-/!svn/ver/5154/luci/branches/luci-0.9/libs/web/src/template_lualib.c
+V 69
+/!svn/ver/9558/luci/branches/luci-0.11/libs/web/src/template_lualib.c
+END
+template_lmo.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/9623/luci/branches/luci-0.11/libs/web/src/template_lmo.h
 END
 template_parser.c
 K 25
 svn:wc:ra_dav:version-url
-V 68
-/!svn/ver/5196/luci/branches/luci-0.9/libs/web/src/template_parser.c
+V 69
+/!svn/ver/9558/luci/branches/luci-0.11/libs/web/src/template_parser.c
+END
+po2lmo.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/9655/luci/branches/luci-0.11/libs/web/src/po2lmo.c
 END
 template_lualib.h
 K 25
 svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/9558/luci/branches/luci-0.11/libs/web/src/template_lualib.h
+END
+template_utils.c
+K 25
+svn:wc:ra_dav:version-url
 V 68
-/!svn/ver/5118/luci/branches/luci-0.9/libs/web/src/template_lualib.h
+/!svn/ver/9558/luci/branches/luci-0.11/libs/web/src/template_utils.c
 END
 template_parser.h
 K 25
 svn:wc:ra_dav:version-url
-V 68
-/!svn/ver/5118/luci/branches/luci-0.9/libs/web/src/template_parser.h
+V 69
+/!svn/ver/9558/luci/branches/luci-0.11/libs/web/src/template_parser.h
 END
