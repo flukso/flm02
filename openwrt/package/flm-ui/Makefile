@@ -21,7 +21,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/flm-ui
     SECTION:=flukso
     CATEGORY:=Flukso
-    TITLE:=Flm-ui
+    TITLE:=Fluksometer UI
     DEPENDS:=+luci-admin-rpc
     MAINTAINER:=Bart Van Der Meerssche <bart@flukso.net>
 endef

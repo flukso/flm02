@@ -1,9 +1,14 @@
-# Copyright (c) 2010-2011 Bart Van Der Meerssche
+#
+# Copyright (C) 2013 OpenWrt.org
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=flukso
-PKG_VERSION:=2.2.3
+PKG_VERSION:=2.3.0
 PKG_RELEASE:=1
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
@@ -11,12 +16,12 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 include $(INCLUDE_DIR)/package.mk
 
 define Package/flukso
-	SECTION:=utils
-	CATEGORY:=Utilities
-	DEPENDS:=+libdaemon +ntpclient +liblua +luci-nixio +rrdtool1
-	TITLE:=Flukso - community metering
+	SECTION:=flukso
+	CATEGORY:=Flukso
+	DEPENDS:=+libdaemon +liblua +luci-nixio +rrdtool1
+	TITLE:=Fluksometer daemon
 	URL:=http://www.flukso.net
-	MAINTAINER:=Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+	MAINTAINER:=Bart Van Der Meerssche <bart@flukso.net>
 endef
 
 define Package/flukso/description
