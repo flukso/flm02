@@ -18,6 +18,9 @@ local nixio = require "nixio"
 local ltn12 = require "luci.ltn12"
 local util = require "luci.util"
 local table = require "table"
+local coroutine = require "coroutine"
+local string = require "string"
+local os = require "os"
 local http = require "luci.http.protocol"
 local date = require "luci.http.protocol.date"
 
@@ -102,10 +105,77 @@ function request_to_source(uri, options)
 	end
 end
 
+function create_persistent()
+	return coroutine.wrap(function(uri, options)
+		local function globe_on()
+			os.execute("gpioctl clear 5 > /dev/null")
+		end
+
+		local function globe_off()
+			os.execute("gpioctl set 5 > /dev/null")
+		end
+
+		local status, response, buffer, sock
+
+		local function yield(...)
+			-- request_raw() will only return a socket userdatum after a successful call
+			-- a nil socket value implies that the socket has already been closed and
+			-- thus cannot be re-used for future calls
+			--
+			-- so the only case where we have to explicitely close the socket is when
+			-- the Connection header says so and a non-nil socket userdatum is returned
+			-- by request_raw()
+			if sock and options.headers["Connection"] == "close" then
+				sock:close()
+			end
+
+			return coroutine.yield(...)
+		end
+	
+		while true do
+			local output = {}
+
+			globe_off()
+			status, response, buffer, sock = request_raw(uri, options, sock)
+
+			if not status then
+				uri, options = yield(nil, response or "", buffer)
+
+			elseif status ~= 200 and status ~= 206 then
+				if status == 204 then
+					globe_on()
+				end
+	
+				uri, options = yield(nil, status, response)
+
+			else
+				globe_on()
+
+				local content_length = tonumber(response.headers["Content-Length"])
+				local bytes_read = 0
+
+				if content_length > 0 then
+					local source = ltn12.source.cat(ltn12.source.string(buffer), sock:blocksource())
+					local sink = ltn12.sink.table(output)
+
+					while bytes_read < content_length do
+						ltn12.pump.step(source, sink)
+						bytes_read = bytes_read + output[#output]:len()
+					end
+
+					uri, options = yield(table.concat(output), status, response)
+				else
+					uri, options = yield("", status, response)
+				end
+			end
+		end
+	end)
+end
+
 --
 -- GET HTTP-resource
 --
-function request_raw(uri, options)
+function request_raw(uri, options, sock)
 	options = options or {}
 	local pr, auth, host, port, path
 	if uri:find("@") then
@@ -134,25 +204,40 @@ function request_raw(uri, options)
 	if headers.Connection == nil then
 		headers.Connection = "close"
 	end
-	
+
 	if auth and not headers.Authorization then
 		headers.Authorization = "Basic " .. nixio.bin.b64encode(auth)
 	end
 
-	local sock, code, msg = nixio.connect(host, port)
+	-- in case of a persistent connection, the sock object will be passed as arg to request_raw
 	if not sock then
-		return nil, code, msg
+		local code, msg
+		sock, code, msg = nixio.connect(host, port)
+
+		if not sock then
+			return nil, code, msg
+		end
 	end
-	
+
 	sock:setsockopt("socket", "sndtimeo", options.sndtimeo or 15)
 	sock:setsockopt("socket", "rcvtimeo", options.rcvtimeo or 15)
-	
-	if pr == "https" then
+
+	-- if tls_socket, then we're dealing with a persistent tls connection so skip this part	
+	if pr == "https" and not sock:is_tls_socket() then
 		local tls = options.tls_context or nixio.tls()
+		local tls_context_set_verify = options.tls_context_set_verify or "none"
+
+		if tls_context_set_verify == "peer" then
+			tls:set_verify("peer")
+			tls:set_verify_locations(options.cacert)
+		elseif tls_context_set_verify == "none" then
+			tls:set_verify("none")
+		end
+
 		sock = tls:create(sock)
-		local stat, code, error = sock:connect()
+		local stat, code, err = sock:connect()
 		if not stat then
-			return stat, code, error
+			return stat, code, err
 		end
 	end
 
@@ -220,11 +305,11 @@ function request_raw(uri, options)
 	
 	-- Create source and fetch response
 	local linesrc = sock:linesource()
-	local line, code, error = linesrc()
+	local line, code, err = linesrc()
 	
 	if not line then
 		sock:close()
-		return nil, code, error
+		return nil, code, err
 	end
 	
 	local protocol, status, msg = line:match("^([%w./]+) ([0-9]+) (.*)")
