@@ -107,12 +107,14 @@ end
 
 function create_persistent()
 	return coroutine.wrap(function(uri, options)
+		local globe_fd = nixio.open("/sys/class/leds/globe/trigger", "w")
+
 		local function globe_on()
-			os.execute("gpioctl clear 5 > /dev/null")
+			globe_fd:write("default_on")
 		end
 
 		local function globe_off()
-			os.execute("gpioctl set 5 > /dev/null")
+			globe_fd:write("none")
 		end
 
 		local status, response, buffer, sock
