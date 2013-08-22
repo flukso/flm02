@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2011-2013 OpenWrt.org
+# Copyright (C) 2011,2012 OpenWrt.org
 # Copyright (C) 2010 Jo-Philipp Wich <xm@subsignal.org>
 #
 # This is free software, licensed under the GNU General Public License v2.
@@ -9,25 +9,34 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mosquitto
-PKG_VERSION:=1.1.3
+PKG_VERSION:=1.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+#PKG_REV:=4b30e412ab77
+#PKG_SOURCE:=$(PKG_REV).tar.bz2
 PKG_SOURCE_URL:=http://mosquitto.org/files/source/
-PKG_MD5SUM:=fd0cae17221d778b0a002c31e6c3de9e
-
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
+#PKG_SOURCE_URL:=https://bitbucket.org/oojah/mosquitto/get/
+#PKG_BUILD_DIR:=$(BUILD_DIR)/oojah-mosquitto-$(PKG_REV)
+PKG_MD5SUM:=424bfd84a7c923ccc2ea36c8bee558b2
 
 include $(INCLUDE_DIR)/package.mk
 
-MAKE_FLAGS+=WITH_MEMORY_TRACKING=no WITH_TLS_PSK=no
+MAKE_FLAGS+=WITH_MEMORY_TRACKING=no
+TARGET_CFLAGS+=-ggdb3
+include $(INCLUDE_DIR)/version.mk
+# The version of libopenssl in backfire doesn't support psk.
+ifeq ($(findstring 10.03,$(VERSION_CODE)),10.03)
+    MAKE_FLAGS += WITH_TLS_PSK=no
+endif
+
 
 define Package/$(PKG_NAME)/default
   SECTION:=net
   CATEGORY:=Network
   TITLE:=mosquitto - an MQTT message broker
   URL:=http://www.mosquitto.org/
-  MAINTAINER:=Karl Palsson <karlp@remake.is>
+  DEPENDS:= +librt
 endef
 
 define Package/$(PKG_NAME)
@@ -97,7 +106,7 @@ define Package/libmosquitto/default
     $(Package/mosquitto/default)
     SECTION:=libs
     CATEGORY:=Libraries
-    DEPENDS:=+libpthread
+    DEPENDS:=+libpthread +librt
     TITLE:= mosquitto - client library
 endef
 
