@@ -32,6 +32,20 @@ static int nixio_gettimeofday(lua_State *L) {
 	return 2;
 }
 
+static int nixio_settimeofday(lua_State *L) {
+	struct timeval tv;
+	tv.tv_sec = luaL_optint(L, 1, 0);
+	tv.tv_usec = luaL_optint(L, 2, 0);
+
+	int status = settimeofday(&tv, NULL);
+
+	if (!status) {
+		lua_pushboolean(L, 1);
+		return 1;
+	} else {
+		return nixio__perror(L);
+	}
+}
 
 /**
  * nanosleep()
@@ -171,7 +185,7 @@ static int nixio_poll(lua_State *L) {
 
 	if (status == 0) {
 		free(fds);
-		lua_pushboolean(L, 0);
+		lua_pushinteger(L, status);
 		return 1;
 	} else if (status < 0) {
 		free(fds);
@@ -196,9 +210,68 @@ static int nixio_poll(lua_State *L) {
 	return 2;
 }
 
+#ifdef __linux__
+
+#include <stdint.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/timerfd.h>
+
+static int nixio_timerfd(lua_State *L) {
+	struct itimerspec its;
+
+	its.it_value.tv_sec = (time_t)luaL_optinteger(L, 1, 0);
+	its.it_value.tv_nsec = (long)luaL_optinteger(L, 2, 0);
+
+	its.it_interval.tv_sec = (time_t)luaL_optinteger(L, 3, 0);
+	its.it_interval.tv_nsec = (long)luaL_optinteger(L, 4, 0);
+
+	/* Create a timer object and associated fd */
+	int fd = timerfd_create(CLOCK_REALTIME, 0);
+
+	if (fd == -1) {
+		return nixio__perror(L);
+	}
+
+	/* Workaround for TFD_NONBLOCK 'invalid argument' in uClibc*/
+	int flags;
+	flags = fcntl(fd, F_GETFL);
+	if (flags == -1)
+		return nixio__perror(L);
+	flags |= O_NONBLOCK;
+	if(fcntl(fd, F_SETFL, flags) == -1)
+		return nixio__perror(L);
+
+	/* Arm the timer */
+	if (timerfd_settime(fd, 0, &its ,NULL) == -1) {
+		close(fd);
+		return nixio__perror(L);
+	}
+
+	/* Create a userdatum for fd */
+	int *udata = lua_newuserdata(L, sizeof(int));
+	if (!udata) {
+		close(fd);
+		return luaL_error(L, "out of memory");
+	}
+
+	*udata = fd;
+
+	luaL_getmetatable(L, NIXIO_FILE_META);
+	lua_setmetatable(L, -2);
+
+	return 1;
+}
+
+#endif
+
 /* module table */
 static const luaL_reg R[] = {
+#ifdef __linux__
+	{"timerfd",	nixio_timerfd},
+#endif
 	{"gettimeofday", nixio_gettimeofday},
+	{"settimeofday", nixio_settimeofday},
 	{"nanosleep",	nixio_nanosleep},
 	{"poll",		nixio_poll},
 	{"poll_flags",	nixio_poll_flags},

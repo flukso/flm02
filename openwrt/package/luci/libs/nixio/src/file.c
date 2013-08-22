@@ -115,6 +115,22 @@ static int nixio_open_flags(lua_State *L) {
 	return 1;
 }
 
+static int nixio_fd_wrap(lua_State *L) {
+	int fd = luaL_checkint(L, 1);
+
+	int *udata = lua_newuserdata(L, sizeof(int));
+	if (!udata) {
+		return luaL_error(L, "out of memory");
+	}
+
+	*udata = fd;
+
+	luaL_getmetatable(L, NIXIO_FILE_META);
+	lua_setmetatable(L, -2);
+
+	return 1;
+}
+
 static int nixio_dup(lua_State *L) {
 	int oldfd = nixio__checkfd(L, 1);
 	int newfd = (lua_gettop(L) > 1) ? nixio__checkfd(L, 2) : -1;
@@ -223,6 +239,26 @@ static int nixio_file_read(lua_State *L) {
 	}
 }
 
+#ifdef __linux__
+
+static int nixio_file_numexp(lua_State *L) {
+	int fd = nixio__checkfd(L, 1);
+	uint64_t numexp;
+	int readc;
+
+	do {
+		readc = read(fd, &numexp, sizeof(uint64_t));
+	} while (readc == -1 && errno == EINTR);
+
+	if (readc < 0) {
+		return nixio__perror(L);
+	} else {
+		lua_pushnumber(L, (lua_Number)numexp);
+		return 1;
+	}
+}
+
+#endif
 
 static int nixio_file_seek(lua_State *L) {
 	int fd = nixio__checkfd(L, 1);
@@ -350,6 +386,9 @@ static int nixio_file__tostring(lua_State *L) {
 static const luaL_reg M[] = {
 	{"write",		nixio_file_write},
 	{"read",		nixio_file_read},
+#ifdef __linux__
+	{"numexp",		nixio_file_numexp},
+#endif
 	{"tell",		nixio_file_tell},
 	{"seek",		nixio_file_seek},
 	{"stat",		nixio_file_stat},
@@ -366,6 +405,7 @@ static const luaL_reg R[] = {
 	{"dup",			nixio_dup},
 	{"open",		nixio_open},
 	{"open_flags",	nixio_open_flags},
+	{"fd_wrap",		nixio_fd_wrap},
 	{"pipe",		nixio_pipe},
 	{NULL,			NULL}
 };

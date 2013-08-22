@@ -65,10 +65,6 @@ static int nixio_tls_ctx(lua_State * L) {
 		return luaL_error(L, "unable to create TLS context");
 	}
 
-#ifdef WITH_CYASSL
-	SSL_CTX_set_verify(*ctx, SSL_VERIFY_NONE, NULL);
-#endif
-
 	return 1;
 }
 
