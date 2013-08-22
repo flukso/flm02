@@ -39,6 +39,9 @@ cp patches/320-flm_spi_platform_support.patch $INSTALL_PATH/target/linux/atheros
 cp patches/330-export_spi_rst_gpio_to_userspace.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
 cp patches/340-tune_spi_bitbanging_for_avr.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
 
+# patch the default OpenWRT Lua package
+cp patches/600-lua-tablecreate.patch $BACKFIRE_PATH/package/lua/patches
+
 # copy over the build config settings and the files directory
 cp .config $INSTALL_PATH
 cp -r files $INSTALL_PATH
