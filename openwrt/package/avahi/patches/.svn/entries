@@ -1,15 +1,15 @@
 10
 
 dir
-25991
+37824
 svn://svn.openwrt.org/openwrt/packages/libs/avahi/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-03-09T12:34:25.840259Z
-25973
-jow
+2012-07-27T14:58:51.079000Z
+32888
+florian
 
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2011-03-10T08:41:40.076744Z
+2011-03-10T08:26:46.312744Z
 1fbd7df008628912218cd4f2cdf0e00c
 2011-03-09T12:34:25.840259Z
 25973
