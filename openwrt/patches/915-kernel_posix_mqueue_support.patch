@@ -1,0 +1,11 @@
+--- target/linux/generic/config-3.3	2013-08-24 15:30:39.085514939 +0200
++++ target/linux/generic/config-3.3	2013-08-24 15:30:56.841514551 +0200
+@@ -2141,7 +2141,7 @@
+ # CONFIG_PNX8550_JBS is not set
+ # CONFIG_PNX8550_STB810 is not set
+ # CONFIG_POHMELFS is not set
+-# CONFIG_POSIX_MQUEUE is not set
++CONFIG_POSIX_MQUEUE=y
+ # CONFIG_POWERTV is not set
+ # CONFIG_POWER_SUPPLY is not set
+ # CONFIG_POWER_SUPPLY_DEBUG is not set
