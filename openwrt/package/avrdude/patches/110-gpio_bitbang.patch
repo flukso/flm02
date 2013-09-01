@@ -61,15 +61,14 @@ diff -urNad /tmp/avrdude-5.10/config_gram.y avrdude-5.10/config_gram.y
    K_TYPE TKN_EQUAL K_STK600 {
      {
 diff -urNad /dev/null avrdude-5.10/gpio.c
---- /dev/null	2013-08-31 10:21:55.524998990 +0200
-+++ avrdude-5.10/gpio.c	2013-08-31 23:19:27.226866357 +0200
-@@ -0,0 +1,234 @@
+--- /dev/null	2013-09-01 10:43:10.523089986 +0200
++++ avrdude-5.10/gpio.c	2013-09-01 21:27:21.037476688 +0200
+@@ -0,0 +1,171 @@
 +/*
 + * avrdude - A Downloader/Uploader for AVR device programmers
-+ * Support for bitbanging GPIO pins using the /sys/class/gpio interface
++ * Support for a bitbanged GPIO programmer using gpio_dev
 + * 
-+ * Copyright (C) 2010 Radoslav Kolev <address@hidden>
-+ *               2013 Bart Van Der Meerssche <bart@flukso.net>
++ * Copyright (c) 2013 Bart Van Der Meerssche <bart@flukso.net>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -101,41 +100,22 @@ diff -urNad /dev/null avrdude-5.10/gpio.c
 +#include "pgm.h"
 +#include "bitbang.h"
 +
-+static int gpio_openfd(unsigned int gpio)
-+{
-+  char filepath[60];
++#include <linux/gpio_dev.h>
++#include <sys/ioctl.h>
 +
-+  snprintf(filepath, sizeof(filepath), "/sys/class/gpio/gpio%d/value", gpio);
-+  return (open(filepath, O_RDWR));
-+}
-+
-+#define N_GPIO 128
-+
-+/*
-+* an array which holds open FDs to /sys/class/gpio/gpioXX/value for all needed pins
-+*/
-+static int gpio_fds[N_GPIO] ;
-+
++static int gpio_fd;
 +
 +static int gpio_setpin(PROGRAMMER * pgm, int pin, int value)
 +{
-+	int r;
-+
 +	if (pin & PIN_INVERSE) {
 +		value  = !value;
 +		pin &= PIN_MASK;
 +	}
 +
-+	if (gpio_fds[pin] < 0)
-+		return -1;
-+
 +	if (value)
-+		r = write(gpio_fds[pin], "1", 1);
++		ioctl(gpio_fd, GPIO_SET, pin);
 +	else
-+		r = write(gpio_fds[pin], "0", 1);
-+
-+	if (r!=1)
-+		return -1;
++		ioctl(gpio_fd, GPIO_CLEAR, pin);
 +
 +	if (pgm->ispdelay > 1)
 +		bitbang_delay(pgm->ispdelay);
@@ -145,132 +125,89 @@ diff -urNad /dev/null avrdude-5.10/gpio.c
 +
 +static int gpio_getpin(PROGRAMMER * pgm, int pin)
 +{
-+	unsigned char invert = 0;
-+	char c;
++	char input, inv = 0;
 +
 +	if (pin & PIN_INVERSE) {
-+		invert = 1;
++		inv = 1;
 +		pin &= PIN_MASK;
 +	}
 +
-+	if (gpio_fds[pin] < 0)
-+		return -1;
++	input = ioctl(gpio_fd, GPIO_GET, pin);
 +
-+	if (lseek(gpio_fds[pin], 0, SEEK_SET) < 0)
-+		return -1;  
-+  
-+	if (read(gpio_fds[pin], &c, 1) != 1)
-+		return -1;    
-+
-+	if (c == '0')
-+		return 0 + invert;
-+	else if (c == '1')
-+		return 1 - invert;
-+	else 
-+		return -1;
++	if (inv)
++		return input ^ 1;
++	else
++		return input;
 +}
 +
 +static int gpio_highpulsepin(PROGRAMMER * pgm, int pin)
 +{
-+	if (gpio_fds[pin & PIN_MASK] < 0)
-+		return -1;
++  gpio_setpin(pgm, pin, 1);
++  gpio_setpin(pgm, pin, 0);
 +
-+	gpio_setpin(pgm, pin, 1);
-+	gpio_setpin(pgm, pin, 0);
-+
-+	return 0;
++  return 0;
 +}
 +
 +static int gpio_rdy_led(PROGRAMMER * pgm, int value)
 +{
-+	return 0;
++	/* nothing */
 +}
 +
 +static int gpio_err_led(PROGRAMMER * pgm, int value)
 +{
-+	return 0;
++	/* nothing */
 +}
 +
 +static int gpio_pgm_led(PROGRAMMER * pgm, int value)
 +{
-+	return 0;
++	/* nothing */
 +}
 +
 +static int gpio_vfy_led(PROGRAMMER * pgm, int value)
 +{
-+	return 0;
++	/* nothing */
 +}
 +
 +static void gpio_display(PROGRAMMER *pgm, const char *p)
 +{
-+	/* void */
++	/* nothing */
 +}
 +
 +static void gpio_enable(PROGRAMMER *pgm)
 +{
-+	/* void */
++	/* nothing */
 +}
 +
 +static void gpio_disable(PROGRAMMER *pgm)
 +{
-+	/* void */
++	/* nothing */
 +}
 +
 +static void gpio_powerup(PROGRAMMER *pgm)
 +{
-+	/* void */
++	/* nothing */
 +}
 +
 +static void gpio_powerdown(PROGRAMMER *pgm)
 +{
-+	/* void */
++	/* nothing */
 +}
 +
 +static int gpio_open(PROGRAMMER *pgm, char *port)
 +{
-+	int i, rst, sck, mosi, miso;
-+
-+	for (i=0; i<N_GPIO; i++) {
-+		gpio_fds[i] = -1;
++	if ((gpio_fd = open("/dev/gpio", O_RDWR)) < 0) {
++		perror("cannot open /dev/gpio");
++		return -1;
 +	}
-+
-+	rst = pgm->pinno[PIN_AVR_RESET] & PIN_MASK;
-+	sck = pgm->pinno[PIN_AVR_SCK] & PIN_MASK;
-+	mosi = pgm->pinno[PIN_AVR_MOSI] & PIN_MASK;
-+	miso = pgm->pinno[PIN_AVR_MISO] & PIN_MASK;
-+
-+	if ((gpio_fds[rst] = gpio_openfd(rst)) < 0) {
-+		return gpio_fds[rst];
-+	}
-+
-+	if ((gpio_fds[sck] = gpio_openfd(sck)) < 0) {
-+		return gpio_fds[sck];
-+	}
-+
-+	if ((gpio_fds[mosi] = gpio_openfd(mosi)) < 0) {
-+		return gpio_fds[mosi];
-+	}
-+
-+	if ((gpio_fds[miso] = gpio_openfd(miso)) < 0) {
-+		return gpio_fds[miso];
-+	}
-+
++	
 +	return 0;
 +}
 +
 +static void gpio_close(PROGRAMMER *pgm)
 +{
-+	int i;
-+
-+	pgm->setpin(pgm, pgm->pinno[PIN_AVR_RESET], 1);
-+
-+	for (i=0; i<N_GPIO; i++) {
-+		if (gpio_fds[i]>=0) {
-+			close(gpio_fds[i]);
-+		}
-+	}
-+
-+	return;
++	gpio_setpin(pgm, pgm->pinno[PIN_AVR_RESET], 1);
++	close(gpio_fd);
++	return 0;
 +}
 +
 +void gpio_initpgm(PROGRAMMER *pgm)
