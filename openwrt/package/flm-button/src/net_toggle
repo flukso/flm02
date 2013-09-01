@@ -1,53 +1,42 @@
 #!/bin/sh
-# Copyright (c) 2010-2011 flukso.net
-
-WIFI_LED=7
-GLOBE_LED=5
+# Copyright (c) 2013 flukso.net
 
 to_wifi ()
 {
 	uci set firewall.@zone[1].input=REJECT
-	uci set network.wan.ifname=ath0
+	uci set network.wan.ifname=wlan0
 	uci set network.lan.ifname=eth0
 	uci set wireless.wifi0.disabled=0
 	uci set wireless.@wifi-iface[0].network=wan
 	uci set wireless.@wifi-iface[0].mode=sta
 	uci commit
 	logger 'toggled to wifi mode'
-	gpioctl set $WIFI_LED
 }
 
 to_eth ()
 {
 	uci set firewall.@zone[1].input=ACCEPT
 	uci set network.wan.ifname=eth0
-	uci set network.lan.ifname=ath0
+	uci set network.lan.ifname=wlan0
 	uci set wireless.wifi0.disabled=1
 	uci set wireless.@wifi-iface[0].network=lan
 	uci set wireless.@wifi-iface[0].mode=ap
 	uci commit
 	logger 'toggled to eth mode'
-	gpioctl clear $WIFI_LED
 }
 
-
-wifi down
-
-gpioctl dirout $WIFI_LED
-gpioctl dirout $GLOBE_LED
-#inverted logic for globe led
-gpioctl set $GLOBE_LED
+echo default-on > /sys/class/leds/globe/trigger
 
 MODE=$(uci get network.wan.ifname)
 
 if [ $MODE == eth0 ]
 then
 	to_wifi
-elif [ $MODE == ath0 ]
+elif [ $MODE == wlan0 ]
 then
 	to_eth
 fi
 
-/etc/init.d/network restart
+/etc/init.d/network reload
 sleep 10
 /usr/bin/heartbeat 0

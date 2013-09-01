@@ -1,0 +1,8 @@
+#!/bin/sh
+# Copyright (c) 2013 flukso.net
+
+wifi down
+echo none > /sys/class/leds/globe/trigger
+/etc/init.d/flukso stop
+
+mtd -r erase rootfs_data

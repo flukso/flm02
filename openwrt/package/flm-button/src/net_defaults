@@ -1,0 +1,19 @@
+#!/bin/sh
+# Copyright (c) 2013 flukso.net
+
+cd /rom/etc/config
+cp firewall network wireless /etc/config
+
+logger 'returning to firewall, network and wireless defaults'
+
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+do
+	echo default-on > /sys/class/leds/wlan/trigger
+	echo off > /sys/class/leds/wlan/trigger
+done
+
+echo off > /sys/class/leds/globe/trigger
+
+/etc/init.d/network reload
+sleep 10
+/usr/bin/heartbeat 0
