@@ -110,7 +110,7 @@ function create_persistent()
 		local globe_fd = nixio.open("/sys/class/leds/globe/trigger", "w")
 
 		local function globe_on()
-			globe_fd:write("default_on")
+			globe_fd:write("default-on")
 		end
 
 		local function globe_off()
