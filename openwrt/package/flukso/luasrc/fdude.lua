@@ -27,7 +27,7 @@ local uci   = require 'luci.model.uci'.cursor()
 
 local AVRDUDE             = '/usr/bin/avrdude'
 local AVR_BIN             = '/usr/bin/avr/'
-local SPI_DEV             = '/dev/spidev0.0'
+local SPI_DEV             = '/dev/spidev1.0'
 local SPI_DAEMON_PID_FILE = '/var/run/spid/pid'
 local O_RDWR_NONBLOCK     = nixio.open_flags('rdwr', 'nonblock')
 local MODEL               = 'FLM02X'

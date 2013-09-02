@@ -18,7 +18,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/flukso
 	SECTION:=flukso
 	CATEGORY:=Flukso
-	DEPENDS:=+libdaemon +liblua +luci-nixio +rrdtool1
+	DEPENDS:=+libdaemon +liblua +luci-lib-nixio +rrdtool1
 	TITLE:=Fluksometer daemon
 	URL:=http://www.flukso.net
 	MAINTAINER:=Bart Van Der Meerssche <bart@flukso.net>

@@ -432,7 +432,7 @@ index 0094c64..4a642fb 100644
  	unsigned		count = t->len;
  	const u8		*tx = t->tx_buf;
  	u8			*rx = t->rx_buf;
-+    unsigned        byte_delay = spi->delay_usecs;
++    unsigned        byte_delay = spi->delay_usecs * 1000;
  
  	while (likely(count > 0)) {
  		u8		word = 0;
@@ -497,8 +497,8 @@ index 0094c64..4a642fb 100644
  	if (hz) {
 -		cs->nsecs = (1000000000/2) / hz;
 -		if (cs->nsecs > (MAX_UDELAY_MS * 1000 * 1000))
-+		cs->nsecs = (1000000/2) / hz;
-+		if (cs->nsecs > (MAX_UDELAY_MS * 1000))
++		cs->nsecs = (1000000000/2) / hz;
++		if (cs->nsecs > (MAX_UDELAY_MS * 1000 * 1000))
  			return -EINVAL;
  	}
  

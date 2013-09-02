@@ -100,7 +100,8 @@ start()
 		program_sensor_board
 	fi
 
-	chmod 666 /dev/spidev0.0
+	chmod 666 /dev/spidev1.0
+	chmod 666 /sys/class/leds/globe/trigger
 	/usr/sbin/supd
 	/usr/sbin/spid -u flukso
 	/usr/sbin/fluksod -u flukso
