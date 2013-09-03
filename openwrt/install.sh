@@ -38,6 +38,7 @@ cp patches/310-register_gpio_leds.patch $INSTALL_PATH/target/linux/atheros/patch
 cp patches/320-flm_spi_platform_support.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
 cp patches/330-export_spi_rst_gpio_to_userspace.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
 cp patches/340-tune_spi_bitbanging_for_avr.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
+cp patches/500-early_printk_disable.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
 
 # patch the default OpenWRT Lua package
 cp patches/600-lua-tablecreate.patch $BACKFIRE_PATH/package/lua/patches
@@ -51,7 +52,10 @@ cp ../tools/ap51-flash $INSTALL_PATH/tools
 
 # patch files of the OpenWRT build system
 cd $INSTALL_PATH
+patch -p0 < $REPO_PATH/patches/900-disable_console.patch
+patch -p0 < $REPO_PATH/patches/910-redirect-console-to-devnull.patch
 patch -p0 < $REPO_PATH/patches/915-kernel_posix_mqueue_support.patch
 patch -p0 < $REPO_PATH/patches/920-add-make-flash-option.patch
 patch -p0 < $REPO_PATH/patches/921-add-make-publish-option.patch
 patch -p0 < $REPO_PATH/patches/925-add_mac_address_to_radio0.patch
+patch -p0 < $REPO_PATH/patches/930-boot_crond_without_crontabs.patch

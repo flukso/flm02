@@ -1,13 +1,11 @@
-Index: target/linux/atheros/config-2.6.30
-===================================================================
---- target/linux/atheros/config-2.6.30	(revision 23099)
-+++ target/linux/atheros/config-2.6.30	(working copy)
-@@ -21,7 +21,7 @@
- # CONFIG_CAVIUM_OCTEON_SIMULATOR is not set
+--- target/linux/atheros/config-3.3	2013-09-03 09:39:43.357244312 +0200
++++ target/linux/atheros/config-3.3	2013-09-03 09:40:10.557243704 +0200
+@@ -14,7 +14,7 @@
+ CONFIG_CC_OPTIMIZE_FOR_SIZE=y
  CONFIG_CEVT_R4K=y
  CONFIG_CEVT_R4K_LIB=y
 -CONFIG_CMDLINE="console=ttyS0,9600 rootfstype=squashfs,jffs2"
 +CONFIG_CMDLINE="console=/dev/null rootfstype=squashfs,jffs2"
- # CONFIG_COMPAT_NET_DEV_OPS is not set
+ CONFIG_CMDLINE_BOOL=y
+ # CONFIG_CMDLINE_OVERRIDE is not set
  CONFIG_CPU_BIG_ENDIAN=y
- # CONFIG_CPU_CAVIUM_OCTEON is not set
