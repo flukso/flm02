@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-#VERSION=$(grep PKG_VERSION:= package/flukso/Makefile | sed 's/.*:=[0-9]\.//')
-VERSION=3.0
+VERSION=$(grep PKG_VERSION:= package/flukso/Makefile | sed 's/.*:=[0-9]\.//')
 USAGE="Usage: . ./install /your/preferred/backfire/installation/path"
 
 if (( $# < 1 ))
@@ -41,7 +40,7 @@ cp patches/340-tune_spi_bitbanging_for_avr.patch $INSTALL_PATH/target/linux/athe
 cp patches/500-early_printk_disable.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
 
 # patch the default OpenWRT Lua package
-cp patches/600-lua-tablecreate.patch $BACKFIRE_PATH/package/lua/patches
+cp patches/600-lua-tablecreate.patch $INSTALL_PATH/package/lua/patches
 
 # copy over the build config settings and the files directory
 cp .config $INSTALL_PATH
@@ -59,3 +58,4 @@ patch -p0 < $REPO_PATH/patches/920-add-make-flash-option.patch
 patch -p0 < $REPO_PATH/patches/921-add-make-publish-option.patch
 patch -p0 < $REPO_PATH/patches/925-add_mac_address_to_radio0.patch
 patch -p0 < $REPO_PATH/patches/930-boot_crond_without_crontabs.patch
+patch -p0 < $REPO_PATH/patches/960-remove_default_banner.patch
