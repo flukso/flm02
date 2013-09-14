@@ -863,6 +863,32 @@ function wifi.getiwinfo(ifname)
 	end
 end
 
+--- Alternative for obtaining wireless info, especially useful for json-rpc calls
+-- @param ifname        String containing the interface name
+-- @param function      Vararg listing all function calls to be executed
+-- @return              Object with function call results
+function wifi.iwinfo(ifname, ...)
+	local stat, iwinfo = pcall(require, "iwinfo")
+
+	if stat and ifname and iwinfo.type(ifname) then
+		local output = {}
+		local t = iwinfo.type(ifname)
+		local x = iwinfo[t]
+
+		-- f: function | fn: function name
+		if select("#", ...) == 0 then
+			for fn, f in pairs(x) do
+				output[fn] = (type(f) == "function") and f(ifname) or nil
+			end
+		else
+			for i, fn in ipairs{...} do
+				output[fn] = (type(x[fn]) == "function") and x[fn](ifname) or nil
+			end
+		end
+
+		return output
+	end
+end
 
 --- LuCI system utilities / init related functions.
 -- @class	module
