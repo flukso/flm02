@@ -886,6 +886,11 @@ function wifi.iwinfo(ifname, ...)
 			end
 		end
 
+		-- workaround for scanlist returning empty list when called for the first time
+		if output.scanlist and #output.scanlist == 0 then
+			output.scanlist = x.scanlist(ifname)
+		end
+
 		return output
 	end
 end
