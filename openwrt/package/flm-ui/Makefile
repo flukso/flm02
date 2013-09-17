@@ -1,33 +1,28 @@
-#
-# Copyright (C) 2013 OpenWrt.org
-#
-# This is free software, licensed under the GNU General Public License v2.
-# See /LICENSE for more information.
-#
-
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=flm-ui
-PKG_VERSION:=1.0
-PKG_RELEASE:=1
+PKG_VERSION:=2013-09-17
+PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_URL:=git://github.com/flukso/$(PKG_NAME).git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=cfda1f5c27a344852c8074cb51827cef54921324
+PKG_SOURCE_URL:=git://github.com/flukso/$(PKG_NAME).git
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_VERSION:=3186d9153bf22172724eb052be08360ba98dce17
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
+
+PKG_MAINTAINER:=Bart Van Der Meerssche <bart@flukso.net>
+
 include $(INCLUDE_DIR)/package.mk
 
 define Package/flm-ui
     SECTION:=flukso
     CATEGORY:=Flukso
     TITLE:=Fluksometer UI
-    DEPENDS:=+luci-admin-rpc
-    MAINTAINER:=Bart Van Der Meerssche <bart@flukso.net>
+    DEPENDS:=+luci-mod-rpc
 endef
 
 define Package/flm-ui/description
-	A fresh local UI for the Fluksometer
+	A fresh UI for the Fluksometer
 endef
 
 define Package/flm-ui/install
