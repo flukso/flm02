@@ -71,7 +71,7 @@ local wifi = {
 	ath_kmod_reload = uci:get('system', 'event', 'ath_kmod_reload'),
 
 	init = function(self)
-		local cmd = 'wpa_cli -p /var/run/wpa_supplicant-ath0 -i ath0 status'
+		local cmd = 'wpa_cli -p /var/run/wpa_supplicant-wlan0 -i wlan0 status'
 		local pattern = 'wpa_state=(%a+)\n'
 		local status = luci.sys.exec(cmd):match(pattern)
 
@@ -106,7 +106,7 @@ local wifi = {
 				self:push()
 
 				if self:glitch() then
-					nixio.syslog('alert', 'No default routes on itf ath0, reloading ath kmod')
+					nixio.syslog('alert', 'No default routes on itf wlan0, reloading ath kmod')
 					self:flush()
 					self:reload()
 				end
@@ -120,11 +120,17 @@ local wifi = {
 		uci:commit('system')
 
 		os.execute('wifi down')
-		os.execute('rmmod ath_ahb')
-		os.execute('rmmod ath_hal')
-		os.execute('insmod ath_hal')
-		os.execute('insmod ath_ahb')
-		os.execute('/etc/init.d/network restart')
+		os.execute('rmmod ath5k')
+		os.execute('rmmod ath')
+		os.execute('rmmod mac80211')
+		os.execute('rmmod cfg80211')
+		os.execute('rmmod compat')
+		os.execute('insmod compat')
+		os.execute('insmod cfg80211')
+		os.execute('insmod mac80211')
+		os.execute('insmod ath')
+		os.execute('insmod ath5k')
+		os.execute('wifi up')
 	end,
 
 	loop = function(self, event)
@@ -165,7 +171,7 @@ local disco = {
 			self:push(timestamp)
 
 			if self:glitch() then
-				nixio.syslog('alert', 'Too many disconnects on itf ath0, reloading ath kmod')
+				nixio.syslog('alert', 'Too many disconnects on itf wlan0, reloading ath kmod')
 				self:flush()
 				wifi:reload()
 			end
@@ -183,7 +189,7 @@ local ntp = {
 	init = function(self)
 		local ps = luci.sys.process.list()
 		for k, proc in pairs(ps) do
-			if proc.COMMAND:find('ntpclient') then
+			if proc.COMMAND:find('ntpd') then
 				self.on = true
 				break
 			end
@@ -193,7 +199,7 @@ local ntp = {
 	check = function(self)
 		if self.on then
 			if DEBUG then
-				print('checking ntpclient')
+				print('checking ntpd')
 			end
 
 			os.execute('fntp')
@@ -219,19 +225,26 @@ while true do
 	elseif poll == 0 then -- poll timed out
 	elseif poll > 0 then
 		if fifo.revents == POLLIN then
-			local timestamp, topic, event = fifo.line():match('^(%d+)%s+(%w+)%s+(%w+)$')
-			timestamp = tonumber(timestamp)
-			nixio.syslog('info', string.format('Received event %s for %s', event, topic))
+			while true do
+				local line = fifo.line()
+				if not line then
+					break
+				end
 
-			if DEBUG then
-				print(timestamp, topic, event)
-			end
+				local timestamp, topic, event = line:match('^(%d+)%s+(%w+)%s+(%w+)$')
+				timestamp = tonumber(timestamp)
+				nixio.syslog('info', string.format('Received event %s for %s', event, topic))
 
-			if topic == 'ath0' then
-				wifi:loop(event)
-				disco:loop(event, timestamp)
-			elseif topic == 'ntp' then
-				ntp:loop(event)
+				if DEBUG then
+					print(timestamp, topic, event)
+				end
+
+				if topic == 'wlan0' then
+					wifi:loop(event)
+					disco:loop(event, timestamp)
+				elseif topic == 'ntp' then
+					ntp:loop(event)
+				end
 			end
 		elseif timer.revents == POLLIN then
 			timer.fd:numexp() -- reset the numexp counter

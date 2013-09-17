@@ -58,4 +58,6 @@ patch -p0 < $REPO_PATH/patches/920-add-make-flash-option.patch
 patch -p0 < $REPO_PATH/patches/921-add-make-publish-option.patch
 patch -p0 < $REPO_PATH/patches/925-add_mac_address_to_radio0.patch
 patch -p0 < $REPO_PATH/patches/930-boot_crond_without_crontabs.patch
+patch -p0 < $REPO_PATH/patches/940-wpa_supd_hook.patch
+patch -p0 < $REPO_PATH/patches/950-ntpd_supd_hook.patch
 patch -p0 < $REPO_PATH/patches/960-remove_default_banner.patch

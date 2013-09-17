@@ -8,8 +8,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=flukso
-PKG_VERSION:=2.3.0
-PKG_RELEASE:=1
+PKG_VERSION:=2.3.1
+PKG_RELEASE:=alpha
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
@@ -86,6 +86,7 @@ define Package/flukso/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ftest.lua $(1)/usr/bin/ftest
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fp1.lua $(1)/usr/bin/fp1
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fcheck.sh $(1)/usr/bin/fcheck
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fntp.sh $(1)/usr/bin/fntp
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/restful.lua $(1)/usr/bin/restful
 
 	$(INSTALL_DIR) $(1)/usr/bin/avr/a
