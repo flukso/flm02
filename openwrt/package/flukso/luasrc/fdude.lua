@@ -51,7 +51,7 @@ local function avrdude_args()
 		opt[#opt+1] = '-Uflash:w:' .. avr_dir('a') .. '/main.hex'
 		opt[#opt+1] = '-Ueeprom:w:' .. avr_dir('a') .. '/main.eep'
 
-	elseif MODEL == 'FLM02B' then
+	elseif MODEL == 'FLM02B' or MODEL == 'FLM02C' then
 		opt[#opt+1] = '-cflm02b'
 		opt[#opt+1] = '-Ulfuse:w:0x6E:m'
 		opt[#opt+1] = '-Uhfuse:w:0xDE:m'

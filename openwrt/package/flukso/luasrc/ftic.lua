@@ -2,7 +2,7 @@
 
 --[[
     
-    fp1.lua - provision p1 sensors in flukso uci
+    ftic.lua - provision TIC (télé-info client) sensors in flukso uci
 
     Copyright (C) 2013 Bart Van Der Meerssche <bart@flukso.net>
 
@@ -39,12 +39,18 @@ end
 
 local function p1_prov_electricity(i)
 	local obis_list = {
-		"1-0:1.8.1*255",
-		"1-0:2.8.1*255",
-		"1-0:1.8.2*255",
-		"1-0:2.8.2*255",
-		"1-0:1.7.0*255",
-		"1-0:2.7.0*255"
+		"BASE",
+		"HCHC",
+		"HCHP",
+		"EJPHN",
+		"EJPHPM",
+		"BBRHCJB",
+		"BBRHPJB",
+		"BBRHCJW",
+		"BBRHPJW",
+		"BBEHCJR",
+		"BBRHPJR",
+		"PAPP"
 	}
 
 	uci:set("flukso", tostring(i), "type", "electricity")
@@ -52,28 +58,10 @@ local function p1_prov_electricity(i)
 	uci:set("flukso", tostring(i), "class", "cosem")
 	uci:set_list("flukso", tostring(i), "obis", obis_list)
 	uci:set("flukso", tostring(i), "port", "ttyS0")
-	uci:set("flukso", tostring(i), "protocol", "dlms")
+	uci:set("flukso", tostring(i), "protocol", "tic")
 	uci:set("flukso", tostring(i), "derive", "1")
 	uci:set("flukso", tostring(i), "enable", "1")
 end
 
-local function p1_prov_gas(i)
-	local obis_list = {
-		"0-1:24.2.0*255",
-		"0-1:24.2.1*255"
-	}
-
-	uci:set("flukso", tostring(i), "type", "gas")
-	uci:set("flukso", tostring(i), "function", "smart-main")
-	uci:set("flukso", tostring(i), "class", "cosem")
-	uci:set_list("flukso", tostring(i), "obis", obis_list)
-	uci:set("flukso", tostring(i), "port", "ttyS0")
-	uci:set("flukso", tostring(i), "protocol", "dlms")
-	uci:set("flukso", tostring(i), "derive", "0")
-	uci:set("flukso", tostring(i), "enable", "1")
-end
-
-uci:set("flukso", "main", "uart_rx_invert", "1")
 p1_prov_electricity(free_sensor())
-p1_prov_gas(free_sensor())
 uci:commit("flukso")

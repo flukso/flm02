@@ -557,7 +557,7 @@ local ctrl = ctrl_init()
 check_hw_version(ctrl)
 disable_all_sensors(ctrl)
 
-if MODEL == 'FLM02B' then
+if MODEL == 'FLM02B' or MODEL == 'FLM02C' then
 	set_hardware_lines(ctrl)
 end
 

@@ -64,8 +64,8 @@ define Package/flukso/install
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rrd/*.lua $(1)/usr/lib/lua/rrd/
 	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/*.lua $(1)/usr/lib/lua/flukso/
-	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso/protocol
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/protocol/*.lua $(1)/usr/lib/lua/flukso/protocol/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso/decoder
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/decoder/*.lua $(1)/usr/lib/lua/flukso/decoder/
 
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/luad $(1)/usr/sbin/
@@ -85,6 +85,7 @@ define Package/flukso/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fbackup.lua $(1)/usr/bin/fbackup
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ftest.lua $(1)/usr/bin/ftest
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fp1.lua $(1)/usr/bin/fp1
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ftic.lua $(1)/usr/bin/ftic
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fcheck.sh $(1)/usr/bin/fcheck
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fntp.sh $(1)/usr/bin/fntp
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/restful.lua $(1)/usr/bin/restful
