@@ -142,7 +142,11 @@ function Cursor.tset(self, config, section, values)
 	local stat = true
 	for k, v in pairs(values) do
 		if k:sub(1, 1) ~= "." then
-			stat = stat and self:set(config, section, k, v)
+			if type(v) == "table" and #v == 0  then              
+				stat = stat and self:delete(config, section, k)
+			else
+				stat = stat and self:set(config, section, k, v)
+			end
 		end
 	end
 	return stat
