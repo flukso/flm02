@@ -40,9 +40,13 @@ local function _read(id)
 end
 
 local function _write(id, data)
-	local f = nixio.open(sessionpath .. "/" .. id, "w", 600)
+	local tempid = luci.sys.uniqueid(16)
+	local tempfile = sessionpath .. "/" .. tempid
+	local sessfile = sessionpath .. "/" .. id
+	local f = nixio.open(tempfile, "w", 600)
 	f:writeall(data)
 	f:close()
+	fs.rename(tempfile, sessfile)
 end
 
 local function _checkid(id)
