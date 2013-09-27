@@ -104,7 +104,7 @@ end
 local function finish()
 	if telegram then
 		if length then
-			if telegram.length == length then
+			if telegram.length == length and telegram.check == true then
 				sync = true
 			else
 				telegram.check = false
