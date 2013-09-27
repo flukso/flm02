@@ -36,7 +36,7 @@ uci:foreach('system', 'system', function(x) MODEL = x.model end)
 
 local SPI_DEV               = '/dev/spidev1.0'
 local SPI_MAX_CLK_SPEED_HZ  = 1e6
-local SPI_MIN_BYTE_DELAY_US = (MODEL == 'FLM02A') and 250 or 50
+local SPI_MIN_BYTE_DELAY_US = 300 -- PAVE: Needed to relax the timings even for model B, previous: (MODEL == 'FLM02A') and 250 or 50
 local SPI_TX_RX_DELAY_NS    = (MODEL == 'FLM02A') and 2e7 or 5e6
 local SPI_CT_DELAY_NS       = 5e8
 local POLL_TIMEOUT_MS       = (MODEL == 'FLM02A') and 100 or 50
