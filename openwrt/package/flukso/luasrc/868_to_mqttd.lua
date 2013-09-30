@@ -1,9 +1,51 @@
+#! /usr/bin/env lua
 
+--[[
+    
+    868_to_mqttd.lua - bridging from 868 to MQTT within Flukso
+
+    Copyright (C) 2013 Paul-Armand Verhaegen <paularmand.verhaegen@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+]]--
+
+local dbg       = require 'dbg'  
 local nixio 	= require "nixio"
 local fs 	= require "nixio.fs"
 local uci 	= require "luci.model.uci".cursor()
 local mosq 	= require 'mosquitto'
-local dbg       = require 'dbg'  
+
+local arg = arg or {} -- needed when this code is not loaded via the interpreter, based on code from spid.lua
+
+local DEBUG                 = (arg[1] == '-d')
+local DAEMON                = os.getenv('DAEMON') or '868_to_mqtt'
+local DAEMON_PATH           = os.getenv('DAEMON_PATH') or '/var/run/' .. DAEMON
+
+-- Mosquitto parameters
+local MOSQ_ID = DEAMON
+local MOSQ_CLN_SESSION = true
+local MOSQ_HOST = 'localhost'
+local MOSQ_PORT = 1883
+local MOSQ_KEEPALIVE = 300
+local MOSQ_TIMEOUT = 0
+local MOSQ_MAX_PKTS = 10
+local MOSQ_QOS = 0
+local MOSQ_RETAIN = true 
+ 
+local fifo = '/tmp/run/spid/uart/out' -- 868Mhz packets are delivered on uart (without sync byte)
+
 
 function number_from_bitfield(payload, packet_cursor, bitfield, type)
   -- retain only certain bits (equal to 1 in bitfield) in payload to calculate the result
@@ -50,18 +92,6 @@ function number_from_bitfield(payload, packet_cursor, bitfield, type)
   return result_number 
 end
 
--- Mosquitto parameters
-local MOSQ_ID = DEAMON
-local MOSQ_CLN_SESSION = true
-local MOSQ_HOST = 'localhost'
-local MOSQ_PORT = 1883
-local MOSQ_KEEPALIVE = 300
-local MOSQ_TIMEOUT = 0
-local MOSQ_MAX_PKTS = 10
-local MOSQ_QOS = 0
-local MOSQ_RETAIN = true 
- 
-local fifo = '/tmp/run/spid/uart/out'
 local clean_packet = {}
 
 -- Connect to the mqtt broker
