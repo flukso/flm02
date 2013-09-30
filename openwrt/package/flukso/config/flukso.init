@@ -121,6 +121,7 @@ start()
 	then
 		set_ttyS0_B
 		/usr/sbin/parsed -u flukso
+		/usr/sbin/868_to_mqttd -u flukso
 	fi
 
 	if [ $MODEL == FLM02C ]
@@ -181,5 +182,8 @@ stop()
 
 	/usr/sbin/supd -k
 	rm -rf /var/run/supd
+
+	/usr/sbin/868_to_mqttd -k
+	rm -rf /var/run/868_to_mqttd
 }
 
