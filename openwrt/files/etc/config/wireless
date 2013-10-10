@@ -1,4 +1,5 @@
 config wifi-device  radio0
+	option country	BE
 	option type     mac80211
 	option channel  auto
 	option hwmode	11g
