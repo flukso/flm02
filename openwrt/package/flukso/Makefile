@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=flukso
-PKG_VERSION:=2.3.1
+PKG_VERSION:=2.3.2
 PKG_RELEASE:=alpha
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
