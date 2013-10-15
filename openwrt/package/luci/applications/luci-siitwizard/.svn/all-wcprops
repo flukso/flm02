@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 66
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-siitwizard
+V 67
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-siitwizard
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 75
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-siitwizard/Makefile
+V 76
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-siitwizard/Makefile
 END

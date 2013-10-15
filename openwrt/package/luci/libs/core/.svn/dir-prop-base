@@ -3,8 +3,4 @@ svn:ignore
 V 5
 dist
 
-K 13
-svn:mergeinfo
-V 51
-/luci/trunk/libs/core:5655,5859,5902-5903,6024-6025
 END

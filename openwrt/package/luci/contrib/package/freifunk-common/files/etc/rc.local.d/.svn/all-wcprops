@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/freifunk-common/files/etc/rc.local.d
+END
+01-config-migration
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/freifunk-common/files/etc/rc.local.d/01-config-migration
+END

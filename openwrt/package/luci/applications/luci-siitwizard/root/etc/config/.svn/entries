@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-siitwizard/root/etc/config
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-siitwizard/root/etc/config
 http://svn.luci.subsignal.org
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:15.045069Z
+2013-08-21T21:15:26.542359Z
 2c326ef4f00d69aabef85d2894d42508
 2008-12-27T22:54:34.198574Z
 3956

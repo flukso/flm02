@@ -9,15 +9,15 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: openvpn.lua 5118 2009-07-23 03:32:30Z jow $
+$Id: openvpn.lua 8880 2012-07-09 06:25:04Z soma $
 ]]--
 
 local fs  = require "nixio.fs"
 local sys = require "luci.sys"
 local uci = require "luci.model.uci".cursor()
 
-local m = Map("openvpn", translate("openvpn"))
-local s = m:section( TypedSection, "openvpn", translate("openvpn_overview"), translate("openvpn_overview_desc") )
+local m = Map("openvpn", translate("OpenVPN"))
+local s = m:section( TypedSection, "openvpn", translate("OpenVPN instances"), translate("Below is a list of configured OpenVPN instances and their current state") )
 s.template = "cbi/tblsection"
 s.template_addremove = "openvpn/cbi-select-input-add"
 s.addremove = true
@@ -53,39 +53,63 @@ function s.create(self, name)
 		self.sectiontype .. ".select"
 	)
 
-	uci:section(
-		"openvpn", "openvpn", name,
-		uci:get_all( "openvpn_recipes", recipe )
-	)
+	if name and not name:match("[^a-zA-Z0-9_]") then
+		uci:section(
+			"openvpn", "openvpn", name,
+			uci:get_all( "openvpn_recipes", recipe )
+		)
 
-	uci:delete("openvpn", name, "_role")
-	uci:delete("openvpn", name, "_description")
-	uci:save("openvpn")
+		uci:delete("openvpn", name, "_role")
+		uci:delete("openvpn", name, "_description")
+		uci:save("openvpn")
 
-	luci.http.redirect( self.extedit:format(name) )
+		luci.http.redirect( self.extedit:format(name) )
+	else
+		self.invalid_cts = true
+	end
 end
 
 
-s:option( Flag, "enable", translate("openvpn_enable") )
+s:option( Flag, "enabled", translate("Enabled") )
 
-local active = s:option( DummyValue, "_active", translate("openvpn_active") )
+local active = s:option( DummyValue, "_active", translate("Started") )
 function active.cfgvalue(self, section)
-	local pid = fs.readfile("/var/run/openvpn_%s.pid" % section)
+	local pid = fs.readfile("/var/run/openvpn-%s.pid" % section)
 	if pid and #pid > 0 and tonumber(pid) ~= nil then
 		return (sys.process.signal(pid, 0))
-			and translatef("openvpn_active_yes", pid)
-			or  translate("openvpn_active_no")
+			and translatef("yes (%i)", pid)
+			or  translate("no")
 	end
-	return translate("openvpn_active_no")
+	return translate("no")
 end
 
-local port = s:option( DummyValue, "port", translate("openvpn_port") )
+local updown = s:option( Button, "_updown", translate("Start/Stop") )
+updown._state = false
+function updown.cbid(self, section)
+	local pid = fs.readfile("/var/run/openvpn-%s.pid" % section)
+	self._state = pid and #pid > 0 and sys.process.signal(pid, 0)
+	self.option = self._state and "stop" or "start"
+	return AbstractValue.cbid(self, section)
+end
+function updown.cfgvalue(self, section)
+	self.title = self._state and "stop" or "start"
+	self.inputstyle = self._state and "reset" or "reload"
+end
+function updown.write(self, section, value)
+	if self.option == "stop" then
+		luci.sys.call("/etc/init.d/openvpn down %s" % section)
+	else
+		luci.sys.call("/etc/init.d/openvpn up %s" % section)
+	end
+end
+
+local port = s:option( DummyValue, "port", translate("Port") )
 function port.cfgvalue(self, section)
 	local val = AbstractValue.cfgvalue(self, section)
 	return val or "1194"
 end
 
-local proto = s:option( DummyValue, "proto", translate("openvpn_proto") )
+local proto = s:option( DummyValue, "proto", translate("Protocol") )
 function proto.cfgvalue(self, section)
 	local val = AbstractValue.cfgvalue(self, section)
 	return val or "udp"

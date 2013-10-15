@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/luasrc/model/cbi
+END
+pbx-google.lua
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/luasrc/model/cbi/pbx-google.lua
+END
+pbx-voip.lua
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/luasrc/model/cbi/pbx-voip.lua
+END
+pbx-calls.lua
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/luasrc/model/cbi/pbx-calls.lua
+END
+pbx-users.lua
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/luasrc/model/cbi/pbx-users.lua
+END
+pbx.lua
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/luasrc/model/cbi/pbx.lua
+END
+pbx-advanced.lua
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/luasrc/model/cbi/pbx-advanced.lua
+END

@@ -1,0 +1,59 @@
+--- a/arch/mips/ar231x/ar2315.c	2013-08-21 00:24:16.427133523 +0200
++++ b/arch/mips/ar231x/ar2315.c	2013-08-21 12:13:25.087227737 +0200
+@@ -530,6 +530,7 @@
+ #define FLM_SPI_GPIO_MOSI 1
+ #define FLM_SPI_GPIO_MISO 2
+ #define FLM_SPI_GPIO_CS   4
++#define FLM_GPIO_RST      0
+ 
+ static struct spi_gpio_platform_data flm_spi_gpio_platform_data = {
+ 	.sck  = FLM_SPI_GPIO_SCK,
+@@ -556,6 +557,21 @@
+ 	},
+ };
+ 
++static int
++flm_export_gpio_rst(void)
++{
++	int status;
++
++	status = gpio_request(FLM_GPIO_RST, "RST");
++	if (!status) {
++		status = gpio_direction_output(FLM_GPIO_RST, 0);
++#define NO_DIR_CHANGE 0
++		gpio_export(FLM_GPIO_RST, NO_DIR_CHANGE);
++	}
++
++	return status;
++}
++
+ int __init
+ ar2315_init_devices(void)
+ {
+@@ -574,6 +590,7 @@
+ 	ar231x_add_wmac(0, AR2315_WLAN0, AR2315_IRQ_WLAN0_INTRS);
+ 	platform_device_register(&flm_spi_gpio);
+ 	spi_register_board_info(flm_spi_gpio_board_info, ARRAY_SIZE(flm_spi_gpio_board_info));
++	flm_export_gpio_rst();
+ 
+ 	return 0;
+ }
+--- a/drivers/spi/spi-gpio.c	2013-08-21 11:33:38.623279899 +0200
++++ b/drivers/spi/spi-gpio.c	2013-08-21 12:13:29.215227646 +0200
+@@ -247,6 +247,8 @@
+ 			if (status)
+ 				return status;
+ 			status = gpio_direction_output(cs, spi->mode & SPI_CS_HIGH);
++#define GPIO_NO_DIR_CHANGE 0
++			gpio_export(cs, GPIO_NO_DIR_CHANGE);
+ 		}
+ 	}
+ 	if (!status)
+@@ -277,6 +279,7 @@
+ 			value = gpio_direction_input(pin);
+ 		else
+ 			value = gpio_direction_output(pin, 0);
++		gpio_export(pin, GPIO_NO_DIR_CHANGE);
+ 	}
+ 	return value;
+ }

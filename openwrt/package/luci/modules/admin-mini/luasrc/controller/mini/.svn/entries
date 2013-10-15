@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules/admin-mini/luasrc/controller/mini
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules/admin-mini/luasrc/controller/mini
 http://svn.luci.subsignal.org
 
 
 
-2010-04-05T17:46:20.798880Z
-6029
+2013-01-27T18:43:41.246746Z
+9655
 jow
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2010-09-19T09:58:18.861068Z
-fa87d13730ba9f97565c1696b065a004
-2010-04-05T17:46:20.798880Z
-6029
+2013-08-21T21:15:31.530359Z
+6795ebb8275f3389c6e96241e85dd0e5
+2013-01-27T18:43:41.246746Z
+9655
 jow
 has-props
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-6929
+6712
 
 index.lua
 file
@@ -66,11 +66,11 @@ file
 
 
 
-2010-09-19T09:58:18.861068Z
-68977aaad44e2a6c288147512fea1d8c
-2008-12-15T10:40:45.314100Z
-3908
-Cyrus
+2013-08-21T21:15:31.534359Z
+df1408df514a7a55ff36071286f22da1
+2011-08-12T13:16:27.649194Z
+7362
+jow
 has-props
 
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-1616
+1471
 
 network.lua
 file
@@ -100,11 +100,11 @@ file
 
 
 
-2010-09-19T09:58:18.861068Z
-eeb15bfea13453579b513e65a25c6e72
-2008-10-31T09:35:11.394945Z
-3672
-Cyrus
+2013-08-21T21:15:31.534359Z
+0564d08336318cbdb22b6ba75cca3750
+2011-08-12T13:16:27.649194Z
+7362
+jow
 has-props
 
 
@@ -126,5 +126,5 @@ has-props
 
 
 
-941
+856
 

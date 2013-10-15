@@ -1,59 +1,59 @@
 K 25
 svn:wc:ra_dav:version-url
-V 54
-/!svn/ver/6029/luci/branches/luci-0.9/libs/core/luasrc
+V 55
+/!svn/ver/9850/luci/branches/luci-0.11/libs/core/luasrc
 END
 ltn12.lua
 K 25
 svn:wc:ra_dav:version-url
-V 64
-/!svn/ver/4830/luci/branches/luci-0.9/libs/core/luasrc/ltn12.lua
+V 65
+/!svn/ver/9349/luci/branches/luci-0.11/libs/core/luasrc/ltn12.lua
 END
 init.lua
 K 25
 svn:wc:ra_dav:version-url
-V 63
-/!svn/ver/4830/luci/branches/luci-0.9/libs/core/luasrc/init.lua
+V 64
+/!svn/ver/9349/luci/branches/luci-0.11/libs/core/luasrc/init.lua
 END
 version.lua
 K 25
 svn:wc:ra_dav:version-url
-V 66
-/!svn/ver/4830/luci/branches/luci-0.9/libs/core/luasrc/version.lua
+V 67
+/!svn/ver/9349/luci/branches/luci-0.11/libs/core/luasrc/version.lua
 END
 ccache.lua
 K 25
 svn:wc:ra_dav:version-url
-V 65
-/!svn/ver/4891/luci/branches/luci-0.9/libs/core/luasrc/ccache.lua
+V 66
+/!svn/ver/9561/luci/branches/luci-0.11/libs/core/luasrc/ccache.lua
 END
 debug.lua
 K 25
 svn:wc:ra_dav:version-url
-V 64
-/!svn/ver/5120/luci/branches/luci-0.9/libs/core/luasrc/debug.lua
+V 65
+/!svn/ver/9349/luci/branches/luci-0.11/libs/core/luasrc/debug.lua
 END
 fs.lua
 K 25
 svn:wc:ra_dav:version-url
-V 61
-/!svn/ver/5144/luci/branches/luci-0.9/libs/core/luasrc/fs.lua
+V 62
+/!svn/ver/9349/luci/branches/luci-0.11/libs/core/luasrc/fs.lua
 END
 ip.lua
 K 25
 svn:wc:ra_dav:version-url
-V 61
-/!svn/ver/5197/luci/branches/luci-0.9/libs/core/luasrc/ip.lua
+V 62
+/!svn/ver/9349/luci/branches/luci-0.11/libs/core/luasrc/ip.lua
 END
 store.lua
 K 25
 svn:wc:ra_dav:version-url
-V 64
-/!svn/ver/5164/luci/branches/luci-0.9/libs/core/luasrc/store.lua
+V 65
+/!svn/ver/9349/luci/branches/luci-0.11/libs/core/luasrc/store.lua
 END
 util.lua
 K 25
 svn:wc:ra_dav:version-url
-V 63
-/!svn/ver/5860/luci/branches/luci-0.9/libs/core/luasrc/util.lua
+V 64
+/!svn/ver/9570/luci/branches/luci-0.11/libs/core/luasrc/util.lua
 END

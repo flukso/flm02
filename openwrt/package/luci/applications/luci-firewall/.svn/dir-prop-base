@@ -1,0 +1,11 @@
+K 10
+svn:ignore
+V 5
+dist
+
+K 13
+svn:mergeinfo
+V 214
+/luci/branches/luci-0.8/applications/luci-firewall:4367-4369
+/luci/trunk/applications/luci-firewall:9351,9353-9354,9356-9360,9365-9385,9399-9402,9412-9557,9559-9569,9571-9622,9625-9626,9628-9631,9648-9649,9654,9842
+END

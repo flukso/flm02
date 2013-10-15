@@ -10,23 +10,29 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: index.lua 3908 2008-12-15 10:40:45Z Cyrus $
+$Id: index.lua 7362 2011-08-12 13:16:27Z jow $
 ]]--
 
 module("luci.controller.mini.index", package.seeall)
 
 function index()
-	luci.i18n.loadc("admin-core")
-	local i18n = luci.i18n.translate
-
 	local root = node()
 	if not root.lock then
 		root.target = alias("mini")
 		root.index = true
 	end
 	
-	entry({"about"}, template("about")).i18n = "admin-core"
+	entry({"about"}, template("about"))
 	
+	local page   = entry({"mini"}, alias("mini", "index"), _("Essentials"), 10)
+	page.sysauth = "root"
+	page.sysauth_authenticator = "htmlauth"
+	page.index = true
+	
+	entry({"mini", "index"}, alias("mini", "index", "index"), _("Overview"), 10).index = true
+	entry({"mini", "index", "index"}, form("mini/index"), _("General"), 1).ignoreindex = true
+	entry({"mini", "index", "luci"}, cbi("mini/luci", {autoapply=true}), _("Settings"), 10)
+	entry({"mini", "index", "logout"}, call("action_logout"), _("Logout"))
 end
 
 function action_logout()

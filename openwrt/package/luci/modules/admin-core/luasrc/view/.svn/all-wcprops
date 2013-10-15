@@ -1,47 +1,41 @@
 K 25
 svn:wc:ra_dav:version-url
-V 68
-/!svn/ver/5966/luci/branches/luci-0.9/modules/admin-core/luasrc/view
+V 69
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-core/luasrc/view
 END
 header.htm
 K 25
 svn:wc:ra_dav:version-url
-V 79
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/luasrc/view/header.htm
-END
-about.htm
-K 25
-svn:wc:ra_dav:version-url
-V 78
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/luasrc/view/about.htm
+V 80
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-core/luasrc/view/header.htm
 END
 error500.htm
 K 25
 svn:wc:ra_dav:version-url
-V 81
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/luasrc/view/error500.htm
+V 82
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-core/luasrc/view/error500.htm
 END
 footer.htm
 K 25
 svn:wc:ra_dav:version-url
-V 79
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/luasrc/view/footer.htm
+V 80
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-core/luasrc/view/footer.htm
 END
 indexer.htm
 K 25
 svn:wc:ra_dav:version-url
-V 80
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/luasrc/view/indexer.htm
+V 81
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-core/luasrc/view/indexer.htm
 END
 sysauth.htm
 K 25
 svn:wc:ra_dav:version-url
-V 80
-/!svn/ver/5966/luci/branches/luci-0.9/modules/admin-core/luasrc/view/sysauth.htm
+V 81
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-core/luasrc/view/sysauth.htm
 END
 error404.htm
 K 25
 svn:wc:ra_dav:version-url
-V 81
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-core/luasrc/view/error404.htm
+V 82
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-core/luasrc/view/error404.htm
 END

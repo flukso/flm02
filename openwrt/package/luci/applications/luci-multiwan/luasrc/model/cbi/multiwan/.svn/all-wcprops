@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-multiwan/luasrc/model/cbi/multiwan
+END
+multiwan.lua
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-multiwan/luasrc/model/cbi/multiwan/multiwan.lua
+END
+multiwanmini.lua
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-multiwan/luasrc/model/cbi/multiwan/multiwanmini.lua
+END

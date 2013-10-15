@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules/admin-core/root/etc/init.d
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules/admin-core/root/etc/init.d
 http://svn.luci.subsignal.org
 
 
 
-2010-03-27T02:45:36.636257Z
-5943
-jow
+2011-09-08T15:44:56.378351Z
+7481
+soma
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2010-09-19T09:58:19.273068Z
-444039e0f363dc58b15434f574dfaec1
-2010-03-27T02:45:36.636257Z
-5943
-jow
+2013-08-21T21:15:31.886359Z
+c35982b8bdbcb24f0b2319388015e6e2
+2011-09-08T15:44:56.378351Z
+7481
+soma
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-323
+368
 
 luci_dhcp_migrate
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2010-09-19T09:58:19.273068Z
+2013-08-21T21:15:31.886359Z
 cd29148d12fa0879553d08b552fd03fa
-2010-03-09T11:37:54.339942Z
-5778
+2010-03-09T11:37:12.070598Z
+5777
 jow
 has-props
 

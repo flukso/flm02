@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 60
-/!svn/ver/6029/luci/branches/luci-0.9/libs/ipkg/luasrc/model
+V 61
+/!svn/ver/9558/luci/branches/luci-0.11/libs/ipkg/luasrc/model
 END
 ipkg.lua
 K 25
 svn:wc:ra_dav:version-url
-V 69
-/!svn/ver/6029/luci/branches/luci-0.9/libs/ipkg/luasrc/model/ipkg.lua
+V 70
+/!svn/ver/9558/luci/branches/luci-0.11/libs/ipkg/luasrc/model/ipkg.lua
 END

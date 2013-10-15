@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules/freifunk/htdocs/luci-static/resources
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules/freifunk/htdocs/luci-static/resources
 http://svn.luci.subsignal.org
 
 
 
-2010-04-05T17:46:20.798880Z
-6029
+2013-01-27T18:43:41.246746Z
+9655
 jow
 has-props
 
@@ -26,16 +26,50 @@ has-props
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
+OSMLatLon.htm
+file
+
+
+
+
+2013-08-21T21:15:31.770359Z
+986f9e6a426621d5026519748a5085e6
+2011-05-03T03:20:15.721853Z
+7011
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1029
+
 flashing.gif
 file
 
 
 
 
-2010-09-19T09:58:19.169068Z
+2013-08-21T21:15:31.770359Z
 a3ce1a0e208d86bbdc94acae9418c8a6
-2009-06-30T04:50:24.395883Z
-4945
+2009-06-30T04:41:00.222443Z
+4941
 jow
 has-props
 
@@ -62,4 +96,38 @@ has-props
 
 freifunk-map
 dir
+
+osm.js
+file
+
+
+
+
+2013-08-21T21:15:31.770359Z
+80b279860e1bad55334fff3ce803f1c6
+2012-07-09T05:48:37.526035Z
+8874
+soma
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3620
 

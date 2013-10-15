@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/i18n/french/root/etc/uci-defaults
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/i18n/french/root/etc/uci-defaults
 http://svn.luci.subsignal.org
 
 
 
-2008-11-09T22:42:36.873679Z
-3745
-jow
+2011-04-21T09:47:25.587116Z
+6992
+soma
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2010-09-19T09:58:13.733068Z
-21c20f3f300e9b31e6e00e1086c31816
-2008-11-09T22:42:36.873679Z
-3745
-jow
+2013-08-21T21:15:26.062359Z
+f01a4ed6518121315039d91210cf19fd
+2011-04-21T09:47:25.587116Z
+6992
+soma
 has-props
 
 

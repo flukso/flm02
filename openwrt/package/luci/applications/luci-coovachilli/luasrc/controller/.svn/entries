@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-coovachilli/luasrc/controller
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-coovachilli/luasrc/controller
 http://svn.luci.subsignal.org
 
 
 
-2008-10-09T20:28:07.406977Z
-3548
-Cyrus
+2012-12-18T13:58:22.625226Z
+9558
+jow
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2010-09-19T09:58:15.457069Z
-6da5abf440c86d2620cdb953e12e5e7a
-2008-10-09T20:28:07.406977Z
-3548
-Cyrus
+2013-08-21T21:15:26.582359Z
+ad0cef1b8870f75c96c3075c8570cb88
+2012-12-18T13:58:22.625226Z
+9558
+jow
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1159
+969
 

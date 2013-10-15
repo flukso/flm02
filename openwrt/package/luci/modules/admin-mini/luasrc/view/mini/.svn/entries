@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules/admin-mini/luasrc/view/mini
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules/admin-mini/luasrc/view/mini
 http://svn.luci.subsignal.org
 
 
 
-2009-05-09T03:23:42.285117Z
-4487
+2012-08-14T13:08:18.176590Z
+9014
 jow
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2010-09-19T09:58:18.881067Z
-4355d081f965ae221f20fa640e0e02de
-2008-10-07T13:10:24.227006Z
-3529
+2013-08-21T21:15:31.542359Z
+c24286eca4309a922e0a5fc81417b748
+2009-10-31T15:54:11.121111Z
+5448
 jow
 has-props
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-908
+1012
 
 applyreboot.htm
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2010-09-19T09:58:18.881067Z
-0435be97619b5bd5f20528a5f1cbb903
-2008-10-07T13:10:24.227006Z
-3529
+2013-08-21T21:15:31.542359Z
+3fa077b3ee5d80f12da4ade5d44dccc9
+2009-10-31T15:54:11.121111Z
+5448
 jow
 has-props
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-697
+711
 
 backup.htm
 file
@@ -100,11 +100,11 @@ file
 
 
 
-2010-09-19T09:58:18.881067Z
-e1c2a04a2b34ad5c954022b218d901e2
-2008-10-07T13:10:24.227006Z
-3529
-jow
+2013-08-21T21:15:31.542359Z
+76b1d261efea17518d3ebfc4c2897120
+2012-07-01T20:05:05.143378Z
+8847
+dgolle
 has-props
 
 
@@ -126,7 +126,7 @@ has-props
 
 
 
-1125
+1298
 
 index.htm
 file
@@ -134,44 +134,10 @@ file
 
 
 
-2010-09-19T09:58:18.881067Z
-7158331299bd0b3caa19564bf70c0463
-2009-01-17T13:25:32.773543Z
-4068
-Cyrus
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-685
-
-upgrade.htm
-file
-
-
-
-
-2010-09-19T09:58:18.881067Z
-452bec5a812f4b144cd442eeeeb34c8a
-2009-05-09T03:23:42.285117Z
-4487
+2013-08-21T21:15:31.542359Z
+603f9df586d5b5528fcea92783a5d226
+2012-08-14T13:08:18.176590Z
+9014
 jow
 has-props
 
@@ -194,5 +160,39 @@ has-props
 
 
 
-3679
+1114
+
+upgrade.htm
+file
+
+
+
+
+2013-08-21T21:15:31.542359Z
+b8052a53762db45c30137b4fa76e4627
+2009-10-31T19:26:07.703169Z
+5457
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3374
 

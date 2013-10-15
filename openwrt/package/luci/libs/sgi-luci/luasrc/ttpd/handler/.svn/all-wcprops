@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 71
-/!svn/ver/4830/luci/branches/luci-0.9/libs/sgi-luci/luasrc/ttpd/handler
+V 72
+/!svn/ver/9349/luci/branches/luci-0.11/libs/sgi-luci/luasrc/ttpd/handler
 END
 luci.lua
 K 25
 svn:wc:ra_dav:version-url
-V 80
-/!svn/ver/4830/luci/branches/luci-0.9/libs/sgi-luci/luasrc/ttpd/handler/luci.lua
+V 81
+/!svn/ver/9349/luci/branches/luci-0.11/libs/sgi-luci/luasrc/ttpd/handler/luci.lua
 END

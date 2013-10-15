@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 67
-/!svn/ver/5118/luci/branches/luci-0.9/modules/rpc/luasrc/controller
+V 68
+/!svn/ver/9349/luci/branches/luci-0.11/modules/rpc/luasrc/controller
 END
 rpc.lua
 K 25
 svn:wc:ra_dav:version-url
-V 75
-/!svn/ver/5118/luci/branches/luci-0.9/modules/rpc/luasrc/controller/rpc.lua
+V 76
+/!svn/ver/9349/luci/branches/luci-0.11/modules/rpc/luasrc/controller/rpc.lua
 END

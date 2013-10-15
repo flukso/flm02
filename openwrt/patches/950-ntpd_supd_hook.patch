@@ -1,0 +1,23 @@
+--- package/base-files/files/etc/init.d/sysntpd	2013-09-16 14:20:22.715575995 +0200
++++ package/base-files/files/etc/init.d/sysntpd	2013-09-16 14:25:48.215568879 +0200
+@@ -6,6 +6,7 @@
+ SERVICE_DAEMONIZE=1
+ SERVICE_WRITE_PID=1
+ SERVICE_PID_FILE=/var/run/sysntpd.pid
++SUPD_FIFO=/var/run/supd/event
+ 
+ start() {
+ 	local peers
+@@ -28,10 +29,12 @@
+ 	fi
+ 
+ 	if [ "$args" != "-n" ]; then
++		[ -p $SUPD_FIFO ] && echo $(date +%s) ntp START > $SUPD_FIFO
+ 		service_start /usr/sbin/ntpd $args
+ 	fi
+ }
+ 
+ stop() {
++	[ -p $SUPD_FIFO ] && echo $(date +%s) ntp STOP > $SUPD_FIFO
+ 	service_stop /usr/sbin/ntpd
+ }

@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-siitwizard/luasrc/model/cbi
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-siitwizard/luasrc/model/cbi
 http://svn.luci.subsignal.org
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:15.053068Z
+2013-08-21T21:15:26.546359Z
 7c2f75ee3ffd382e8f695c3e23f583f1
 2008-12-29T17:39:48.042232Z
 3966

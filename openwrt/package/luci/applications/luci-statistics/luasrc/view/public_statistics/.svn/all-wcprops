@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 96
-/!svn/ver/5965/luci/branches/luci-0.9/applications/luci-statistics/luasrc/view/public_statistics
+V 97
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/view/public_statistics
 END
 graph.htm
 K 25
 svn:wc:ra_dav:version-url
-V 106
-/!svn/ver/5965/luci/branches/luci-0.9/applications/luci-statistics/luasrc/view/public_statistics/graph.htm
+V 107
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-statistics/luasrc/view/public_statistics/graph.htm
 END

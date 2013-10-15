@@ -1,17 +1,17 @@
 K 25
 svn:wc:ra_dav:version-url
-V 77
-/!svn/ver/6029/luci/branches/luci-0.9/contrib/package/freifunk-p2pblock/files
+V 78
+/!svn/ver/9558/luci/branches/luci-0.11/contrib/package/freifunk-p2pblock/files
 END
 freifunk-p2pblock.init
 K 25
 svn:wc:ra_dav:version-url
-V 100
-/!svn/ver/6029/luci/branches/luci-0.9/contrib/package/freifunk-p2pblock/files/freifunk-p2pblock.init
+V 101
+/!svn/ver/9558/luci/branches/luci-0.11/contrib/package/freifunk-p2pblock/files/freifunk-p2pblock.init
 END
 freifunk-p2pblock.config
 K 25
 svn:wc:ra_dav:version-url
-V 102
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/package/freifunk-p2pblock/files/freifunk-p2pblock.config
+V 103
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/freifunk-p2pblock/files/freifunk-p2pblock.config
 END

@@ -1,0 +1,227 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/9623/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config
+END
+profile_pberg
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_pberg
+END
+profile_marburg
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_marburg
+END
+profile_gadow
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_gadow
+END
+profile_stuttgart
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_stuttgart
+END
+profile_potsdam
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_potsdam
+END
+profile_evernet
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_evernet
+END
+profile_Freifunk
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_Freifunk
+END
+profile_berlin
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_berlin
+END
+profile_jena
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_jena
+END
+profile_bergischesland
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_bergischesland
+END
+profile_augsburg
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/!svn/ver/9623/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_augsburg
+END
+profile_hannover
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_hannover
+END
+profile_rosbach
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_rosbach
+END
+profile_oldenburg
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_oldenburg
+END
+profile_heppenheim
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_heppenheim
+END
+profile_bayreuth
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_bayreuth
+END
+profile_weimar
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_weimar
+END
+profile_wlanljubljana
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_wlanljubljana
+END
+profile_openwireless_bern
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_openwireless_bern
+END
+profile_halle
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_halle
+END
+profile_bensheim
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_bensheim
+END
+profile_neuss
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_neuss
+END
+profile_weinstadt
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_weinstadt
+END
+profile_leipzig
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_leipzig
+END
+profile_arig_neot_semadar
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_arig_neot_semadar
+END
+profile_guifibages
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_guifibages
+END
+profile_piraten_dresden
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_piraten_dresden
+END
+profile_kiberpipa
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_kiberpipa
+END
+profile_seefeld
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_seefeld
+END
+profile_l59
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_l59
+END
+profile_arig_arad
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_arig_arad
+END
+profile_mainz
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_mainz
+END
+profile_aachen
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_aachen
+END
+profile_duesseldorf
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_duesseldorf
+END
+profile_franken
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_franken
+END
+profile_arig_tel-aviv
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_arig_tel-aviv
+END
+profile_carbodebit
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/community-profiles/files/etc/config/profile_carbodebit
+END

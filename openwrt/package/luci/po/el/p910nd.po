@@ -1,33 +1,49 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-05-28 02:08+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2012-03-18 15:25+0200\n"
+"Last-Translator: Vasilis <acinonyx@openwrt.gr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.1.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Pootle 2.0.4\n"
 
-#. p910nd - Printer server
-#: applications/luci-p910nd/luasrc/i18n/p910nd.en.lua:1
-msgid "p910nd"
-msgstr ""
+msgid "Bidirectional mode"
+msgstr "Αμφίδρομη μέθοδος"
 
-#. First you have to install the packages to get support for USB (kmod-usb-printer) or parallel port (kmod-lp).
-#: applications/luci-p910nd/luasrc/i18n/p910nd.en.lua:2
-msgid "p910nd_desc"
-msgstr ""
+msgid "Device"
+msgstr "Συσκευή"
 
-#. Bidirectional mode
-#: applications/luci-p910nd/luasrc/i18n/p910nd.en.lua:3
-msgid "bidirectional"
+msgid ""
+"First you have to install the packages to get support for USB (kmod-usb-"
+"printer) or parallel port (kmod-lp)."
 msgstr ""
+"Πρώτα πρέπει να εγκατασταθούν τα πακέτα για να υπάρξει υποστήριξη για USB "
+"(kmod-usb-printer) ή παράλληλη θύρα (kmod-lp)."
 
-#. p910nd listens on port 910+N. E.g. 9100 for the first printer.
-#: applications/luci-p910nd/luasrc/i18n/p910nd.en.lua:4
-msgid "port_help"
-msgstr ""
+msgid "Port"
+msgstr "Θύρα"
+
+msgid "Settings"
+msgstr "Ρυθμίσεις"
+
+msgid "TCP listener port."
+msgstr "Θύρα ακρόασης TCP"
+
+msgid "enable"
+msgstr "ενεργοποίηση"
+
+msgid "p910nd - Printer server"
+msgstr "p910nd - Εξυπηρετητής εκτυπώσεων"
+
+#~ msgid "port_help"
+#~ msgstr "port_help"
+
+#~ msgid "p910nd listens on port 910+N. E.g. 9100 for the first printer."
+#~ msgstr ""
+#~ "p910nd ανταποκρίνεται στην πόρτα 910+N. π.χ. 9100 για τον πρώτο εκτυπωτή"

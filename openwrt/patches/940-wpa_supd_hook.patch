@@ -1,0 +1,30 @@
+--- package/hostapd/files/wpa_action	(revision 0)
++++ package/hostapd/files/wpa_action	(revision 0)
+@@ -0,0 +1,5 @@
++#!/bin/sh
++
++SUPD_FIFO=/var/run/supd/event
++
++[ -p $SUPD_FIFO ] && echo $(date +%s) $1 $2 > $SUPD_FIFO
+--- package/hostapd/Makefile	(revision 27608)
++++ package/hostapd/Makefile	(working copy)
+@@ -288,6 +288,7 @@
+ 	$(INSTALL_DIR) $(1)/lib/wifi
+ 	$(INSTALL_DATA) ./files/wpa_supplicant.sh $(1)/lib/wifi/wpa_supplicant.sh
+ 	$(INSTALL_DIR) $(1)/usr/sbin
++	$(INSTALL_BIN) ./files/wpa_action $(1)/usr/sbin
+ endef
+ 
+ define Package/hostapd/install
+--- package/hostapd/files/wpa_supplicant.sh	2013-09-17 10:02:41.137368201 +0200
++++ package/hostapd/files/wpa_supplicant.sh	2013-09-17 10:06:08.737363665 +0200
+@@ -187,7 +187,8 @@
+ }
+ EOF
+ 	if [ -n "$proto" -o "$key_mgmt" == "NONE" ]; then
+-		wpa_supplicant ${bridge:+ -b $bridge} -B -P "/var/run/wifi-${ifname}.pid" -D ${driver:-wext} -i "$ifname" -c /var/run/wpa_supplicant-$ifname.conf $options
++		wpa_supplicant ${bridge:+ -b $bridge} -B -P "/var/run/wifi-${ifname}.pid" -D ${driver:-wext} -i "$ifname" -c /var/run/wpa_supplicant-$ifname.conf $options; \
++		wpa_cli -i $ifname -p /var/run/wpa_supplicant-$ifname -a /usr/sbin/wpa_action -B
+ 	else
+ 		return 0
+ 	fi

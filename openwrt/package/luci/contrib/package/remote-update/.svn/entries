@@ -1,16 +1,16 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/contrib/package/remote-update
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/contrib/package/remote-update
 http://svn.luci.subsignal.org
 
 
 
-2010-04-05T17:46:20.798880Z
-6029
+2011-10-23T14:20:51.856269Z
+7771
 jow
-has-props
+
 
 
 
@@ -35,12 +35,11 @@ file
 
 
 
-2010-09-19T09:58:18.696068Z
-770ef42e59979ac6d149757a4a999136
-2010-04-05T17:46:20.798880Z
-6029
+2013-08-21T21:15:31.094359Z
+d28711bc0d8dbf435597c592a7c8a533
+2011-10-23T14:20:51.856269Z
+7771
 jow
-has-props
 
 
 
@@ -61,5 +60,6 @@ has-props
 
 
 
-882
+
+885
 

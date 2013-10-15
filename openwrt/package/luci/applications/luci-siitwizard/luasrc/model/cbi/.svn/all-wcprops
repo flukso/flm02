@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 83
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-siitwizard/luasrc/model/cbi
+V 84
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-siitwizard/luasrc/model/cbi
 END
 siitwizard.lua
 K 25
 svn:wc:ra_dav:version-url
-V 98
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-siitwizard/luasrc/model/cbi/siitwizard.lua
+V 99
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-siitwizard/luasrc/model/cbi/siitwizard.lua
 END

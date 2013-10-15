@@ -10,23 +10,21 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: ntpc.lua 5118 2009-07-23 03:32:30Z jow $
+$Id: ntpc.lua 9558 2012-12-18 13:58:22Z jow $
 ]]--
+
 module("luci.controller.ntpc", package.seeall)
 
 function index()
-	require("luci.i18n")
-	luci.i18n.loadc("ntpc")
 	if not nixio.fs.access("/etc/config/ntpclient") then
 		return
 	end
 	
-	local page = entry({"admin", "system", "ntpc"}, cbi("ntpc/ntpc"), luci.i18n.translate("ntpc"), 50)
-	page.i18n = "ntpc"
+	local page
+
+	page = entry({"admin", "system", "ntpc"}, cbi("ntpc/ntpc"), _("Time Synchronisation"), 50)
 	page.dependent = true
-	
-	
-	local page = entry({"mini", "system", "ntpc"}, cbi("ntpc/ntpcmini", {autoapply=true}), luci.i18n.translate("ntpc"), 50)
-	page.i18n = "ntpc"
+
+	page = entry({"mini", "system", "ntpc"}, cbi("ntpc/ntpcmini", {autoapply=true}), _("Time Synchronisation"), 50)
 	page.dependent = true
 end

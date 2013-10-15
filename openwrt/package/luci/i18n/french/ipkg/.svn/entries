@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/i18n/french/ipkg
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/i18n/french/ipkg
 http://svn.luci.subsignal.org
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:13.748067Z
+2013-08-21T21:15:26.066359Z
 ae375f98e3dd9381c3cb707effdacf0b
 2008-07-23T11:13:33.552840Z
 2648

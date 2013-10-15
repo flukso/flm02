@@ -27,7 +27,7 @@ local uci   = require 'luci.model.uci'.cursor()
 
 local AVRDUDE             = '/usr/bin/avrdude'
 local AVR_BIN             = '/usr/bin/avr/'
-local SPI_DEV             = '/dev/spidev0.0'
+local SPI_DEV             = '/dev/spidev1.0'
 local SPI_DAEMON_PID_FILE = '/var/run/spid/pid'
 local O_RDWR_NONBLOCK     = nixio.open_flags('rdwr', 'nonblock')
 local MODEL               = 'FLM02X'
@@ -51,7 +51,7 @@ local function avrdude_args()
 		opt[#opt+1] = '-Uflash:w:' .. avr_dir('a') .. '/main.hex'
 		opt[#opt+1] = '-Ueeprom:w:' .. avr_dir('a') .. '/main.eep'
 
-	elseif MODEL == 'FLM02B' then
+	elseif MODEL == 'FLM02B' or MODEL == 'FLM02C' then
 		opt[#opt+1] = '-cflm02b'
 		opt[#opt+1] = '-Ulfuse:w:0x6E:m'
 		opt[#opt+1] = '-Uhfuse:w:0xDE:m'

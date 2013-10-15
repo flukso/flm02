@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-diag-devinfo/luasrc/model/cbi/luci_diag
+END
+netdiscover_devinfo.lua
+K 25
+svn:wc:ra_dav:version-url
+V 120
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-diag-devinfo/luasrc/model/cbi/luci_diag/netdiscover_devinfo.lua
+END
+smap_devinfo_config.lua
+K 25
+svn:wc:ra_dav:version-url
+V 120
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-diag-devinfo/luasrc/model/cbi/luci_diag/smap_devinfo_config.lua
+END
+netdiscover_devinfo_config_mini.lua
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-diag-devinfo/luasrc/model/cbi/luci_diag/netdiscover_devinfo_config_mini.lua
+END
+netdiscover_devinfo_config.lua
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-diag-devinfo/luasrc/model/cbi/luci_diag/netdiscover_devinfo_config.lua
+END
+smap_devinfo_mini.lua
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-diag-devinfo/luasrc/model/cbi/luci_diag/smap_devinfo_mini.lua
+END
+smap_devinfo.lua
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-diag-devinfo/luasrc/model/cbi/luci_diag/smap_devinfo.lua
+END
+netdiscover_devinfo_mini.lua
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-diag-devinfo/luasrc/model/cbi/luci_diag/netdiscover_devinfo_mini.lua
+END
+smap_devinfo_config_mini.lua
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-diag-devinfo/luasrc/model/cbi/luci_diag/smap_devinfo_config_mini.lua
+END
+mactodevinfo.lua
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-diag-devinfo/luasrc/model/cbi/luci_diag/mactodevinfo.lua
+END

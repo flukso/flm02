@@ -4,9 +4,6 @@ LuCI - Utility library
 Description:
 Several common useful Lua functions
 
-FileId:
-$Id: util.lua 5860 2010-03-18 15:19:48Z jow $
-
 License:
 Copyright 2008 Steven Barth <steven@midlink.org>
 
@@ -31,11 +28,12 @@ local debug = require "debug"
 local ldebug = require "luci.debug"
 local string = require "string"
 local coroutine = require "coroutine"
+local tparser = require "luci.template.parser"
 
 local getmetatable, setmetatable = getmetatable, setmetatable
 local rawget, rawset, unpack = rawget, rawset, unpack
 local tostring, type, assert = tostring, type, assert
-local ipairs, pairs, loadstring = ipairs, pairs, loadstring
+local ipairs, pairs, next, loadstring = ipairs, pairs, next, loadstring
 local require, pcall, xpcall = require, pcall, xpcall
 local collectgarbage, get_memory_limit = collectgarbage, get_memory_limit
 
@@ -181,44 +179,18 @@ end
 -- String and data manipulation routines
 --
 
---- Escapes all occurrences of the given character in given string.
--- @param s	String value containing unescaped characters
--- @param c	String value with character to escape (optional, defaults to "\")
--- @return	String value with each occurrence of character escaped with "\"
-function escape(s, c)
-	c = c or "\\"
-	return s:gsub(c, "\\" .. c)
-end
-
 --- Create valid XML PCDATA from given string.
 -- @param value	String value containing the data to escape
 -- @return		String value containing the escaped data
-local function _pcdata_repl(c)
-	local i = string.byte(c)
-
-	if ( i >= 0x00 and i <= 0x08 ) or ( i >= 0x0B and i <= 0x0C ) or
-	   ( i >= 0x0E and i <= 0x1F ) or ( i == 0x7F )
-	then
-		return ""
-		
-	elseif ( i == 0x26 ) or ( i == 0x27 ) or ( i == 0x22 ) or
-	       ( i == 0x3C ) or ( i == 0x3E )
-	then
-		return string.format("&#%i;", i)
-	end
-
-	return c
-end
-
 function pcdata(value)
-	return value and tostring(value):gsub("[&\"'<>%c]", _pcdata_repl)
+	return value and tparser.pcdata(tostring(value))
 end
 
 --- Strip HTML tags from given string.
 -- @param value	String containing the HTML text
 -- @return	String with HTML tags stripped of
-function striptags(s)
-	return pcdata(tostring(s):gsub("</?[A-Za-z][A-Za-z0-9:_%-]*[^>]*>", " "):gsub("%s+", " "))
+function striptags(value)
+	return value and tparser.striptags(tostring(value))
 end
 
 --- Splits given string on a defined separator sequence and return a table
@@ -282,6 +254,36 @@ function cmatch(str, pat)
 	return count
 end
 
+--- Return a matching iterator for the given value. The iterator will return
+-- one token per invocation, the tokens are separated by whitespace. If the
+-- input value is a table, it is transformed into a string first. A nil value
+-- will result in a valid interator which aborts with the first invocation.
+-- @param val		The value to scan (table, string or nil)
+-- @return			Iterator which returns one token per call
+function imatch(v)
+	if type(v) == "table" then
+		local k = nil
+		return function()
+			k = next(v, k)
+			return v[k]
+		end
+
+	elseif type(v) == "number" or type(v) == "boolean" then
+		local x = true
+		return function()
+			if x then
+				x = false
+				return tostring(v)
+			end
+		end
+
+	elseif type(v) == "userdata" or type(v) == "string" then
+		return tostring(v):gmatch("%S+")
+	end
+
+	return function() end
+end
+
 --- Parse certain units from the given string and return the canonical integer
 -- value or 0 if the unit is unknown. Upper- or lower case is irrelevant.
 -- Recognized units are:
@@ -342,7 +344,6 @@ function parse_units(ustr)
 end
 
 -- also register functions above in the central string class for convenience
-string.escape      = escape
 string.pcdata      = pcdata
 string.striptags   = striptags
 string.split       = split
@@ -605,6 +606,7 @@ end
 function _sortiter( t, f )
 	local keys = { }
 
+	local k, v
 	for k, v in pairs(t) do
 		keys[#keys+1] = k
 	end
@@ -616,7 +618,7 @@ function _sortiter( t, f )
 	return function()
 		_pos = _pos + 1
 		if _pos <= #keys then
-			return keys[_pos], t[keys[_pos]]
+			return keys[_pos], t[keys[_pos]], _pos
 		end
 	end
 end
@@ -771,19 +773,19 @@ function copcall(f, ...)
 end
 
 -- Handle return value of protected call
-function handleReturnValue(err, co, status, arg1, arg2, arg3, arg4, arg5)
+function handleReturnValue(err, co, status, ...)
 	if not status then
-		return false, err(debug.traceback(co, arg1), arg1, arg2, arg3, arg4, arg5)
+		return false, err(debug.traceback(co, (...)), ...)
 	end
 
 	if coroutine.status(co) ~= 'suspended' then
-		return true, arg1, arg2, arg3, arg4, arg5
+		return true, ...
 	end
 
-	return performResume(err, co, coroutine.yield(arg1, arg2, arg3, arg4, arg5))
+	return performResume(err, co, coroutine.yield(...))
 end
 
 -- Resume execution of protected function call
-function performResume(err, co, arg1, arg2, arg3, arg4, arg5)
-	return handleReturnValue(err, co, coroutine.resume(co, arg1, arg2, arg3, arg4, arg5))
+function performResume(err, co, ...)
+	return handleReturnValue(err, co, coroutine.resume(co, ...))
 end

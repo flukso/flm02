@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 60
-/!svn/ver/5941/luci/branches/luci-0.9/applications/luci-ntpc
+V 61
+/!svn/ver/9558/luci/branches/luci-0.11/applications/luci-ntpc
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 69
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-ntpc/Makefile
+V 70
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-ntpc/Makefile
 END

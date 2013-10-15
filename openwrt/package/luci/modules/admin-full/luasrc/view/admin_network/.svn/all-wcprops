@@ -1,5 +1,53 @@
 K 25
 svn:wc:ra_dav:version-url
-V 82
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_network
+V 83
+/!svn/ver/9623/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_network
+END
+iface_status.htm
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_network/iface_status.htm
+END
+lease_status.htm
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_network/lease_status.htm
+END
+iface_overview.htm
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/9570/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_network/iface_overview.htm
+END
+wifi_join.htm
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_network/wifi_join.htm
+END
+wifi_status.htm
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_network/wifi_status.htm
+END
+switch_status.htm
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/9558/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_network/switch_status.htm
+END
+wifi_overview.htm
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/9623/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_network/wifi_overview.htm
+END
+diagnostics.htm
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/9623/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_network/diagnostics.htm
 END

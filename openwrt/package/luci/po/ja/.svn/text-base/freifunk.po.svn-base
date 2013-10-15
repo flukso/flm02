@@ -1,4 +1,3 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -7,112 +6,384 @@ msgstr ""
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Translate Toolkit 1.1.1\n"
 
-#. Hello and welcome in the network of
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:1
-msgid "ff_hellonet"
+msgid "BSSID"
 msgstr ""
 
-#. We are an initiative to establish a free, independent and open wireless mesh network.
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:2
-msgid "ff_public1"
+msgid "Bad (ETX > 10)"
 msgstr ""
 
-#. This is the access point
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:3
-msgid "ff_public2"
+msgid "Basic Settings"
 msgstr ""
 
-#. It is operated by
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:4
-msgid "ff_public3"
+msgid "Basic settings"
 msgstr ""
 
-#. You can find further information about the global Freifunk initiative at
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:5
-msgid "ff_public4"
+msgid "Basic settings are incomplete. Please go to"
 msgstr ""
 
-#. If you are interested in our project then contact the local community
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:6
-msgid "ff_public5"
+msgid "Basic system settings"
 msgstr ""
 
-#. Internet access depends on technical and organisational conditions and may or may not work for you.
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:7
-msgid "ff_public6"
+msgid "Bitrate"
 msgstr ""
 
-#. Location
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:8
-msgid "ff_location"
+msgid "Channel"
 msgstr ""
 
-#. E-Mail
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:9
-msgid "ff_mail"
+msgid "Check for new firmware versions and perform automatic updates."
 msgstr ""
 
-#. You really should provide your address here!
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:10
-msgid "ff_mail1"
+msgid "Client network size"
 msgstr ""
 
-#. Nickname
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:11
-msgid "ff_nickname"
+msgid "Community"
 msgstr ""
 
-#. Realname
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:12
-msgid "ff_name"
+msgid "Community profile"
 msgstr ""
 
-#. Node
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:13
-msgid "ff_node"
+msgid "Community settings"
 msgstr ""
 
-#. Notice
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:14
-msgid "ff_note"
+msgid "Confirm Upgrade"
 msgstr ""
 
-#. Phone
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:15
-msgid "ff_phone"
+msgid "Contact"
 msgstr ""
 
-#. Memory
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:16
-msgid "ff_ram"
+msgid "Contact information is incomplete. Please go to"
 msgstr ""
 
-#. Free
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:17
-msgid "ff_free"
+msgid "Coordinates"
 msgstr ""
 
-#. Buffers
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:18
-msgid "ff_buffers"
+msgid "Country code"
 msgstr ""
 
-#. Cached
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:19
-msgid "ff_cached"
+msgid "Default routes"
 msgstr ""
 
-#. Total
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:20
-msgid "ff_total"
+msgid "Disable default content"
 msgstr ""
 
-#. Coordinates
-#: modules/freifunk/luasrc/i18n/freifunk.en.lua:21
-msgid "ff_geocoord"
+msgid "Diversity is enabled for device"
+msgstr ""
+
+msgid "E-Mail"
+msgstr ""
+
+msgid "ESSID"
+msgstr ""
+
+msgid "Edit index page"
+msgstr ""
+
+msgid "Enable IPv6"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Find your coordinates with OpenStreetMap"
+msgstr ""
+
+msgid "Freifunk"
+msgstr ""
+
+msgid "Freifunk Overview"
+msgstr ""
+
+msgid "Freifunk Remote Update"
+msgstr ""
+
+msgid "Gateway"
+msgstr ""
+
+msgid "Go to"
+msgstr ""
+
+msgid "Good (2 < ETX < 4)"
+msgstr ""
+
+msgid "Green"
+msgstr ""
+
+msgid "Hello and welcome in the network of"
+msgstr ""
+
+msgid "Hide OpenStreetMap"
+msgstr ""
+
+msgid "Homepage"
+msgstr ""
+
+msgid "Hostname"
+msgstr ""
+
+msgid "IPv6 Config"
+msgstr ""
+
+msgid "IPv6 Prefix"
+msgstr ""
+
+msgid "IPv6 network in CIDR notation."
+msgstr ""
+
+msgid "If selected then the default content element is not shown."
+msgstr ""
+
+msgid "If you are interested in our project then contact the local community"
+msgstr ""
+
+msgid "Index Page"
+msgstr ""
+
+msgid "Interface"
+msgstr ""
+
+msgid ""
+"Internet access depends on technical and organisational conditions and may "
+"or may not work for you."
+msgstr ""
+
+msgid "It is operated by"
+msgstr ""
+
+msgid "Keep configuration"
+msgstr ""
+
+msgid "Latitude"
+msgstr ""
+
+msgid "Legend"
+msgstr ""
+
+msgid "Load"
+msgstr ""
+
+msgid "Local Time"
+msgstr ""
+
+msgid "Location"
+msgstr ""
+
+msgid "Longitude"
+msgstr ""
+
+msgid "Map"
+msgstr ""
+
+msgid "Map Error"
+msgstr ""
+
+msgid "Memory"
+msgstr ""
+
+msgid "Mesh prefix"
+msgstr ""
+
+msgid "Metric"
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "Network for client DHCP addresses"
+msgstr ""
+
+msgid "Nickname"
+msgstr ""
+
+msgid "No default routes known."
+msgstr ""
+
+msgid "Notice"
+msgstr ""
+
+msgid "OLSR"
+msgstr ""
+
+msgid "Operator"
+msgstr ""
+
+msgid "Orange"
+msgstr ""
+
+msgid "Overview"
+msgstr ""
+
+msgid "Package libiwinfo required!"
+msgstr ""
+
+msgid "Phone"
+msgstr ""
+
+msgid "Please fill in your contact details below."
+msgstr ""
+
+msgid "Please set your contact information"
+msgstr ""
+
+msgid "Power"
+msgstr ""
+
+msgid "Processor"
+msgstr ""
+
+msgid "Profile"
+msgstr ""
+
+msgid "Profile (Expert)"
+msgstr ""
+
+msgid "Realname"
+msgstr ""
+
+msgid "Red"
+msgstr ""
+
+msgid "SSID"
+msgstr ""
+
+msgid ""
+"Select your location with a mouse click on the map. The map will only show "
+"up if you are connected to the Internet."
+msgstr ""
+
+msgid "Show OpenStreetMap"
+msgstr ""
+
+msgid "Show on map"
+msgstr ""
+
+msgid "Signal"
+msgstr ""
+
+msgid "Splash"
+msgstr ""
+
+msgid "Start Upgrade"
+msgstr ""
+
+msgid "Statistics"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Still usable (4 < ETX < 10)"
+msgstr ""
+
+msgid "System"
+msgstr ""
+
+msgid "TX"
+msgstr ""
+
+msgid ""
+"The <em>libiwinfo</em> package is not installed. You must install this "
+"component for working wireless configuration!"
+msgstr ""
+
+msgid ""
+"The OLSRd service is not configured to capture position data from the "
+"network.<br /> Please make sure that the nameservice plugin is properly "
+"configured and that the <em>latlon_file</em> option is enabled."
+msgstr ""
+
+msgid "The installed firmware is the most recent version."
+msgstr ""
+
+msgid ""
+"These are the basic settings for your local wireless community. These "
+"settings define the default values for the wizard and DO NOT affect the "
+"actual configuration of the router."
+msgstr ""
+
+msgid "These are the settings of your local community."
+msgstr ""
+
+msgid ""
+"These pages will assist you in setting up your router for Freifunk or "
+"similar wireless community networks."
+msgstr ""
+
+msgid "This is the access point"
+msgstr ""
+
+msgid "Update Settings"
+msgstr ""
+
+msgid "Update available!"
+msgstr ""
+
+msgid "Uptime"
+msgstr ""
+
+msgid "Verify downloaded images"
+msgstr ""
+
+msgid "Very good (ETX < 2)"
+msgstr ""
+
+msgid ""
+"We are an initiative to establish a free, independent and open wireless mesh "
+"network."
+msgstr ""
+
+msgid "Wireless Overview"
+msgstr ""
+
+msgid "Yellow"
+msgstr ""
+
+msgid ""
+"You can display additional content on the public index page by inserting "
+"valid XHTML in the form below.<br />Headlines should be enclosed between &lt;"
+"h2&gt; and &lt;/h2&gt;."
+msgstr ""
+
+msgid ""
+"You can find further information about the global Freifunk initiative at"
+msgstr ""
+
+msgid "You can manually edit the selected community profile here."
+msgstr ""
+
+msgid ""
+"You need to select a profile before you can edit it. To select a profile go "
+"to"
+msgstr ""
+
+msgid "and fill out all required fields."
+msgstr ""
+
+msgid "buffered"
+msgstr ""
+
+msgid "cached"
+msgstr ""
+
+msgid "e.g."
+msgstr ""
+
+msgid "free"
+msgstr ""
+
+msgid "to disable it."
+msgstr ""
+
+msgid "used"
+msgstr ""
+
+msgid "wireless settings"
 msgstr ""

@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 80
-/!svn/ver/5118/luci/branches/luci-0.9/applications/luci-polipo/luasrc/controller
+V 81
+/!svn/ver/9558/luci/branches/luci-0.11/applications/luci-polipo/luasrc/controller
 END
 polipo.lua
 K 25
 svn:wc:ra_dav:version-url
-V 91
-/!svn/ver/5118/luci/branches/luci-0.9/applications/luci-polipo/luasrc/controller/polipo.lua
+V 92
+/!svn/ver/9558/luci/branches/luci-0.11/applications/luci-polipo/luasrc/controller/polipo.lua
 END

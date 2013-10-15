@@ -9,34 +9,34 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: ushare.lua 3422 2008-09-24 21:12:56Z jow $
+$Id: ushare.lua 9413 2012-10-29 14:38:50Z jow $
 
 ]]--
 
-m = Map("ushare", translate("ushare"),
-	translate("ushare_desc"))
+m = Map("ushare", translate("uShare"),
+	luci.util.pcdata(translate("uShare is a UPnP (TM) A/V & DLNA Media Server. It implements the server component that provides UPnP media devices with information on available multimedia files.")))
 
-s = m:section(TypedSection, "ushare", translate("settings"))
+s = m:section(TypedSection, "ushare", translate("Settings"))
 s.addremove = false
 s.anonymous = true
 
-s:option(Flag, "enabled", translate("enabled", "Enable"))
+s:option(Flag, "enabled", translate("Enable"))
 
-s:option(Value, "username", translate("username"))
+s:option(Value, "username", translate("Username"))
 
-s:option(Value, "servername", translate("servername"))
+s:option(Value, "servername", translate("Servername"))
 
-dif = s:option( Value, "interface", translate("interface")) 
+dif = s:option( Value, "interface", translate("Interface")) 
 for _, nif in ipairs(luci.sys.net.devices()) do                         
         if nif ~= "lo" then dif:value(nif) end                          
 end 
 
-s:option(Value, "content_directories", translate("content_directories"))
+s:option(DynamicList, "content_directories", translate("Content directories"))
 
-s:option(Flag, "disable_webif", translate("disable_webif"))
+s:option(Flag, "disable_webif", translate("Disable webinterface"))
 
-s:option(Flag, "disable_telnet", translate("disable_telnet"))
+s:option(Flag, "disable_telnet", translate("Disable telnet console"))
 
-s:option(Value, "options", translate("options"))
+s:option(Value, "options", translate("Options"))
 
 return m

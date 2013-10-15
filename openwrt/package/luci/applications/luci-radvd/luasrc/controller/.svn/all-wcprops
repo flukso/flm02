@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/9558/luci/branches/luci-0.11/applications/luci-radvd/luasrc/controller
+END
+radvd.lua
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/9558/luci/branches/luci-0.11/applications/luci-radvd/luasrc/controller/radvd.lua
+END

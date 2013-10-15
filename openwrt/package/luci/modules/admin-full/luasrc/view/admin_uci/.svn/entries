@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_uci
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_uci
 http://svn.luci.subsignal.org
 
 
 
-2008-12-07T21:27:11.209768Z
-3870
+2012-08-14T13:08:18.176590Z
+9014
 jow
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2010-09-19T09:58:19.053068Z
-2152bb957cca7e13d44fca189f93c365
-2008-12-07T21:27:11.209768Z
-3870
+2013-08-21T21:15:31.678359Z
+83f8ebbc1972a50ab1582d06e2c6ed20
+2012-08-14T13:08:18.176590Z
+9014
 jow
 has-props
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-1434
+1857
 
 apply.htm
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2010-09-19T09:58:19.053068Z
-7a32f815efe00313b2366668798c5ee7
-2008-12-07T21:27:11.209768Z
-3870
+2013-08-21T21:15:31.678359Z
+80e4cbb3bfc6d4018ab8324bced0908a
+2012-08-14T13:08:18.176590Z
+9014
 jow
 has-props
 
@@ -92,7 +92,41 @@ has-props
 
 
 
-1074
+827
+
+changelog.htm
+file
+
+
+
+
+2013-08-21T21:15:31.678359Z
+7ac2c5e4086f28aa2b23a72fa16ea444
+2011-11-12T14:31:31.298265Z
+7924
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2569
 
 revert.htm
 file
@@ -100,10 +134,10 @@ file
 
 
 
-2010-09-19T09:58:19.057068Z
-9d8c52c1f807d8d09a378088c2d5ce6f
-2008-12-07T21:27:11.209768Z
-3870
+2013-08-21T21:15:31.678359Z
+87fd7f06dd194b764f6edae951aee0d6
+2012-08-14T13:08:18.176590Z
+9014
 jow
 has-props
 
@@ -126,5 +160,5 @@ has-props
 
 
 
-838
+1024
 

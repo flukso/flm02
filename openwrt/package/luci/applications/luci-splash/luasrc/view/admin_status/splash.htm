@@ -8,7 +8,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: splash.htm 5118 2009-07-23 03:32:30Z jow $
+$Id: splash.htm 9558 2012-12-18 13:58:22Z jow $
 
 -%>
 
@@ -123,25 +123,116 @@ local function showmac(mac)
 	return mac
 end
 
+if luci.http.formvalue("status") == "1" then
+	local rv = {}
+	for _, c in utl.spairs(clients,
+		function(a,b) if clients[a].policy == clients[b].policy then
+			return (clients[a].start > clients[b].start)
+		else
+			return (clients[a].policy > clients[b].policy)
+		end
+	end)
+	do
+		if c.ip then
+			rv[#rv+1] = {
+				hostname = c.hostname or "?",
+				ip = c.ip or "?",
+				mac = showmac(c.mac) or "?",
+				timeleft = (c.limit >= os.time()) and wat.date_format(c.limit-os.time()) or (c.policy ~= "normal") and "-" or "expired",
+				trafficin = wat.byte_format(c.bytes_in) or "?",
+				trafficout = wat.byte_format(c.bytes_out) or "?",
+				policy = c.policy or "?"
+	                        }
+		end
+	end
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(rv)
+	return
+end
 -%>
+
+
 
 <%+header%>
 
+<script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<script type="text/javascript">//<![CDATA[
+
+	XHR.poll(10 , '<%=REQUEST_URI%>', { status: 1 },
+		function(x, info)
+		{
+		var tbody = document.getElementById('splash_table');
+			if (tbody)
+			{
+				var s = '';
+				if (info.length == undefined) {
+					s += '<tr class="cbi-section-table-row"><td colspan="7" class="cbi-section-table-cell"><br /><em><%:No clients connected%></em><br /></td></tr>'
+				};
+				for (var idx = 0; idx < info.length; idx++)
+				{
+					var splash = info[idx];
+					s += String.format(
+						'<tr class="cbi-section-table-row cbi-rowstyle-'+(1 + (idx % 2))+'">' +
+						'<td class="cbi-section-table-cell">%s</td>' +
+						'<td class="cbi-section-table-cell">%s</td>' +
+						'<td class="cbi-section-table-cell">%s</td>' +
+						'<td class="cbi-section-table-cell">%s</td>' +
+						'<td class="cbi-section-table-cell">%s/%s</td>' +
+						'<td class="cbi-section-table-cell">',
+						splash.hostname, splash.ip, splash.mac, splash.timeleft, splash.trafficin, splash.trafficout);
+
+				<% if is_admin then %>
+					s += String.format('<select name="policy.%s" style="width:200px">', splash.mac.toLowerCase());
+					if (splash.policy == 'whitelist') { 	
+						s += '<option value="whitelist" selected="selected"><%:whitelisted%></option>'
+					} else {
+						s += '<option value="whitelist"><%:whitelisted%></option>'
+					};
+					if (splash.policy == 'normal') {
+						s += '<option value="normal" selected="selected"><%:splashed%></option>';
+						s += '<option value="kicked"><%:temporarily blocked%></option>'
+					} else {
+						s += '<option value="normal"><%:splashed%></option>'
+					};
+					if (splash.policy == 'blacklist') {
+						s+= '<option value="blacklist" selected="selected"><%:blacklisted%></option>'
+					} else {
+						s += '<option value="blacklist"><%:blacklisted%></option>'
+					};
+					s += String.format(
+						'</select>' +
+						'<input type="submit" class="cbi-button cbi-button-save" name="save.%s" value="<%:Save%>" />',
+						splash.mac.toLowerCase());
+				<% else %>
+					s += String.format('%s', splash.policy);
+				<% end %>
+					s += '</td></tr>'
+				}
+				tbody.innerHTML = s;
+			}
+		}
+	);
+//]]></script>
+
+
 <div id="cbi-splash-leases" class="cbi-map">
-	<h2><a id="content" name="content"><%:ff_splash Client-Splash%></a></h2>
+	<h2><a id="content" name="content"><%:Client-Splash%></a></h2>
 	<fieldset id="cbi-table-table" class="cbi-section">
-		<legend><%:ff_splash_clients Active Clients%></legend>
+		<legend><%:Active Clients%></legend>
 		<div class="cbi-section-node">
 			<% if is_admin then %><form action="<%=REQUEST_URI%>" method="post"><% end %>
 			<table class="cbi-section-table">
-				<tr class="cbi-section-table-titles">
-					<th class="cbi-section-table-cell"><%:ff_splash_hostname Hostname%></th>
-					<th class="cbi-section-table-cell"><%:ff_splash_ip IP Address%></th>
-					<th class="cbi-section-table-cell"><%:ff_splash_mac MAC Address%></th>
-					<th class="cbi-section-table-cell"><%:ff_splash_timeleft Time remaining%></th>
-					<th class="cbi-section-table-cell"><%:ff_splash_traffic Traffic in/out%></th>
-					<th class="cbi-section-table-cell"><%:ff_splash_policy Policy%></th>
-				</tr>
+				<thead>
+					<tr class="cbi-section-table-titles">
+						<th class="cbi-section-table-cell"><%:Hostname%></th>
+						<th class="cbi-section-table-cell"><%:IP Address%></th>
+						<th class="cbi-section-table-cell"><%:MAC Address%></th>
+						<th class="cbi-section-table-cell"><%:Time remaining%></th>
+						<th class="cbi-section-table-cell"><%:Traffic in/out%></th>
+						<th class="cbi-section-table-cell"><%:Policy%></th>
+					</tr>
+				</thead>
+				<tbody id="splash_table">
 
 				<%-
 					local count = 0
@@ -157,43 +248,43 @@ end
 						if c.ip then
 							count = count + 1
 				-%>
-					<tr class="cbi-section-table-row cbi-rowstyle-<%=2-(count%2)%>">
-						<td class="cbi-section-table-cell"><%=c.hostname or "<em>" .. translate("ff_splash_unknown", "unknown") .. "</em>"%></td>
-						<td class="cbi-section-table-cell"><%=c.ip or "<em>" .. translate("ff_splash_unknown", "unknown") .. "</em>"%></td>
+						<tr class="cbi-section-table-row cbi-rowstyle-<%=2-(count%2)%>">
+						<td class="cbi-section-table-cell"><%=c.hostname or "<em>" .. translate("unknown") .. "</em>"%></td>
+						<td class="cbi-section-table-cell"><%=c.ip or "<em>" .. translate("unknown") .. "</em>"%></td>
 						<td class="cbi-section-table-cell"><%=showmac(c.mac)%></td>
 						<td class="cbi-section-table-cell"><%=
 							(c.limit >= os.time()) and wat.date_format(c.limit-os.time()) or
-								(c.policy ~= "normal") and "-" or "<em>" .. translate("ff_splash_expired", "expired") .. "</em>"
+								(c.policy ~= "normal") and "-" or "<em>" .. translate("expired") .. "</em>"
 						%></td>
 						<td class="cbi-section-table-cell"><%=wat.byte_format(c.bytes_in)%> / <%=wat.byte_format(c.bytes_out)%></td>
 						<td class="cbi-section-table-cell">
 							<% if is_admin then %>
 							<select name="policy.<%=c.mac:lower()%>" style="width:200px">
-								<option value="whitelist"<%=c.policy=="whitelist" and ' selected="selected"'%>><%:ff_splash_whitelisted whitelisted%></option>
-								<option value="normal"<%=c.policy=="normal" and not c.kicked and ' selected="selected"'%>><%:ff_splash_splashed splashed%></option>
-								<option value="blacklist"<%=c.policy=="blacklist" and ' selected="selected"'%>><%:ff_splash_blacklisted blacklisted%></option>
+								<option value="whitelist"<%=c.policy=="whitelist" and ' selected="selected"'%>><%:whitelisted%></option>
+								<option value="normal"<%=c.policy=="normal" and not c.kicked and ' selected="selected"'%>><%:splashed%></option>
+								<option value="blacklist"<%=c.policy=="blacklist" and ' selected="selected"'%>><%:blacklisted%></option>
 								<% if c.policy == "normal" then -%>
-									<option value="kicked"><%:ff_splash_tempblock temporarily blocked%></option>
+									<option value="kicked"><%:temporarily blocked%></option>
 								<%- end %>
 							</select>
-							<input type="submit" class="cbi-button cbi-button-save" name="save.<%=c.mac:lower()%>" value="<%:save Save%>" />
+							<input type="submit" class="cbi-button cbi-button-save" name="save.<%=c.mac:lower()%>" value="<%:Save%>" />
 							<% else %>
 							<%=c.policy%>
 							<% end %>
 						</td>
-					</tr>
-				<%- 
+						</tr>
+						<%- 
+							end
 						end
-					end
-
-					if count == 0 then
-				-%>
-					<tr class="cbi-section-table-row">
-						<td colspan="7" class="cbi-section-table-cell">
-							<br /><em><%:ff_splash_noclients No clients connected%></em><br />
-						</td>
-					</tr>
+						if count == 0 then
+						-%>
+						<tr class="cbi-section-table-row">
+							<td colspan="7" class="cbi-section-table-cell">
+								<br /><em><%:No clients connected%></em><br />
+							</td>
+						</tr>
 				<%- end -%>
+				</tbody>
 			</table>
 			<% if is_admin then %></form><% end %>
 		</div>

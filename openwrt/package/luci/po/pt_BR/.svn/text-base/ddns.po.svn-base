@@ -2,53 +2,89 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-05-19 19:36+0200\n"
-"PO-Revision-Date: 2009-05-19 17:04+0200\n"
-"Last-Translator: Jose Monteiro <jm@unimos.net>\n"
+"POT-Creation-Date: 2010-04-02 13:44+0100\n"
+"PO-Revision-Date: 2012-11-03 07:02+0200\n"
+"Last-Translator: Luiz Angelo <luizluca@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Pootle 1.1.0\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Pootle 2.0.6\n"
 
-#. Dynamic DNS
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:1
-msgid "ddns"
-msgstr "DNS Dinâmico"
+msgid "Check for changed IP every"
+msgstr "Verifique por alterações no endereço IP a cada"
 
-#. Dynamic DNS allows that your router can be reached with a fixed hostname while having a dynamically changing IP-Address.
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:2
-msgid "ddns_desc"
-msgstr ""
-"O DNS dinâmico permite que o seu router possa ser encontrado a partir de um "
-"hostname fixo, mesmo usando um Endereço IP dinâmico."
-
-#. Source of IP-Address
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:3
-msgid "ddns_service_ipsource"
-msgstr "Origem do Endereço IP"
-
-#. Check for changed IP every
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:4
-msgid "ddns_service_checkinterval"
-msgstr "Intervalo para verificação de alteração do endereço IP"
-
-#. Check-Time unit
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:5
-msgid "ddns_service_checkunit"
+msgid "Check-time unit"
 msgstr "Unidade de tempo para verificação"
 
-#. Force update every
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:6
-msgid "ddns_service_forceinterval"
-msgstr "Forçar actualização a cada"
+msgid "Custom update-URL"
+msgstr "URL para atualização personalizada"
 
-#. Force-Time unit
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:7
-msgid "ddns_service_forceunit"
-msgstr "Unidade de tempo para actualização forçada"
+msgid "Dynamic DNS"
+msgstr "DNS Dinâmico"
 
-#. Custom Update-URL
-#: applications/luci-ddns/luasrc/i18n/ddns.en.lua:8
-msgid "ddns_service_updateurl"
-msgstr "URL para actualização personalizada"
+msgid ""
+"Dynamic DNS allows that your router can be reached with a fixed hostname "
+"while having a dynamically changing IP address."
+msgstr ""
+"O DNS dinâmico permite que o seu roteador possa ser encontrado a partir de "
+"um nome fixo, mesmo usando um Endereço IP dinâmico."
+
+msgid "Enable"
+msgstr "Habilitar"
+
+msgid "Event interface"
+msgstr "Interface de eventos"
+
+msgid "Force update every"
+msgstr "Forçar atualização a cada"
+
+msgid "Force-time unit"
+msgstr "Unidade de tempo para atualização forçada"
+
+msgid "Hostname"
+msgstr "Nome do computador"
+
+msgid "Interface"
+msgstr "Interface"
+
+msgid "Network"
+msgstr "Rede"
+
+msgid "On which interface up should start the ddns script process."
+msgstr ""
+"Na subida de qual interface que o processo do script ddns deve ser iniciado"
+
+msgid "Password"
+msgstr "Senha"
+
+msgid "Service"
+msgstr "Serviço"
+
+msgid "Source of IP address"
+msgstr "Origem do Endereço IP"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Username"
+msgstr "Usuário"
+
+msgid "custom"
+msgstr "personalizado"
+
+# Hours
+msgid "h"
+msgstr "h"
+
+msgid "interface"
+msgstr "interface"
+
+# Minutes (not minimum)
+msgid "min"
+msgstr "min"
+
+msgid "network"
+msgstr "rede"

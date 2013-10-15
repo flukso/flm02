@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 60
-/!svn/ver/5144/luci/branches/luci-0.9/libs/httpclient/luasrc
+V 61
+/!svn/ver/9349/luci/branches/luci-0.11/libs/httpclient/luasrc
 END
 httpclient.lua
 K 25
 svn:wc:ra_dav:version-url
-V 75
-/!svn/ver/4830/luci/branches/luci-0.9/libs/httpclient/luasrc/httpclient.lua
+V 76
+/!svn/ver/9349/luci/branches/luci-0.11/libs/httpclient/luasrc/httpclient.lua
 END

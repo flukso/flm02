@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/9856/luci/branches/luci-0.11/protocols/core/luasrc/model/cbi/admin_network
+END
+proto_dhcp.lua
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/9845/luci/branches/luci-0.11/protocols/core/luasrc/model/cbi/admin_network/proto_dhcp.lua
+END
+proto_none.lua
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/9349/luci/branches/luci-0.11/protocols/core/luasrc/model/cbi/admin_network/proto_none.lua
+END
+proto_static.lua
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/9856/luci/branches/luci-0.11/protocols/core/luasrc/model/cbi/admin_network/proto_static.lua
+END

@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 62
-/!svn/ver/5118/luci/branches/luci-0.9/applications/luci-p910nd
+V 63
+/!svn/ver/9558/luci/branches/luci-0.11/applications/luci-p910nd
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 71
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-p910nd/Makefile
+V 72
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-p910nd/Makefile
 END

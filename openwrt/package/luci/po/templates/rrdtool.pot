@@ -1,7 +1,7 @@
 #  rrdtool.pot
 #  generated from ./applications/luci-statistics/luasrc/i18n/rrdtool.en.lua
 msgid ""
-msgstr "Content-Type: text/plain; charset=UTF-8"
+msgstr "Content-Type: text/plain; charset=ISO-8859-1"
 
 #. %H: Wireless - Signal Noise Ratio
 #: applications/luci-statistics/luasrc/i18n/rrdtool.en.lua:1

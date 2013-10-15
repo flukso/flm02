@@ -79,6 +79,7 @@ function encode(msg)
 		gw = true,
 		gb = true,
 		gk = true,
+		gi = true,
 		ct = true
 	}
 
@@ -163,6 +164,9 @@ function encode(msg)
 		for i = 1, 3 do
 			msg.encoded = msg.encoded .. numtohex(msg.parsed[i], 1)
 		end
+
+	elseif msg.parsed.cmd == 'si' and argcheck(1) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
 
 	else
 		return
@@ -302,6 +306,11 @@ function decode(msg)
 			for i = 1, 3 do
 				msg.decoded[i] = hextonum(msg.decoded.args:sub(i*2 - 1, i*2))
 			end
+
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
+
+		elseif msg.decoded.cmd == 'gi' or msg.decoded.cmd == 'si' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
 
 			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 

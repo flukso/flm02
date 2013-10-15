@@ -9,25 +9,25 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: reboot.htm 3529 2008-10-07 13:10:24Z jow $
+$Id: reboot.htm 5448 2009-10-31 15:54:11Z jow $
 
 -%>
 <%+header%>
-<h2><a id="content" name="content"><%:system%></a></h2>
-<h3><%:reboot%></h3>
-<p><%:a_s_reboot1%></p>
+<h2><a id="content" name="content"><%:System%></a></h2>
+<h3><%:Reboot%></h3>
+<p><%:Reboots the operating system of your device%></p>
 <%-
 local c = require("luci.model.uci").cursor():changes()
 if c and next(c) then
 -%>
-	<p class="warning"><%:a_s_reboot_u%></p> 
+	<p class="warning"><%:Warning: There are unsaved changes that will be lost while rebooting!%></p> 
 <%-
 end
 if not reboot then 
 -%>
-<p><a href="<%=controller%>/admin/system/reboot?reboot=1"><%:a_s_reboot_do%></a></p>
+<p><a href="<%=controller%>/admin/system/reboot?reboot=1"><%:Perform reboot%></a></p>
 <%- else -%>
-<p><%:a_s_reboot_running%></p>
+<p><%:Please wait: Device rebooting...%></p>
 <script type="text/javascript">setTimeout("location='<%=controller%>/admin'", 60000)</script>
 <%- end -%>
 <%+footer%>

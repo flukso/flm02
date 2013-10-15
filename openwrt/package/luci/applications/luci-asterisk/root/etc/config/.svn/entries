@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-asterisk/root/etc/config
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-asterisk/root/etc/config
 http://svn.luci.subsignal.org
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:14.640067Z
+2013-08-21T21:15:26.410359Z
 be5892e27b90ba14303ec665c5f23eef
 2009-03-30T19:53:07.093749Z
 4399

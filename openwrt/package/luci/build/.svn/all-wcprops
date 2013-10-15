@@ -1,137 +1,101 @@
 K 25
 svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/6029/luci/branches/luci-0.9/build
-END
-i18n-html2lua.pl
-K 25
-svn:wc:ra_dav:version-url
-V 60
-/!svn/ver/4830/luci/branches/luci-0.9/build/i18n-html2lua.pl
-END
-mklar.pl
-K 25
-svn:wc:ra_dav:version-url
-V 52
-/!svn/ver/4830/luci/branches/luci-0.9/build/mklar.pl
-END
-lucid.lua
-K 25
-svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/4877/luci/branches/luci-0.9/build/lucid.lua
+V 44
+/!svn/ver/9570/luci/branches/luci-0.11/build
 END
 setup.lua
 K 25
 svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/4891/luci/branches/luci-0.9/build/setup.lua
+V 54
+/!svn/ver/9349/luci/branches/luci-0.11/build/setup.lua
 END
-i18n-lua2xml.lua
+lucid.lua
 K 25
 svn:wc:ra_dav:version-url
-V 60
-/!svn/ver/4830/luci/branches/luci-0.9/build/i18n-lua2xml.lua
+V 54
+/!svn/ver/9349/luci/branches/luci-0.11/build/lucid.lua
 END
 zoneinfo2lua.pl
 K 25
 svn:wc:ra_dav:version-url
-V 59
-/!svn/ver/4830/luci/branches/luci-0.9/build/zoneinfo2lua.pl
+V 60
+/!svn/ver/9349/luci/branches/luci-0.11/build/zoneinfo2lua.pl
 END
 mkversion.sh
 K 25
 svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/6017/luci/branches/luci-0.9/build/mkversion.sh
-END
-cbi2uvl.lua
-K 25
-svn:wc:ra_dav:version-url
-V 55
-/!svn/ver/4830/luci/branches/luci-0.9/build/cbi2uvl.lua
-END
-uvl2cbi.lua
-K 25
-svn:wc:ra_dav:version-url
-V 55
-/!svn/ver/4830/luci/branches/luci-0.9/build/uvl2cbi.lua
+V 57
+/!svn/ver/9349/luci/branches/luci-0.11/build/mkversion.sh
 END
 gccconfig.mk
 K 25
 svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/6029/luci/branches/luci-0.9/build/gccconfig.mk
+V 57
+/!svn/ver/9349/luci/branches/luci-0.11/build/gccconfig.mk
 END
 i18n-po2lua.pl
 K 25
 svn:wc:ra_dav:version-url
-V 58
-/!svn/ver/5118/luci/branches/luci-0.9/build/i18n-po2lua.pl
+V 59
+/!svn/ver/9349/luci/branches/luci-0.11/build/i18n-po2lua.pl
 END
-i18n-lua2po.pl
+i18n-init.sh
 K 25
 svn:wc:ra_dav:version-url
-V 58
-/!svn/ver/4830/luci/branches/luci-0.9/build/i18n-lua2po.pl
+V 57
+/!svn/ver/9558/luci/branches/luci-0.11/build/i18n-init.sh
 END
 module.mk
 K 25
 svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/5118/luci/branches/luci-0.9/build/module.mk
+V 54
+/!svn/ver/9349/luci/branches/luci-0.11/build/module.mk
 END
-uvldoc
+luci.cgi
 K 25
 svn:wc:ra_dav:version-url
-V 50
-/!svn/ver/4830/luci/branches/luci-0.9/build/uvldoc
+V 53
+/!svn/ver/9349/luci/branches/luci-0.11/build/luci.cgi
+END
+mkbasepot.sh
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/9349/luci/branches/luci-0.11/build/mkbasepot.sh
 END
 makedocs.sh
 K 25
 svn:wc:ra_dav:version-url
-V 55
-/!svn/ver/4830/luci/branches/luci-0.9/build/makedocs.sh
+V 56
+/!svn/ver/9349/luci/branches/luci-0.11/build/makedocs.sh
 END
 hostenv.sh
 K 25
 svn:wc:ra_dav:version-url
-V 54
-/!svn/ver/4830/luci/branches/luci-0.9/build/hostenv.sh
+V 55
+/!svn/ver/9349/luci/branches/luci-0.11/build/hostenv.sh
 END
-uvl2i18n.lua
+i18n-sync.sh
 K 25
 svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/4830/luci/branches/luci-0.9/build/uvl2i18n.lua
+V 57
+/!svn/ver/9349/luci/branches/luci-0.11/build/i18n-sync.sh
 END
 i18n-update.pl
 K 25
 svn:wc:ra_dav:version-url
-V 58
-/!svn/ver/4830/luci/branches/luci-0.9/build/i18n-update.pl
-END
-i18n-xml2lua.sh
-K 25
-svn:wc:ra_dav:version-url
 V 59
-/!svn/ver/4830/luci/branches/luci-0.9/build/i18n-xml2lua.sh
+/!svn/ver/9349/luci/branches/luci-0.11/build/i18n-update.pl
 END
 i18n-scan.pl
 K 25
 svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/4830/luci/branches/luci-0.9/build/i18n-scan.pl
+V 57
+/!svn/ver/9349/luci/branches/luci-0.11/build/i18n-scan.pl
 END
 config.mk
 K 25
 svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/4830/luci/branches/luci-0.9/build/config.mk
-END
-i18n-lua-xhtml1.xsl
-K 25
-svn:wc:ra_dav:version-url
-V 63
-/!svn/ver/4830/luci/branches/luci-0.9/build/i18n-lua-xhtml1.xsl
+V 54
+/!svn/ver/9349/luci/branches/luci-0.11/build/config.mk
 END

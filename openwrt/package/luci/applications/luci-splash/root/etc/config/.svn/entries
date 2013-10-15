@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-splash/root/etc/config
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-splash/root/etc/config
 http://svn.luci.subsignal.org
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:15.324071Z
+2013-08-21T21:15:27.410359Z
 40c6d3926c4d264f81038b3d69b7414d
 2008-05-08T15:37:41.550511Z
 2030

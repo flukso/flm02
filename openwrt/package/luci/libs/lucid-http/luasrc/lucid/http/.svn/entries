@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs/lucid-http/luasrc/lucid/http
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/libs/lucid-http/luasrc/lucid/http
 http://svn.luci.subsignal.org
 
 
 
-2010-03-23T16:23:03.200889Z
-5912
+2012-01-09T00:04:54.685570Z
+8159
 jow
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2010-09-19T09:58:18.357068Z
-d40f1862e13831beefee139d1a279929
-2010-03-23T16:23:03.200889Z
-5912
+2013-08-21T21:15:30.786359Z
+4fd4277ebac4a1035e2396c05c28ed08
+2009-12-29T17:50:35.322812Z
+5655
 jow
 
 
@@ -58,7 +58,7 @@ jow
 
 
 
-1170
+1320
 
 Redirector.lua
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2010-09-19T09:58:18.357068Z
-1b097ea223728b555ca91b9bc3ce5f3d
-2010-03-23T16:23:03.200889Z
-5912
+2013-08-21T21:15:30.786359Z
+665262a970536ffb1d82478b50a962ba
+2009-12-29T17:50:35.322812Z
+5655
 jow
 
 
@@ -92,7 +92,7 @@ jow
 
 
 
-793
+943
 
 server.lua
 file
@@ -100,11 +100,11 @@ file
 
 
 
-2010-09-19T09:58:18.357068Z
-4cd3869780f823db17794eecb832afb4
-2009-07-29T03:53:16.203319Z
-5164
-jow
+2013-08-21T21:15:30.786359Z
+f3e4a17485fce71c3634d3e0afb21f39
+2009-11-02T15:40:53.094821Z
+5501
+Cyrus
 
 
 
@@ -126,7 +126,7 @@ jow
 
 
 
-12614
+14678
 
 LuciWebPublisher.lua
 file
@@ -134,10 +134,10 @@ file
 
 
 
-2010-09-19T09:58:18.361067Z
-d9fa4371139eb192487fb0a8ff43f3be
-2010-03-23T16:23:03.200889Z
-5912
+2013-08-21T21:15:30.786359Z
+8ee15531a35a75b6886fe088f9b143bb
+2009-12-29T17:50:35.322812Z
+5655
 jow
 
 
@@ -160,7 +160,7 @@ jow
 
 
 
-1501
+1651
 
 handler
 dir

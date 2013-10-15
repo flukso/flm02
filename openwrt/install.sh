@@ -20,79 +20,44 @@ then
 fi
 
 REPO_PATH=$(pwd)
-BACKFIRE_PATH=$1/flm02.$VERSION
+INSTALL_PATH=$1/flm02.$VERSION
 
-# checkout the stock OpenWRT build environment [Backfire 10.03.1-rc5] to the path specified on the command line
-mkdir -p $BACKFIRE_PATH
-svn co svn://svn.openwrt.org/openwrt/branches/backfire -r 27608 $BACKFIRE_PATH
+# checkout the stock OpenWRT build environment [Attitude Adjustment] to the path specified on the command line
+mkdir -p $INSTALL_PATH
+svn co svn://svn.openwrt.org/openwrt/branches/attitude_adjustment $INSTALL_PATH
 
-# add the specific flukso packages as a feed
-echo "src-link flukso $REPO_PATH/package" > $BACKFIRE_PATH/feeds.conf
-$BACKFIRE_PATH/scripts/feeds update
-$BACKFIRE_PATH/scripts/feeds install -a -p flukso
+# add specific flukso packages as a feed
+echo "src-link flukso $REPO_PATH/package" > $INSTALL_PATH/feeds.conf
+$INSTALL_PATH/scripts/feeds update
+$INSTALL_PATH/scripts/feeds install -a -p flukso
 
-# copy over the build config settings and the files directory
-cp .config $BACKFIRE_PATH
-cp -r files $BACKFIRE_PATH
-
-# add patches to the toolchain
-cp patches/990-add_timerfd_support.patch $BACKFIRE_PATH/toolchain/uClibc/patches-0.9.30.1
-
-# add patches to the linux atheros target
-cp patches/300-set_AR2315_RESET_GPIO_to_6.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
-cp patches/310-hotplug_button_jiffies_calc.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
-cp patches/400-spi_gpio_support.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
-cp patches/410-spi_gpio_enable_cs_line.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
-cp patches/420-tune_spi_bitbanging_for_avr.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
-cp patches/500-early_printk_disable.patch $BACKFIRE_PATH/target/linux/atheros/patches-2.6.30
-
-# backport loglevel fix to busybox v1.15.3-2
-# see: https://bugs.busybox.net/show_bug.cgi?id=681
-cp patches/820-fix_crond_loglevel.patch $BACKFIRE_PATH/package/busybox/patches
+# add patches to the atheros target
+cp patches/300-set_AR2315_RESET_GPIO_to_6.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
+cp patches/310-register_gpio_leds.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
+cp patches/320-flm_spi_platform_support.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
+cp patches/330-export_spi_rst_gpio_to_userspace.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
+cp patches/340-tune_spi_bitbanging_for_avr.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
+cp patches/500-early_printk_disable.patch $INSTALL_PATH/target/linux/atheros/patches-3.3
 
 # patch the default OpenWRT Lua package
-rm $BACKFIRE_PATH/package/lua/patches/400-luaposix_5.1.4-embedded.patch
-rm $BACKFIRE_PATH/package/lua/patches/500-eglibc_config.patch
-cp patches/600-lua-tablecreate.patch $BACKFIRE_PATH/package/lua/patches
+cp patches/600-lua-tablecreate.patch $INSTALL_PATH/package/lua/patches
+
+# copy over the build config settings and the files directory
+cp .config $INSTALL_PATH
+cp -r files $INSTALL_PATH
 
 # copy flash utility to the tools dir
-cp ../tools/ap51-flash $BACKFIRE_PATH/tools
+cp ../tools/ap51-flash $INSTALL_PATH/tools
 
 # patch files of the OpenWRT build system
-cd $BACKFIRE_PATH
+cd $INSTALL_PATH
 patch -p0 < $REPO_PATH/patches/900-disable_console.patch
 patch -p0 < $REPO_PATH/patches/910-redirect-console-to-devnull.patch
+patch -p0 < $REPO_PATH/patches/915-kernel_posix_mqueue_support.patch
 patch -p0 < $REPO_PATH/patches/920-add-make-flash-option.patch
 patch -p0 < $REPO_PATH/patches/921-add-make-publish-option.patch
+patch -p0 < $REPO_PATH/patches/925-add_mac_address_to_radio0.patch
 patch -p0 < $REPO_PATH/patches/930-boot_crond_without_crontabs.patch
-
-# we don't need rdate, relying on ntpclient instead
-rm $BACKFIRE_PATH/package/base-files/files/etc/hotplug.d/iface/40-rdate
-
-# patch the hostapd package
-patch -p0 < $REPO_PATH/patches/940-wpa_action_hook.patch
-
-# patch the uhttpd package
-patch -p0 < $REPO_PATH/patches/950-kill_cgi_process_after_timeout.patch
-
-
-# and then build the Fluksometer firmware...
-echo 
-echo " ================================================= "
-echo " To compile this custom Backfire build for Flukso, "
-echo " just type make -j8 in the installation path you   "
-echo " selected. Use at least as many jobs as the number "
-echo " of cores available on your build machine.         "
-echo
-echo " IMPORTANT: make sure your machine has a recent    "
-echo " version of the gcc-avr toolchain (>= 4.3.4) and   "
-echo " avr-libc (>= 1.6.7) installed.                    "
-echo
-echo " To upload the firmware to the Fluksometer after   "
-echo " compilation, type make flash V=99. Then connect   "
-echo " the Fluksometer to your machine via ethernet and  "
-echo " power it up.                                      "
-echo
-echo " Happy hacking!                                    "
-echo " ================================================= "
-echo 
+patch -p0 < $REPO_PATH/patches/940-wpa_supd_hook.patch
+patch -p0 < $REPO_PATH/patches/950-ntpd_supd_hook.patch
+patch -p0 < $REPO_PATH/patches/960-remove_default_banner.patch

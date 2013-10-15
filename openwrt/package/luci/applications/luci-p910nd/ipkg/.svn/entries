@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-p910nd/ipkg
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-p910nd/ipkg
 http://svn.luci.subsignal.org
 
 
 
-2009-06-08T20:00:50.244792Z
-4806
-jow
+2010-07-01T09:52:12.010450Z
+6201
+acinonyx
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2010-09-19T09:58:15.681068Z
-4c7980443cc9959ba28e94a904dee003
-2009-06-08T20:00:50.244792Z
-4806
-jow
+2013-08-21T21:15:26.818359Z
+af354ede0baa6aecfb462ec747b77c2a
+2010-07-01T09:52:12.010450Z
+6201
+acinonyx
 
 
 
@@ -58,5 +58,5 @@ jow
 
 
 
-176
+184
 

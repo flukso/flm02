@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/freifunk-common/ipkg
+END
+postinst
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/package/freifunk-common/ipkg/postinst
+END

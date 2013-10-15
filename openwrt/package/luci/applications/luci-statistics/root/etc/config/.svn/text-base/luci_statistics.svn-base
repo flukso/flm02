@@ -15,6 +15,7 @@ config 'statistics' 'collectd'
 config 'statistics' 'collectd_ping'
 	option 'enable' '0'
 	option 'TTL' '127'
+	option 'Interval' '30'
 	option 'Hosts' '127.0.0.1'
 
 config 'statistics' 'collectd_csv'
@@ -45,13 +46,7 @@ config 'statistics' 'collectd_email'
 	option 'SocketGroup' 'nogroup'
 
 config 'statistics' 'collectd_exec'
-	option 'enable' '1'
-
-config 'collectd_exec_input'
-	option 'cmdline' '/usr/bin/stat-input-olsr'
-
-config 'collectd_exec_notify'
-	option 'cmdline' '/usr/bin/stat-output-syslog'
+	option 'enable' '0'
 
 config 'statistics' 'collectd_interface'
 	option 'enable' '1'
@@ -99,14 +94,9 @@ config 'statistics' 'collectd_netlink'
 config 'statistics' 'collectd_network'
 	option 'enable' '0'
 
-config 'collectd_network_listen'
-	option 'host' '0.0.0.0'
-
-config 'collectd_network_server'
-	option 'host' '0.0.0.0'
-
 config 'statistics' 'collectd_processes'
 	option 'enable' '1'
+	option 'Processes' 'uhttpd dnsmasq dropbear'
 
 config 'statistics' 'collectd_tcpconns'
 	option 'enable' '1'
@@ -118,15 +108,30 @@ config 'statistics' 'collectd_unixsock'
 	option 'SocketFile' '/var/run/collectd/query.sock'
 	option 'SocketGroup' 'nogroup'
 
-config 'statistics' 'collectd_wireless'
-	option 'enable' '1'
-
 config 'statistics' 'collectd_cpu'
 	option 'enable' '1'
 
 config 'statistics' 'collectd_rrdtool'
 	option 'enable' '1'
-	option 'DataDir' '/tmp'
+	option 'DataDir' '/tmp/rrd'
 	option 'RRARows' '100'
 	option 'RRASingle' '1'
-	option 'RRATimespans' '10min 1hour 1day 1week 1month 1year'
+	option 'RRATimespans' '1hour 1day 1week 1month 1year'
+
+config 'statistics' 'collectd_memory'
+	option 'enable' '1'
+
+config 'statistics' 'collectd_conntrack'
+	option 'enable' '1'
+
+config 'statistics' 'collectd_olsrd'
+	option 'enable' '1'
+	option 'Port' '2006'
+	option 'Host' '127.0.0.1'
+
+config 'statistics' 'collectd_iwinfo'
+	option 'enable' '1'
+
+config 'statistics' 'collectd_nut'
+	option 'enable' '0'
+	option 'UPS' 'myupsname'

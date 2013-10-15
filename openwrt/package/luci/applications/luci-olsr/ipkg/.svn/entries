@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-olsr/ipkg
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-olsr/ipkg
 http://svn.luci.subsignal.org
 
 
 
-2009-06-08T20:00:50.244792Z
-4806
-jow
+2010-07-01T09:52:12.010450Z
+6201
+acinonyx
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2010-09-19T09:58:15.936069Z
-464064a92ba7ee13b2c38de390d472f2
-2009-06-08T20:00:50.244792Z
-4806
-jow
+2013-08-21T21:15:26.966359Z
+059c034ebbd6c8326d135ed5f33f5e77
+2010-07-01T09:52:12.010450Z
+6201
+acinonyx
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-170
+178
 

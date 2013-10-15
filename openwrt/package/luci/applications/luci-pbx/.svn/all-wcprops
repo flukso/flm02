@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/9570/luci/branches/luci-0.11/applications/luci-pbx
+END
+CREDITS-SOUNDS
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/CREDITS-SOUNDS
+END
+COPYING
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/COPYING
+END
+LICENSE-SOUNDS
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/LICENSE-SOUNDS
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-pbx/Makefile
+END

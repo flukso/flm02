@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/contrib/luadoc/lua/luadoc/taglet/standard
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/contrib/luadoc/lua/luadoc/taglet/standard
 http://svn.luci.subsignal.org
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:18.596069Z
+2013-08-21T21:15:30.946359Z
 d88bede7454b20fd83a4523cb4c5427e
 2008-08-09T17:41:01.773383Z
 2769

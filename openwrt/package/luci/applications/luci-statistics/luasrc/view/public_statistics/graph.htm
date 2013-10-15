@@ -9,20 +9,26 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: graph.htm 5965 2010-03-27 22:20:14Z jow $
+$Id: graph.htm 8311 2012-02-19 15:11:23Z stargieg $
 
 -%>
 <%+header%>
 
-<h2><a id="content" name="content"><%:stat_statistics Statistics%></a></h2>
+<h2><a id="content" name="content"><%:Statistics%></a></h2>
 
 <form action="" method="get">
+	<select name="host">
+		<% for i, host in ipairs(hosts) do %>
+			<option<% if host == current_host then %> selected="selected"<% end %>><%=pcdata(host)%></option>
+		<% end %>
+	</select>
+	<input class="cbi-button cbi-button-apply" type="submit" name="submit" value="<%:Display Host »%>" />
 	<select name="timespan">
 		<% for i, span in ipairs(timespans) do %>
 			<option<% if span == current_timespan then %> selected="selected"<% end %>><%=span%></option>
 		<% end %>
 	</select>
-	<input type="submit" name="submit" value="<%:stat_showtimespan Display timespan &raquo;%>" />
+	<input class="cbi-button cbi-button-apply" type="submit" name="submit" value="<%:Display timespan »%>" />
 </form>
 
 <br />
@@ -31,9 +37,12 @@ $Id: graph.htm 5965 2010-03-27 22:20:14Z jow $
 
 <div style="text-align: center">
 	<% for i, img in ipairs(images) do %>
+		<% if is_index then %><a href="<%=pcdata(images[img])%>"><% end %>
 		<img src="<%=REQUEST_URI%>?img=<%=img%>" />
+		<% if is_index then %></a><% end %>
 		<br />
 	<% end %>
 </div>
 
 <%+footer%>
+

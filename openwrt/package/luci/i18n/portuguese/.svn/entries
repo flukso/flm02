@@ -1,16 +1,16 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/i18n/portuguese
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/i18n/portuguese
 http://svn.luci.subsignal.org
 
 
 
-2009-05-27T08:35:37.790776Z
-4679
-jow
-
+2011-04-21T09:47:25.587116Z
+6992
+soma
+has-props
 
 
 
@@ -38,10 +38,10 @@ file
 
 
 
-2010-09-19T09:58:13.673068Z
-2d6fd76919d248a0b34c6faadad7efd2
-2009-05-27T08:35:37.790776Z
-4679
+2013-08-21T21:15:26.002359Z
+e3376b2e6d9e5fa3b465b75505fc63e5
+2009-11-01T14:30:02.324409Z
+5486
 jow
 
 
@@ -64,5 +64,5 @@ jow
 
 
 
-115
+84
 

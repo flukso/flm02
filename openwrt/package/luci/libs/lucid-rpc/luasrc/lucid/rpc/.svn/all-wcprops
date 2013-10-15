@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid-rpc/luasrc/lucid/rpc
+END
+ruci.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid-rpc/luasrc/lucid/rpc/ruci.lua
+END
+system.lua
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid-rpc/luasrc/lucid/rpc/system.lua
+END
+server.lua
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/!svn/ver/9349/luci/branches/luci-0.11/libs/lucid-rpc/luasrc/lucid/rpc/server.lua
+END

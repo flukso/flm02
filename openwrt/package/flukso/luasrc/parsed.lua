@@ -26,7 +26,6 @@ local uci   = require "luci.model.uci".cursor()
 local nixio = require "nixio"
 nixio.fs    = require "nixio.fs"
 nixio.util  = require "nixio.util"
-local d0    = require "flukso.protocol.d0"
 
 local arg   = arg or {} -- needed when this code is not loaded via the interpreter
 local DEBUG = (arg[1] == '-d')
@@ -54,13 +53,47 @@ local OBIS = {
 	-- added for compatibility with Landys & Gyr E350 DSMR2.2+
 	["0-1:24.2.0*255"] = { sensor=0, derive=false, sign= 1 },
 	["0-1:24.2.1*255"] = { sensor=0, derive=false, sign= 1 },
+
+	-- étiquettes du télé-info client
+	["BASE"]    = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["HCHC"]    = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["HCHP"]    = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["EJPHN"]   = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["EJPHPM"]  = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHCJB"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHPJB"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHCJW"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHPJW"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHCJR"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	["BBRHPJR"] = { sensor=0, derive=false, sign= 1, unit="Wh" },
+	-- puissance apparente!
+	["PAPP"]    = { sensor=0, derive=true,  sign= 1, unit="W"  }
 }
 
 local FACTOR = {
+	W = 1,
 	kW = 1000,
+	Wh = 1,
 	kWh = 1000,
 	m3 = 1000,
 }
+
+local function get_protocol()
+	for i = MAX_SENSORS + 1, MAX_PROV_SENSORS do
+		-- stop at first non-provisioned sensor
+		if not uci:get("flukso", tostring(i), "enable") then
+			break
+		end
+
+		local protocol = uci:get("flukso", tostring(i), "protocol")
+
+		if protocol then
+			return protocol
+		end
+	end
+
+	return nil
+end
 
 local function map_obis()
 	for i = MAX_SENSORS + 1, MAX_PROV_SENSORS do
@@ -87,19 +120,28 @@ local function msecs()
 	return secs * 1000 + math.floor(usecs / 1000)
 end
 
+local protocol = get_protocol() or "dlms"
+local decoder = require ("flukso.decoder." .. protocol)
+
 map_obis()
-local get_telegram = d0.init(DEV)
+local get_telegram = decoder.init(DEV)
 
 while true do
 	local sensor = {}
-	local telegram = assert(get_telegram(), "parser returned an empty telegram")
+	local telegram = assert(get_telegram(), "decoder returned an empty telegram")
 	if DEBUG then dbg.vardump(telegram) end
 
 	-- do not process corrupted telegrams
 	if telegram.check then
 		for obis, map in pairs(OBIS) do
 			if telegram[obis] then
-				local value, unit = telegram[obis]:match("^%(([%d%.]+)%*([%w]+)%)$")
+				local value, unit
+
+				if protocol == "dlms" then
+					value, unit = telegram[obis]:match("^%(([%d%.]+)%*([%w]+)%)$")
+				elseif protocol == "tic" then
+					value, unit = telegram[obis], map.unit
+				end
 
 				-- adapt to delta/out fifo message format
 				if value then

@@ -9,13 +9,20 @@ endif
 AXTLS_VERSION = 1.2.1
 AXTLS_DIR     = axTLS
 AXTLS_FILE    = $(AXTLS_DIR)-$(AXTLS_VERSION).tar.gz
-NIXIO_TLS    ?= openssl
-NIXIO_LDFLAGS = -lcrypt
+#NIXIO_TLS    ?= openssl
+NIXIO_SHADOW ?= $(shell echo 'int main(void){ return !getspnam("root"); }' | $(CC) $(CFLAGS) -include shadow.h -xc -o/dev/null - 2>/dev/null && echo yes)
 NIXIO_SO      = nixio.so
+NIXIO_LDFLAGS =
+
+ifeq (,$(findstring Darwin,$(OS)))
+	NIXIO_LDFLAGS += -lcrypt
+else
+	EXTRA_CFLAGS += -D__DARWIN__
+endif
 
 NIXIO_OBJ = src/nixio.o src/socket.o src/sockopt.o src/bind.o src/address.o \
-	    src/poll.o src/io.o src/file.o src/splice.o src/process.o src/syslog.o \
-	    src/bit.o src/binary.o src/fs.o src/user.o src/spi.o \
+	    src/protoent.o src/poll.o src/io.o src/file.o src/splice.o src/process.o \
+	    src/syslog.o src/bit.o src/binary.o src/fs.o src/user.o src/spi.o \
 	    $(if $(NIXIO_TLS),src/tls-crypto.o src/tls-context.o src/tls-socket.o,)
 
 ifeq ($(NIXIO_TLS),axtls)
@@ -25,7 +32,7 @@ ifeq ($(NIXIO_TLS),axtls)
 endif
 
 ifeq ($(NIXIO_TLS),openssl)
-	NIXIO_LDFLAGS += -lssl
+	NIXIO_LDFLAGS += -lssl -lcrypto
 endif
 
 ifeq ($(NIXIO_TLS),cyassl)
@@ -37,6 +44,10 @@ endif
 
 ifeq ($(NIXIO_TLS),)
 	NIXIO_CFLAGS += -DNO_TLS
+endif
+
+ifneq ($(NIXIO_SHADOW),yes)
+	NIXIO_CFLAGS += -DNO_SHADOW
 endif
 
 
@@ -79,7 +90,7 @@ src/axtls-compat.o: src/libaxtls.a src/axtls-compat.c
 endif	
 
 compile: $(NIXIO_OBJ)
-	$(LINK) $(SHLIB_FLAGS) $(NIXIO_LDFLAGS) -o src/$(NIXIO_SO) $(NIXIO_OBJ) $(NIXIO_LDFLAGS_POST)
+	$(LINK) $(SHLIB_FLAGS) -o src/$(NIXIO_SO) $(NIXIO_OBJ) $(NIXIO_LDFLAGS) $(NIXIO_LDFLAGS_POST)
 	mkdir -p dist$(LUA_LIBRARYDIR)
 	cp src/$(NIXIO_SO) dist$(LUA_LIBRARYDIR)/$(NIXIO_SO)
 

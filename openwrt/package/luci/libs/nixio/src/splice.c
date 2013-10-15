@@ -39,11 +39,13 @@
 #endif
 
 #ifdef _GNU_SOURCE
+#ifdef SPLICE_F_MOVE
 
 /* guess what sucks... */
 #ifdef __UCLIBC__
 #include <unistd.h>
 #include <sys/syscall.h>
+
 ssize_t splice(int __fdin, __off64_t *__offin, int __fdout,
         __off64_t *__offout, size_t __len, unsigned int __flags) {
 #ifdef __NR_splice
@@ -116,6 +118,7 @@ static int nixio_splice_flags(lua_State *L) {
 	return 1;
 }
 
+#endif /* SPLICE_F_MOVE */
 #endif /* _GNU_SOURCE */
 
 /**
@@ -140,7 +143,12 @@ static int nixio_sendfile(lua_State *L) {
 	const off_t offset = lseek(infd, 0, SEEK_CUR);
 
 	do {
+#ifdef __DARWIN__
+		r = sendfile(infd, sock, offset, (off_t *)&len, NULL, 0);
+		spliced = r;
+#else
 		r = sendfile(infd, sock, offset, len, NULL, &spliced, 0);
+#endif
 	} while (r == -1 && errno == EINTR);
 
 	if (r == -1) {
@@ -155,8 +163,10 @@ static int nixio_sendfile(lua_State *L) {
 /* module table */
 static const luaL_reg R[] = {
 #ifdef _GNU_SOURCE
+#ifdef SPLICE_F_MOVE
 	{"splice",			nixio_splice},
 	{"splice_flags",	nixio_splice_flags},
+#endif
 #endif
 	{"sendfile",		nixio_sendfile},
 	{NULL,			NULL}

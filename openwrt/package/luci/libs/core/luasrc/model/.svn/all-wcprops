@@ -1,5 +1,23 @@
 K 25
 svn:wc:ra_dav:version-url
-V 60
-/!svn/ver/4830/luci/branches/luci-0.9/libs/core/luasrc/model
+V 61
+/!svn/ver/9850/luci/branches/luci-0.11/libs/core/luasrc/model
+END
+uci.lua
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/9349/luci/branches/luci-0.11/libs/core/luasrc/model/uci.lua
+END
+firewall.lua
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/9558/luci/branches/luci-0.11/libs/core/luasrc/model/firewall.lua
+END
+network.lua
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/9850/luci/branches/luci-0.11/libs/core/luasrc/model/network.lua
 END

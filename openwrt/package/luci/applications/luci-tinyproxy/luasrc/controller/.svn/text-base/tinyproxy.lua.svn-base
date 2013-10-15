@@ -12,14 +12,15 @@ You may obtain a copy of the License at
 
 $Id$
 ]]--
+
 module("luci.controller.tinyproxy", package.seeall)
 
 function index()
 	if not nixio.fs.access("/etc/config/tinyproxy") then
 		return
 	end
-	
-	local page = entry({"admin", "services", "tinyproxy"}, cbi("tinyproxy"), "Tinyproxy")
-	page.dependent = true
-	page.i18n = "tinyproxy"
+
+	entry({"admin", "services", "tinyproxy"}, alias("admin", "services", "tinyproxy", "config"), _("Tinyproxy"))
+	entry({"admin", "services", "tinyproxy", "status"}, template("tinyproxy_status"), _("Status"))
+	entry({"admin", "services", "tinyproxy", "config"}, cbi("tinyproxy"), _("Configuration"))
 end

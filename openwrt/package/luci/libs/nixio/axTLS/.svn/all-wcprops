@@ -1,17 +1,17 @@
 K 25
 svn:wc:ra_dav:version-url
-V 54
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS
+V 55
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 63
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/Makefile
+V 64
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/Makefile
 END
 README
 K 25
 svn:wc:ra_dav:version-url
-V 61
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/axTLS/README
+V 62
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/axTLS/README
 END

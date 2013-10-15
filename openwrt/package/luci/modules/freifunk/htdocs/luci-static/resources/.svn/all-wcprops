@@ -1,11 +1,23 @@
 K 25
 svn:wc:ra_dav:version-url
-V 83
-/!svn/ver/6029/luci/branches/luci-0.9/modules/freifunk/htdocs/luci-static/resources
+V 84
+/!svn/ver/9655/luci/branches/luci-0.11/modules/freifunk/htdocs/luci-static/resources
+END
+OSMLatLon.htm
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/9349/luci/branches/luci-0.11/modules/freifunk/htdocs/luci-static/resources/OSMLatLon.htm
 END
 flashing.gif
 K 25
 svn:wc:ra_dav:version-url
-V 96
-/!svn/ver/4945/luci/branches/luci-0.9/modules/freifunk/htdocs/luci-static/resources/flashing.gif
+V 97
+/!svn/ver/9349/luci/branches/luci-0.11/modules/freifunk/htdocs/luci-static/resources/flashing.gif
+END
+osm.js
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9349/luci/branches/luci-0.11/modules/freifunk/htdocs/luci-static/resources/osm.js
 END

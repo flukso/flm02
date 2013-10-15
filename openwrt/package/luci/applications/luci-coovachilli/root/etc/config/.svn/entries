@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-coovachilli/root/etc/config
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-coovachilli/root/etc/config
 http://svn.luci.subsignal.org
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:15.428068Z
+2013-08-21T21:15:26.570359Z
 166d0060645028d65c17b217b802aaa0
 2008-09-25T13:53:47.682676Z
 3450

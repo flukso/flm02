@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/9623/luci/branches/luci-0.11/applications/luci-freifunk-diagnostics/root/etc/uci-defaults
+END
+luci-freifunk-diagnostics
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/!svn/ver/9623/luci/branches/luci-0.11/applications/luci-freifunk-diagnostics/root/etc/uci-defaults/luci-freifunk-diagnostics
+END

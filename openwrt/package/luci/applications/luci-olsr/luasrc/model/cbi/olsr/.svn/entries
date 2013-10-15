@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-olsr/luasrc/model/cbi/olsr
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-olsr/luasrc/model/cbi/olsr
 http://svn.luci.subsignal.org
 
 
 
-2009-11-21T00:24:28.903134Z
-5561
-jow
+2011-11-18T17:03:32.021178Z
+7966
+soma
 
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2010-09-19T09:58:15.904069Z
-27a1c2b757dcb5e2834bb2ba51b6ba41
-2009-11-21T00:24:28.903134Z
-5561
+2013-08-21T21:15:26.930359Z
+46439180aed53627ea4d1f73ab065a35
+2011-10-17T22:37:30.215120Z
+7745
 jow
 has-props
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-3822
+16537
 
 olsrdplugins.lua
 file
@@ -66,11 +66,11 @@ file
 
 
 
-2010-09-19T09:58:15.904069Z
-03f7af21f67af3c57efa80cf71de4f65
-2009-07-23T03:32:30.949216Z
-5118
-jow
+2013-08-21T21:15:26.930359Z
+98f980bfcf39973b1de5ea0f8e67d291
+2010-11-30T21:57:25.538483Z
+6591
+soma
 has-props
 
 
@@ -92,7 +92,41 @@ has-props
 
 
 
-6729
+7256
+
+olsrddisplay.lua
+file
+
+
+
+
+2013-08-21T21:15:26.930359Z
+b890a998d551465fa23c1c58e158d7bf
+2011-02-12T13:53:29.491910Z
+6874
+soma
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+749
 
 olsrdhna.lua
 file
@@ -100,11 +134,11 @@ file
 
 
 
-2010-09-19T09:58:15.904069Z
-1aafdde3a0447990a87681f80e68d922
-2008-11-27T00:11:26.807368Z
-3817
-jow
+2013-08-21T21:15:26.930359Z
+660c8b2133479d18cf764c60c78be5ce
+2011-11-18T17:03:32.021178Z
+7966
+soma
 has-props
 
 
@@ -126,5 +160,39 @@ has-props
 
 
 
-833
+1890
+
+olsrdiface.lua
+file
+
+
+
+
+2013-08-21T21:15:26.930359Z
+f347797e24a8cca63d245093c499f586
+2010-12-05T23:47:08.151330Z
+6629
+soma
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5925
 

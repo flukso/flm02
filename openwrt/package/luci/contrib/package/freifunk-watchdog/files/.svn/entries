@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/contrib/package/freifunk-watchdog/files
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/contrib/package/freifunk-watchdog/files
 http://svn.luci.subsignal.org
 
 
 
-2009-06-20T21:34:33.763034Z
-4882
+2012-07-15T17:25:24.100393Z
+8885
 jow
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:18.656068Z
+2013-08-21T21:15:31.074359Z
 6f8313c355fe21e7e532850658c2f6ea
 2009-05-16T17:30:01.719344Z
 4532
@@ -59,4 +59,38 @@ has-props
 
 
 886
+
+freifunk-watchdog.config
+file
+
+
+
+
+2013-08-21T21:15:31.074359Z
+8694a0bc2b086c964b6b7ec372652f77
+2012-07-15T17:25:24.100393Z
+8885
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+162
 

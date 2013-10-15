@@ -95,7 +95,7 @@ function request_to_source(uri, options)
 	if not status then
 		return status, response, buffer
 	elseif status ~= 200 and status ~= 206 then
-		return nil, status, response
+		return nil, status, buffer
 	end
 	
 	if response.headers["Transfer-Encoding"] == "chunked" then
@@ -107,12 +107,14 @@ end
 
 function create_persistent()
 	return coroutine.wrap(function(uri, options)
+		local globe_fd = nixio.open("/sys/class/leds/globe/trigger", "w")
+
 		local function globe_on()
-			os.execute("gpioctl clear 5 > /dev/null")
+			globe_fd:write("default-on")
 		end
 
 		local function globe_off()
-			os.execute("gpioctl set 5 > /dev/null")
+			globe_fd:write("none")
 		end
 
 		local status, response, buffer, sock
@@ -177,7 +179,14 @@ end
 --
 function request_raw(uri, options, sock)
 	options = options or {}
-	local pr, host, port, path = uri:match("(%w+)://([%w-.]+):?([0-9]*)(.*)")
+	local pr, auth, host, port, path
+	if uri:find("@") then
+		pr, auth, host, port, path =
+			uri:match("(%w+)://(.+)@([%w-.]+):?([0-9]*)(.*)")
+	else
+		pr, host, port, path = uri:match("(%w+)://([%w-.]+):?([0-9]*)(.*)")
+	end
+
 	if not host then
 		return nil, -1, "unable to parse URI"
 	end
@@ -196,6 +205,10 @@ function request_raw(uri, options, sock)
 	
 	if headers.Connection == nil then
 		headers.Connection = "close"
+	end
+
+	if auth and not headers.Authorization then
+		headers.Authorization = "Basic " .. nixio.bin.b64encode(auth)
 	end
 
 	-- in case of a persistent connection, the sock object will be passed as arg to request_raw
@@ -268,7 +281,7 @@ function request_raw(uri, options, sock)
 			local cdo = c.flags.domain
 			local cpa = c.flags.path
 			if   (cdo == host or cdo == "."..host or host:sub(-#cdo) == cdo) 
-			 and (cpa == "/" or cpa .. "/" == path:sub(#cpa+1))
+			 and (cpa == path or cpa == "/" or cpa .. "/" == path:sub(#cpa+1))
 			 and (not c.flags.secure or pr == "https")
 			then
 				message[#message+1] = "Cookie: " .. c.key .. "=" .. c.value
@@ -316,9 +329,9 @@ function request_raw(uri, options, sock)
 	while line and line ~= "" do
 		local key, val = line:match("^([%w-]+)%s?:%s?(.*)")
 		if key and key ~= "Status" then
-			if type(response[key]) == "string" then
+			if type(response.headers[key]) == "string" then
 				response.headers[key] = {response.headers[key], val}
-			elseif type(response[key]) == "table" then
+			elseif type(response.headers[key]) == "table" then
 				response.headers[key][#response.headers[key]+1] = val
 			else
 				response.headers[key] = val

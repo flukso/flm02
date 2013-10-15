@@ -4,7 +4,7 @@
 # Provides support for the luci-app-mosquitto package, if installed
 
 START=80
-
+APP=`which mosquitto`
 USE_UCI_CONFIG=$(uci -q get mosquitto.owrt.use_uci)
 if [ $? -eq 1 ]; then
     USE_UCI_CONFIG=0
@@ -20,10 +20,9 @@ start() {
         else
             CONF=/etc/mosquitto/mosquitto.conf
         fi
-
-        /usr/sbin/mosquitto -c $CONF -d
+        service_start $APP -c $CONF
 }
 
 stop() {
-        killall mosquitto
+        service_stop $APP
 }

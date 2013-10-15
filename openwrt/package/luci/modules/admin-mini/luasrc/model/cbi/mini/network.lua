@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: network.lua 5949 2010-03-27 14:56:35Z jow $
+$Id: network.lua 5948 2010-03-27 14:54:06Z jow $
 ]]--
 
 local wa  = require "luci.tools.webadmin"
@@ -31,29 +31,90 @@ for k, v in pairs(network) do
 	end
 end
 
-m = Map("network", translate("network"), translate("m_n_network"))
-s = m:section(NamedSection, "lan", "interface", translate("m_n_local"))
-s.addremove = false
-s:option(Value, "ipaddr", translate("ipaddress"))
+m = Map("network", translate("Network"))
+s = m:section(Table, ifaces, translate("Status"))
+s.parse = function() end
 
-nm = s:option(Value, "netmask", translate("netmask"))
+s:option(DummyValue, ".name", translate("Network"))
+
+hwaddr = s:option(DummyValue, "_hwaddr",
+ translate("<abbr title=\"Media Access Control\">MAC</abbr>-Address"), translate("Hardware Address"))
+function hwaddr.cfgvalue(self, section)
+	local ix = self.map:get(section, "ifname") or ""
+	local mac = fs.readfile("/sys/class/net/" .. ix .. "/address")
+
+	if not mac then
+		mac = luci.util.exec("ifconfig " .. ix)
+		mac = mac and mac:match(" ([A-F0-9:]+)%s*\n")
+	end
+
+	if mac and #mac > 0 then
+		return mac:upper()
+	end
+
+	return "?"
+end
+
+
+s:option(DummyValue, "ipaddr", translate("<abbr title=\"Internet Protocol Version 4\">IPv4</abbr>-Address"))
+
+s:option(DummyValue, "netmask", translate("<abbr title=\"Internet Protocol Version 4\">IPv4</abbr>-Netmask"))
+
+
+txrx = s:option(DummyValue, "_txrx",
+ translate("Traffic"), translate("transmitted / received"))
+
+function txrx.cfgvalue(self, section)
+	local ix = self.map:get(section, "ifname")
+
+	local rx = netstat and netstat[ix] and netstat[ix][1]
+	rx = rx and wa.byte_format(tonumber(rx)) or "-"
+
+	local tx = netstat and netstat[ix] and netstat[ix][9]
+	tx = tx and wa.byte_format(tonumber(tx)) or "-"
+
+	return string.format("%s / %s", tx, rx)
+end
+
+errors = s:option(DummyValue, "_err",
+ translate("Errors"), translate("TX / RX"))
+
+function errors.cfgvalue(self, section)
+	local ix = self.map:get(section, "ifname")
+
+	local rx = netstat and netstat[ix] and netstat[ix][3]
+	local tx = netstat and netstat[ix] and netstat[ix][11]
+
+	rx = rx and tostring(rx) or "-"
+	tx = tx and tostring(tx) or "-"
+
+	return string.format("%s / %s", tx, rx)
+end
+
+
+
+s = m:section(NamedSection, "lan", "interface", translate("Local Network"))
+s.addremove = false
+s:option(Value, "ipaddr", translate("<abbr title=\"Internet Protocol Version 4\">IPv4</abbr>-Address"))
+
+nm = s:option(Value, "netmask", translate("<abbr title=\"Internet Protocol Version 4\">IPv4</abbr>-Netmask"))
 nm:value("255.255.255.0")
 nm:value("255.255.0.0")
 nm:value("255.0.0.0")
 
-gw = s:option(Value, "gateway", translate("gateway") .. translate("cbi_optional"))
+gw = s:option(Value, "gateway", translate("<abbr title=\"Internet Protocol Version 4\">IPv4</abbr>-Gateway") .. translate(" (optional)"))
 gw.rmempty = true
-dns = s:option(Value, "dns", translate("dnsserver") .. translate("cbi_optional"))
+dns = s:option(Value, "dns", translate("<abbr title=\"Domain Name System\">DNS</abbr>-Server") .. translate(" (optional)"))
 dns.rmempty = true
 
 
-s = m:section(NamedSection, "wan", "interface", translate("m_n_inet"))
+s = m:section(NamedSection, "wan", "interface", translate("Internet Connection"))
 s.addremove = false
-p = s:option(ListValue, "proto", translate("protocol"))
+p = s:option(ListValue, "proto", translate("Protocol"))
 p.override_values = true
 p:value("none", "disabled")
-p:value("static", translate("manual", "manual"))
-p:value("dhcp", translate("automatic", "DHCP"))
+p:value("static", translate("manual"))
+p:value("dhcp", translate("automatic"))
 if has_pppoe then p:value("pppoe", "PPPoE") end
 if has_pptp  then p:value("pptp",  "PPTP")  end
 
@@ -68,29 +129,29 @@ function p.write(self, section, value)
 end
 
 if not ( has_pppoe and has_pptp ) then
-	p.description = translate("network_interface_prereq_mini")
+	p.description = translate("You need to install \"ppp-mod-pppoe\" for PPPoE or \"pptp\" for PPtP support")
 end
 
 
-ip = s:option(Value, "ipaddr", translate("ipaddress"))
+ip = s:option(Value, "ipaddr", translate("<abbr title=\"Internet Protocol Version 4\">IPv4</abbr>-Address"))
 ip:depends("proto", "static")
 
-nm = s:option(Value, "netmask", translate("netmask"))
+nm = s:option(Value, "netmask", translate("<abbr title=\"Internet Protocol Version 4\">IPv4</abbr>-Netmask"))
 nm:depends("proto", "static")
 
-gw = s:option(Value, "gateway", translate("gateway"))
+gw = s:option(Value, "gateway", translate("<abbr title=\"Internet Protocol Version 4\">IPv4</abbr>-Gateway"))
 gw:depends("proto", "static")
 gw.rmempty = true
 
-dns = s:option(Value, "dns", translate("dnsserver"))
+dns = s:option(Value, "dns", translate("<abbr title=\"Domain Name System\">DNS</abbr>-Server"))
 dns:depends("proto", "static")
 dns.rmempty = true
 
-usr = s:option(Value, "username", translate("username"))
+usr = s:option(Value, "username", translate("Username"))
 usr:depends("proto", "pppoe")
 usr:depends("proto", "pptp")
 
-pwd = s:option(Value, "password", translate("password"))
+pwd = s:option(Value, "password", translate("Password"))
 pwd.password = true
 pwd:depends("proto", "pppoe")
 pwd:depends("proto", "pptp")
@@ -100,7 +161,7 @@ pwd:depends("proto", "pptp")
 -- This cures some cancer for providers with pre-war routers
 if fs.access("/etc/config/firewall") then
 	mssfix = s:option(Flag, "_mssfix",
-		translate("m_n_mssfix"), translate("m_n_mssfix_desc"))
+		translate("Clamp Segment Size"), translate("Fixes problems with unreachable websites, submitting forms or other unexpected behaviour for some ISPs."))
 	mssfix.rmempty = false
 
 	function mssfix.cfgvalue(self)
@@ -123,19 +184,19 @@ if fs.access("/etc/config/firewall") then
 	end
 end
 
-kea = s:option(Flag, "keepalive", translate("m_n_keepalive"))
+kea = s:option(Flag, "keepalive", translate("automatically reconnect"))
 kea:depends("proto", "pppoe")
 kea:depends("proto", "pptp")
 kea.rmempty = true
 kea.enabled = "10"
 
 
-cod = s:option(Value, "demand", translate("m_n_dialondemand"), "s")
+cod = s:option(Value, "demand", translate("disconnect when idle for"), "s")
 cod:depends("proto", "pppoe")
 cod:depends("proto", "pptp")
 cod.rmempty = true
 
-srv = s:option(Value, "server", translate("m_n_pptp_server"))
+srv = s:option(Value, "server", translate("<abbr title=\"Point-to-Point Tunneling Protocol\">PPTP</abbr>-Server"))
 srv:depends("proto", "pptp")
 srv.rmempty = true
 

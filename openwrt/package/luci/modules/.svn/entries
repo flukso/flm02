@@ -1,16 +1,16 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules
 http://svn.luci.subsignal.org
 
 
 
-2010-04-07T21:59:19.852681Z
-6036
-jow
-has-props
+2013-06-24T12:01:15.346372Z
+9858
+Cyrus
+
 
 
 
@@ -36,6 +36,12 @@ admin-full
 dir
 
 freifunk
+dir
+
+failsafe
+dir
+
+niu
 dir
 
 admin-core

@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs/json/luasrc
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/libs/json/luasrc
 http://svn.luci.subsignal.org
 
 
 
-2009-01-04T20:08:45.953327Z
-3996
-Cyrus
+2011-04-17T11:39:17.477995Z
+6988
+jow
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2010-09-19T09:58:18.285068Z
-f51e98d7679ee05385aaa55f44585ecf
-2009-01-04T20:08:45.953327Z
-3996
-Cyrus
+2013-08-21T21:15:30.622359Z
+96da33750e24b9f0dd6301dbdd9b6b43
+2011-04-17T11:39:17.477995Z
+6988
+jow
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-12065
+12644
 

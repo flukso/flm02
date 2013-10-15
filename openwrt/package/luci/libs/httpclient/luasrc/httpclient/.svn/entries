@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs/httpclient/luasrc/httpclient
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/libs/httpclient/luasrc/httpclient
 http://svn.luci.subsignal.org
 
 
 
-2009-07-26T21:28:44.880487Z
-5144
-jow
+2009-07-24T18:23:59.651847Z
+5135
+Cyrus
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2010-09-19T09:58:18.417068Z
+2013-08-21T21:15:30.814359Z
 7d8969ed2e43a4fe72382a283d8ac08c
-2009-07-26T21:28:44.880487Z
-5144
-jow
+2009-07-24T18:23:59.651847Z
+5135
+Cyrus
 
 
 

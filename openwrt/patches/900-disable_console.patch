@@ -1,13 +1,11 @@
-Index: target/linux/generic-2.6/config-2.6.30
-===================================================================
---- target/linux/generic-2.6/config-2.6.30	(revision 23099)
-+++ target/linux/generic-2.6/config-2.6.30	(working copy)
-@@ -1964,7 +1964,7 @@
- # CONFIG_SENSORS_W83793 is not set
- # CONFIG_SENSORS_W83L785TS is not set
- # CONFIG_SENSORS_W83L786NG is not set
+--- target/linux/generic/config-3.3	2013-08-24 15:30:39.085514939 +0200
++++ target/linux/generic/config-3.3	2013-09-03 09:35:24.845249969 +0200
+@@ -2566,7 +2566,7 @@
+ CONFIG_SERIAL_8250=y
+ # CONFIG_SERIAL_8250_ACCENT is not set
+ # CONFIG_SERIAL_8250_BOCA is not set
 -CONFIG_SERIAL_8250_CONSOLE=y
 +# CONFIG_SERIAL_8250_CONSOLE is not set
  # CONFIG_SERIAL_8250_CS is not set
- CONFIG_SERIAL_8250_NR_UARTS=2
- # CONFIG_SERIAL_8250_PCI is not set
+ # CONFIG_SERIAL_8250_DW is not set
+ # CONFIG_SERIAL_8250_EXAR_ST16C554 is not set

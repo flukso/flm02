@@ -1,16 +1,16 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/po
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/po
 http://svn.luci.subsignal.org
 
 
 
-2010-04-05T17:46:20.798880Z
-6029
-jow
-has-props
+2013-02-26T21:20:22.130474Z
+9672
+dgolle
+
 
 
 
@@ -26,6 +26,39 @@ has-props
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
+ms
+dir
+
+uk
+dir
+
+ro
+dir
+
+pt
+dir
+
+ca
+dir
+
+tr
+dir
+
+ru
+dir
+
+de
+dir
+
+ja
+dir
+
+he
+dir
+
+templates
+dir
+
 el
 dir
 
@@ -35,36 +68,30 @@ dir
 en
 dir
 
-ca
-dir
-
-pt
+cs
 dir
 
 pt_BR
 dir
 
-ru
+fr
 dir
 
 es
 dir
 
-fr
-dir
-
-de
-dir
-
-ja
-dir
-
 pl
+dir
+
+no
 dir
 
 it
 dir
 
-templates
+hu
+dir
+
+vi
 dir
 

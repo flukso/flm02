@@ -65,13 +65,7 @@ end
 
 function get_all(config, ...)
 	uci:load(config)
-	local section = ...
-
-	if section then
-		return uci:get_all(config, section)
-	else
-		return uci:get_all(config)
-	end
+	return uci:get_all(config, ...)
 end
 
 function get_state(config, ...)

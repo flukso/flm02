@@ -1,14 +1,14 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs/lucid-http/luasrc/lucid
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/libs/lucid-http/luasrc/lucid
 http://svn.luci.subsignal.org
 
 
 
-2010-03-23T16:23:03.200889Z
-5912
+2012-01-09T00:04:54.685570Z
+8159
 jow
 
 
@@ -35,10 +35,10 @@ file
 
 
 
-2010-09-19T09:58:18.361067Z
-f2e1bbfe66a6f6f79faf765822634c90
-2009-05-23T17:21:36.581220Z
-4590
+2013-08-21T21:15:30.790359Z
+db4e741e20ef867eb2255d813aed1ba8
+2009-06-14T08:51:43.654411Z
+4839
 Cyrus
 
 
@@ -61,5 +61,5 @@ Cyrus
 
 
 
-771
+920
 

@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 
 http://www.apache.org/licenses/LICENSE-2.0
 
-$Id$
+$Id: json.lua 6988 2011-04-17 11:39:17Z jow $
 
 Decoder:
 	Info:

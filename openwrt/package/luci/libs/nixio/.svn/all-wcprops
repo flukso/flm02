@@ -1,47 +1,47 @@
 K 25
 svn:wc:ra_dav:version-url
-V 48
-/!svn/ver/6026/luci/branches/luci-0.9/libs/nixio
+V 49
+/!svn/ver/9403/luci/branches/luci-0.11/libs/nixio
 END
 NOTICE
 K 25
 svn:wc:ra_dav:version-url
-V 55
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/NOTICE
+V 56
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/NOTICE
 END
 LICENSE
 K 25
 svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/LICENSE
+V 57
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/LICENSE
 END
 .gitignore
 K 25
 svn:wc:ra_dav:version-url
-V 59
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/.gitignore
+V 60
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/.gitignore
 END
 nixio-0.3-1.rockspec
 K 25
 svn:wc:ra_dav:version-url
-V 69
-/!svn/ver/5118/luci/branches/luci-0.9/libs/nixio/nixio-0.3-1.rockspec
+V 70
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/nixio-0.3-1.rockspec
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 57
-/!svn/ver/5955/luci/branches/luci-0.9/libs/nixio/Makefile
+V 58
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/Makefile
 END
 README
 K 25
 svn:wc:ra_dav:version-url
-V 55
-/!svn/ver/4830/luci/branches/luci-0.9/libs/nixio/README
+V 56
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/README
 END
 standalone.mk
 K 25
 svn:wc:ra_dav:version-url
-V 62
-/!svn/ver/5118/luci/branches/luci-0.9/libs/nixio/standalone.mk
+V 63
+/!svn/ver/9349/luci/branches/luci-0.11/libs/nixio/standalone.mk
 END

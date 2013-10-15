@@ -1,49 +1,41 @@
-#  ntpc.pot
-#  generated from ./applications/luci-ntpc/luasrc/i18n/ntpc.en.lua
 msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8"
 
-#. Time Synchronisation
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:1
-msgid "ntpc"
+msgid "Clock Adjustment"
 msgstr ""
 
-#. Synchronizes the system time
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:2
-msgid "ntpc_desc"
+msgid "Count of time measurements"
 msgstr ""
 
-#. Time Server
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:3
-msgid "ntpc_timeserver"
+msgid "Current system time"
 msgstr ""
 
-#. Update Interval (in s)
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:4
-msgid "ntpc_interval"
+msgid "General"
 msgstr ""
 
-#. Count of Time Measurements
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:5
-msgid "ntpc_count"
+msgid "Hostname"
 msgstr ""
 
-#. empty = infinite
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:6
-msgid "ntpc_count_desc"
+msgid "Offset frequency"
 msgstr ""
 
-#. Clock Adjustment
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:7
-msgid "ntpc_drift"
+msgid "Port"
 msgstr ""
 
-#. Offset Frequency
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:8
-msgid "ntpc_drift_freq"
+msgid "Synchronizes the system time"
 msgstr ""
 
-#. Current system time
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:9
-msgid "ntpc_current"
+msgid "Time Server"
+msgstr ""
+
+msgid "Time Servers"
+msgstr ""
+
+msgid "Time Synchronisation"
+msgstr ""
+
+msgid "Update interval (in seconds)"
+msgstr ""
+
+msgid "empty = infinite"
 msgstr ""

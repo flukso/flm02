@@ -1,22 +1,27 @@
-# Copyright (c) 2010-2011 Bart Van Der Meerssche
+#
+# Copyright (C) 2013 OpenWrt.org
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=flukso
-PKG_VERSION:=2.2.3
-PKG_RELEASE:=1
+PKG_VERSION:=2.3.2
+PKG_RELEASE:=alpha
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
 define Package/flukso
-	SECTION:=utils
-	CATEGORY:=Utilities
-	DEPENDS:=+libdaemon +ntpclient +liblua +luci-nixio +rrdtool1
-	TITLE:=Flukso - community metering
+	SECTION:=flukso
+	CATEGORY:=Flukso
+	DEPENDS:=+libdaemon +liblua +luci-lib-nixio +rrdtool1
+	TITLE:=Fluksometer daemon
 	URL:=http://www.flukso.net
-	MAINTAINER:=Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+	MAINTAINER:=Bart Van Der Meerssche <bart@flukso.net>
 endef
 
 define Package/flukso/description
@@ -59,8 +64,8 @@ define Package/flukso/install
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rrd/*.lua $(1)/usr/lib/lua/rrd/
 	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/*.lua $(1)/usr/lib/lua/flukso/
-	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso/protocol
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/protocol/*.lua $(1)/usr/lib/lua/flukso/protocol/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/flukso/decoder
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/flukso/decoder/*.lua $(1)/usr/lib/lua/flukso/decoder/
 
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/luad $(1)/usr/sbin/
@@ -80,7 +85,9 @@ define Package/flukso/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fbackup.lua $(1)/usr/bin/fbackup
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ftest.lua $(1)/usr/bin/ftest
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fp1.lua $(1)/usr/bin/fp1
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ftic.lua $(1)/usr/bin/ftic
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fcheck.sh $(1)/usr/bin/fcheck
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/fntp.sh $(1)/usr/bin/fntp
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/restful.lua $(1)/usr/bin/restful
 
 	$(INSTALL_DIR) $(1)/usr/bin/avr/a

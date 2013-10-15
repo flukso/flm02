@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 52
-/!svn/ver/4891/luci/branches/luci-0.9/contrib/luadoc
+V 53
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/luadoc
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 61
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/luadoc/Makefile
+V 62
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/luadoc/Makefile
 END

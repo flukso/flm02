@@ -47,4 +47,6 @@
 #define ENABLE_ALL_SENSORS ((1 << MAX_SENSORS) - 1)
 #define DISABLE_ALL_SENSORS 0x00
 
+#define SPI_PORT 0xff
+
 #endif

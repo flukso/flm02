@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/contrib/package/freifunk-firewall/files/etc/hotplug.d/firewall
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/contrib/package/freifunk-firewall/files/etc/hotplug.d/firewall
 http://svn.luci.subsignal.org
 
 
 
-2009-08-27T00:06:30.374233Z
-5311
-jow
+2011-05-08T21:24:24.635622Z
+7032
+soma
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2010-09-19T09:58:18.708068Z
-c6f647b0008c0cce361ed995bdcf2c4e
-2009-08-27T00:06:30.374233Z
-5311
-jow
+2013-08-21T21:15:31.102359Z
+3ecd56095afaf8bfb9396a8c9fb0c68d
+2011-05-08T21:24:24.635622Z
+7032
+soma
 
 
 
@@ -58,5 +58,5 @@ jow
 
 
 
-1983
+1854
 

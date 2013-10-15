@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs/nixio/axTLS/samples/vbnet
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/libs/nixio/axTLS/samples/vbnet
 http://svn.luci.subsignal.org
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:16.792068Z
+2013-08-21T21:15:29.234359Z
 b071e282d7ea8e92c1dbac3801a8bd37
 2009-02-22T23:19:25.382122Z
 4268
@@ -66,7 +66,7 @@ file
 
 
 
-2010-09-19T09:58:16.792068Z
+2013-08-21T21:15:29.234359Z
 dc3dfe3790f870eb886c8c28e092b6c2
 2009-02-22T23:19:25.382122Z
 4268

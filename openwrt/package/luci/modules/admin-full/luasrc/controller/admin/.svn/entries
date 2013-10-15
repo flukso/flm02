@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/modules/admin-full/luasrc/controller/admin
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/modules/admin-full/luasrc/controller/admin
 http://svn.luci.subsignal.org
 
 
 
-2010-03-27T02:02:51.016162Z
-5938
-jow
+2013-06-24T11:59:57.632246Z
+9845
+Cyrus
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2010-09-19T09:58:19.029067Z
-42045f94ab6e60eabc88f5b1658d1967
-2008-10-10T20:59:27.244005Z
-3554
-Cyrus
+2013-08-21T21:15:31.650359Z
+b7840f033751b79d592501388fb38d85
+2011-08-12T13:16:27.649194Z
+7362
+jow
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-2445
+2015
 
 filebrowser.lua
 file
@@ -66,7 +66,7 @@ file
 
 
 
-2010-09-19T09:58:19.029067Z
+2013-08-21T21:15:31.650359Z
 e2c0865e5343c65e49dfae29910e3683
 2008-10-10T21:52:22.996369Z
 3555
@@ -94,50 +94,16 @@ has-props
 
 580
 
-services.lua
-file
-
-
-
-
-2010-09-19T09:58:19.029067Z
-d46607a0c204c9b05be7679b0e576450
-2009-07-23T03:32:30.949216Z
-5118
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1524
-
 status.lua
 file
 
 
 
 
-2010-09-19T09:58:19.029067Z
-8a04113ff2c9eaa623ce787783a76f04
-2009-07-23T03:32:30.949216Z
-5118
+2013-08-21T21:15:31.650359Z
+679fc005ebc592d0aa8f6c7df2c6ccfe
+2012-12-18T13:58:22.625226Z
+9558
 jow
 has-props
 
@@ -160,7 +126,7 @@ has-props
 
 
 
-1886
+4653
 
 system.lua
 file
@@ -168,10 +134,10 @@ file
 
 
 
-2010-09-19T09:58:19.029067Z
-0a65865814091f08a32a5be22e2badd7
-2010-03-27T02:02:51.016162Z
-5938
+2013-08-21T21:15:31.650359Z
+059f8b9d2fb8e3236bacf22c4fffb0f8
+2012-12-25T02:45:42.622531Z
+9570
 jow
 has-props
 
@@ -194,7 +160,7 @@ has-props
 
 
 
-8744
+10541
 
 index.lua
 file
@@ -202,10 +168,44 @@ file
 
 
 
-2010-09-19T09:58:19.029067Z
-9b60c6a5d4985985c6b59b8c05748c9b
-2009-01-16T12:35:25.551689Z
-4040
+2013-08-21T21:15:31.650359Z
+a9bd00fded77d3aad8cb0044f6a619dd
+2011-10-26T03:04:18.245989Z
+7789
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1287
+
+network.lua
+file
+
+
+
+
+2013-08-21T21:15:31.650359Z
+73b7fe797f1e9544090ea8aab447a99b
+2013-06-24T11:59:57.632246Z
+9845
 Cyrus
 has-props
 
@@ -228,39 +228,5 @@ has-props
 
 
 
-1927
-
-network.lua
-file
-
-
-
-
-2010-09-19T09:58:19.029067Z
-f9f079a36532913d503f1014feeca0c7
-2010-03-08T02:09:46.999218Z
-5752
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2414
+11867
 

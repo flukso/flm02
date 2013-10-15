@@ -131,8 +131,8 @@ static int nixio_tls_ctx_set_verify_locations(lua_State *L) {
 	SSL_CTX *ctx = nixio__checktlsctx(L);
 	const char *CAfile = luaL_optstring(L, 2, NULL);
 	const char *CApath = luaL_optstring(L, 3, NULL);
-
-	return nixio__tls_pstatus(L, SSL_CTX_load_verify_locations(ctx, CAfile, CApath));
+	return nixio__tls_pstatus(L, SSL_CTX_load_verify_locations(ctx, 
+					CAfile, CApath));
 }
 
 static int nixio_tls_ctx_set_key(lua_State *L) {
@@ -207,14 +207,14 @@ static const luaL_reg R[] = {
 /* ctx function table */
 static const luaL_reg CTX_M[] = {
 	{"set_cert",			nixio_tls_ctx_set_cert},
-	{"set_verify_locations",	nixio_tls_ctx_set_verify_locations},
-	{"set_key",			nixio_tls_ctx_set_key},
+	{"set_verify_locations",       nixio_tls_ctx_set_verify_locations},
+	{"set_key",				nixio_tls_ctx_set_key},
 	{"set_ciphers",			nixio_tls_ctx_set_ciphers},
 	{"set_verify",			nixio_tls_ctx_set_verify},
-	{"create",			nixio_tls_ctx_create},
-	{"__gc",			nixio_tls_ctx__gc},
+	{"create",				nixio_tls_ctx_create},
+	{"__gc",				nixio_tls_ctx__gc},
 	{"__tostring",			nixio_tls_ctx__tostring},
-	{NULL,				NULL}
+	{NULL,					NULL}
 };
 
 

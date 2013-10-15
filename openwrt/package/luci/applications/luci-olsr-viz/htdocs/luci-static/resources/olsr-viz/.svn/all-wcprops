@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-olsr-viz/htdocs/luci-static/resources/olsr-viz
+END
+dot_down.gif
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-olsr-viz/htdocs/luci-static/resources/olsr-viz/dot_down.gif
+END
+dot_weak.gif
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-olsr-viz/htdocs/luci-static/resources/olsr-viz/dot_weak.gif
+END
+dot_good.gif
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-olsr-viz/htdocs/luci-static/resources/olsr-viz/dot_good.gif
+END
+dot_ok.gif
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-olsr-viz/htdocs/luci-static/resources/olsr-viz/dot_ok.gif
+END
+node-mini.gif
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-olsr-viz/htdocs/luci-static/resources/olsr-viz/node-mini.gif
+END
+node-hna-mini.gif
+K 25
+svn:wc:ra_dav:version-url
+V 121
+/!svn/ver/9349/luci/branches/luci-0.11/applications/luci-olsr-viz/htdocs/luci-static/resources/olsr-viz/node-hna-mini.gif
+END

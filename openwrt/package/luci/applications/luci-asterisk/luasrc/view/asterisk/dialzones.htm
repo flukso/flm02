@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: dialzones.htm 4353 2009-03-21 04:36:08Z jow $
+$Id: dialzones.htm 7011 2011-05-03 03:20:15Z jow $
 
 -%>
 
@@ -98,7 +98,7 @@ $Id: dialzones.htm 4353 2009-03-21 04:36:08Z jow $
 					</td>
 					<td style="text-align:right" class="cbi-value-field">
 						<% for _ in ipairs(rule.matches) do %>
-							<%=rule.addprefix and digit_pattern(rule.addprefix)%>&nbsp;<br />
+							<%=rule.addprefix and digit_pattern(rule.addprefix)%>&#160;<br />
 						<% end %>
 					</td>
 					<td style="text-align:left" class="cbi-value-field">

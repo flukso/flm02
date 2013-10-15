@@ -1,1064 +1,586 @@
-#  statistics.pot
-#  generated from ./applications/luci-statistics/luasrc/i18n/statistics.en.lua
 msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8"
 
-#. Statistics
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:1
-msgid "stat_statistics"
+msgid "Action (target)"
 msgstr ""
 
-#. The statistics package is based on <a href=\"http://collectd.org/index.shtml\">Collectd</a> and uses <a href=\"http://oss.oetiker.ch/rrdtool/\">RRD Tool</a> to render diagram images from collected data.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:2
-msgid "stat_desc"
+msgid "Add command for reading values"
 msgstr ""
 
-#. System plugins
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:3
-msgid "stat_systemplugins"
+msgid "Add matching rule"
 msgstr ""
 
-#. Network plugins
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:4
-msgid "stat_networkplugins"
+msgid "Add multiple hosts separated by space."
 msgstr ""
 
-#. Output plugins
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:5
-msgid "stat_outputplugins"
+msgid "Add notification command"
 msgstr ""
 
-#. Display timespan
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:6
-msgid "stat_showtimespan"
+msgid "Base Directory"
 msgstr ""
 
-#. Graphs
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:7
-msgid "stat_graphs"
+msgid "Basic monitoring"
 msgstr ""
 
-#. Collectd
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:8
-msgid "stat_collectd"
+msgid "CPU Plugin Configuration"
 msgstr ""
 
-#. Processor
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:9
-msgid "stat_cpu"
+msgid "CSV Output"
 msgstr ""
 
-#. Ping
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:10
-msgid "stat_ping"
+msgid "CSV Plugin Configuration"
 msgstr ""
 
-#. Firewall
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:11
-msgid "stat_iptables"
+msgid "Cache collected data for"
 msgstr ""
 
-#. Netlink
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:12
-msgid "stat_netlink"
+msgid "Cache flush interval"
 msgstr ""
 
-#. Processes
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:13
-msgid "stat_processes"
+msgid "Chain"
 msgstr ""
 
-#. Wireless
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:14
-msgid "stat_wireless"
+msgid "CollectLinks"
 msgstr ""
 
-#. TCP Connections
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:15
-msgid "stat_tcpconns"
+msgid "CollectRoutes"
 msgstr ""
 
-#. Interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:16
-msgid "stat_interface"
+msgid "CollectTopology"
 msgstr ""
 
-#. Disk Space Usage
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:17
-msgid "stat_df"
+msgid "Collectd"
 msgstr ""
 
-#. Interrupts
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:18
-msgid "stat_irq"
+msgid "Collectd Settings"
 msgstr ""
 
-#. Disk Usage
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:19
-msgid "stat_disk"
+msgid ""
+"Collectd is a small daemon for collecting data from various sources through "
+"different plugins. On this page you can change general settings for the "
+"collectd daemon."
 msgstr ""
 
-#. Exec
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:20
-msgid "stat_exec"
+msgid "Conntrack"
 msgstr ""
 
-#. RRDTool
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:21
-msgid "stat_rrdtool"
+msgid "Conntrack Plugin Configuration"
 msgstr ""
 
-#. Network
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:22
-msgid "stat_network"
+msgid "DF Plugin Configuration"
 msgstr ""
 
-#. CSV Output
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:23
-msgid "stat_csv"
+msgid "DNS"
 msgstr ""
 
-#. System Load
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:24
-msgid "stat_load"
+msgid "DNS Plugin Configuration"
 msgstr ""
 
-#. DNS
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:25
-msgid "stat_dns"
+msgid "Data collection interval"
 msgstr ""
 
-#. Email
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:26
-msgid "stat_email"
+msgid "Datasets definition file"
 msgstr ""
 
-#. UnixSock
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:27
-msgid "stat_unixsock"
+msgid "Destination ip range"
 msgstr ""
 
-#. Statistics
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:28
-msgid "lucistatistics"
+msgid "Directory for collectd plugins"
 msgstr ""
 
-#. Collectd Settings
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:29
-msgid "lucistatistics_collectd"
+msgid "Directory for sub-configurations"
 msgstr ""
 
-#. Collectd is a small daeomon for collecting data from various sources through different plugins. On this page you can change general settings for the collectd daemon.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:30
-msgid "lucistatistics_collectd_desc"
+msgid "Disk Plugin Configuration"
 msgstr ""
 
-#. Hostname
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:31
-msgid "lucistatistics_collectd_hostname"
+msgid "Disk Space Usage"
 msgstr ""
 
-#. Base Directory
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:32
-msgid "lucistatistics_collectd_basedir"
+msgid "Disk Usage"
 msgstr ""
 
-#. Directory for sub-configurations
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:33
-msgid "lucistatistics_collectd_include"
+msgid "Display Host »"
 msgstr ""
 
-#. Directory for collectd plugins
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:34
-msgid "lucistatistics_collectd_plugindir"
+msgid "Display timespan »"
 msgstr ""
 
-#. Used PID file
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:35
-msgid "lucistatistics_collectd_pidfile"
+msgid "E-Mail Plugin Configuration"
 msgstr ""
 
-#. Datasets definition file
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:36
-msgid "lucistatistics_collectd_typesdb"
+msgid "Email"
 msgstr ""
 
-#. Data collection interval
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:37
-msgid "lucistatistics_collectd_interval"
+msgid "Enable this plugin"
 msgstr ""
 
-#. Seconds
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:38
-msgid "lucistatistics_collectd_interval_desc"
+msgid "Exec"
 msgstr ""
 
-#. Number of threads for data collection
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:39
-msgid "lucistatistics_collectd_readthreads"
+msgid "Exec Plugin Configuration"
 msgstr ""
 
-#. Try to lookup fully qualified hostname
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:40
-msgid "lucistatistics_collectd_fqdnlookup"
+msgid "Filter class monitoring"
 msgstr ""
 
-#. CPU Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:41
-msgid "lucistatistics_collectdcpu"
+msgid "Firewall"
 msgstr ""
 
-#. The cpu plugin collects basic statistics about the processor usage.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:42
-msgid "lucistatistics_collectdcpu_desc"
+msgid "Flush cache after"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:43
-msgid "lucistatistics_collectdcpu_enable"
+msgid "Forwarding between listen and server addresses"
 msgstr ""
 
-#. CSV Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:44
-msgid "lucistatistics_collectdcsv"
+msgid "Graphs"
 msgstr ""
 
-#. The csv plugin stores collected data in csv file format for further processing by external programs.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:45
-msgid "lucistatistics_collectdcsv_desc"
+msgid "Group"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:46
-msgid "lucistatistics_collectdcsv_enable"
+msgid ""
+"Here you can define external commands which will be started by collectd in "
+"order to read certain values. The values will be read from stdout."
 msgstr ""
 
-#. Storage directory for the csv files
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:47
-msgid "lucistatistics_collectdcsv_datadir"
+msgid ""
+"Here you can define external commands which will be started by collectd when "
+"certain threshold values have been reached. The values leading to invokation "
+"will be feeded to the the called programs stdin."
 msgstr ""
 
-#. Store data values as rates instead of absolute values
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:48
-msgid "lucistatistics_collectdcsv_storerates"
+msgid ""
+"Here you can define various criteria by which the monitored iptables rules "
+"are selected."
 msgstr ""
 
-#. DF Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:49
-msgid "lucistatistics_collectddf"
+msgid "Host"
 msgstr ""
 
-#. The df plugin collects statistics about the disk space usage on different devices, mount points or filesystem types.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:50
-msgid "lucistatistics_collectddf_desc"
+msgid "Hostname"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:51
-msgid "lucistatistics_collectddf_enable"
+msgid "IP or hostname where to get the txtinfo output from"
 msgstr ""
 
-#. Monitor devices
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:52
-msgid "lucistatistics_collectddf_devices"
+msgid "IRQ Plugin Configuration"
 msgstr ""
 
-#. multiple separated by space
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:53
-msgid "lucistatistics_collectddf_devices_desc"
+msgid "Ignore source addresses"
 msgstr ""
 
-#. Monitor mount points
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:54
-msgid "lucistatistics_collectddf_mountpoints"
+msgid "Incoming interface"
 msgstr ""
 
-#. multiple separated by space
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:55
-msgid "lucistatistics_collectddf_mountpoints_desc"
+msgid "Interface Plugin Configuration"
 msgstr ""
 
-#. Monitor filesystem types
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:56
-msgid "lucistatistics_collectddf_fstypes"
+msgid "Interfaces"
 msgstr ""
 
-#. multiple separated by space
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:57
-msgid "lucistatistics_collectddf_fstypes_desc"
+msgid "Interrupts"
 msgstr ""
 
-#. Monitor all except selected ones
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:58
-msgid "lucistatistics_collectddf_ignoreselected"
+msgid "Interval for pings"
 msgstr ""
 
-#. Disk Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:59
-msgid "lucistatistics_collectddisk"
+msgid "Iptables Plugin Configuration"
 msgstr ""
 
-#. The disk plugin collects detailled usage statistics for selected partitions or whole disks.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:60
-msgid "lucistatistics_collectddisk_desc"
+msgid "Leave unselected to automatically determine interfaces to monitor."
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:61
-msgid "lucistatistics_collectddisk_enable"
+msgid "Listen host"
 msgstr ""
 
-#. Monitor disks and partitions
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:62
-msgid "lucistatistics_collectddisk_disks"
+msgid "Listen port"
 msgstr ""
 
-#. multiple separated by space
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:63
-msgid "lucistatistics_collectddisk_disks_desc"
+msgid "Listener interfaces"
 msgstr ""
 
-#. Monitor all except selected ones
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:64
-msgid "lucistatistics_collectddisk_ignoreselected"
+msgid "Load Plugin Configuration"
 msgstr ""
 
-#. DNS Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:65
-msgid "lucistatistics_collectddns"
+msgid "Maximum allowed connections"
 msgstr ""
 
-#. The dns plugin collects detailled statistics about dns related traffic on selected interfaces.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:66
-msgid "lucistatistics_collectddns_desc"
+msgid "Memory"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:67
-msgid "lucistatistics_collectddns_enable"
+msgid "Memory Plugin Configuration"
 msgstr ""
 
-#. Monitor interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:68
-msgid "lucistatistics_collectddns_interfaces"
+msgid "Monitor all except specified"
 msgstr ""
 
-#. multiple separated by space
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:69
-msgid "lucistatistics_collectddns_interfaces_desc"
+msgid "Monitor all local listen ports"
 msgstr ""
 
-#. Ignore source addresses
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:70
-msgid "lucistatistics_collectddns_ignoresources"
+msgid "Monitor devices"
 msgstr ""
 
-#. hold Ctrl while clicking to select multiple interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:71
-msgid "lucistatistics_collectddns_ignoresources_desc"
+msgid "Monitor disks and partitions"
 msgstr ""
 
-#. E-Mail Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:72
-msgid "lucistatistics_collectdemail"
+msgid "Monitor filesystem types"
 msgstr ""
 
-#. The email plugin creates a unix socket which can be used to transmit email-statistics to a running collectd daemon. This plugin is primarily intended to be used in conjunction with Mail::SpamAssasin::Plugin::Collectd but can be used in other ways as well.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:73
-msgid "lucistatistics_collectdemail_desc"
+msgid "Monitor hosts"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:74
-msgid "lucistatistics_collectdemail_enable"
+msgid "Monitor interfaces"
 msgstr ""
 
-#. Filepath of the unix socket
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:75
-msgid "lucistatistics_collectdemail_socketfile"
+msgid "Monitor interrupts"
 msgstr ""
 
-#. Group ownership of the unix socket
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:76
-msgid "lucistatistics_collectdemail_socketgroup"
+msgid "Monitor local ports"
 msgstr ""
 
-#. group name
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:77
-msgid "lucistatistics_collectdemail_socketgroup_desc"
+msgid "Monitor mount points"
 msgstr ""
 
-#. File permissions of the unix socket
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:78
-msgid "lucistatistics_collectdemail_socketperms"
+msgid "Monitor processes"
 msgstr ""
 
-#. octal
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:79
-msgid "lucistatistics_collectdemail_socketperms_desc"
+msgid "Monitor remote ports"
 msgstr ""
 
-#. Maximum allowed connections
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:80
-msgid "lucistatistics_collectdemail_maxconns"
+msgid "Name of the rule"
 msgstr ""
 
-#. Exec Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:81
-msgid "lucistatistics_collectdexec"
+msgid "Netlink"
 msgstr ""
 
-#. The exec plugin starts external commands to read values from or to notify external processes when certain threshold values have been reached.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:82
-msgid "lucistatistics_collectdexec_desc"
+msgid "Netlink Plugin Configuration"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:83
-msgid "lucistatistics_collectdexec_enable"
+msgid "Network"
 msgstr ""
 
-#. Add command for reading values
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:84
-msgid "lucistatistics_collectdexecinput"
+msgid "Network Plugin Configuration"
 msgstr ""
 
-#. Here you can define external commands which will be started by collectd in order to read certain values. The values will be read from stdout.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:85
-msgid "lucistatistics_collectdexecinput_desc"
+msgid "Network plugins"
 msgstr ""
 
-#. Commandline
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:86
-msgid "lucistatistics_collectdexecinput_cmdline"
+msgid "Network protocol"
 msgstr ""
 
-#. Run as user
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:87
-msgid "lucistatistics_collectdexecinput_cmduser"
+msgid "Number of threads for data collection"
 msgstr ""
 
-#. Run as group
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:88
-msgid "lucistatistics_collectdexecinput_cmdgroup"
+msgid "OLSRd"
 msgstr ""
 
-#. Add notification command
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:89
-msgid "lucistatistics_collectdexecnotify"
+msgid "OLSRd Plugin Configuration"
 msgstr ""
 
-#. Here you can define external commands which will be started by collectd when certain threshold values have been reached. The values leading to invokation will be feeded to the the called programs stdin.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:90
-msgid "lucistatistics_collectdexecnotify_desc"
+msgid "Only create average RRAs"
 msgstr ""
 
-#. Commandline
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:91
-msgid "lucistatistics_collectdexecnotify_cmdline"
+msgid "Options"
 msgstr ""
 
-#. Run as user
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:92
-msgid "lucistatistics_collectdexecnotify_cmduser"
+msgid "Outgoing interface"
 msgstr ""
 
-#. Run as group
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:93
-msgid "lucistatistics_collectdexecnotify_cmdgroup"
+msgid "Output plugins"
 msgstr ""
 
-#. Interface Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:94
-msgid "lucistatistics_collectdinterface"
+msgid "Ping"
 msgstr ""
 
-#. The interface plugin collects traffic statistics on selected interfaces.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:95
-msgid "lucistatistics_collectdinterface_desc"
+msgid "Ping Plugin Configuration"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:96
-msgid "lucistatistics_collectdinterface_enable"
+msgid "Port"
 msgstr ""
 
-#. Monitor interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:97
-msgid "lucistatistics_collectdinterface_interfaces"
+msgid "Processes"
 msgstr ""
 
-#. hold Ctrl while clicking to select multiple interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:98
-msgid "lucistatistics_collectdinterface_interfaces_desc"
+msgid "Processes Plugin Configuration"
 msgstr ""
 
-#. Monitor all except selected ones
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:99
-msgid "lucistatistics_collectdinterface_ignoreselected"
+msgid "Processes to monitor separated by space"
 msgstr ""
 
-#. Iptables Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:100
-msgid "lucistatistics_collectdiptables"
+msgid "Processor"
 msgstr ""
 
-#. The iptables plugin will monitor selected firewall rules and collect informations about processed bytes and packets per rule.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:101
-msgid "lucistatistics_collectdiptables_desc"
+msgid "Qdisc monitoring"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:102
-msgid "lucistatistics_collectdiptables_enable"
+msgid "RRD XFiles Factor"
 msgstr ""
 
-#. Add matching rule
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:103
-msgid "lucistatistics_collectdiptablesmatch"
+msgid "RRD heart beat interval"
 msgstr ""
 
-#. Here you can define various criteria by which the monitored iptables rules are selected.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:104
-msgid "lucistatistics_collectdiptablesmatch_desc"
+msgid "RRD step interval"
 msgstr ""
 
-#. Name of the rule
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:105
-msgid "lucistatistics_collectdiptablesmatch_name"
+msgid "RRDTool"
 msgstr ""
 
-#. max. 16 chars
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:106
-msgid "lucistatistics_collectdiptablesmatch_name_desc"
+msgid "RRDTool Plugin Configuration"
 msgstr ""
 
-#. Table
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:107
-msgid "lucistatistics_collectdiptablesmatch_table"
+msgid "Rows per RRA"
 msgstr ""
 
-#. Chain
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:108
-msgid "lucistatistics_collectdiptablesmatch_chain"
+msgid "Script"
 msgstr ""
 
-#. Action (target)
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:109
-msgid "lucistatistics_collectdiptablesmatch_target"
+msgid "Seconds"
 msgstr ""
 
-#. Network protocol
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:110
-msgid "lucistatistics_collectdiptablesmatch_protocol"
+msgid "Server host"
 msgstr ""
 
-#. Source ip range
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:111
-msgid "lucistatistics_collectdiptablesmatch_source"
+msgid "Server port"
 msgstr ""
 
-#. CIDR notation
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:112
-msgid "lucistatistics_collectdiptablesmatch_source_desc"
+msgid "Shaping class monitoring"
 msgstr ""
 
-#. Destination ip range
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:113
-msgid "lucistatistics_collectdiptablesmatch_destination"
+msgid "Socket file"
 msgstr ""
 
-#. CIDR notation
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:114
-msgid "lucistatistics_collectdiptablesmatch_destination_desc"
+msgid "Socket group"
 msgstr ""
 
-#. Incoming interface
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:115
-msgid "lucistatistics_collectdiptablesmatch_inputif"
+msgid "Socket permissions"
 msgstr ""
 
-#. e.g. br-lan
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:116
-msgid "lucistatistics_collectdiptablesmatch_inputif_desc"
+msgid "Source ip range"
 msgstr ""
 
-#. Outgoing interface
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:117
-msgid "lucistatistics_collectdiptablesmatch_outputif"
+msgid "Specifies what information to collect about links."
 msgstr ""
 
-#. e.g. br-ff
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:118
-msgid "lucistatistics_collectdiptablesmatch_outputif_desc"
+msgid "Specifies what information to collect about routes."
 msgstr ""
 
-#. Options
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:119
-msgid "lucistatistics_collectdiptablesmatch_options"
+msgid "Specifies what information to collect about the global topology."
 msgstr ""
 
-#. e.g. reject-with tcp-reset
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:120
-msgid "lucistatistics_collectdiptablesmatch_options_desc"
+msgid "Statistics"
 msgstr ""
 
-#. IRQ Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:121
-msgid "lucistatistics_collectdirq"
+msgid "Storage directory"
 msgstr ""
 
-#. The irq plugin will monitor the rate of issues per second for each selected interrupt. If no interrupt is selected then all interrupts are monitored.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:122
-msgid "lucistatistics_collectdirq_desc"
+msgid "Storage directory for the csv files"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:123
-msgid "lucistatistics_collectdirq_enable"
+msgid "Store data values as rates instead of absolute values"
 msgstr ""
 
-#. Monitor interrupts
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:124
-msgid "lucistatistics_collectdirq_irqs"
+msgid "Stored timespans"
 msgstr ""
 
-#. multiple separated by space
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:125
-msgid "lucistatistics_collectdirq_irqs_desc"
+msgid "System Load"
 msgstr ""
 
-#. Monitor all except selected ones
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:126
-msgid "lucistatistics_collectdirq_ignoreselected"
+msgid "System plugins"
 msgstr ""
 
-#. Load Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:127
-msgid "lucistatistics_collectdload"
+msgid "TCP Connections"
 msgstr ""
 
-#. The load plugin collects statistics about the general system load.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:128
-msgid "lucistatistics_collectdload_desc"
+msgid "TCPConns Plugin Configuration"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:129
-msgid "lucistatistics_collectdload_enable"
+msgid "TTL for network packets"
 msgstr ""
 
-#. Netlink Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:130
-msgid "lucistatistics_collectdnetlink"
+msgid "TTL for ping packets"
 msgstr ""
 
-#. The netlink plugin collects extended informations like qdisc-, class- and filter-statistics for selected interfaces.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:131
-msgid "lucistatistics_collectdnetlink_desc"
+msgid "Table"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:132
-msgid "lucistatistics_collectdnetlink_enable"
+msgid "The NUT plugin reads information about Uninterruptible Power Supplies."
 msgstr ""
 
-#. Basic monitoring
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:133
-msgid "lucistatistics_collectdnetlink_interfaces"
+msgid ""
+"The OLSRd plugin reads information about meshed networks from the txtinfo "
+"plugin of OLSRd."
 msgstr ""
 
-#. hold Ctrl while clicking to select multiple interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:134
-msgid "lucistatistics_collectdnetlink_interfaces_desc"
+msgid ""
+"The conntrack plugin collects statistics about the number of tracked "
+"connections."
 msgstr ""
 
-#. Verbose monitoring
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:135
-msgid "lucistatistics_collectdnetlink_verboseinterfaces"
+msgid "The cpu plugin collects basic statistics about the processor usage."
 msgstr ""
 
-#. hold Ctrl while clicking to select multiple interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:136
-msgid "lucistatistics_collectdnetlink_verboseinterfaces_desc"
+msgid ""
+"The csv plugin stores collected data in csv file format for further "
+"processing by external programs."
 msgstr ""
 
-#. Qdisc monitoring
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:137
-msgid "lucistatistics_collectdnetlink_qdiscs"
+msgid ""
+"The df plugin collects statistics about the disk space usage on different "
+"devices, mount points or filesystem types."
 msgstr ""
 
-#. hold Ctrl while clicking to select multiple interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:138
-msgid "lucistatistics_collectdnetlink_qdiscs_desc"
+msgid ""
+"The disk plugin collects detailled usage statistics for selected partitions "
+"or whole disks."
 msgstr ""
 
-#. Shaping class monitoring
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:139
-msgid "lucistatistics_collectdnetlink_classes"
+msgid ""
+"The dns plugin collects detailled statistics about dns related traffic on "
+"selected interfaces."
 msgstr ""
 
-#. hold Ctrl while clicking to select multiple interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:140
-msgid "lucistatistics_collectdnetlink_classes_desc"
+msgid ""
+"The email plugin creates a unix socket which can be used to transmit email-"
+"statistics to a running collectd daemon. This plugin is primarily intended "
+"to be used in conjunction with Mail::SpamAssasin::Plugin::Collectd but can "
+"be used in other ways as well."
 msgstr ""
 
-#. Filter class monitoring
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:141
-msgid "lucistatistics_collectdnetlink_filters"
+msgid ""
+"The exec plugin starts external commands to read values from or to notify "
+"external processes when certain threshold values have been reached."
 msgstr ""
 
-#. hold Ctrl while clicking to select multiple interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:142
-msgid "lucistatistics_collectdnetlink_filters_desc"
+msgid ""
+"The interface plugin collects traffic statistics on selected interfaces."
 msgstr ""
 
-#. Monitor all except selected ones
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:143
-msgid "lucistatistics_collectdnetlink_ignoreselected"
+msgid ""
+"The iptables plugin will monitor selected firewall rules and collect "
+"informations about processed bytes and packets per rule."
 msgstr ""
 
-#. Network Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:144
-msgid "lucistatistics_collectdnetwork"
+msgid ""
+"The irq plugin will monitor the rate of issues per second for each selected "
+"interrupt. If no interrupt is selected then all interrupts are monitored."
 msgstr ""
 
-#. The network plugin provides network based communication between different collectd instances. Collectd can operate both in client and server mode. In client mode locally collected date is transferred to a collectd server instance, in server mode the local instance receives data from other hosts.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:145
-msgid "lucistatistics_collectdnetwork_desc"
+msgid ""
+"The iwinfo plugin collects statistics about wireless signal strength, noise "
+"and quality."
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:146
-msgid "lucistatistics_collectdnetwork_enable"
+msgid "The load plugin collects statistics about the general system load."
 msgstr ""
 
-#. Listener interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:147
-msgid "lucistatistics_collectdnetworklisten"
+msgid "The memory plugin collects statistics about the memory usage."
 msgstr ""
 
-#. This section defines on which interfaces collectd will wait for incoming connections.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:148
-msgid "lucistatistics_collectdnetworklisten_desc"
+msgid ""
+"The netlink plugin collects extended informations like qdisc-, class- and "
+"filter-statistics for selected interfaces."
 msgstr ""
 
-#. Listen host
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:149
-msgid "lucistatistics_collectdnetworklisten_host"
+msgid ""
+"The network plugin provides network based communication between different "
+"collectd instances. Collectd can operate both in client and server mode. In "
+"client mode locally collected date is transferred to a collectd server "
+"instance, in server mode the local instance receives data from other hosts."
 msgstr ""
 
-#. host-, ip- or ip6 address
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:150
-msgid "lucistatistics_collectdnetworklisten_host_desc"
+msgid ""
+"The ping plugin will send icmp echo replies to selected hosts and measure "
+"the roundtrip time for each host."
 msgstr ""
 
-#. Listen port
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:151
-msgid "lucistatistics_collectdnetworklisten_port"
+msgid ""
+"The processes plugin collects informations like cpu time, page faults and "
+"memory usage of selected processes."
 msgstr ""
 
-#. 0 - 65535
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:152
-msgid "lucistatistics_collectdnetworklisten_port_desc"
+msgid ""
+"The rrdtool plugin stores the collected data in rrd database files, the "
+"foundation of the diagrams.<br /><br /><strong>Warning: Setting the wrong "
+"values will result in a very high memory consumption in the temporary "
+"directory. This can render the device unusable!</strong>"
 msgstr ""
 
-#. server interfaces
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:153
-msgid "lucistatistics_collectdnetworkserver"
+msgid ""
+"The statistics package is based on <a href=\"http://collectd.org/index.shtml"
+"\">Collectd</a> and uses <a href=\"http://oss.oetiker.ch/rrdtool/\">RRD "
+"Tool</a> to render diagram images from collected data."
 msgstr ""
 
-#. This section defines to which servers the locally collected data is sent to.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:154
-msgid "lucistatistics_collectdnetworkserver_desc"
+msgid ""
+"The tcpconns plugin collects informations about open tcp connections on "
+"selected ports."
 msgstr ""
 
-#. Server host
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:155
-msgid "lucistatistics_collectdnetworkserver_host"
+msgid ""
+"The unixsock plugin creates a unix socket which can be used to read "
+"collected data from a running collectd instance."
 msgstr ""
 
-#. host-, ip- or ip6 address
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:156
-msgid "lucistatistics_collectdnetworkserver_host_desc"
+msgid ""
+"This section defines on which interfaces collectd will wait for incoming "
+"connections."
 msgstr ""
 
-#. Server port
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:157
-msgid "lucistatistics_collectdnetworkserver_port"
+msgid ""
+"This section defines to which servers the locally collected data is sent to."
 msgstr ""
 
-#. 0 - 65535
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:158
-msgid "lucistatistics_collectdnetworkserver_port_desc"
+msgid "Try to lookup fully qualified hostname"
 msgstr ""
 
-#. TTL for network packets
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:159
-msgid "lucistatistics_collectdnetwork_timetolive"
+msgid "UPS"
 msgstr ""
 
-#. 0 - 255
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:160
-msgid "lucistatistics_collectdnetwork_timetolive_desc"
+msgid "UPS Plugin Configuration"
 msgstr ""
 
-#. Forwarding between listen and server addresses
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:161
-msgid "lucistatistics_collectdnetwork_forward"
+msgid "UPS name in NUT ups@host format"
 msgstr ""
 
-#. Cache flush interval
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:162
-msgid "lucistatistics_collectdnetwork_cacheflush"
+msgid "UnixSock"
 msgstr ""
 
-#. seconds
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:163
-msgid "lucistatistics_collectdnetwork_cacheflush_desc"
+msgid "Unixsock Plugin Configuration"
 msgstr ""
 
-#. Ping Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:164
-msgid "lucistatistics_collectdping"
+msgid "Used PID file"
 msgstr ""
 
-#. The ping plugin will send icmp echo replies to selected hosts and measure the roundtrip time for each host.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:165
-msgid "lucistatistics_collectdping_desc"
+msgid "User"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:166
-msgid "lucistatistics_collectdping_enable"
+msgid "Verbose monitoring"
 msgstr ""
 
-#. Monitor hosts
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:167
-msgid "lucistatistics_collectdping_hosts"
+msgid "Wireless"
 msgstr ""
 
-#. multiple separated by space
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:168
-msgid "lucistatistics_collectdping_hosts_desc"
+msgid "Wireless iwinfo Plugin Configuration"
 msgstr ""
 
-#. TTL for ping packets
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:169
-msgid "lucistatistics_collectdping_ttl"
+msgid "e.g. br-ff"
 msgstr ""
 
-#. 0 - 255
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:170
-msgid "lucistatistics_collectdping_ttl_desc"
+msgid "e.g. br-lan"
 msgstr ""
 
-#. Processes Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:171
-msgid "lucistatistics_collectdprocesses"
+msgid "e.g. reject-with tcp-reset"
 msgstr ""
 
-#. The processes plugin collects informations like cpu time, page faults and memory usage of selected processes.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:172
-msgid "lucistatistics_collectdprocesses_desc"
+msgid "max. 16 chars"
 msgstr ""
 
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:173
-msgid "lucistatistics_collectdprocesses_enable"
+msgid "reduces rrd size"
 msgstr ""
 
-#. Monitor processes
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:174
-msgid "lucistatistics_collectdprocesses_processes"
+msgid "seconds; multiple separated by space"
 msgstr ""
 
-#. multiple separated by space
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:175
-msgid "lucistatistics_collectdprocesses_processes_desc"
-msgstr ""
-
-#. RRDTool Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:176
-msgid "lucistatistics_collectdrrdtool"
-msgstr ""
-
-#. The rrdtool plugin stores the collected data in rrd database files, the foundation of the diagrams.<br /><br /><strong>Warning: Setting the wrong values will result in a very high memory consumption in the temporary directory. This can render the device unusable!</strong>
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:177
-msgid "lucistatistics_collectdrrdtool_desc"
-msgstr ""
-
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:178
-msgid "lucistatistics_collectdrrdtool_enable"
-msgstr ""
-
-#. Storage directory
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:179
-msgid "lucistatistics_collectdrrdtool_datadir"
-msgstr ""
-
-#. RRD step interval
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:180
-msgid "lucistatistics_collectdrrdtool_stepsize"
-msgstr ""
-
-#. seconds
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:181
-msgid "lucistatistics_collectdrrdtool_stepsize_desc"
-msgstr ""
-
-#. RRD heart beat interval
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:182
-msgid "lucistatistics_collectdrrdtool_heartbeat"
-msgstr ""
-
-#. seconds
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:183
-msgid "lucistatistics_collectdrrdtool_heartbeat_desc"
-msgstr ""
-
-#. Only create average RRAs
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:184
-msgid "lucistatistics_collectdrrdtool_rrasingle"
-msgstr ""
-
-#. reduces rrd size
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:185
-msgid "lucistatistics_collectdrrdtool_rrasingle_desc"
-msgstr ""
-
-#. Stored timespans
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:186
-msgid "lucistatistics_collectdrrdtool_rratimespans"
-msgstr ""
-
-#. seconds; multiple separated by space
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:187
-msgid "lucistatistics_collectdrrdtool_rratimespans_desc"
-msgstr ""
-
-#. Rows per RRA
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:188
-msgid "lucistatistics_collectdrrdtool_rrarows"
-msgstr ""
-
-#. RRD XFiles Factor
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:189
-msgid "lucistatistics_collectdrrdtool_xff"
-msgstr ""
-
-#. Cache collected data for
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:190
-msgid "lucistatistics_collectdrrdtool_cachetimeout"
-msgstr ""
-
-#. seconds
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:191
-msgid "lucistatistics_collectdrrdtool_cachetimeout_desc"
-msgstr ""
-
-#. Flush cache after
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:192
-msgid "lucistatistics_collectdrrdtool_cacheflush"
-msgstr ""
-
-#. seconds
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:193
-msgid "lucistatistics_collectdrrdtool_cacheflush_desc"
-msgstr ""
-
-#. TCPConns Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:194
-msgid "lucistatistics_collectdtcpconns"
-msgstr ""
-
-#. The tcpconns plugin collects informations about open tcp connections on selected ports.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:195
-msgid "lucistatistics_collectdtcpconns_desc"
-msgstr ""
-
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:196
-msgid "lucistatistics_collectdtcpconns_enable"
-msgstr ""
-
-#. Monitor all local listen ports
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:197
-msgid "lucistatistics_collectdtcpconns_listeningports"
-msgstr ""
-
-#. Monitor local ports
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:198
-msgid "lucistatistics_collectdtcpconns_localports"
-msgstr ""
-
-#. 0 - 65535; multiple separated by space
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:199
-msgid "lucistatistics_collectdtcpconns_localports_desc"
-msgstr ""
-
-#. Monitor remote ports
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:200
-msgid "lucistatistics_collectdtcpconns_remoteports"
-msgstr ""
-
-#. 0 - 65535; multiple separated by space
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:201
-msgid "lucistatistics_collectdtcpconns_remoteports_desc"
-msgstr ""
-
-#. Unixsock Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:202
-msgid "lucistatistics_collectdunixsock"
-msgstr ""
-
-#. The unixsock plugin creates a unix socket which can be used to read collected data from a running collectd instance.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:203
-msgid "lucistatistics_collectdunixsock_desc"
-msgstr ""
-
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:204
-msgid "lucistatistics_collectdunixsock_enable"
-msgstr ""
-
-#. Filepath of the unix socket
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:205
-msgid "lucistatistics_collectdunixsock_socketfile"
-msgstr ""
-
-#. Group ownership of the unix socket
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:206
-msgid "lucistatistics_collectdunixsock_socketgroup"
-msgstr ""
-
-#. group name
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:207
-msgid "lucistatistics_collectdunixsock_socketgroup_desc"
-msgstr ""
-
-#. File permissions of the unix socket
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:208
-msgid "lucistatistics_collectdunixsock_socketperms"
-msgstr ""
-
-#. octal
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:209
-msgid "lucistatistics_collectdunixsock_socketperms_desc"
-msgstr ""
-
-#. Wireless Plugin Configuration
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:210
-msgid "lucistatistics_collectdwireless"
-msgstr ""
-
-#. The wireless plugin collects statistics about wireless signal strength, noise and quality.
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:211
-msgid "lucistatistics_collectdwireless_desc"
-msgstr ""
-
-#. Enable this plugin
-#: applications/luci-statistics/luasrc/i18n/statistics.en.lua:212
-msgid "lucistatistics_collectdwireless_enable"
+msgid "server interfaces"
 msgstr ""

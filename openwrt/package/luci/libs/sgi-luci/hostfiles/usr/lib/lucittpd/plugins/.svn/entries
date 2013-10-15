@@ -1,8 +1,8 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/libs/sgi-luci/hostfiles/usr/lib/lucittpd/plugins
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/libs/sgi-luci/hostfiles/usr/lib/lucittpd/plugins
 http://svn.luci.subsignal.org
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2010-09-19T09:58:18.301067Z
+2013-08-21T21:15:30.630359Z
 d96ba0e99d7fb0ad4ea8c0f37420bcc9
 2008-11-30T13:19:45.204974Z
 3843

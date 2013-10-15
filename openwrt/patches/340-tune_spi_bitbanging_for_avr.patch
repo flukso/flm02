@@ -1,0 +1,683 @@
+diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
+index 830adbe..0ef294b 100644
+--- a/drivers/spi/spidev.c
++++ b/drivers/spi/spidev.c
+@@ -367,6 +367,9 @@ spidev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ 	case SPI_IOC_RD_MAX_SPEED_HZ:
+ 		retval = __put_user(spi->max_speed_hz, (__u32 __user *)arg);
+ 		break;
++	case SPI_IOC_RD_DELAY_US:
++		retval = __put_user(spi->delay_usecs, (__u32 __user *)arg);
++		break;
+ 
+ 	/* write requests */
+ 	case SPI_IOC_WR_MODE:
+@@ -431,7 +434,19 @@ spidev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ 				dev_dbg(&spi->dev, "%d Hz (max)\n", tmp);
+ 		}
+ 		break;
++	case SPI_IOC_WR_DELAY_US:
++		retval = __get_user(tmp, (__u32 __user *)arg);
++		if (retval == 0) {
++			u32	save = spi->delay_usecs;
+ 
++			spi->delay_usecs = tmp;
++			retval = spi_setup(spi);
++			if (retval < 0)
++				spi->delay_usecs = save;
++			else
++				dev_dbg(&spi->dev, "%d us delay\n", tmp);
++		}
++		break;
+ 	default:
+ 		/* segmented and/or full-duplex I/O request */
+ 		if (_IOC_NR(cmd) != _IOC_NR(SPI_IOC_MESSAGE(0))
+diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
+index 176fce9..5bd1131 100644
+--- a/include/linux/spi/spi.h
++++ b/include/linux/spi/spi.h
+@@ -70,6 +70,7 @@ struct spi_device {
+ 	struct device		dev;
+ 	struct spi_master	*master;
+ 	u32			max_speed_hz;
++	u16			delay_usecs;
+ 	u8			chip_select;
+ 	u8			mode;
+ #define	SPI_CPHA	0x01			/* clock phase */
+diff --git a/include/linux/spi/spidev.h b/include/linux/spi/spidev.h
+index 52d9ed0..a8d781b 100644
+--- a/include/linux/spi/spidev.h
++++ b/include/linux/spi/spidev.h
+@@ -126,6 +126,8 @@ struct spi_ioc_transfer {
+ #define SPI_IOC_RD_MAX_SPEED_HZ		_IOR(SPI_IOC_MAGIC, 4, __u32)
+ #define SPI_IOC_WR_MAX_SPEED_HZ		_IOW(SPI_IOC_MAGIC, 4, __u32)
+ 
+-
++/* Read / Write SPI device default delay us */
++#define SPI_IOC_RD_DELAY_US		_IOR(SPI_IOC_MAGIC, 5, __u32)
++#define SPI_IOC_WR_DELAY_US		_IOW(SPI_IOC_MAGIC, 5, __u32)
+ 
+ #endif /* SPIDEV_H */
+diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
+index 61c3261..c015715 100644
+--- a/dev/null	2013-01-06 11:28:38.620243987 +0100
++++ b/include/linux/spi/spi_bitbang_flm.h	2013-01-06 17:54:09.767738393 +0100
+@@ -0,0 +1,52 @@
++#ifndef	__SPI_BITBANG_FLM_H
++#define	__SPI_BITBANG_FLM_H
++
++#include <linux/workqueue.h>
++
++struct spi_bitbang_flm {
++	struct workqueue_struct	*workqueue;
++	struct work_struct	work;
++
++	spinlock_t		lock;
++	struct list_head	queue;
++	u8			busy;
++	u8			use_dma;
++	u8			flags;		/* extra spi->mode support */
++
++	struct spi_master	*master;
++
++	/* setup_transfer() changes clock and/or wordsize to match settings
++	 * for this transfer; zeroes restore defaults from spi_device.
++	 */
++	int	(*setup_transfer)(struct spi_device *spi,
++			struct spi_transfer *t);
++
++	void	(*chipselect)(struct spi_device *spi, int is_on);
++#define	BITBANG_CS_ACTIVE	1	/* normally nCS, active low */
++#define	BITBANG_CS_INACTIVE	0
++
++	/* txrx_bufs() may handle dma mapping for transfers that don't
++	 * already have one (transfer.{tx,rx}_dma is zero), or use PIO
++	 */
++	int	(*txrx_bufs)(struct spi_device *spi, struct spi_transfer *t);
++
++	/* txrx_word[SPI_MODE_*]() just looks like a shift register */
++	u32	(*txrx_word[4])(struct spi_device *spi,
++			unsigned bit_delay, unsigned byte_delay,
++			u32 word, u8 bits);
++};
++
++/* you can call these default bitbang->master methods from your custom
++ * methods, if you like.
++ */
++extern int spi_bitbang_flm_setup(struct spi_device *spi);
++extern void spi_bitbang_flm_cleanup(struct spi_device *spi);
++extern int spi_bitbang_flm_transfer(struct spi_device *spi, struct spi_message *m);
++extern int spi_bitbang_flm_setup_transfer(struct spi_device *spi,
++				      struct spi_transfer *t);
++
++/* start or stop queue processing */
++extern int spi_bitbang_flm_start(struct spi_bitbang_flm *spi);
++extern int spi_bitbang_flm_stop(struct spi_bitbang_flm *spi);
++
++#endif	/* __SPI_BITBANG_FLM_H */
+diff --git a/drivers/spi/spi-gpio.c b/drivers/spi/spi-gpio.c
+index 0094c64..4a642fb 100644
+--- a/drivers/spi/spi-gpio.c
++++ b/drivers/spi/spi-gpio.c
+@@ -24,7 +24,7 @@
+ #include <linux/gpio.h>
+ 
+ #include <linux/spi/spi.h>
+-#include <linux/spi/spi_bitbang.h>
++#include <linux/spi/spi_bitbang_flm.h>
+ #include <linux/spi/spi_gpio.h>
+ 
+ 
+@@ -43,7 +43,7 @@
+  */
+ 
+ struct spi_gpio {
+-	struct spi_bitbang		bitbang;
++	struct spi_bitbang_flm		bitbang;
+ 	struct spi_gpio_platform_data	pdata;
+ 	struct platform_device		*pdev;
+ };
+@@ -92,7 +92,7 @@ struct spi_gpio {
+ static inline const struct spi_gpio_platform_data * __pure
+ spi_to_pdata(const struct spi_device *spi)
+ {
+-	const struct spi_bitbang	*bang;
++	const struct spi_bitbang_flm	*bang;
+ 	const struct spi_gpio		*spi_gpio;
+ 
+ 	bang = spi_master_get_devdata(spi->master);
+@@ -128,7 +128,7 @@ static inline int getmiso(const struct spi_device *spi)
+  */
+ #define spidelay(nsecs)	do {} while (0)
+ 
+-#include "spi-bitbang-txrx.h"
++#include "spi-bitbang-flm-txrx.h"
+ 
+ /*
+  * These functions can leverage inline expansion of GPIO calls to shrink
+@@ -145,27 +145,27 @@ static inline int getmiso(const struct spi_device *spi)
+  */
+ 
+ static u32 spi_gpio_txrx_word_mode0(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+-	return bitbang_txrx_be_cpha0(spi, nsecs, 0, 0, word, bits);
++	return bitbang_txrx_be_cpha0(spi, bit_delay, byte_delay, 0, 0, word, bits);
+ }
+ 
+ static u32 spi_gpio_txrx_word_mode1(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+-	return bitbang_txrx_be_cpha1(spi, nsecs, 0, 0, word, bits);
++	return bitbang_txrx_be_cpha1(spi, bit_delay, byte_delay, 0, 0, word, bits);
+ }
+ 
+ static u32 spi_gpio_txrx_word_mode2(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+-	return bitbang_txrx_be_cpha0(spi, nsecs, 1, 0, word, bits);
++	return bitbang_txrx_be_cpha0(spi, bit_delay, byte_delay, 1, 0, word, bits);
+ }
+ 
+ static u32 spi_gpio_txrx_word_mode3(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+-	return bitbang_txrx_be_cpha1(spi, nsecs, 1, 0, word, bits);
++	return bitbang_txrx_be_cpha1(spi, bit_delay, byte_delay, 1, 0, word, bits);
+ }
+ 
+ /*
+@@ -179,31 +179,31 @@ static u32 spi_gpio_txrx_word_mode3(struct spi_device *spi,
+  */
+ 
+ static u32 spi_gpio_spec_txrx_word_mode0(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+ 	unsigned flags = spi->master->flags;
+-	return bitbang_txrx_be_cpha0(spi, nsecs, 0, flags, word, bits);
++	return bitbang_txrx_be_cpha0(spi, bit_delay, byte_delay, 0, flags, word, bits);
+ }
+ 
+ static u32 spi_gpio_spec_txrx_word_mode1(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+ 	unsigned flags = spi->master->flags;
+-	return bitbang_txrx_be_cpha1(spi, nsecs, 0, flags, word, bits);
++	return bitbang_txrx_be_cpha1(spi, bit_delay, byte_delay, 0, flags, word, bits);
+ }
+ 
+ static u32 spi_gpio_spec_txrx_word_mode2(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+ 	unsigned flags = spi->master->flags;
+-	return bitbang_txrx_be_cpha0(spi, nsecs, 1, flags, word, bits);
++	return bitbang_txrx_be_cpha0(spi, bit_delay, byte_delay, 1, flags, word, bits);
+ }
+ 
+ static u32 spi_gpio_spec_txrx_word_mode3(struct spi_device *spi,
+-		unsigned nsecs, u32 word, u8 bits)
++		unsigned bit_delay, unsigned byte_delay, u32 word, u8 bits)
+ {
+ 	unsigned flags = spi->master->flags;
+-	return bitbang_txrx_be_cpha1(spi, nsecs, 1, flags, word, bits);
++	return bitbang_txrx_be_cpha1(spi, bit_delay, byte_delay, 1, flags, word, bits);
+ }
+ 
+ /*----------------------------------------------------------------------*/
+@@ -239,7 +239,7 @@ static int spi_gpio_setup(struct spi_device *spi)
+ 		}
+ 	}
+ 	if (!status)
+-		status = spi_bitbang_setup(spi);
++		status = spi_bitbang_flm_setup(spi);
+ 	if (status) {
+ 		if (!spi->controller_state && cs != SPI_GPIO_NO_CHIPSELECT)
+ 			gpio_free(cs);
+@@ -253,7 +253,7 @@ static void spi_gpio_cleanup(struct spi_device *spi)
+ 
+ 	if (cs != SPI_GPIO_NO_CHIPSELECT)
+ 		gpio_free(cs);
+-	spi_bitbang_cleanup(spi);
++	spi_bitbang_flm_cleanup(spi);
+ }
+ 
+ static int __devinit spi_gpio_alloc(unsigned pin, const char *label, bool is_in)
+@@ -362,10 +362,10 @@ static int __devinit spi_gpio_probe(struct platform_device *pdev)
+ 		spi_gpio->bitbang.txrx_word[SPI_MODE_2] = spi_gpio_spec_txrx_word_mode2;
+ 		spi_gpio->bitbang.txrx_word[SPI_MODE_3] = spi_gpio_spec_txrx_word_mode3;
+ 	}
+-	spi_gpio->bitbang.setup_transfer = spi_bitbang_setup_transfer;
++	spi_gpio->bitbang.setup_transfer = spi_bitbang_flm_setup_transfer;
+ 	spi_gpio->bitbang.flags = SPI_CS_HIGH;
+ 
+-	status = spi_bitbang_start(&spi_gpio->bitbang);
++	status = spi_bitbang_flm_start(&spi_gpio->bitbang);
+ 	if (status < 0) {
+ 		spi_master_put(spi_gpio->bitbang.master);
+ gpio_free:
+@@ -390,7 +390,7 @@ static int __devexit spi_gpio_remove(struct platform_device *pdev)
+ 	pdata = pdev->dev.platform_data;
+ 
+ 	/* stop() unregisters child devices too */
+-	status = spi_bitbang_stop(&spi_gpio->bitbang);
++	status = spi_bitbang_flm_stop(&spi_gpio->bitbang);
+ 	spi_master_put(spi_gpio->bitbang.master);
+ 
+ 	platform_set_drvdata(pdev, NULL);
+--- a/dev/null	2013-01-06 11:28:38.620243987 +0100
++++ b/drivers/spi/spi-bitbang-flm-txrx.h	2013-01-04 12:24:37.919750629 +0100
+@@ -0,0 +1,103 @@
++/*
++ * Mix this utility code with some glue code to get one of several types of
++ * simple SPI master driver.  Two do polled word-at-a-time I/O:
++ *
++ *   -	GPIO/parport bitbangers.  Provide chipselect() and txrx_word[](),
++ *	expanding the per-word routines from the inline templates below.
++ *
++ *   -	Drivers for controllers resembling bare shift registers.  Provide
++ *	chipselect() and txrx_word[](), with custom setup()/cleanup() methods
++ *	that use your controller's clock and chipselect registers.
++ *
++ * Some hardware works well with requests at spi_transfer scope:
++ *
++ *   -	Drivers leveraging smarter hardware, with fifos or DMA; or for half
++ *	duplex (MicroWire) controllers.  Provide chipselect() and txrx_bufs(),
++ *	and custom setup()/cleanup() methods.
++ */
++
++/*
++ * The code that knows what GPIO pins do what should have declared four
++ * functions, ideally as inlines, before including this header:
++ *
++ *  void setsck(struct spi_device *, int is_on);
++ *  void setmosi(struct spi_device *, int is_on);
++ *  int getmiso(struct spi_device *);
++ *  void spidelay(unsigned);
++ *
++ * setsck()'s is_on parameter is a zero/nonzero boolean.
++ *
++ * setmosi()'s is_on parameter is a zero/nonzero boolean.
++ *
++ * getmiso() is required to return 0 or 1 only. Any other value is invalid
++ * and will result in improper operation.
++ *
++ * A non-inlined routine would call bitbang_txrx_*() routines.  The
++ * main loop could easily compile down to a handful of instructions,
++ * especially if the delay is a NOP (to run at peak speed).
++ *
++ * Since this is software, the timings may not be exactly what your board's
++ * chips need ... there may be several reasons you'd need to tweak timings
++ * in these routines, not just make to make it faster or slower to match a
++ * particular CPU clock rate.
++ */
++
++static inline u32
++bitbang_txrx_be_cpha0(struct spi_device *spi,
++		unsigned bit_delay, unsigned byte_delay,
++		unsigned cpol, unsigned flags,
++		u32 word, u8 bits)
++{
++	/* if (cpol == 0) this is SPI_MODE_0; else this is SPI_MODE_2 */
++
++	spidelay(byte_delay);
++
++	/* clock starts at inactive polarity */
++	for (word <<= (32 - bits); likely(bits); bits--) {
++
++		/* setup MSB (to slave) on trailing edge */
++		if ((flags & SPI_MASTER_NO_TX) == 0)
++			setmosi(spi, word & (1 << 31));
++		spidelay(bit_delay);	/* T(setup) */
++
++		setsck(spi, !cpol);
++		spidelay(bit_delay);
++
++		/* sample MSB (from slave) on leading edge */
++		word <<= 1;
++		if ((flags & SPI_MASTER_NO_RX) == 0)
++			word |= getmiso(spi);
++		setsck(spi, cpol);
++	}
++	return word;
++}
++
++static inline u32
++bitbang_txrx_be_cpha1(struct spi_device *spi,
++		unsigned bit_delay, unsigned byte_delay,
++		unsigned cpol, unsigned flags,
++		u32 word, u8 bits)
++{
++	/* if (cpol == 0) this is SPI_MODE_1; else this is SPI_MODE_3 */
++
++	spidelay(byte_delay);
++
++	/* clock starts at inactive polarity */
++	for (word <<= (32 - bits); likely(bits); bits--) {
++
++		/* setup MSB (to slave) on leading edge */
++		setsck(spi, !cpol);
++		if ((flags & SPI_MASTER_NO_TX) == 0)
++			setmosi(spi, word & (1 << 31));
++		spidelay(bit_delay); /* T(setup) */
++
++		setsck(spi, cpol);
++		spidelay(bit_delay);
++
++		/* sample MSB (from slave) on trailing edge */
++		word <<= 1;
++		if ((flags & SPI_MASTER_NO_RX) == 0)
++			word |= getmiso(spi);
++	}
++	return word;
++}
+--- a/drivers/spi/spi-bitbang.c	2012-06-01 09:16:13.000000000 +0200
++++ b/drivers/spi/spi-bitbang.c	2013-08-21 18:46:26.414712302 +0200
+@@ -27,7 +27,7 @@
+ #include <linux/slab.h>
+ 
+ #include <linux/spi/spi.h>
+-#include <linux/spi/spi_bitbang.h>
++#include <linux/spi/spi_bitbang_flm.h>
+ 
+ 
+ /*----------------------------------------------------------------------*/
+@@ -36,7 +36,7 @@
+  * FIRST PART (OPTIONAL):  word-at-a-time spi_transfer support.
+  * Use this for GPIO or shift-register level hardware APIs.
+  *
+- * spi_bitbang_cs is in spi_device->controller_state, which is unavailable
++ * spi_bitbang_flm_cs is in spi_device->controller_state, which is unavailable
+  * to glue code.  These bitbang setup() and cleanup() routines are always
+  * used, though maybe they're called from controller-aware code.
+  *
+@@ -49,14 +49,16 @@
+  * working quickly, or testing for differences that aren't speed related.
+  */
+ 
+-struct spi_bitbang_cs {
++struct spi_bitbang_flm_cs {
+ 	unsigned	nsecs;	/* (clock cycle time)/2 */
+-	u32		(*txrx_word)(struct spi_device *spi, unsigned nsecs,
++	u32		(*txrx_word)(struct spi_device *spi,
++					unsigned bit_delay, unsigned byte_delay,
+ 					u32 word, u8 bits);
+ 	unsigned	(*txrx_bufs)(struct spi_device *,
+ 					u32 (*txrx_word)(
+ 						struct spi_device *spi,
+-						unsigned nsecs,
++						unsigned bit_delay,
++						unsigned byte_delay,
+ 						u32 word, u8 bits),
+ 					unsigned, struct spi_transfer *);
+ };
+@@ -64,26 +66,42 @@
+ static unsigned bitbang_txrx_8(
+ 	struct spi_device	*spi,
+ 	u32			(*txrx_word)(struct spi_device *spi,
+-					unsigned nsecs,
++					unsigned bit_delay, unsigned byte_delay,
+ 					u32 word, u8 bits),
+-	unsigned		ns,
++	unsigned		bit_delay,
+ 	struct spi_transfer	*t
+ ) {
+ 	unsigned		bits = t->bits_per_word ? : spi->bits_per_word;
+ 	unsigned		count = t->len;
+ 	const u8		*tx = t->tx_buf;
+ 	u8			*rx = t->rx_buf;
++    unsigned        byte_delay = spi->delay_usecs * 1000;
+ 
+ 	while (likely(count > 0)) {
+ 		u8		word = 0;
+ 
+-		if (tx)
++		if (unlikely(tx))
+ 			word = *tx++;
+-		word = txrx_word(spi, ns, word, bits);
+-		if (rx)
+-			*rx++ = word;
++		word = txrx_word(spi, bit_delay, byte_delay, word, bits);
++		if (likely(rx)) {
++			/* If we receive a 0x00, fetch one extra byte to sync
++				the state machine, then break out of the while loop. */
++			if (unlikely(!word)) {
++				txrx_word(spi, bit_delay, byte_delay, 0x00, bits); /* discard */
++				break;
++			}
++
++ 			*rx++ = word;
++		}
+ 		count -= 1;
+ 	}
++
++	if (unlikely(tx)) {
++		/* Signal the end of tx by sending two 0x00's. */
++		txrx_word(spi, bit_delay, byte_delay, 0x00, bits);
++		txrx_word(spi, bit_delay, byte_delay, 0x00, bits);
++	}
++
+ 	return t->len - count;
+ }
+ 
+@@ -139,9 +157,9 @@
+ 	return t->len - count;
+ }
+ 
+-int spi_bitbang_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
++int spi_bitbang_flm_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
+ {
+-	struct spi_bitbang_cs	*cs = spi->controller_state;
++	struct spi_bitbang_flm_cs	*cs = spi->controller_state;
+ 	u8			bits_per_word;
+ 	u32			hz;
+ 
+@@ -158,10 +176,10 @@
+ 		bits_per_word = spi->bits_per_word;
+ 	if (bits_per_word <= 8)
+ 		cs->txrx_bufs = bitbang_txrx_8;
+-	else if (bits_per_word <= 16)
++/*	else if (bits_per_word <= 16)
+ 		cs->txrx_bufs = bitbang_txrx_16;
+ 	else if (bits_per_word <= 32)
+-		cs->txrx_bufs = bitbang_txrx_32;
++		cs->txrx_bufs = bitbang_txrx_32; */
+ 	else
+ 		return -EINVAL;
+ 
+@@ -169,22 +187,22 @@
+ 	if (!hz)
+ 		hz = spi->max_speed_hz;
+ 	if (hz) {
+-		cs->nsecs = (1000000000/2) / hz;
+-		if (cs->nsecs > (MAX_UDELAY_MS * 1000 * 1000))
++		cs->nsecs = (1000000000/2) / hz;
++		if (cs->nsecs > (MAX_UDELAY_MS * 1000 * 1000))
+ 			return -EINVAL;
+ 	}
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(spi_bitbang_setup_transfer);
++EXPORT_SYMBOL_GPL(spi_bitbang_flm_setup_transfer);
+ 
+ /**
+- * spi_bitbang_setup - default setup for per-word I/O loops
++ * spi_bitbang_flm_setup - default setup for per-word I/O loops
+  */
+-int spi_bitbang_setup(struct spi_device *spi)
++int spi_bitbang_flm_setup(struct spi_device *spi)
+ {
+-	struct spi_bitbang_cs	*cs = spi->controller_state;
+-	struct spi_bitbang	*bitbang;
++	struct spi_bitbang_flm_cs	*cs = spi->controller_state;
++	struct spi_bitbang_flm	*bitbang;
+ 	int			retval;
+ 	unsigned long		flags;
+ 
+@@ -223,20 +241,20 @@
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(spi_bitbang_setup);
++EXPORT_SYMBOL_GPL(spi_bitbang_flm_setup);
+ 
+ /**
+- * spi_bitbang_cleanup - default cleanup for per-word I/O loops
++ * spi_bitbang_flm_cleanup - default cleanup for per-word I/O loops
+  */
+-void spi_bitbang_cleanup(struct spi_device *spi)
++void spi_bitbang_flm_cleanup(struct spi_device *spi)
+ {
+ 	kfree(spi->controller_state);
+ }
+-EXPORT_SYMBOL_GPL(spi_bitbang_cleanup);
++EXPORT_SYMBOL_GPL(spi_bitbang_flm_cleanup);
+ 
+-static int spi_bitbang_bufs(struct spi_device *spi, struct spi_transfer *t)
++static int spi_bitbang_flm_bufs(struct spi_device *spi, struct spi_transfer *t)
+ {
+-	struct spi_bitbang_cs	*cs = spi->controller_state;
++	struct spi_bitbang_flm_cs	*cs = spi->controller_state;
+ 	unsigned		nsecs = cs->nsecs;
+ 
+ 	return cs->txrx_bufs(spi, cs->txrx_word, nsecs, t);
+@@ -257,8 +275,8 @@
+  */
+ static void bitbang_work(struct work_struct *work)
+ {
+-	struct spi_bitbang	*bitbang =
+-		container_of(work, struct spi_bitbang, work);
++	struct spi_bitbang_flm	*bitbang =
++		container_of(work, struct spi_bitbang_flm, work);
+ 	unsigned long		flags;
+ 
+ 	spin_lock_irqsave(&bitbang->lock, flags);
+@@ -334,12 +352,6 @@
+ 			}
+ 			if (status > 0)
+ 				m->actual_length += status;
+-			if (status != t->len) {
+-				/* always report some kind of error */
+-				if (status >= 0)
+-					status = -EREMOTEIO;
+-				break;
+-			}
+ 			status = 0;
+ 
+ 			/* protocol tweaks before next transfer */
+@@ -379,11 +391,11 @@
+ }
+ 
+ /**
+- * spi_bitbang_transfer - default submit to transfer queue
++ * spi_bitbang_flm_transfer - default submit to transfer queue
+  */
+-int spi_bitbang_transfer(struct spi_device *spi, struct spi_message *m)
++int spi_bitbang_flm_transfer(struct spi_device *spi, struct spi_message *m)
+ {
+-	struct spi_bitbang	*bitbang;
++	struct spi_bitbang_flm	*bitbang;
+ 	unsigned long		flags;
+ 	int			status = 0;
+ 
+@@ -403,17 +415,17 @@
+ 
+ 	return status;
+ }
+-EXPORT_SYMBOL_GPL(spi_bitbang_transfer);
++EXPORT_SYMBOL_GPL(spi_bitbang_flm_transfer);
+ 
+ /*----------------------------------------------------------------------*/
+ 
+ /**
+- * spi_bitbang_start - start up a polled/bitbanging SPI master driver
++ * spi_bitbang_flm_start - start up a polled/bitbanging SPI master driver
+  * @bitbang: driver handle
+  *
+  * Caller should have zero-initialized all parts of the structure, and then
+  * provided callbacks for chip selection and I/O loops.  If the master has
+- * a transfer method, its final step should call spi_bitbang_transfer; or,
++ * a transfer method, its final step should call spi_bitbang_flm_transfer; or,
+  * that's the default if the transfer routine is not initialized.  It should
+  * also set up the bus number and number of chipselects.
+  *
+@@ -421,16 +433,16 @@
+  * hardware that basically exposes a shift register) or per-spi_transfer
+  * (which takes better advantage of hardware like fifos or DMA engines).
+  *
+- * Drivers using per-word I/O loops should use (or call) spi_bitbang_setup,
+- * spi_bitbang_cleanup and spi_bitbang_setup_transfer to handle those spi
++ * Drivers using per-word I/O loops should use (or call) spi_bitbang_flm_setup,
++ * spi_bitbang_flm_cleanup and spi_bitbang_flm_setup_transfer to handle those spi
+  * master methods.  Those methods are the defaults if the bitbang->txrx_bufs
+  * routine isn't initialized.
+  *
+  * This routine registers the spi_master, which will process requests in a
+  * dedicated task, keeping IRQs unblocked most of the time.  To stop
+- * processing those requests, call spi_bitbang_stop().
++ * processing those requests, call spi_bitbang_flm_stop().
+  */
+-int spi_bitbang_start(struct spi_bitbang *bitbang)
++int spi_bitbang_flm_start(struct spi_bitbang_flm *bitbang)
+ {
+ 	int	status;
+ 
+@@ -445,20 +457,20 @@
+ 		bitbang->master->mode_bits = SPI_CPOL | SPI_CPHA | bitbang->flags;
+ 
+ 	if (!bitbang->master->transfer)
+-		bitbang->master->transfer = spi_bitbang_transfer;
++		bitbang->master->transfer = spi_bitbang_flm_transfer;
+ 	if (!bitbang->txrx_bufs) {
+ 		bitbang->use_dma = 0;
+-		bitbang->txrx_bufs = spi_bitbang_bufs;
++		bitbang->txrx_bufs = spi_bitbang_flm_bufs;
+ 		if (!bitbang->master->setup) {
+ 			if (!bitbang->setup_transfer)
+ 				bitbang->setup_transfer =
+-					 spi_bitbang_setup_transfer;
+-			bitbang->master->setup = spi_bitbang_setup;
+-			bitbang->master->cleanup = spi_bitbang_cleanup;
++					 spi_bitbang_flm_setup_transfer;
++			bitbang->master->setup = spi_bitbang_flm_setup;
++			bitbang->master->cleanup = spi_bitbang_flm_cleanup;
+ 		}
+ 	} else if (!bitbang->master->setup)
+ 		return -EINVAL;
+-	if (bitbang->master->transfer == spi_bitbang_transfer &&
++	if (bitbang->master->transfer == spi_bitbang_flm_transfer &&
+ 			!bitbang->setup_transfer)
+ 		return -EINVAL;
+ 
+@@ -485,12 +497,12 @@
+ err1:
+ 	return status;
+ }
+-EXPORT_SYMBOL_GPL(spi_bitbang_start);
++EXPORT_SYMBOL_GPL(spi_bitbang_flm_start);
+ 
+ /**
+- * spi_bitbang_stop - stops the task providing spi communication
++ * spi_bitbang_flm_stop - stops the task providing spi communication
+  */
+-int spi_bitbang_stop(struct spi_bitbang *bitbang)
++int spi_bitbang_flm_stop(struct spi_bitbang_flm *bitbang)
+ {
+ 	spi_unregister_master(bitbang->master);
+ 
+@@ -500,7 +512,7 @@
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(spi_bitbang_stop);
++EXPORT_SYMBOL_GPL(spi_bitbang_flm_stop);
+ 
+ MODULE_LICENSE("GPL");
+ 

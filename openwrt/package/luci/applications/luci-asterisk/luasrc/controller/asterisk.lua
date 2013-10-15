@@ -10,14 +10,14 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: asterisk.lua 4397 2009-03-30 19:29:37Z jow $
+$Id: asterisk.lua 9558 2012-12-18 13:58:22Z jow $
 ]]--
 
 module("luci.controller.asterisk", package.seeall)
 
 function index()
 
-	entry({"admin", "services", "asterisk"}, 				  cbi("asterisk"), 			  "Asterisk",				80).i18n = "asterisk"
+	entry({"admin", "services", "asterisk"}, 				  cbi("asterisk"), 			  "Asterisk",				80)
 
 	entry({"admin", "services", "asterisk", "voice"},         cbi("asterisk-voice"),      "Voice Functions",        1)
 	entry({"admin", "services", "asterisk", "meetme"},        cbi("asterisk-meetme"),     "Meetme Conferences",     2)

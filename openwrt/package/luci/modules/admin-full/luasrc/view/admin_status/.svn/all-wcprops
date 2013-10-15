@@ -1,47 +1,59 @@
 K 25
 svn:wc:ra_dav:version-url
-V 81
-/!svn/ver/6029/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status
+V 82
+/!svn/ver/9558/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_status
+END
+wireless.htm
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/9558/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_status/wireless.htm
 END
 dmesg.htm
 K 25
 svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_status/dmesg.htm
+END
+load.htm
+K 25
+svn:wc:ra_dav:version-url
 V 91
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/dmesg.htm
+/!svn/ver/9558/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_status/load.htm
 END
 syslog.htm
 K 25
 svn:wc:ra_dav:version-url
-V 92
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/syslog.htm
+V 93
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_status/syslog.htm
 END
 routes.htm
 K 25
 svn:wc:ra_dav:version-url
-V 92
-/!svn/ver/6029/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/routes.htm
+V 93
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_status/routes.htm
 END
-conntrack.htm
+connections.htm
 K 25
 svn:wc:ra_dav:version-url
-V 95
-/!svn/ver/5118/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/conntrack.htm
-END
-interfaces.htm
-K 25
-svn:wc:ra_dav:version-url
-V 96
-/!svn/ver/5118/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/interfaces.htm
+V 98
+/!svn/ver/9558/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_status/connections.htm
 END
 iptables.htm
 K 25
 svn:wc:ra_dav:version-url
-V 94
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/iptables.htm
+V 95
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_status/iptables.htm
+END
+bandwidth.htm
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_status/bandwidth.htm
 END
 index.htm
 K 25
 svn:wc:ra_dav:version-url
-V 91
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/luasrc/view/admin_status/index.htm
+V 92
+/!svn/ver/9558/luci/branches/luci-0.11/modules/admin-full/luasrc/view/admin_status/index.htm
 END

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2010 OpenWrt.org
+# Copyright (C) 2006-2012 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rrdtool1
 PKG_VERSION:=1.0.50
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/rrdtool-$(PKG_VERSION)
 PKG_SOURCE:=rrdtool-$(PKG_VERSION).tar.gz
@@ -19,7 +19,7 @@ PKG_SOURCE_URL:= \
 	ftp://ftp.sunet.se/pub/network/monitoring/rrdtool/rrdtool-1.0.x
 PKG_MD5SUM:=c466e2e7df95fa8e318e46437da87686
 
-PKG_FIXUP:=libtool
+PKG_FIXUP:=autoreconf
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -85,7 +85,6 @@ endef
 TARGET_CFLAGS += $(FPIC) --std=c99
 
 CONFIGURE_ARGS += \
-	$(DISABLE_LARGEFILE) \
 	$(DISABLE_NLS) \
 	--enable-shared=yes \
 	--enable-static=yes \

@@ -12,42 +12,38 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Translate Toolkit 1.1.1\n"
 
-#. Content directories
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:1
-msgid "content_directories"
+msgid "Content directories"
 msgstr "Content directories"
 
-#. Disable telnet console
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:2
-msgid "disable_telnet"
+msgid "Disable telnet console"
 msgstr "Disable telnet console"
 
-#. Disable webinterface
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:3
-msgid "disable_webif"
+msgid "Disable webinterface"
 msgstr "Disable webinterface"
 
-#. Options
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:4
-msgid "options"
+msgid "Enable"
+msgstr ""
+
+msgid "Interface"
+msgstr ""
+
+msgid "Options"
 msgstr "Options"
 
-#. Servername
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:5
-msgid "servername"
+msgid "Servername"
 msgstr "Servername"
 
-#. Settings
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:6
-msgid "settings"
+msgid "Settings"
 msgstr "Settings"
 
-#. uShare
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:7
-msgid "ushare"
-msgstr "uShare"
+msgid "Username"
+msgstr ""
 
-#. uShare
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:8
-msgid "ushare_desc"
-msgstr "uShare"
+msgid "uShare"
+msgstr ""
+
+msgid ""
+"uShare is a UPnP (TM) A/V & DLNA Media Server. It implements the server "
+"component that provides UPnP media devices with information on available "
+"multimedia files."
+msgstr ""

@@ -9,17 +9,21 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: load.lua 2329 2008-06-08 21:51:55Z jow $
+$Id: load.lua 6060 2010-04-13 20:42:26Z jow $
 
 ]]--
 
-m = Map("luci_statistics")
+m = Map("luci_statistics",
+	translate("Load Plugin Configuration"),
+	translate(
+		"The load plugin collects statistics about the general system load."
+	))
 
 -- collectd_wireless config section
 s = m:section( NamedSection, "collectd_load", "luci_statistics" )
 
 -- collectd_wireless.enable
-enable = s:option( Flag, "enable" )
+enable = s:option( Flag, "enable", translate("Enable this plugin") )
 enable.default = 0
 
 return m

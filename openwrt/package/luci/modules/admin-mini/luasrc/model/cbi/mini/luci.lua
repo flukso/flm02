@@ -10,13 +10,13 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: luci.lua 6008 2010-04-03 13:21:39Z jow $
+$Id: luci.lua 5813 2010-03-13 20:13:41Z acinonyx $
 ]]--
 
 require "luci.config"
 local fs = require "nixio.fs"
 
-m = Map("luci", translate("webui"), translate("a_i_luci1"))
+m = Map("luci", translate("Web <abbr title=\"User Interface\">UI</abbr>"), translate("Here you can customize the settings and the functionality of <abbr title=\"Lua Configuration Interface\">LuCI</abbr>."))
 
 -- force reload of global luci config namespace to reflect the changes
 function m.commit_handler(self)
@@ -25,18 +25,23 @@ function m.commit_handler(self)
 end
 
 
-c = m:section(NamedSection, "main", "core", translate("general"))
+c = m:section(NamedSection, "main", "core", translate("General"))
 
-l = c:option(ListValue, "lang", translate("language"))
+l = c:option(ListValue, "lang", translate("Language"))
 l:value("auto")
 
-local i18ndir = luci.i18n.i18ndir .. "default."
+local i18ndir = luci.i18n.i18ndir .. "base."
 for k, v in luci.util.kspairs(luci.config.languages) do
 	local file = i18ndir .. k:gsub("_", "-")
-	if k:sub(1, 1) ~= "." and (
-		fs.access(file .. ".lmo")
-	) then
+	if k:sub(1, 1) ~= "." and fs.access(file .. ".lmo") then
 		l:value(k, v)
+	end
+end
+
+t = c:option(ListValue, "mediaurlbase", translate("Design"))
+for k, v in pairs(luci.config.themes) do
+	if k:sub(1, 1) ~= "." then
+		t:value(v, k)
 	end
 end
 

@@ -1,103 +1,105 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-05-19 19:36+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2010-03-25 22:10+0100\n"
+"PO-Revision-Date: 2012-04-19 23:39+0200\n"
+"Last-Translator: claudyus <claudyus84@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.1.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Pootle 2.0.4\n"
 
-#. Quality of Service
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:1
-msgid "qos"
+msgid "Calculate overhead"
+msgstr "Calcola l'overhead"
+
+msgid "Classification Rules"
+msgstr "Regole di classificazione"
+
+msgid "Classification group"
+msgstr "Gruppo di Priorità"
+
+msgid "Destination host"
+msgstr "Host di destinazione"
+
+msgid "Downlink"
 msgstr ""
 
-#. With QoS you can priorize network traffic selected by adresses, ports or services.
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:2
-msgid "qos_desc"
+msgid "Download speed (kbit/s)"
+msgstr "Velocità di download (kbit/s)"
+
+msgid "Enable"
+msgstr "Abilita"
+
+msgid "Half-duplex"
+msgstr "Half-duplex"
+
+msgid "Interfaces"
+msgstr "Interfacce"
+
+msgid "Internet Connection"
 msgstr ""
 
-#. Classification
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:3
-msgid "qos_interface_classgroup"
+msgid "Number of bytes"
+msgstr "Numeri di bytes"
+
+msgid "Ports"
+msgstr "Porte"
+
+msgid "Protocol"
+msgstr "Protocollo"
+
+msgid "QoS"
 msgstr ""
 
-#. Calculate Overhead
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:4
-msgid "qos_interface_overhead"
+msgid "Quality of Service"
+msgstr "Qualità del Servizio"
+
+msgid "Service"
+msgstr "Servizi"
+
+msgid "Source host"
+msgstr "Host sorgente"
+
+msgid "Target"
+msgstr "Target"
+
+msgid "Uplink"
 msgstr ""
 
-#. Downlink
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:5
-msgid "qos_interface_download"
+msgid "Upload speed (kbit/s)"
+msgstr "Velocità di upload (kbit/s)"
+
+msgid ""
+"With <abbr title=\"Quality of Service\">QoS</abbr> you can prioritize "
+"network traffic selected by addresses, ports or services."
+msgstr ""
+"Con <abbr title=\"Qualità del Servizio\">QoS</abbr> puoi dare priorità al "
+"traffico di rete in base ad un ip, una porta o dei servizi."
+
+msgid "all"
+msgstr "all"
+
+msgid "allf"
 msgstr ""
 
-#. Uplink
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:6
-msgid "qos_interface_upload"
-msgstr ""
+msgid "default"
+msgstr "default"
 
-#. Prioritization
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:7
-msgid "qos_classify"
-msgstr ""
+msgid "express"
+msgstr "express"
 
-#. Priority
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:8
-msgid "qos_classify_target"
-msgstr ""
+msgid "low"
+msgstr "low"
 
-#. Source address
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:9
-msgid "qos_classify_srchost"
-msgstr ""
+msgid "normal"
+msgstr "normal"
 
-#. source network / source host
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:10
-msgid "qos_classify_srchost_dest"
-msgstr ""
+msgid "priority"
+msgstr "priority"
 
-#. Target address
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:11
-msgid "qos_classify_dsthost"
-msgstr ""
-
-#. target network / target host
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:12
-msgid "qos_classify_dsthost_dest"
-msgstr ""
-
-#. portrange
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:13
-msgid "qos_classify_portrange"
-msgstr ""
-
-#. low
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:14
-msgid "qos_bulk"
-msgstr ""
-
-#. normal
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:15
-msgid "qos_normal"
-msgstr ""
-
-#. express
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:16
-msgid "qos_express"
-msgstr ""
-
-#. priority
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:17
-msgid "qos_priority"
-msgstr ""
-
-#. Bytes sent
-#: applications/luci-qos/luasrc/i18n/qos.en.lua:18
 msgid "qos_connbytes"
 msgstr ""

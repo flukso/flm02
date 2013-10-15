@@ -9,13 +9,17 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: splash.htm 4251 2009-02-19 21:31:33Z jow $
+$Id: splash.htm 7062 2011-05-14 12:55:22Z soma $
 
 -%>
 <%+header%>
 <%+splash/splash%>
+
 <form method="get" action="<%=controller%>/splash/activate">
-	<input type="submit" value="<%:decline Decline%>" />
-	<input type="submit" name="accept" value="<%:accept Accept%>" />
+	<p>
+		<input type="submit" value="<%:Decline%>" />
+		<input type="submit" name="accept" value="<%:Accept%>" />
+	</p>
 </form>
+
 <%+footer%>

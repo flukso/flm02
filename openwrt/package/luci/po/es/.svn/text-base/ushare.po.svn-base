@@ -3,50 +3,51 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-06-10 03:41+0200\n"
-"PO-Revision-Date: 2009-07-12 07:30+0200\n"
-"Last-Translator: Guillermo Javier Nardoni <guillermo@geryon.com.ar>\n"
+"PO-Revision-Date: 2012-08-25 09:23+0200\n"
+"Last-Translator: José Vicente <josevteg@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Pootle 1.1.0\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Pootle 2.0.6\n"
 
-#. Content directories
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:1
-msgid "content_directories"
+msgid "Content directories"
 msgstr "Directorios de contenido"
 
-#. Disable telnet console
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:2
-msgid "disable_telnet"
-msgstr "Deshabilitar consola telnet"
+msgid "Disable telnet console"
+msgstr "Inhabilitar consola telnet"
 
-#. Disable webinterface
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:3
-msgid "disable_webif"
-msgstr "Deshabilitar interfaz web"
+msgid "Disable webinterface"
+msgstr "Inhabilitar interfaz web"
 
-#. Options
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:4
-msgid "options"
+msgid "Enable"
+msgstr "Activar"
+
+msgid "Interface"
+msgstr "Interfaz"
+
+msgid "Options"
 msgstr "Opciones"
 
-#. Servername
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:5
-msgid "servername"
-msgstr "Nombre del Servidor (Servername)"
+msgid "Servername"
+msgstr "Nombre para el servidor"
 
-#. Settings
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:6
-msgid "settings"
+msgid "Settings"
 msgstr "Configuración"
 
-#. uShare
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:7
-msgid "ushare"
+msgid "Username"
+msgstr "Nombre de usuario"
+
+msgid "uShare"
 msgstr "uShare"
 
-#. uShare
-#: applications/luci-ushare/luasrc/i18n/ushare.en.lua:8
-msgid "ushare_desc"
-msgstr "uShare"
+msgid ""
+"uShare is a UPnP (TM) A/V & DLNA Media Server. It implements the server "
+"component that provides UPnP media devices with information on available "
+"multimedia files."
+msgstr ""
+"uShare es un servidor UPnP (TM) A/V y DLNA. Implementa el componente del "
+"servidor que proporciona a los dispositivos UPnP la información disponible "
+"en los ficheros multimedia."

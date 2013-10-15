@@ -1,17 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 86
-/!svn/ver/6029/luci/branches/luci-0.9/modules/admin-full/luasrc/model/cbi/admin_status
+V 87
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/model/cbi/admin_status
 END
-routes.lua
+processes.lua
 K 25
 svn:wc:ra_dav:version-url
-V 97
-/!svn/ver/6029/luci/branches/luci-0.9/modules/admin-full/luasrc/model/cbi/admin_status/routes.lua
-END
-conntrack.lua
-K 25
-svn:wc:ra_dav:version-url
-V 100
-/!svn/ver/6029/luci/branches/luci-0.9/modules/admin-full/luasrc/model/cbi/admin_status/conntrack.lua
+V 101
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/luasrc/model/cbi/admin_status/processes.lua
 END

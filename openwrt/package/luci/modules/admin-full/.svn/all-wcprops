@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/6036/luci/branches/luci-0.9/modules/admin-full
+V 57
+/!svn/ver/9858/luci/branches/luci-0.11/modules/admin-full
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
-V 65
-/!svn/ver/4830/luci/branches/luci-0.9/modules/admin-full/Makefile
+V 66
+/!svn/ver/9349/luci/branches/luci-0.11/modules/admin-full/Makefile
 END

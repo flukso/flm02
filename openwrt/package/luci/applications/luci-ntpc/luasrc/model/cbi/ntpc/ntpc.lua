@@ -10,33 +10,40 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: ntpc.lua 5941 2010-03-27 02:41:29Z jow $
+$Id: ntpc.lua 9558 2012-12-18 13:58:22Z jow $
 ]]--
-m = Map("ntpclient", translate("ntpc"), translate("ntpc_desc"))
+m = Map("ntpclient", translate("Time Synchronisation"), translate("Synchronizes the system time"))
 
-s = m:section(TypedSection, "ntpclient", translate("general"))
+s = m:section(TypedSection, "ntpclient", translate("General"))
 s.anonymous = true
 s.addremove = false
 
-s:option(DummyValue, "_time", translate("ntpc_current")).value = os.date("%c")
+s:option(DummyValue, "_time", translate("Current system time")).value = os.date("%c")
 
-s:option(Value, "interval", translate("ntpc_interval")).rmempty = true
-s:option(Value, "count", translate("ntpc_count"), translate("ntpc_count_desc")).rmempty = true
+interval = s:option(Value, "interval", translate("Update interval (in seconds)"))
+interval.datatype = "and(uinteger,min(1))"
+interval.rmempty = true
 
+count = s:option(Value, "count", translate("Count of time measurements"), translate("empty = infinite"))
+count.datatype = "and(uinteger,min(1))"
+count.rmempty = true
 
-s2 = m:section(TypedSection, "ntpdrift", translate("ntpc_drift"))
+s2 = m:section(TypedSection, "ntpdrift", translate("Clock Adjustment"))
 s2.anonymous = true
 s2.addremove = false
 
-s2:option(Value, "freq", translate("ntpc_drift_freq")).rmempty = true
+freq = s2:option(Value, "freq", translate("Offset frequency"))
+freq.datatype = "integer"
+freq.rmempty = true
 
-
-s3 = m:section(TypedSection, "ntpserver", translate("ntpc_timeserver"))
+s3 = m:section(TypedSection, "ntpserver", translate("Time Servers"))
 s3.anonymous = true
 s3.addremove = true
 s3.template = "cbi/tblsection"
 
-s3:option(Value, "hostname", translate("hostname"))
-s3:option(Value, "port", translate("port")).rmempty = true
+s3:option(Value, "hostname", translate("Hostname"))
+port = s3:option(Value, "port", translate("Port"))
+port.datatype = "port"
+port.rmempty = true
 
 return m

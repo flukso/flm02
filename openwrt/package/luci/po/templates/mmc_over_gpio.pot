@@ -1,19 +1,29 @@
-#  mmc_over_gpio.pot
-#  generated from ./applications/luci-mmc_over_gpio/luasrc/i18n/mmc_over_gpio.en.lua
 msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8"
 
-#. MMC/SD driver configuration
-#: applications/luci-mmc_over_gpio/luasrc/i18n/mmc_over_gpio.en.lua:1
-msgid "mmc_over_gpio"
+msgid "CLK_pin"
 msgstr ""
 
-#. MMC/SD driver configuration
-#: applications/luci-mmc_over_gpio/luasrc/i18n/mmc_over_gpio.en.lua:2
-msgid "mmc_over_gpio_desc"
+msgid "CS_pin"
 msgstr ""
 
-#. Settings
-#: applications/luci-mmc_over_gpio/luasrc/i18n/mmc_over_gpio.en.lua:3
-msgid "settings"
+msgid "DI_pin"
+msgstr ""
+
+msgid "DO_pin"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "MMC/SD driver configuration"
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Settings"
 msgstr ""

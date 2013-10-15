@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network
+END
+assign.lua
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network/assign.lua
+END
+assign1.lua
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network/assign1.lua
+END
+wan.lua
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network/wan.lua
+END
+wandevice.lua
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network/wandevice.lua
+END
+wlanwan.lua
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network/wlanwan.lua
+END
+ddns.lua
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network/ddns.lua
+END
+ddns1.lua
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network/ddns1.lua
+END
+lan.lua
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network/lan.lua
+END
+lan1.lua
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network/lan1.lua
+END
+wlanwanscan.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network/wlanwanscan.lua
+END
+etherwan.lua
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/9349/luci/branches/luci-0.11/modules/niu/luasrc/model/cbi/niu/network/etherwan.lua
+END

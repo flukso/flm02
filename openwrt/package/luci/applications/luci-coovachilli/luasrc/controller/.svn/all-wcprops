@@ -1,11 +1,11 @@
 K 25
 svn:wc:ra_dav:version-url
-V 85
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-coovachilli/luasrc/controller
+V 86
+/!svn/ver/9558/luci/branches/luci-0.11/applications/luci-coovachilli/luasrc/controller
 END
 coovachilli.lua
 K 25
 svn:wc:ra_dav:version-url
-V 101
-/!svn/ver/4830/luci/branches/luci-0.9/applications/luci-coovachilli/luasrc/controller/coovachilli.lua
+V 102
+/!svn/ver/9558/luci/branches/luci-0.11/applications/luci-coovachilli/luasrc/controller/coovachilli.lua
 END

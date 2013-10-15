@@ -9,20 +9,19 @@ You may obtain a copy of the License at
 
         http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: mmc_over_gpio.lua 5118 2009-07-23 03:32:30Z jow $
+$Id: mmc_over_gpio.lua 9558 2012-12-18 13:58:22Z jow $
 
 ]]--
 
 module("luci.controller.mmc_over_gpio", package.seeall)
 
 function index()
-       require("luci.i18n")
-       luci.i18n.loadc("mmc_over_gpio")
-       if not nixio.fs.access("/etc/config/mmc_over_gpio") then
-               return
-       end
+	if not nixio.fs.access("/etc/config/mmc_over_gpio") then
+		return
+	end
 
-       local page = entry({"admin", "system", "mmc_over_gpio"}, cbi("mmc_over_gpio"), luci.i18n.translate("mmc_over_gpio", "mmc_over_gpio"), 60)
-       page.i18n = "mmc_over_gpio"
-       page.dependent = true
+	local page
+
+	page = entry({"admin", "system", "mmc_over_gpio"}, cbi("mmc_over_gpio"), _("MMC/SD driver configuration"), 60)
+	page.dependent = true
 end

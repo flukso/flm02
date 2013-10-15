@@ -1,58 +1,56 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-05-28 02:08+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2010-04-14 13:24+0200\n"
+"PO-Revision-Date: 2012-03-31 15:40+0200\n"
+"Last-Translator: Vasilis <acinonyx@openwrt.gr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.1.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Pootle 2.0.4\n"
 
-#. Time Synchronisation
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:1
-msgid "ntpc"
-msgstr "Συγχρονισμός Ώρας"
-
-#. Synchronizes the system time
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:2
-msgid "ntpc_desc"
-msgstr "Συγχρονίζει την ώρα του συστήματος"
-
-#. Time Server
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:3
-msgid "ntpc_timeserver"
-msgstr "Εξυπηρετητής Ώρας"
-
-#. Update Interval (in s)
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:4
-msgid "ntpc_interval"
-msgstr "Περίοδος Ενημέρωσης (σε s)"
-
-#. Count of Time Measurements
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:5
-msgid "ntpc_count"
-msgstr "Αριθμός Μετρήσεων Ώρας"
-
-#. empty = infinite
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:6
-msgid "ntpc_count_desc"
-msgstr "άδειο = άπειρος"
-
-#. Clock Adjustment
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:7
-msgid "ntpc_drift"
+msgid "Clock Adjustment"
 msgstr "Ρύθμιση Ρολογιού"
 
-#. Offset Frequency
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:8
-msgid "ntpc_drift_freq"
-msgstr "Συχνότητα Μετάθεσης"
+msgid "Count of time measurements"
+msgstr "Πλήθος μετρήσεων ώρας"
 
-#. Current system time
-#: applications/luci-ntpc/luasrc/i18n/ntpc.en.lua:9
-msgid "ntpc_current"
+msgid "Current system time"
 msgstr "Τρέχουσα ώρα συστήματος"
+
+msgid "General"
+msgstr "Γενικά"
+
+msgid "Hostname"
+msgstr "Όνομα συστήματος"
+
+#, fuzzy
+msgid "Offset frequency"
+msgstr "Συχνότητα μετάθεσης"
+
+msgid "Port"
+msgstr "Θύρα"
+
+msgid "Synchronizes the system time"
+msgstr "Συγχρονίζει την ώρα του συστήματος"
+
+msgid "Time Server"
+msgstr ""
+
+#, fuzzy
+msgid "Time Servers"
+msgstr "Εξυπηρετητές Ώρας"
+
+msgid "Time Synchronisation"
+msgstr "Συγχρονισμός Ώρας"
+
+#, fuzzy
+msgid "Update interval (in seconds)"
+msgstr "Περίοδος ενημέρωσης (σε δευτερόλεπτα)"
+
+msgid "empty = infinite"
+msgstr "άδειο = άπειρος"

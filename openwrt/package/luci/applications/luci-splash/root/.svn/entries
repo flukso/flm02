@@ -1,15 +1,15 @@
 10
 
 dir
-6253
-http://svn.luci.subsignal.org/luci/branches/luci-0.9/applications/luci-splash/root
+9896
+http://svn.luci.subsignal.org/luci/branches/luci-0.11/applications/luci-splash/root
 http://svn.luci.subsignal.org
 
 
 
-2010-04-05T17:46:20.798880Z
-6029
-jow
+2012-06-18T11:12:38.926512Z
+8706
+soma
 
 
 
@@ -27,9 +27,6 @@ jow
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
 www
-dir
-
-lib
 dir
 
 usr

@@ -1,83 +1,95 @@
 K 25
 svn:wc:ra_dav:version-url
-V 70
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config
-END
-fstab
-K 25
-svn:wc:ra_dav:version-url
-V 76
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/fstab
-END
-ntpclient
-K 25
-svn:wc:ra_dav:version-url
-V 80
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/ntpclient
-END
-qos
-K 25
-svn:wc:ra_dav:version-url
-V 74
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/qos
+V 71
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config
 END
 httpd
 K 25
 svn:wc:ra_dav:version-url
-V 76
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/httpd
+V 77
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/httpd
 END
 system
 K 25
 svn:wc:ra_dav:version-url
-V 77
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/system
-END
-firewall
-K 25
-svn:wc:ra_dav:version-url
-V 79
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/firewall
-END
-batmand
-K 25
-svn:wc:ra_dav:version-url
 V 78
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/batmand
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/system
 END
 upnpd
 K 25
 svn:wc:ra_dav:version-url
-V 76
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/upnpd
+V 77
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/upnpd
 END
 ddns
 K 25
 svn:wc:ra_dav:version-url
-V 75
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/ddns
+V 76
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/ddns
 END
 network
 K 25
 svn:wc:ra_dav:version-url
-V 78
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/network
+V 79
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/network
 END
 wireless
 K 25
 svn:wc:ra_dav:version-url
-V 79
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/wireless
-END
-dhcp
-K 25
-svn:wc:ra_dav:version-url
-V 75
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/dhcp
+V 80
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/wireless
 END
 dropbear
 K 25
 svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/dropbear
+END
+fstab
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/fstab
+END
+ntpclient
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/ntpclient
+END
+qos
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/qos
+END
+firewall
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/firewall
+END
+luci_devinfo
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/luci_devinfo
+END
+batmand
+K 25
+svn:wc:ra_dav:version-url
 V 79
-/!svn/ver/4830/luci/branches/luci-0.9/contrib/uci/hostfiles/etc/config/dropbear
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/batmand
+END
+mactodevinfo
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/mactodevinfo
+END
+dhcp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/9349/luci/branches/luci-0.11/contrib/uci/hostfiles/etc/config/dhcp
 END
