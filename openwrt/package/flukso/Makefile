@@ -77,6 +77,8 @@ define Package/flukso/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/parsed.lua $(1)/usr/sbin/
 	$(LN) /usr/sbin/luad $(1)/usr/sbin/supd
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/supd.lua $(1)/usr/sbin/
+	$(LN) /usr/sbin/luad $(1)/usr/sbin/868_to_mqttd
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/868_to_mqttd.lua $(1)/usr/sbin/
 
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/heartbeat.lua $(1)/usr/bin/heartbeat
