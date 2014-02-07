@@ -23,6 +23,10 @@
 
 local dbg = require "dbg"
 local nixio = require "nixio"
+nixio.util = require "nixio.util"
+local luci = require "luci"
+luci.json = require "luci.json"
+local uci = require "luci.model.uci".cursor()
 local ubus = require "ubus"
 local uloop = require "uloop"
 local vstruct = require "vstruct"
@@ -33,13 +37,16 @@ rfsm.timeevent = require "rfsm.timeevent"
 
 local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
 
+local KUBE, REGISTRY, SENSOR
+local O_RDONLY = nixio.open_flags("rdonly")
 local ULOOP_TIMEOUT = 1000 --ms
 
 local FMT_HEADER = "< grp:u1 [1| ctl:b1 dst:b1 ack:b1 nid:u5] len:u1"
-local FMT_PAIR_REQUEST = "< @3 type:u2 grp:u1 nid:u1 check:u2 hw_id:s16"
+local FMT_PAIR_REQUEST = "< @3 hw_type:u2 grp:u1 nid:u1 check:u2 hw_uid:s16"
 local FMT_PAIR_REPLY = "" --TODO
 
 local DEBUG = {
+	config = false,
 	decode = false,
 	encode = false
 }
@@ -77,13 +84,128 @@ local function reply(hdr, format, pld)
 	send(encode(FMT_HEADER, hdr) .. encode(format, pld))
 end
 
-local function provision_kube() --TODO placeholder
+local function hw_uid_match(hw_uid_hex)
+	for kid, values in pairs(KUBE) do
+		if values.hw_uid and values.hw_uid == hw_uid_hex then
+			return true
+		end
+	end
+
+	return false
+end
+
+local function load_config()
+	KUBE = uci:get_all("kube")
+	SENSOR = uci:get_all("flukso")
+
+	local fd = nixio.open(KUBE.main.registry_cache, O_RDONLY)
+	local registry = fd:readall()
+	REGISTRY = luci.json.decode(registry)
+	fd:close()
+
+	--TODO raise error when KUBE, SENSOR or REGISTRY are nil
+
+	if DEBUG.config then
+		dbg.vardump(KUBE)
+		dbg.vardump(SENSOR)
+		dbg.vardump(REGISTRY)
+	end
+end
+
+local function provision_kube(hw_uid, hw_type)
+	local function registered_hw_type(hw_type)
+		return REGISTRY[tostring(hw_type)]
+	end
+
+	local function latest_firmware(hw_type)
+		local latest = 0
+
+		for k, v in pairs(REGISTRY[tostring(hw_type)]) do
+			if tonumber(k) and tonumber(k) > latest then
+				latest = tonumber(k)
+			end
+		end
+
+		return latest
+	end
+                                                            
+	local function sensor_count(hw_type) 
+		local total = 0
+		local firmware = latest_firmware(hw_type)
+		for k, v in pairs(REGISTRY[tostring(hw_type)][tostring(firmware)].decode.sensors) do
+			total = total + 1
+		end
+
+		return total
+	end
+
+	-- works for both KUBE and SENSOR data
+	local function get_free(list)
+		local range = list.main and
+			(list.main.max_provisioned_sensors or list.main.max_nodes)
+		if not range then return nil end
+
+		local first_free, total_free = nil, range
+
+		for i = 1, range do
+			if list[tostring(i)] and list[tostring(i)].enable then
+				total_free = total_free - 1
+			elseif not first_free then
+				first_free = i
+			end
+		end
+
+		return first_free, total_free
+	end
+
+	local kid = get_free(KUBE)
+	local sensor, free_sensors = get_free(SENSOR)
+
+	if not registered_hw_type(hw_type) then
+		--TODO raise error
+	elseif not kid then
+		--TODO raise error
+	elseif sensor_count(hw_type) > free_sensors then
+		--TODO raise error
+	else
+		local values = {
+			hw_uid = nixio.bin.hexlify(hw_uid),
+			hw_type = hw_type,
+			sw_version = 0,
+			enable = 1
+		}
+
+		uci:section("kube", "node", tostring(kid), values)
+		uci:save("kube")
+		uci:commit("kube")
+
+		for sensor_type in pairs(REGISTRY[tostring(hw_type)]
+			[tostring(latest_firmware(hw_type))].decode.sensors) do
+			local values = {
+				class = "kube",
+				["type"] = sensor_type,
+				kid = kid,
+				enable = 1
+			}
+
+			uci:tset("flukso", tostring(get_free(SENSOR)), values)
+			uci:save("flukso")
+			SENSOR = uci:get_all("flukso")
+		end
+
+		uci:commit("flukso")
+		load_config()
+	end
 end
 
 local pkt_buffer
 
 local root = state {
 	dbg = false,
+
+	entry = function()
+		load_config()
+	end,
 
 	collecting = state {
 		entry = function()
@@ -121,7 +243,7 @@ local root = state {
 		},
 		provision = state {
 			entry = function()
-				provision_kube() --TODO define provisioning params
+				provision_kube(pkt_buffer.pld.hw_uid, pkt_buffer.pld.hw_type)
 			end
 		},
 
@@ -133,7 +255,7 @@ local root = state {
 		},
 		trans { src = "pair_request", tgt = "provision", events = { "e_done" }, pn = 1,
 			guard = function()
-				return true --TODO check for hw_id match in the kube uci file
+				return not hw_uid_match(nixio.bin.hexlify(pkt_buffer.pld.hw_uid))
 			end
 		},
 		trans { src = "pair_request", tgt = "pair_reply", events = { "e_done" }, pn = 0 },
@@ -172,6 +294,10 @@ local ub_methods = {
 					else
 						fsm.dbg = function() return end
 					end
+				end
+
+				if type(msg.config) == "boolean" then
+					DEBUG.config = msg.config
 				end
 
 				if type(msg.decode) == "boolean" then
