@@ -35,6 +35,7 @@ local rfsm = require "rfsm"
 rfsm.pp = require "rfsm.pp"
 rfsm.timeevent = require "rfsm.timeevent"
 
+local hex, unhex = nixio.bin.hexlify, nixio.bin.unhexlify
 local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
 
 local KUBE, REGISTRY, SENSOR
@@ -93,8 +94,8 @@ local function encode(format, data)
 end
 
 local function send(pkt)
-	local pkt_hex = nixio.bin.hexlify(pkt)
-	ub:send("flukso.kubed.packet.tx", { pkt = pkt_hex } )
+	local pkt_hex = hex(pkt)
+	ub:send("flukso.kubed.packet.tx", { hex = pkt_hex } )
 end
 
 local function reply(hdr, format, pld)
@@ -112,27 +113,27 @@ local function is_not_kube_provisioned(hw_id_hex)
 	return true
 end
 
-local function provision_kube(hw_id, hw_type)
-	local function is_hw_type_registered(hw_type)
-		return REGISTRY[tostring(hw_type)]
+local function provision_kube(hw_id_hex, hw_type_s)
+	local function is_hw_type_registered(hw_type_s)
+		return REGISTRY[hw_type_s]
 	end
 
-	local function latest_firmware(hw_type)
+	local function latest_firmware(hw_type_s)
 		local latest = 0
 
-		for k, v in pairs(REGISTRY[tostring(hw_type)]) do
+		for k, v in pairs(REGISTRY[hw_type_s]) do
 			if tonumber(k) and tonumber(k) > latest then
 				latest = tonumber(k)
 			end
 		end
 
-		return latest
+		return tostring(latest)
 	end
                                                             
-	local function sensor_count(hw_type) 
+	local function sensor_count(hw_type_s) 
 		local total = 0
-		local firmware = latest_firmware(hw_type)
-		for k, v in pairs(REGISTRY[tostring(hw_type)][tostring(firmware)].decode.sensors) do
+		local firmware_s = latest_firmware(hw_type_s)
+		for k, v in pairs(REGISTRY[hw_type_s][firmware_s].decode.sensors) do
 			total = total + 1
 		end
 
@@ -155,41 +156,41 @@ local function provision_kube(hw_id, hw_type)
 			end
 		end
 
-		return first_free, total_free
+		return first_free and tostring(first_free), total_free
 	end
 
-	local kid = get_free(KUBE)
-	local sensor, free_sensors = get_free(SENSOR)
+	local kid_s = get_free(KUBE)
+	local sensor_s, free_sensors = get_free(SENSOR)
 
-	if not is_hw_type_registered(hw_type) then
+	if not is_hw_type_registered(hw_type_s) then
 		--TODO raise error
-	elseif not kid then
+	elseif not kid_s then
 		--TODO raise error
-	elseif sensor_count(hw_type) > free_sensors then
+	elseif sensor_count(hw_type_s) > free_sensors then
 		--TODO raise error
 	else
 		local values = {
-			hw_id = nixio.bin.hexlify(hw_id),
-			hw_type = hw_type,
+			hw_id = hw_id_hex,
+			hw_type = hw_type_s,
 			sw_version = 0,
 			enable = 1
 		}
 
-		uci:section("kube", "node", tostring(kid), values)
+		uci:section("kube", "node", kid_s, values)
 		uci:save("kube")
 		uci:commit("kube")
 		KUBE = uci:get_all("kube")
 
-		for sensor_type in pairs(REGISTRY[tostring(hw_type)]
-			[tostring(latest_firmware(hw_type))].decode.sensors) do
+		for sensor_type_s in pairs(REGISTRY[hw_type_s]
+			[latest_firmware(hw_type_s)].decode.sensors) do
 			local values = {
 				class = "kube",
-				["type"] = sensor_type,
-				kid = kid,
+				["type"] = sensor_type_s,
+				kid = kid_s,
 				enable = 1
 			}
 
-			uci:tset("flukso", tostring(get_free(SENSOR)), values)
+			uci:tset("flukso", get_free(SENSOR), values)
 			uci:save("flukso")
 			SENSOR = uci:get_all("flukso")
 		end
@@ -197,9 +198,9 @@ local function provision_kube(hw_id, hw_type)
 	end
 end
 
-local function deprovision_kube(kid)
+local function deprovision_kube(kid_s)
 	uci:foreach("flukso", "sensor", function(sensor)
-		if sensor.kid == tostring(kid) then
+		if sensor.kid == kid_s then
 			local sidx = sensor[".name"]
 			local entries = { "class", "type", "function", "kid", "enable" }
 			for i, entry in ipairs(entries) do
@@ -210,13 +211,13 @@ local function deprovision_kube(kid)
 	uci:save("flukso")
 	uci:commit("flukso")
 
-	uci:delete("kube", tostring(kid))
+	uci:delete("kube", kid_s)
 	uci:save("kube")
 	uci:commit("kube")
 end
 
-local function is_kid_allocated(kid)
-	return type(KUBE[tostring(kid)]) == "table"
+local function is_kid_allocated(kid_s)
+	return type(KUBE[kid_s]) == "table"
 end
 
 -- rFSM event parameters
@@ -259,7 +260,7 @@ local root = state {
 		},
 		provision = state {
 			entry = function()
-				provision_kube(e_arg.pld.hw_id, e_arg.pld.hw_type)
+				provision_kube(hex(e_arg.pld.hw_id), tostring(e_arg.pld.hw_type))
 			end
 		},
 
@@ -271,7 +272,7 @@ local root = state {
 		},
 		trans { src = "pair_request", tgt = "provision", events = { "e_done" }, pn = 1,
 			guard = function()
-				return is_not_kube_provisioned(nixio.bin.hexlify(e_arg.pld.hw_id))
+				return is_not_kube_provisioned(hex(e_arg.pld.hw_id))
 			end
 		},
 		trans { src = "pair_request", tgt = "pair_reply", events = { "e_done" }, pn = 0 },
@@ -280,7 +281,7 @@ local root = state {
 
 	deprovision = state {
 		entry = function()
-			deprovision_kube(e_arg)
+			deprovision_kube(tostring(e_arg))
 		end
 	},
 
@@ -290,7 +291,7 @@ local root = state {
 	trans { src = ".pairing.pair_reply", tgt = "collecting", events = { "e_done" } },
 	trans { src = "collecting", tgt = "deprovision", events = { "e_deprovision" },
 		guard = function()
-			return type(e_arg) == "number" and is_kid_allocated(e_arg)
+			return type(e_arg) == "number" and is_kid_allocated(tostring(e_arg))
 		end
 	},
 	trans { src = "deprovision", tgt = "collecting", events = { "e_done" } }
@@ -364,7 +365,7 @@ local ub_events = {
 
 	["flukso.kubed.packet.rx"] = function(msg)
 		if type(msg.hex) ~= "string" then return end
-		e_arg = { bin = nixio.bin.unhexlify(msg.hex), head = { }, pld = { } }
+		e_arg = { bin = unhex(msg.hex), head = { }, pld = { } }
 		vstruct.unpack(FMT_HEADER, e_arg.bin, e_arg.head)
 
 		if DEBUG.decode then dbg.vardump(e_arg) end
