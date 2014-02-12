@@ -42,7 +42,7 @@ local O_RDONLY = nixio.open_flags("rdonly")
 local ULOOP_TIMEOUT = 1000 --ms
 
 local FMT_HEADER = "< grp:u1 [1| ctl:b1 dst:b1 ack:b1 nid:u5] len:u1"
-local FMT_PAIR_REQUEST = "< @3 hw_type:u2 grp:u1 nid:u1 check:u2 hw_uid:s16"
+local FMT_PAIR_REQUEST = "< @3 hw_type:u2 grp:u1 nid:u1 check:u2 hw_id:s16"
 local FMT_PAIR_REPLY = "" --TODO
 
 local DEBUG = {
@@ -102,9 +102,9 @@ local function reply(hdr, format, pld)
 	send(encode(FMT_HEADER, hdr) .. encode(format, pld))
 end
 
-local function is_not_kube_provisioned(hw_uid_hex)
+local function is_not_kube_provisioned(hw_id_hex)
 	for kid, values in pairs(KUBE) do
-		if values.hw_uid and values.hw_uid == hw_uid_hex then
+		if values.hw_id and values.hw_id == hw_id_hex then
 			return false
 		end
 	end
@@ -112,7 +112,7 @@ local function is_not_kube_provisioned(hw_uid_hex)
 	return true
 end
 
-local function provision_kube(hw_uid, hw_type)
+local function provision_kube(hw_id, hw_type)
 	local function is_hw_type_registered(hw_type)
 		return REGISTRY[tostring(hw_type)]
 	end
@@ -169,7 +169,7 @@ local function provision_kube(hw_uid, hw_type)
 		--TODO raise error
 	else
 		local values = {
-			hw_uid = nixio.bin.hexlify(hw_uid),
+			hw_id = nixio.bin.hexlify(hw_id),
 			hw_type = hw_type,
 			sw_version = 0,
 			enable = 1
@@ -220,7 +220,7 @@ local function is_kid_allocated(kid)
 end
 
 -- rFSM event parameters
-local pkt_buffer, kid
+local e_arg
 
 local root = state {
 	dbg = false,
@@ -237,7 +237,7 @@ local root = state {
 
 		trans { src = "initial", tgt = "decoding" },
 		trans { src = "decoding", tgt = "decoding", events = { "e_packet" },
-				effect = decode(collect_script, pkt_buffer) }, --TODO map to JSON packet description
+				effect = decode(collect_script, e_arg) }, --TODO map to JSON packet description
 	},
 
 	pairing = state {
@@ -248,30 +248,30 @@ local root = state {
 		decoding = state { },
 		pair_request = state {
 			entry = function()
-				decode(FMT_PAIR_REQUEST, pkt_buffer)
+				decode(FMT_PAIR_REQUEST, e_arg)
 			end
 		},
 		pair_reply = state {
 			entry = function()
 				local pld = { } --TODO fill in the blanks
-				reply(pkt_buffer.hdr, FMT_PAIR_REPLY, pld)
+				reply(e_arg.hdr, FMT_PAIR_REPLY, pld)
 			end
 		},
 		provision = state {
 			entry = function()
-				provision_kube(pkt_buffer.pld.hw_uid, pkt_buffer.pld.hw_type)
+				provision_kube(e_arg.pld.hw_id, e_arg.pld.hw_type)
 			end
 		},
 
 		trans { src = "initial", tgt = "decoding" },
 		trans { src = "decoding", tgt = "pair_request", events = { "e_packet_oam" },
 			guard = function()
-				return pkt_buffer and pkt_buffer.head.len == 22
+				return e_arg and e_arg.head.len == 22
 			end
 		},
 		trans { src = "pair_request", tgt = "provision", events = { "e_done" }, pn = 1,
 			guard = function()
-				return is_not_kube_provisioned(nixio.bin.hexlify(pkt_buffer.pld.hw_uid))
+				return is_not_kube_provisioned(nixio.bin.hexlify(e_arg.pld.hw_id))
 			end
 		},
 		trans { src = "pair_request", tgt = "pair_reply", events = { "e_done" }, pn = 0 },
@@ -280,7 +280,7 @@ local root = state {
 
 	deprovision = state {
 		entry = function()
-			deprovision_kube(kid)
+			deprovision_kube(e_arg)
 		end
 	},
 
@@ -290,7 +290,7 @@ local root = state {
 	trans { src = ".pairing.pair_reply", tgt = "collecting", events = { "e_done" } },
 	trans { src = "collecting", tgt = "deprovision", events = { "e_deprovision" },
 		guard = function()
-			return type(kid) == "number" and is_kid_allocated(kid)
+			return type(e_arg) == "number" and is_kid_allocated(e_arg)
 		end
 	},
 	trans { src = "deprovision", tgt = "collecting", events = { "e_done" } }
@@ -342,10 +342,10 @@ local ub_methods = {
 
 		deprovision = {
 			function(req, msg)
-				kid = msg.kid
+				e_arg = msg.kid
 				rfsm.send_events(fsm, "e_deprovision")
 				rfsm.run(fsm)
-				local reply = string.format("kube with kid=%d has been deprovisioned", kid)
+				local reply = string.format("kube with kid=%d has been deprovisioned", e_arg)
 				ub:reply(req, { success = true, msg = reply })
 			end, { kid = ubus.INT32 }
 		}
@@ -364,21 +364,20 @@ local ub_events = {
 
 	["flukso.kubed.packet.rx"] = function(msg)
 		if type(msg.hex) ~= "string" then return end
-		pkt_buffer = { bin = nixio.bin.unhexlify(msg.hex), head = { }, pld = { } }
-		vstruct.unpack(FMT_HEADER, pkt_buffer.bin, pkt_buffer.head)
+		e_arg = { bin = nixio.bin.unhexlify(msg.hex), head = { }, pld = { } }
+		vstruct.unpack(FMT_HEADER, e_arg.bin, e_arg.head)
 
-		if DEBUG.decode then dbg.vardump(pkt_buffer) end
+		if DEBUG.decode then dbg.vardump(e_arg) end
 
 		local event
-		if pkt_buffer.head.ctl and pkt_buffer.head.ack then
+		if e_arg.head.ctl and e_arg.head.ack then
 			event = "e_packet_oam"
 		else
 			event = "e_packet"
 		end
 
-        rfsm.send_events(fsm, event)
-        rfsm.run(fsm)
-		pkt_buffer = nil
+		rfsm.send_events(fsm, event)
+		rfsm.run(fsm)
 	end
 }
 
