@@ -58,6 +58,24 @@ end
 
 rfsm.timeevent.set_gettime_hook(rfsm_gettime)
 
+local function load_config()
+	KUBE = uci:get_all("kube")
+	SENSOR = uci:get_all("flukso")
+
+	local fd = nixio.open(KUBE.main.registry_cache, O_RDONLY)
+	local registry = fd:readall()
+	REGISTRY = luci.json.decode(registry)
+	fd:close()
+
+	--TODO raise error when KUBE, SENSOR or REGISTRY are nil
+
+	if DEBUG.config then
+		dbg.vardump(KUBE)
+		dbg.vardump(SENSOR)
+		dbg.vardump(REGISTRY)
+	end
+end
+
 local function decode(script, pkt)
 	if type(script) == "string" then
 		vstruct.unpack(script, pkt.bin, pkt.pld)
@@ -84,36 +102,18 @@ local function reply(hdr, format, pld)
 	send(encode(FMT_HEADER, hdr) .. encode(format, pld))
 end
 
-local function hw_uid_match(hw_uid_hex)
+local function is_not_kube_provisioned(hw_uid_hex)
 	for kid, values in pairs(KUBE) do
 		if values.hw_uid and values.hw_uid == hw_uid_hex then
-			return true
+			return false
 		end
 	end
 
-	return false
-end
-
-local function load_config()
-	KUBE = uci:get_all("kube")
-	SENSOR = uci:get_all("flukso")
-
-	local fd = nixio.open(KUBE.main.registry_cache, O_RDONLY)
-	local registry = fd:readall()
-	REGISTRY = luci.json.decode(registry)
-	fd:close()
-
-	--TODO raise error when KUBE, SENSOR or REGISTRY are nil
-
-	if DEBUG.config then
-		dbg.vardump(KUBE)
-		dbg.vardump(SENSOR)
-		dbg.vardump(REGISTRY)
-	end
+	return true
 end
 
 local function provision_kube(hw_uid, hw_type)
-	local function registered_hw_type(hw_type)
+	local function is_hw_type_registered(hw_type)
 		return REGISTRY[tostring(hw_type)]
 	end
 
@@ -161,7 +161,7 @@ local function provision_kube(hw_uid, hw_type)
 	local kid = get_free(KUBE)
 	local sensor, free_sensors = get_free(SENSOR)
 
-	if not registered_hw_type(hw_type) then
+	if not is_hw_type_registered(hw_type) then
 		--TODO raise error
 	elseif not kid then
 		--TODO raise error
@@ -178,6 +178,7 @@ local function provision_kube(hw_uid, hw_type)
 		uci:section("kube", "node", tostring(kid), values)
 		uci:save("kube")
 		uci:commit("kube")
+		KUBE = uci:get_all("kube")
 
 		for sensor_type in pairs(REGISTRY[tostring(hw_type)]
 			[tostring(latest_firmware(hw_type))].decode.sensors) do
@@ -192,23 +193,41 @@ local function provision_kube(hw_uid, hw_type)
 			uci:save("flukso")
 			SENSOR = uci:get_all("flukso")
 		end
-
 		uci:commit("flukso")
-		load_config()
 	end
 end
 
-local pkt_buffer
+local function deprovision_kube(kid)
+	uci:foreach("flukso", "sensor", function(sensor)
+		if sensor.kid == tostring(kid) then
+			local sidx = sensor[".name"]
+			local entries = { "class", "type", "function", "kid", "enable" }
+			for i, entry in ipairs(entries) do
+				uci:delete("flukso", sidx, entry)
+			end
+		end
+	end)
+	uci:save("flukso")
+	uci:commit("flukso")
+
+	uci:delete("kube", tostring(kid))
+	uci:save("kube")
+	uci:commit("kube")
+end
+
+local function is_kid_allocated(kid)
+	return type(KUBE[tostring(kid)]) == "table"
+end
+
+-- rFSM event parameters
+local pkt_buffer, kid
 
 local root = state {
 	dbg = false,
 
-	entry = function()
-		load_config()
-	end,
-
 	collecting = state {
 		entry = function()
+				load_config()
 				--TODO listen on collecting grp
 			end,
 
@@ -229,9 +248,6 @@ local root = state {
 		decoding = state { },
 		pair_request = state {
 			entry = function()
-				-- TODO figure out the state machine for provisioning
-				-- nid and grp == 0 -> fresh
-				-- else -> check hwId entry, if exists -> reply with config, else -> re-pair!
 				decode(FMT_PAIR_REQUEST, pkt_buffer)
 			end
 		},
@@ -255,17 +271,29 @@ local root = state {
 		},
 		trans { src = "pair_request", tgt = "provision", events = { "e_done" }, pn = 1,
 			guard = function()
-				return not hw_uid_match(nixio.bin.hexlify(pkt_buffer.pld.hw_uid))
+				return is_not_kube_provisioned(nixio.bin.hexlify(pkt_buffer.pld.hw_uid))
 			end
 		},
 		trans { src = "pair_request", tgt = "pair_reply", events = { "e_done" }, pn = 0 },
 		trans { src = "provision", tgt = "pair_reply", events = { "e_done" } },
 	},
 
+	deprovision = state {
+		entry = function()
+			deprovision_kube(kid)
+		end
+	},
+
 	trans { src = "initial", tgt = "collecting" },
 	trans { src = "collecting", tgt = "pairing", events = { "e_pair" } },
 	trans { src = "pairing", tgt = "collecting", events = { "e_after(30)" } },
 	trans { src = ".pairing.pair_reply", tgt = "collecting", events = { "e_done" } },
+	trans { src = "collecting", tgt = "deprovision", events = { "e_deprovision" },
+		guard = function()
+			return type(kid) == "number" and is_kid_allocated(kid)
+		end
+	},
+	trans { src = "deprovision", tgt = "collecting", events = { "e_done" } }
 }
 
 local fsm = rfsm.init(root)
@@ -275,8 +303,8 @@ uloop.init()
 local ub = assert(ubus.connect(), "unable to connect to ubus")
 
 local ub_methods = {
-	["flukso.kubed.debug"] = {
-		set = {
+	["flukso.kubed"] = {
+		debug = {
 			function(req, msg)
 				if type(msg.fsm) == "boolean" then
 					if msg.fsm then
@@ -308,8 +336,18 @@ local ub_methods = {
 					DEBUG.encode = msg.encode
 				end
 
-				ub:reply(req, {message = "kubed debugging flags updated"})
+				ub:reply(req, { success = true, msg = "kubed debugging flags updated" })
 			end, { fsm = ubus.BOOLEAN, decode = ubus.BOOLEAN, encode = ubus.BOOLEAN }
+		},
+
+		deprovision = {
+			function(req, msg)
+				kid = msg.kid
+				rfsm.send_events(fsm, "e_deprovision")
+				rfsm.run(fsm)
+				local reply = string.format("kube with kid=%d has been deprovisioned", kid)
+				ub:reply(req, { success = true, msg = reply })
+			end, { kid = ubus.INT32 }
 		}
 	}
 }
