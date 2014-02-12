@@ -304,7 +304,7 @@ uloop.init()
 local ub = assert(ubus.connect(), "unable to connect to ubus")
 
 local ub_methods = {
-	["flukso.kubed"] = {
+	["flukso.kube"] = {
 		debug = {
 			function(req, msg)
 				if type(msg.fsm) == "boolean" then
@@ -356,14 +356,14 @@ local ub_methods = {
 ub:add(ub_methods)
 
 local ub_events = {
-	["flukso.kubed.event"] = function(msg)
+	["flukso.kube.event"] = function(msg)
 		if type(msg.event) == "string" then
 			rfsm.send_events(fsm, msg.event)
 			rfsm.run(fsm)
 		end
 	end,
 
-	["flukso.kubed.packet.rx"] = function(msg)
+	["flukso.kube.packet.rx"] = function(msg)
 		if type(msg.hex) ~= "string" then return end
 		e_arg = { bin = unhex(msg.hex), head = { }, pld = { } }
 		vstruct.unpack(FMT_HEADER, e_arg.bin, e_arg.head)
