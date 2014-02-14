@@ -1,0 +1,22 @@
+--- a/rfsm.lua	2014-02-14 14:59:59.735322334 +0100
++++ b/rfsm.lua	2014-02-14 15:02:42.791318775 +0100
+@@ -672,6 +672,7 @@
+    local fsm = utils.deepcopy(fsm_templ)
+ 
+    fsm._id = 'root'
++   fsm._lock = false
+ 
+    setup_printers(fsm)
+ 
+@@ -1359,6 +1360,10 @@
+ -- @param fsm initialized rfsm state machine
+ -- @return idle boolean if fsm is idle or not
+ function run(fsm)
++   if fsm._lock then return false end
++   fsm._lock = true
+    if not is_initialized_root(fsm) then fsm.err("ERROR", "run: invalid fsm") end
+-   return step(fsm, math.huge)
++   local idle = step(fsm, math.huge)
++   fsm._lock = false
++   return idle
+ end
