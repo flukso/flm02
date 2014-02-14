@@ -27,13 +27,22 @@ nixio.util = require "nixio.util"
 local luci = require "luci"
 luci.json = require "luci.json"
 local uci = require "luci.model.uci".cursor()
-local ubus = require "ubus"
 local uloop = require "uloop"
+uloop.init()
+local ubus = require "ubus"
+local ub = assert(ubus.connect(), "unable to connect to ubus")
 local vstruct = require "vstruct"
 vstruct.cache = true
 local rfsm = require "rfsm"
 rfsm.pp = require "rfsm.pp"
 rfsm.timeevent = require "rfsm.timeevent"
+
+local function rfsm_gettime()
+	local secs, usecs = nixio.gettimeofday()
+	return secs, usecs * 1e3
+end
+
+rfsm.timeevent.set_gettime_hook(rfsm_gettime)
 
 local hex, unhex = nixio.bin.hexlify, nixio.bin.unhexlify
 local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
@@ -43,21 +52,14 @@ local O_RDONLY = nixio.open_flags("rdonly")
 local ULOOP_TIMEOUT = 1000 --ms
 
 local FMT_HEADER = "< grp:u1 [1| ctl:b1 dst:b1 ack:b1 nid:u5] len:u1"
-local FMT_PAIR_REQUEST = "< @3 hw_type:u2 grp:u1 nid:u1 check:u2 hw_id:s16"
-local FMT_PAIR_REPLY = "" --TODO
+local FMT_PAIR_REQUEST = "< hw_type:u2 grp:u1 nid:u1 check:u2 hw_id:s16"
+local FMT_PAIR_REPLY = "< hw_type:u2 grp:u1 nid:u1 key:s16"
 
 local DEBUG = {
 	config = false,
 	decode = false,
 	encode = false
 }
-
-local function rfsm_gettime()
-	local secs, usecs = nixio.gettimeofday()
-	return secs, usecs * 1e3
-end
-
-rfsm.timeevent.set_gettime_hook(rfsm_gettime)
 
 local function load_config()
 	KUBE = uci:get_all("kube")
@@ -93,14 +95,26 @@ local function encode(format, data)
 	return vstruct.pack(format, data)
 end
 
-local function send(pkt)
-	local pkt_hex = hex(pkt)
-	ub:send("flukso.kubed.packet.tx", { hex = pkt_hex } )
+local function send(hdr, format, pld)
+	local pld_enc = encode(format, pld)
+	hdr.len = #pld_enc
+	local hdr_enc = encode(FMT_HEADER, hdr)
+	local pkt = hdr_enc .. pld_enc
+
+	if DEBUG.encode then
+		dbg.vardump(hdr)
+		dbg.vardump(pld)
+	end
+
+	return ub:send("flukso.kube.packet.tx", { hex = hex(pkt) })
 end
 
 local function reply(hdr, format, pld)
-	local hdr_reply = hdr -- TODO change relevant stuff in the header
-	send(encode(FMT_HEADER, hdr) .. encode(format, pld))
+	if hdr.ctl and hdr.ack then --OAM packet
+		hdr.dst = false
+	end
+
+	return send(hdr, format, pld)
 end
 
 local function is_not_kube_provisioned(hw_id_hex)
@@ -129,8 +143,8 @@ local function provision_kube(hw_id_hex, hw_type_s)
 
 		return tostring(latest)
 	end
-                                                            
-	local function sensor_count(hw_type_s) 
+ 
+	local function sensor_count(hw_type_s)
 		local total = 0
 		local firmware_s = latest_firmware(hw_type_s)
 		for k, v in pairs(REGISTRY[hw_type_s][firmware_s].decode.sensors) do
@@ -195,7 +209,11 @@ local function provision_kube(hw_id_hex, hw_type_s)
 			SENSOR = uci:get_all("flukso")
 		end
 		uci:commit("flukso")
+
+		return tonumber(kid_s)
 	end
+
+	return nil
 end
 
 local function deprovision_kube(kid_s)
@@ -218,6 +236,16 @@ end
 
 local function is_kid_allocated(kid_s)
 	return type(KUBE[kid_s]) == "table"
+end
+
+local function get_kid(hw_id_hex)
+	for kid, values in pairs(KUBE) do
+		if values.hw_id and values.hw_id == hw_id_hex then
+			return tonumber(kid)
+		end
+	end
+
+	return nil
 end
 
 -- rFSM event parameters
@@ -249,13 +277,23 @@ local root = state {
 		decoding = state { },
 		pair_request = state {
 			entry = function()
-				decode(FMT_PAIR_REQUEST, e_arg)
+				decode("@3 " .. FMT_PAIR_REQUEST, e_arg)
 			end
 		},
 		pair_reply = state {
 			entry = function()
-				local pld = { } --TODO fill in the blanks
-				reply(e_arg.hdr, FMT_PAIR_REPLY, pld)
+				local kid = get_kid(hex(e_arg.pld.hw_id))
+
+				if kid then
+					local pld = {
+						hw_type = tonumber(KUBE[tostring(kid)].hw_type),
+						grp = tonumber(KUBE.main.collect_group),
+						nid = kid,
+						key = KUBE.main.key
+					}
+
+					reply(e_arg.hdr, FMT_PAIR_REPLY, pld)
+				end
 			end
 		},
 		provision = state {
@@ -267,7 +305,7 @@ local root = state {
 		trans { src = "initial", tgt = "decoding" },
 		trans { src = "decoding", tgt = "pair_request", events = { "e_packet_oam" },
 			guard = function()
-				return e_arg and e_arg.head.len == 22
+				return type(e_arg) == "table" and e_arg.hdr.len == 22
 			end
 		},
 		trans { src = "pair_request", tgt = "provision", events = { "e_done" }, pn = 1,
@@ -299,9 +337,6 @@ local root = state {
 
 local fsm = rfsm.init(root)
 rfsm.run(fsm)
-
-uloop.init()
-local ub = assert(ubus.connect(), "unable to connect to ubus")
 
 local ub_methods = {
 	["flukso.kube"] = {
@@ -365,13 +400,13 @@ local ub_events = {
 
 	["flukso.kube.packet.rx"] = function(msg)
 		if type(msg.hex) ~= "string" then return end
-		e_arg = { bin = unhex(msg.hex), head = { }, pld = { } }
-		vstruct.unpack(FMT_HEADER, e_arg.bin, e_arg.head)
+		e_arg = { bin = unhex(msg.hex), hdr = { }, pld = { } }
+		vstruct.unpack(FMT_HEADER, e_arg.bin, e_arg.hdr)
 
 		if DEBUG.decode then dbg.vardump(e_arg) end
 
 		local event
-		if e_arg.head.ctl and e_arg.head.ack then
+		if e_arg.hdr.ctl and e_arg.hdr.ack then
 			event = "e_packet_oam"
 		else
 			event = "e_packet"
