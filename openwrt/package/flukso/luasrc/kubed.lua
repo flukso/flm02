@@ -54,6 +54,8 @@ local ULOOP_TIMEOUT = 1000 --ms
 local FMT_HEADER = "< grp:u1 [1| ctl:b1 dst:b1 ack:b1 nid:u5] len:u1"
 local FMT_PAIR_REQUEST = "< hw_type:u2 grp:u1 nid:u1 check:u2 hw_id:s16"
 local FMT_PAIR_REPLY = "< hw_type:u2 grp:u1 nid:u1 key:s16"
+local FMT_UPGRADE_REQUEST = "< hw_type:u2 sw_version:u2 sw_size:u2 sw_crc:u2"
+local FMT_UPGRADE_REPLY = FMT_UPGRADE_REQUEST
 
 local DEBUG = {
 	config = false,
@@ -111,7 +113,7 @@ end
 
 local function reply(hdr, format, pld)
 	if hdr.ctl and hdr.ack then --OAM packet
-		hdr.dst = false
+		hdr.dst = not hdr.dst
 	end
 
 	return send(hdr, format, pld)
@@ -127,27 +129,27 @@ local function is_not_kube_provisioned(hw_id_hex)
 	return true
 end
 
+local function latest_kube_firmware(hw_type_s)
+	local latest = 0
+
+	for k, v in pairs(REGISTRY[hw_type_s]) do
+		if tonumber(k) and tonumber(k) > latest then
+			latest = tonumber(k)
+		end
+	end
+
+	return tostring(latest)
+end
+
 local function provision_kube(hw_id_hex, hw_type_s)
 	local function is_hw_type_registered(hw_type_s)
 		return REGISTRY[hw_type_s]
 	end
 
-	local function latest_firmware(hw_type_s)
-		local latest = 0
-
-		for k, v in pairs(REGISTRY[hw_type_s]) do
-			if tonumber(k) and tonumber(k) > latest then
-				latest = tonumber(k)
-			end
-		end
-
-		return tostring(latest)
-	end
- 
 	local function sensor_count(hw_type_s)
 		local total = 0
-		local firmware_s = latest_firmware(hw_type_s)
-		for k, v in pairs(REGISTRY[hw_type_s][firmware_s].decode.sensors) do
+		local sw_version_s = latest_kube_firmware(hw_type_s)
+		for k, v in pairs(REGISTRY[hw_type_s][sw_version_s].decode.sensors) do
 			total = total + 1
 		end
 
@@ -196,7 +198,7 @@ local function provision_kube(hw_id_hex, hw_type_s)
 		KUBE = uci:get_all("kube")
 
 		for sensor_type_s in pairs(REGISTRY[hw_type_s]
-			[latest_firmware(hw_type_s)].decode.sensors) do
+			[latest_kube_firmware(hw_type_s)].decode.sensors) do
 			local values = {
 				class = "kube",
 				["type"] = sensor_type_s,
@@ -234,8 +236,12 @@ local function deprovision_kube(kid_s)
 	uci:commit("kube")
 end
 
-local function is_kid_allocated(kid_s)
-	return type(KUBE[kid_s]) == "table"
+local function is_kid_allocated(kid_s, hw_type_s)
+	if hw_type_s then
+		return type(KUBE[kid_s]) == "table" and KUBE[kid_s].hw_type == hw_type_s
+	else
+		return type(KUBE[kid_s]) == "table"
+	end
 end
 
 local function get_kid(hw_id_hex)
@@ -248,6 +254,22 @@ local function get_kid(hw_id_hex)
 	return nil
 end
 
+local function update_kube_sw_version(kid_s, sw_version_s)
+	if KUBE[kid_s].sw_version ~= sw_version_s then
+		uci:set("kube", kid_s, "sw_version", sw_version_s)
+		uci:save("kube")
+		uci:commit("kube")
+		KUBE = uci:get_all("kube")
+	end
+end
+
+local function kube_target_sw(hw_type_s)
+	local sw_version_s = latest_kube_firmware(hw_type_s)
+	local sw_size = REGISTRY[hw_type_s][sw_version_s].size
+	local sw_crc = REGISTRY[hw_type_s][sw_version_s].crc
+	return tonumber(sw_version_s), sw_size, sw_crc
+end
+
 -- rFSM event parameters
 local e_arg
 
@@ -258,15 +280,40 @@ local root = state {
 		entry = function()
 				load_config()
 				--TODO listen on collecting grp
-			end,
+		end,
 
 		-- rFSM does not support internal transitions
 		-- resorting to a nested state without entry/exit actions as a workaround
-		decoding = state { },
+		receiving = state { },
+		upgrade = state {
+			entry = function()
+				decode("@3 " .. FMT_UPGRADE_REQUEST, e_arg)
+				local kid_s = tostring(e_arg.hdr.nid)
+				local hw_type_s = tostring(e_arg.pld.hw_type)
+				local sw_version_s = tostring(e_arg.pld.sw_version)
 
-		trans { src = "initial", tgt = "decoding" },
-		trans { src = "decoding", tgt = "decoding", events = { "e_packet" },
+				if is_kid_allocated(kid_s, hw_type_s) then
+					update_kube_sw_version(kid_s, sw_version_s)
+
+					local pld = { hw_type = e_arg.pld.hw_type }
+					pld.sw_version, pld.sw_size, pld.sw_crc =
+						kube_target_sw(hw_type_s)
+
+					reply(e_arg.hdr, FMT_UPGRADE_REPLY, pld)
+				end
+			end
+		},
+		download = state {
+			entry = function()
+			end
+		},
+		trans { src = "initial", tgt = "receiving" },
+		trans { src = "receiving", tgt = "receiving", events = { "e_packet" },
 				effect = decode(collect_script, e_arg) }, --TODO map to JSON packet description
+		trans { src = "receiving", tgt = "upgrade", events = { "e_upgrade_request" } },
+		trans { src = "upgrade", tgt = "receiving", events = { "e_done" } },
+		trans { src = "receiving", tgt = "download", events = { "e_download_request" } },
+		trans { src = "download", tgt = "receiving", events = { "e_done" } }
 	},
 
 	pairing = state {
@@ -274,7 +321,7 @@ local root = state {
 				-- TODO listen on pairing grp 212
 			end,
 
-		decoding = state { },
+		receiving = state { },
 		pair_request = state {
 			entry = function()
 				decode("@3 " .. FMT_PAIR_REQUEST, e_arg)
@@ -302,12 +349,8 @@ local root = state {
 			end
 		},
 
-		trans { src = "initial", tgt = "decoding" },
-		trans { src = "decoding", tgt = "pair_request", events = { "e_packet_oam" },
-			guard = function()
-				return type(e_arg) == "table" and e_arg.hdr.len == 22
-			end
-		},
+		trans { src = "initial", tgt = "receiving" },
+		trans { src = "receiving", tgt = "pair_request", events = { "e_pair_request" } },
 		trans { src = "pair_request", tgt = "provision", events = { "e_done" }, pn = 1,
 			guard = function()
 				return is_not_kube_provisioned(hex(e_arg.pld.hw_id))
@@ -451,8 +494,14 @@ local ub_events = {
 		if DEBUG.decode then dbg.vardump(arg) end
 
 		local e
-		if arg.hdr.ctl and arg.hdr.ack then
-			e = "e_packet_oam"
+		if arg.hdr.ctl and arg.hdr.ack then --OAM packet
+			if arg.hdr.len == 22 then
+				e = "e_pair_request"
+			elseif arg.hdr.len == 8 then
+				e = "e_upgrade_request"
+			elseif arg.hrd.len == 4 then
+				e = "e_download_request"
+			end
 		else
 			e = "e_packet"
 		end
