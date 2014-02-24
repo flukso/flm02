@@ -47,7 +47,9 @@ rfsm.timeevent.set_gettime_hook(rfsm_gettime)
 local hex, unhex = nixio.bin.hexlify, nixio.bin.unhexlify
 local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
 
-local KUBE, REGISTRY, SENSOR
+local KUBE, SENSOR, REGISTRY
+local FIRMWARE = {}
+local FIRMWARE_BLOCK_SIZE = 64
 local O_RDONLY = nixio.open_flags("rdonly")
 local ULOOP_TIMEOUT = 1000 --ms
 
@@ -56,6 +58,8 @@ local FMT_PAIR_REQUEST = "< hw_type:u2 grp:u1 nid:u1 check:u2 hw_id:s16"
 local FMT_PAIR_REPLY = "< hw_type:u2 grp:u1 nid:u1 key:s16"
 local FMT_UPGRADE_REQUEST = "< hw_type:u2 sw_version:u2 sw_size:u2 sw_crc:u2"
 local FMT_UPGRADE_REPLY = FMT_UPGRADE_REQUEST
+local FMT_DOWNLOAD_REQUEST = "< sw_version:u2 sw_index:u2"
+local FMT_DOWNLOAD_REPLY = "< sw_xor:u2 sw_block:s64"
 
 local DEBUG = {
 	config = false,
@@ -67,7 +71,7 @@ local function load_config()
 	KUBE = uci:get_all("kube")
 	SENSOR = uci:get_all("flukso")
 
-	local fd = nixio.open(KUBE.main.registry_cache, O_RDONLY)
+	local fd = nixio.open(KUBE.main.cache .. "/registry", O_RDONLY)
 	local registry = fd:readall()
 	REGISTRY = luci.json.decode(registry)
 	fd:close()
@@ -270,6 +274,21 @@ local function kube_target_sw(hw_type_s)
 	return tonumber(sw_version_s), sw_size, sw_crc
 end
 
+local function get_firmware_block(hw_type, sw_version, sw_index)
+	if not FIRMWARE[hw_type] then FIRMWARE[hw_type] = { } end
+	if not FIRMWARE[hw_type][sw_version] then
+		local path = string.format("%s/firmware/%d.%d", KUBE.main.cache, hw_type, sw_version)
+		local fd = nixio.open(path, O_RDONLY)
+		if not fd then return nil end --TODO raise error
+		FIRMWARE[hw_type][sw_version] = fd:readall()
+		fd:close()
+	end
+
+	local start = sw_index * FIRMWARE_BLOCK_SIZE + 1
+	local finish = (sw_index + 1) * FIRMWARE_BLOCK_SIZE
+	return FIRMWARE[hw_type][sw_version]:sub(start, finish)
+end
+
 -- rFSM event parameters
 local e_arg
 
@@ -290,21 +309,32 @@ local root = state {
 				decode("@3 " .. FMT_UPGRADE_REQUEST, e_arg)
 				local kid_s = tostring(e_arg.hdr.nid)
 				local hw_type_s = tostring(e_arg.pld.hw_type)
+				if not is_kid_allocated(kid_s, hw_type_s) then return end --TODO raise error
 				local sw_version_s = tostring(e_arg.pld.sw_version)
+				update_kube_sw_version(kid_s, sw_version_s)
 
-				if is_kid_allocated(kid_s, hw_type_s) then
-					update_kube_sw_version(kid_s, sw_version_s)
-
-					local pld = { hw_type = e_arg.pld.hw_type }
-					pld.sw_version, pld.sw_size, pld.sw_crc =
-						kube_target_sw(hw_type_s)
-
-					reply(e_arg.hdr, FMT_UPGRADE_REPLY, pld)
-				end
+				local pld = { hw_type = e_arg.pld.hw_type }
+				pld.sw_version, pld.sw_size, pld.sw_crc = kube_target_sw(hw_type_s)
+				reply(e_arg.hdr, FMT_UPGRADE_REPLY, pld)
 			end
 		},
 		download = state {
 			entry = function()
+				decode("@3 " .. FMT_DOWNLOAD_REQUEST, e_arg)
+				local kid_s = tostring(e_arg.hdr.nid)
+				if not is_kid_allocated(kid_s) then return end --TODO raise error
+				local hw_type = tonumber(KUBE[kid_s].hw_type)
+				local sw_version = e_arg.pld.sw_version
+				local sw_index = e_arg.pld.sw_index
+
+				local pld = {
+					sw_xor = nixio.bit.bxor(sw_version, sw_index),
+					sw_block = get_firmware_block(hw_type, sw_version, sw_index)
+				}
+
+				if pld.sw_block then
+					reply(e_arg.hdr, FMT_DOWNLOAD_REPLY, pld)
+				end
 			end
 		},
 		trans { src = "initial", tgt = "receiving" },
@@ -415,7 +445,7 @@ local event = {
 				e_arg = arg -- set the event arg for the fsm
 				rfsm.send_events(fsm, e)
 				rfsm.run(fsm)
-				if cb then cb() end -- run the completion callback
+				if type(cb) == "function" then cb() end -- run the completion callback
 			end
 			rfsm.run(fsm) -- service the fsm timers even if no events are queued
 			self.lock = false
@@ -499,7 +529,7 @@ local ub_events = {
 				e = "e_pair_request"
 			elseif arg.hdr.len == 8 then
 				e = "e_upgrade_request"
-			elseif arg.hrd.len == 4 then
+			elseif arg.hdr.len == 4 then
 				e = "e_download_request"
 			end
 		else
