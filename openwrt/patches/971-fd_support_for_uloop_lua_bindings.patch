@@ -1,0 +1,132 @@
+--- /dev/null	2014-03-09 09:34:04.619918986 +0100
++++ package/libubox/patches/100-fd_support_for_uloop_lua_bindings.patch	2014-03-09 09:47:00.092813709 +0100
+@@ -0,0 +1,129 @@
++--- a/lua/uloop.c
+++++ b/lua/uloop.c
++@@ -25,6 +25,11 @@
++ #include "../uloop.h"
++ #include "../list.h"
++ 
+++struct lua_uloop_fd {
+++	struct uloop_fd f;
+++	int r;
+++};
+++
++ struct lua_uloop_timeout {
++ 	struct uloop_timeout t;
++ 	int r;
++@@ -37,6 +42,72 @@ struct lua_uloop_process {
++ 
++ static lua_State *state;
++ 
+++static void ul_fd_cb(struct uloop_fd *f, unsigned int events)
+++{
+++	struct lua_uloop_fd *lf = container_of(f, struct lua_uloop_fd, f);
+++
+++	lua_getglobal(state, "__uloop_cb");
+++	lua_rawgeti(state, -1, lf->r);
+++	lua_pushinteger(state, events);
+++	lua_call(state, 1, 0);
+++	lua_pop(state, 1);
+++}
+++
+++static int ul_fd_remove(lua_State *L)
+++{
+++	struct lua_uloop_fd *lf = lua_touserdata(L, 1);
+++
+++	uloop_fd_delete(&lf->f);
+++	lua_getglobal(state, "__uloop_cb");
+++	luaL_unref(L, -1, lf->r);
+++
+++    return 0;
+++}
+++
+++static const luaL_Reg fd_m[] = {
+++	{ "remove", ul_fd_remove },
+++	{ NULL, NULL }
+++};
+++
+++static int ul_fd(lua_State *L)
+++{
+++	struct lua_uloop_fd *lf;
+++	int ref;
+++
+++	if (!lua_isnumber(L, 1))
+++		luaL_argerror(L, 1, "invalid file descriptor");
+++
+++	if (!lua_isnumber(L, 2))
+++		luaL_argerror(L, 2, "events bitmask expected");
+++
+++	if (!lua_isfunction(L, 3))
+++		luaL_argerror(L, 3, "callback function expected");
+++
+++	lua_getglobal(L, "__uloop_cb");
+++	lua_pushvalue(L, 3);
+++	ref = luaL_ref(L, -2);
+++
+++	lf = lua_newuserdata(L, sizeof(*lf));
+++	lua_createtable(L, 0, 2);
+++	lua_pushvalue(L, -1);
+++	lua_setfield(L, -2, "__index");
+++	lua_pushcfunction(L, ul_fd_remove);
+++	lua_setfield(L, -2, "__gc");
+++	lua_pushvalue(L, -1);
+++	lua_setmetatable(L, -3);
+++	lua_pushvalue(L, -2);
+++	luaI_openlib(L, NULL, fd_m, 1);
+++	lua_pushvalue(L, -2);
+++
+++	memset(lf, 0, sizeof(*lf));
+++	lf->r = ref;
+++	lf->f.fd = lua_tointeger(L, 1);
+++	lf->f.cb = ul_fd_cb;
+++	uloop_fd_add(&lf->f, lua_tointeger(L, 2));
+++
+++	return 1;
+++}
+++
++ static void ul_timer_cb(struct uloop_timeout *t)
++ {
++ 	struct lua_uloop_timeout *tout = container_of(t, struct lua_uloop_timeout, t);
++@@ -44,6 +115,7 @@ static void ul_timer_cb(struct uloop_timeout *t)
++ 	lua_getglobal(state, "__uloop_cb");
++ 	lua_rawgeti(state, -1, tout->r);
++ 	lua_call(state, 0, 0);
+++	lua_pop(state, 1);
++ }
++ 
++ static int ul_timer_set(lua_State *L)
++@@ -135,6 +207,7 @@ static void ul_process_cb(struct uloop_process *p, int ret)
++ 	luaL_unref(state, -2, proc->r);
++ 	lua_pushinteger(state, ret >> 8);
++ 	lua_call(state, 1, 0);
+++	lua_pop(state, 1);
++ }
++ 
++ static int ul_process(lua_State *L)
++@@ -221,6 +294,7 @@ static int ul_run(lua_State *L)
++ static luaL_reg uloop_func[] = {
++ 	{"init", ul_init},
++ 	{"run", ul_run},
+++	{"fd", ul_fd},
++ 	{"timer", ul_timer},
++ 	{"process", ul_process},
++ 	{NULL, NULL},
++@@ -242,6 +316,17 @@ int luaopen_uloop(lua_State *L)
++ 	lua_pushstring(L, "1.0");
++ 	lua_rawset(L, -3);
++ 
+++	lua_pushinteger(L, ULOOP_READ);
+++	lua_setfield(L, -2, "READ");
+++	lua_pushinteger(L, ULOOP_WRITE);
+++	lua_setfield(L, -2, "WRITE");
+++	lua_pushinteger(L, ULOOP_EDGE_TRIGGER);
+++	lua_setfield(L, -2, "EDGE_TRIGGER");
+++	lua_pushinteger(L, ULOOP_BLOCKING);
+++	lua_setfield(L, -2, "BLOCKING");
+++	lua_pushinteger(L, ULOOP_ERROR_CB);
+++	lua_setfield(L, -2, "ERROR_CB");
+++
++ 	return 1;
++ }
++ 
