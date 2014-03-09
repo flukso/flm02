@@ -62,4 +62,6 @@ patch -p0 < $REPO_PATH/patches/940-wpa_supd_hook.patch
 patch -p0 < $REPO_PATH/patches/950-ntpd_supd_hook.patch
 patch -p0 < $REPO_PATH/patches/960-remove_default_banner.patch
 patch -p0 < $REPO_PATH/patches/970-add_libubox-lua_bindings.patch
+patch -p0 < $REPO_PATH/patches/971-fd_support_for_uloop_lua_bindings.patch
 patch -p0 < $REPO_PATH/patches/980-update_ubus_package.patch
+patch -p0 < $REPO_PATH/patches/981-set_ubus_sock_a+rw.patch

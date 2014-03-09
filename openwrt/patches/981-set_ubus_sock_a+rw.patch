@@ -1,0 +1,14 @@
+--- /dev/null	2014-03-09 09:34:04.619918986 +0100
++++ package/ubus/patches/100-set_ubus_sock_a+rw.patch	2014-03-09 18:15:59.576146204 +0100
+@@ -0,0 +1,11 @@
++--- a/ubusd.c	2014-03-09 11:31:52.048676185 +0100
+++++ b/ubusd.c	2014-03-09 11:32:13.616675725 +0100
++@@ -388,7 +388,7 @@
++ 	}
++ 
++ 	unlink(ubus_socket);
++-	umask(0177);
+++	umask(0111);
++ 	server_fd.fd = usock(USOCK_UNIX | USOCK_SERVER | USOCK_NONBLOCK, ubus_socket, NULL);
++ 	if (server_fd.fd < 0) {
++ 		perror("usock");
