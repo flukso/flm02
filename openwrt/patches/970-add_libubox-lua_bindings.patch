@@ -1,5 +1,21 @@
---- package/libubox/Makefile	2014-01-18 17:06:24.132786899 +0100
-+++ package/libubox/Makefile	2014-01-18 17:12:59.300778261 +0100
+--- package/libubox/Makefile	(revision 39583)
++++ package/libubox/Makefile	(working copy)
+@@ -1,13 +1,13 @@
+ include $(TOPDIR)/rules.mk
+ 
+ PKG_NAME:=libubox
+-PKG_VERSION:=2013-10-19
++PKG_VERSION:=2014-02-11
+ PKG_RELEASE=$(PKG_SOURCE_VERSION)
+ 
+ PKG_SOURCE_PROTO:=git
+ PKG_SOURCE_URL:=git://nbd.name/luci2/libubox.git
+ PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+-PKG_SOURCE_VERSION:=734d28eb1a46358743cf8837c91e5d46695c3b91
++PKG_SOURCE_VERSION:=926121113b903bf7b6133f782c84d0ed6c1a1a58
+ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
+ PKG_MIRROR_MD5SUM:=
+ CMAKE_INSTALL:=1
 @@ -54,6 +54,13 @@
    TITLE:=Minimalistic JSON based scripting engine
  endef
