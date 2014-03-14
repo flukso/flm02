@@ -518,7 +518,7 @@ local ub_events = {
 
 	["flukso.kube.packet.rx"] = function(msg)
 		if type(msg.hex) ~= "string" then return end
-		local arg = { bin = unhex(msg.hex), hdr = { }, pld = { } }
+		local arg = { bin = unhex(msg.hex), hex = msg.hex, hdr = { }, pld = { } }
 		vstruct.unpack(FMT_HEADER, arg.bin, arg.hdr)
 
 		if DEBUG.decode then dbg.vardump(arg) end
