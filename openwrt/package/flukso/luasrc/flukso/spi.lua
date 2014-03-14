@@ -98,7 +98,7 @@ function encode(msg)
 	end
 
 	if msg.to == 'uart' then
-		msg.encoded = nixio.bin.hexlify(msg.body or '')
+		msg.encoded = msg.body or ''
 		return
 	end
 
@@ -224,7 +224,7 @@ function decode(msg)
 	msg.decoded = {}
 
 	if msg.received.u then
-		msg.decoded.uart = nixio.bin.unhexlify(msg.received.u)
+		msg.decoded.uart = msg.received.u
 	end
 
 	if msg.received.l then
