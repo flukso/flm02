@@ -59,7 +59,7 @@ local FMT_PAIR_REPLY = "< hw_type:u2 grp:u1 nid:u1 key:s16"
 local FMT_UPGRADE_REQUEST = "< hw_type:u2 sw_version:u2 sw_size:u2 sw_crc:u2"
 local FMT_UPGRADE_REPLY = FMT_UPGRADE_REQUEST
 local FMT_DOWNLOAD_REQUEST = "< sw_version:u2 sw_index:u2"
-local FMT_DOWNLOAD_REPLY = "< sw_xor:u2 sw_block:s64"
+local FMT_DOWNLOAD_REPLY = "< sw_xor:u2 sw_block:s"
 
 local DEBUG = {
 	config = false,
@@ -284,8 +284,11 @@ local function get_firmware_block(hw_type, sw_version, sw_index)
 		fd:close()
 	end
 
+	local size = FIRMWARE[hw_type][sw_version]:len()
 	local start = sw_index * FIRMWARE_BLOCK_SIZE + 1
+	if start > size then return nil end
 	local finish = (sw_index + 1) * FIRMWARE_BLOCK_SIZE
+	if finish > size then finish = size end
 	return FIRMWARE[hw_type][sw_version]:sub(start, finish)
 end
 
