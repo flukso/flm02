@@ -70,11 +70,22 @@ local DEBUG = {
 local function load_config()
 	KUBE = uci:get_all("kube")
 	SENSOR = uci:get_all("flukso")
+	REGISTRY = {}
 
-	local fd = nixio.open(KUBE.main.cache .. "/registry", O_RDONLY)
-	local registry = fd:readall()
-	REGISTRY = luci.json.decode(registry)
-	fd:close()
+	for file in nixio.fs.dir(KUBE.main.cache .. "/registry") do
+		local path = string.format("%s/registry/%s", KUBE.main.cache, file)
+		local fd = nixio.open(path, O_RDONLY)
+		local registry = luci.json.decode(fd:readall())
+		fd:close()
+
+		if registry then
+			for k, v in pairs(registry) do
+				REGISTRY[k] = v
+			end
+		else
+			--TODO raise error when file is not json decodable
+		end
+	end
 
 	--TODO raise error when KUBE, SENSOR or REGISTRY are nil
 
