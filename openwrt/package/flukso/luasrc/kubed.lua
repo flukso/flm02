@@ -414,7 +414,7 @@ local root = state {
 local fsm = rfsm.init(root)
 rfsm.run(fsm)
 
-local function event_process(event, arg)
+local function process_event(event, arg)
 	e_arg = arg
 	if event then rfsm.send_events(fsm, event) end
 	rfsm.run(fsm)
@@ -460,7 +460,7 @@ local ub_methods = {
 
 		deprovision = {
 			function(req, msg)
-				event_process("e_deprovision", msg.kid)
+				process_event("e_deprovision", msg.kid)
 				local reply = string.format("kube with kid=%d has been deprovisioned", msg.kid)
 				ub:reply(req, { success = true, msg = reply })
 			end, { kid = ubus.INT32 }
@@ -473,7 +473,7 @@ ub:add(ub_methods)
 local ub_events = {
 	["flukso.kube.event"] = function(msg)
 		if type(msg.event) == "string" then
-			event_process(msg.event)
+			process_event(msg.event)
 		end
 	end,
 
@@ -497,7 +497,7 @@ local ub_events = {
 			e = "e_packet"
 		end
 
-		event_process(e, arg)
+		process_event(e, arg)
 	end
 }
 
@@ -506,7 +506,7 @@ ub:listen(ub_events)
 local ut
 ut = uloop.timer(function()
 		ut:set(ULOOP_TIMEOUT)
-		event_process()
+		process_event()
 	end, ULOOP_TIMEOUT)
 
 uloop:run()
