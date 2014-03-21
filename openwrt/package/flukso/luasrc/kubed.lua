@@ -179,8 +179,13 @@ local function provision_kube(hw_id_hex, hw_type_s)
 		return first_free and tostring(first_free), total_free
 	end
 
+	local function update_recycle(sidx_s)
+		local recycle = SENSOR[sidx_s].recycle
+		return tostring((recycle and tonumber(recycle) + 1) or 0)
+	end
+
 	local kid_s = get_free(KUBE)
-	local sensor_s, free_sensors = get_free(SENSOR)
+	local sidx_s, free_sensors = get_free(SENSOR)
 
 	if not is_hw_type_registered(hw_type_s) then
 		--TODO raise error
@@ -203,14 +208,17 @@ local function provision_kube(hw_id_hex, hw_type_s)
 
 		for sensor_type_s in pairs(REGISTRY[hw_type_s]
 			[latest_kube_firmware(hw_type_s)].decode.sensors) do
+			sidx_s = get_free(SENSOR)
+
 			local values = {
 				class = "kube",
 				["type"] = sensor_type_s,
 				kid = kid_s,
+				recycle = update_recycle(sidx_s),
 				enable = 1
 			}
 
-			uci:tset("flukso", get_free(SENSOR), values)
+			uci:tset("flukso", sidx_s, values)
 			uci:save("flukso")
 			SENSOR = uci:get_all("flukso")
 		end
