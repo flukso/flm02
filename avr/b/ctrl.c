@@ -512,6 +512,12 @@ void ctrlCmdSet(uint8_t cmd)
 		   so we force it into the on state */
 		DBG_LED_ON();
 		break;
+
+	case 'g':		/* listening group */
+		ctrlReadCharFromRxBuffer(&tmp8);
+		rfm12_grp_set(tmp8);
+		ctrlWriteCharToTxBuffer(tmp8);
+		break;
 	}
 }
 

@@ -168,6 +168,9 @@ function encode(msg)
 	elseif msg.parsed.cmd == 'si' and argcheck(1) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
 
+	elseif msg.parsed.cmd == 'sg' and argcheck(1) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
+
 	else
 		return
 	end
@@ -310,6 +313,11 @@ function decode(msg)
 			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 
 		elseif msg.decoded.cmd == 'gi' or msg.decoded.cmd == 'si' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
+
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
+
+		elseif msg.decoded.cmd == 'sg' then
 			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
 
 			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
