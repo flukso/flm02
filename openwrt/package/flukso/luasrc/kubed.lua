@@ -295,7 +295,7 @@ end
 local function kube_target_sw(hw_type_s)
 	local sw_version_s = latest_kube_firmware(hw_type_s)
 	local sw_size = REGISTRY[hw_type_s][sw_version_s].size
-	local sw_crc = REGISTRY[hw_type_s][sw_version_s].crc
+	local sw_crc = REGISTRY[hw_type_s][sw_version_s].crc16
 	return tonumber(sw_version_s), sw_size, sw_crc
 end
 
