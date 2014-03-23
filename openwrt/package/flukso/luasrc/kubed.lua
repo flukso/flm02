@@ -441,11 +441,52 @@ local root = state {
 local fsm = rfsm.init(root)
 rfsm.run(fsm)
 
-local function process_event(event, arg)
-	e_arg = arg
-	if event then rfsm.send_events(fsm, event) end
-	rfsm.run(fsm)
-end
+local event = {
+	lock = false,
+	head = 1,
+	tail = 0,
+	queue = { },
+
+	is_queue_empty = function(self)
+		return self.tail < self.head
+	end,
+
+	push = function(self, e, arg, cb)
+		if e then
+			self.tail = self.tail + 1
+			self.queue[self.tail] = { e, arg, cb }
+		end
+	end,
+
+	pop = function(self)
+		if self:is_queue_empty() then return nil end
+
+		local t = self.queue[self.head]
+		self.queue[self.head] = nil
+		self.head = self.head + 1
+		return t[1], t[2], t[3]
+	end,
+
+	run = function(self)
+		if not self.lock then
+			self.lock = true
+			while not self:is_queue_empty() do
+				local e, arg, cb = self:pop()
+				e_arg = arg -- set the event arg for the fsm
+				rfsm.send_events(fsm, e)
+				rfsm.run(fsm)
+				if type(cb) == "function" then cb() end -- run the completion callback
+			end
+			rfsm.run(fsm) -- service the fsm timers even if no events are queued
+			self.lock = false
+		end
+	end,
+
+	process = function(self, e, arg, cb) -- external method
+		self:push(e, arg, cb)
+		self:run()
+	end
+}
 
 local ub_methods = {
 	["flukso.kube"] = {
@@ -487,9 +528,10 @@ local ub_methods = {
 
 		deprovision = {
 			function(req, msg)
-				process_event("e_deprovision", msg.kid)
-				local reply = string.format("kube with kid=%d has been deprovisioned", msg.kid)
-				ub:reply(req, { success = true, msg = reply })
+				event:process("e_deprovision", msg.kid, function()
+					local reply = string.format("kube with kid=%d has been deprovisioned", msg.kid)
+					ub:reply(req, { success = true, msg = reply })
+				end)
 			end, { kid = ubus.INT32 }
 		}
 	}
@@ -500,7 +542,7 @@ ub:add(ub_methods)
 local ub_events = {
 	["flukso.kube.event"] = function(msg)
 		if type(msg.event) == "string" then
-			process_event(msg.event)
+			event:process(msg.event)
 		end
 	end,
 
@@ -524,7 +566,7 @@ local ub_events = {
 			e = "e_packet"
 		end
 
-		process_event(e, arg)
+		event:process(e, arg)
 	end
 }
 
@@ -533,7 +575,7 @@ ub:listen(ub_events)
 local ut
 ut = uloop.timer(function()
 		ut:set(ULOOP_TIMEOUT)
-		process_event()
+		event:process()
 	end, ULOOP_TIMEOUT)
 
 uloop:run()
