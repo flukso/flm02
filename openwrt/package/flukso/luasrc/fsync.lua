@@ -3,9 +3,8 @@
 --[[
     
     fsync.lua - synchronize /etc/config/flukso settings with the sensor board
-                via the spid ctrl fifos
 
-    Copyright (C) 2011-2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+    Copyright (C) 2014 Bart Van Der Meerssche <bart@flukso.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,39 +22,32 @@
 ]]--
 
 
-local dbg 			= require 'dbg'
-local nixio			= require 'nixio'
-nixio.fs			= require 'nixio.fs'
-local uci			= require 'luci.model.uci'.cursor()
-local luci			= require 'luci'
-luci.json			= require 'luci.json'
-local httpclient	= require 'luci.httpclient'
+local dbg = require "dbg"
+local nixio	= require "nixio"
+nixio.fs = require "nixio.fs"
+local uci = require "luci.model.uci".cursor()
+local luci = require "luci"
+luci.json = require "luci.json"
+local httpclient = require "luci.httpclient"
+local ubus = require "ubus"
+local ub = assert(ubus.connect(), "unable to connect to ubus")
 
-
-local HW_CHECK_OVERRIDE = (arg[1] == '-f')
-
-local CTRL_PATH		= '/var/run/spid/ctrl'
-local CTRL_PATH_IN	= CTRL_PATH .. '/in'
-local CTRL_PATH_OUT	= CTRL_PATH .. '/out'
-
-local O_RDWR_NONBLOCK	= nixio.open_flags('rdwr', 'nonblock')
-local O_RDWR_CREAT		= nixio.open_flags('rdwr', 'creat')
-local POLLIN			= nixio.poll_flags('in')
-local POLL_TIMEOUT_MS	= 1000
-local MAX_TRIES			= 5
+local HW_CHECK_OVERRIDE = (arg[1] == "-f")
+local O_RDWR_CREAT = nixio.open_flags('rdwr', 'creat')
+local MAX_TRIES	= 5
 
 -- parse and load /etc/config/flukso
-local flukso = uci:get_all('flukso')
+local flukso = uci:get_all("flukso")
 
-local UART_TX_INVERT		= tonumber(flukso.main.uart_tx_invert)
-local UART_RX_INVERT		= tonumber(flukso.main.uart_rx_invert)
-local MAX_SENSORS			= tonumber(flukso.main.max_sensors)
-local MAX_PROV_SENSORS		= tonumber(flukso.main.max_provisioned_sensors)
-local MAX_ANALOG_SENSORS	= tonumber(flukso.main.max_analog_sensors)
-local ANALOG_ENABLE			= (MAX_ANALOG_SENSORS == 3) and 1 or 0
-local RESET_COUNTERS		= (flukso.main.reset_counters == '1')
-local WAN_ENABLED			= (flukso.daemon.enable_wan_branch == '1')
-local LAN_ENABLED			= (flukso.daemon.enable_lan_branch == '1')
+local UART_TX_INVERT        = tonumber(flukso.main.uart_tx_invert)
+local UART_RX_INVERT        = tonumber(flukso.main.uart_rx_invert)
+local MAX_SENSORS           = tonumber(flukso.main.max_sensors)
+local MAX_PROV_SENSORS      = tonumber(flukso.main.max_provisioned_sensors)
+local MAX_ANALOG_SENSORS    = tonumber(flukso.main.max_analog_sensors)
+local ANALOG_ENABLE         = (MAX_ANALOG_SENSORS == 3) and 1 or 0
+local RESET_COUNTERS        = (flukso.main.reset_counters == "1")
+local WAN_ENABLED           = (flukso.daemon.enable_wan_branch == "1")
+local LAN_ENABLED           = (flukso.daemon.enable_lan_branch == "1")
 
 local function last_prov_sensor()
 	for i = MAX_PROV_SENSORS, MAX_ANALOG_SENSORS, -1 do
@@ -66,38 +58,38 @@ local function last_prov_sensor()
 end
 
 local LAST_PROV_SENSOR      = last_prov_sensor()
-local MODEL                 = 'FLM02X'
-uci:foreach('system', 'system', function(x) MODEL = x.model end)
+local MODEL                 = "FLM02X"
+uci:foreach("system", "system", function(x) MODEL = x.model end)
 
 local METERCONST_FACTOR	= 0.449
 
 -- sensor board commands
-local GET_HW_VERSION	= 'gh'
-local GET_HW_VERSION_R	= '^gh%s+(%d+)%s+(%d+)$'
-local SET_ENABLE		= 'se %d %d'
-local SET_HW_LINES		= 'sk %d %d %d' -- ANALOG_EN, UART_RX_INV, UART_TX_INV
-local SET_PHY_TO_LOG	= 'sp' -- with [1..MAX_SENSORS] arguments
-local SET_METERCONST	= 'sm %d %d'
-local SET_FRACTION		= 'sf %d %d'
-local SET_COUNTER		= 'sc %d %d'
-local COMMIT			= 'ct'
+local GET_HW_VERSION    = "gh"
+local GET_HW_VERSION_R  = "^gh%s+(%d+)%s+(%d+)$"
+local SET_ENABLE        = "se %d %d"
+local SET_HW_LINES      = "sk %d %d %d" -- ANALOG_EN, UART_RX_INV, UART_TX_INV
+local SET_PHY_TO_LOG    = "sp" -- with [1..MAX_SENSORS] arguments
+local SET_METERCONST    = "sm %d %d"
+local SET_FRACTION      = "sf %d %d"
+local SET_COUNTER       = "sc %d %d"
+local COMMIT            = "ct"
 
 -- LAN settings
-local API_PATH		= '/www/sensor/'
-local CGI_SCRIPT	= '/usr/bin/restful'
-local AVAHI_PATH	= '/etc/avahi/services/flukso.service'
+local API_PATH      = "/www/sensor/"
+local CGI_SCRIPT    = "/usr/bin/restful"
+local AVAHI_PATH    = "/etc/avahi/services/flukso.service"
 
 -- WAN settings
-local WAN_BASE_URL	= flukso.daemon.wan_base_url .. 'sensor/'
-local WAN_KEY		= '0123456789abcdef0123456789abcdef'
-uci:foreach('system', 'system', function(x) WAN_KEY = x.key end) -- quirky but it works
+local WAN_BASE_URL  = flukso.daemon.wan_base_url .. "sensor/"
+local WAN_KEY       = "0123456789abcdef0123456789abcdef"
+uci:foreach("system", "system", function(x) WAN_KEY = x.key end) -- quirky but it works
 
 -- https header helpers
-local FLUKSO_VERSION = '000'
-uci:foreach('system', 'system', function(x) FLUKSO_VERSION = x.version end)
+local FLUKSO_VERSION = "000"
+uci:foreach("system", "system", function(x) FLUKSO_VERSION = x.version end)
 
-local USER_AGENT	= 'Fluksometer v' .. FLUKSO_VERSION
-local CACERT		= flukso.daemon.cacert
+local USER_AGENT    = "Fluksometer v" .. FLUKSO_VERSION
+local CACERT        = flukso.daemon.cacert
 
 -- map exit codes to strings
 local EXIT_STRING = {
@@ -127,12 +119,12 @@ local function exit(code)
 	local level
 
 	if code == 0 then
-		level = 'info'
+		level = "info"
 	else
-		level = 'err'
+		level = "err"
 	end
 
-	nixio.syslog(level, string.format('fsync exit status: %d, %s', code, EXIT_STRING[code]))
+	nixio.syslog(level, string.format("fsync exit status: %d, %s", code, EXIT_STRING[code]))
 
 	uci:set("flukso", "fsync", "time", os.time() - 15)
 	uci:set("flukso", "fsync", "exit_status", code)
@@ -142,137 +134,92 @@ local function exit(code)
 	os.exit(code)
 end
 
---- Create a pair of file descriptors [fd] to the spid control fifo's.
--- @return		ctrl object containing the fd's, a line-based iterator and poll flags 
-local function ctrl_init()
-	local ctrl = { fdin    = nixio.open(CTRL_PATH_IN, O_RDWR_NONBLOCK),
-                       fdout   = nixio.open(CTRL_PATH_OUT, O_RDWR_NONBLOCK),
-                       events  = POLLIN,
-                       revents = 0 }
-
-	if ctrl.fdin == nil or ctrl.fdout == nil then
-		print('Error. Unable to open the ctrl fifos.')
-		print('Exiting...')
-		exit(1)
-	end
-
-	-- acquire an exclusive lock on the ctrl fifos or exit
-	if not (ctrl.fdin:lock('tlock') and ctrl.fdout:lock('tlock')) then
-		print('Error. Detected a lock on one of the ctrl fifos.')
-		print('Exiting...')
-		exit(2)
-	end
-
-	ctrl.fd = ctrl.fdout -- need this entry for nixio.poll
-	ctrl.line = ctrl.fdout:linesource()
-
-	return ctrl
-end
-
---- Close the spid control fifo's.
--- @param code  	ctrl object
--- @return		none 
-local function ctrl_close(ctrl)
-	ctrl.fdin:close()
-	ctrl.fdout:close()
-end
-
 --- Send a command to the control fifo.
--- @param ctrl  	ctrl object
+-- @param ub  		ubus object
 -- @param cmd		command to send
 -- @return		none 
-local function send(ctrl, cmd)
-	while ctrl.line() do end -- flush the out fifo
-
+local function send(ub, cmd)
 	for i = 1, MAX_TRIES do
-		ctrl.fdin:write(cmd .. '\n')
+		local reply = ub:call("flukso.flx", "ctrl", { cmd = cmd })
 
-		local poll, errno, errmsg = nixio.poll({ ctrl }, POLL_TIMEOUT_MS)
-
-		if poll < 0 then
-			print('Error. Poll failed with error message: ' .. errmsg)
-
-		elseif poll == 0 then
-			print('Error. Poll timed out after ' .. POLL_TIMEOUT_MS .. 'ms')
-
-		elseif poll > 0 then
-			reply = ctrl.line()
-
-			if cmd:sub(1, 1) == 's' then
-				if reply == cmd then
-					print(reply .. ' .. ok')
-					return reply
+		if not reply then
+			print("Error. Communication with sensor board failed")
+		elseif reply and reply.success then
+			if cmd:sub(1, 1) == "s" then
+				if reply.result == cmd then
+					print(reply.result .. " .. ok")
+					return reply.result
 				else
-					print(reply .. ' .. nok .. should be ' .. cmd .. ' instead')
+					print(reply.result .. " .. nok .. should be " .. cmd .. " instead")
 				end
-			elseif cmd:sub(1, 2) == reply:sub(1, 2) then
-				print(reply .. ' .. ok')
-				return reply
+			elseif cmd:sub(1, 2) == reply.result:sub(1, 2) then
+				print(reply.result .. " .. ok")
+				return reply.result
 			else
-				print(reply .. ' .. nok')
+				print(reply.result .. " .. nok")
 			end	
 		end
 	end
 
-	print(MAX_TRIES .. ' write attempts failed. Exiting ...')
+	print(MAX_TRIES .. " write attempts failed. Exiting ...")
 	exit(3) 
 end
 
 --- Check the sensor board hardware version.
--- @param ctrl  	ctrl object
+-- @param ub  	ub object
 -- @return		none 
-local function check_hw_version(ctrl) 
-	local hw_major, hw_minor = send(ctrl, GET_HW_VERSION):match(GET_HW_VERSION_R)
+local function check_hw_version(ub) 
+	local hw_major, hw_minor = send(ub, GET_HW_VERSION):match(GET_HW_VERSION_R)
 
 	if hw_major ~= flukso.main.hw_major or hw_minor > flukso.main.hw_minor then
-		print(string.format('Hardware check (major: %s, minor: %s) .. nok', hw_major, hw_minor))
+		print(string.format("Hardware check (major: %s, minor: %s) .. nok", hw_major, hw_minor))
 		if hw_major ~= flukso.main.hw_major then
-			print('Error. Major version does not match.')
+			print("Error. Major version does not match.")
 		end
 
 		if hw_minor > flukso.main.hw_minor then
-			print('Error. Sensor board minor version is not supported by this package.')
+			print("Error. Sensor board minor version is not supported by this package.")
 		end
 
 		if HW_CHECK_OVERRIDE then
-			print('Overridden. Good luck!')
+			print("Overridden. Good luck!")
 		else
-			print('Use -f to override this check at your own peril.')
+			print("Use -f to override this check at your own peril.")
 			exit(4)
 		end
 	else
-		print(string.format('Hardware check (major: %s, minor: %s) .. ok', hw_major, hw_minor))
+		print(string.format("Hardware check (major: %s, minor: %s) .. ok", hw_major, hw_minor))
 	end
 end
 
 --- Disable all sensors in the sensor board.
--- @param ctrl  	ctrl object
+-- @param ub  	ub object
 -- @return		none 
-local function disable_all_sensors(ctrl)
+local function disable_all_sensors(ub)
 	for i = 1, MAX_SENSORS do
 		local cmd = string.format(SET_ENABLE, toc(i), 0)
-		send(ctrl, cmd)
+		send(ub, cmd)
 	end
 end
 
 --- Set all configurable hardware lines.
--- @param ctrl  	ctrl object
+-- @param ub  	ub object
 -- @return		none 
-local function set_hardware_lines(ctrl)
+local function set_hardware_lines(ub)
 	local cmd = string.format(SET_HW_LINES, ANALOG_ENABLE, UART_RX_INVERT, UART_TX_INVERT)
-	send(ctrl, cmd)
+	send(ub, cmd)
 end
 
 --- Populate the physical (port) to logical (sensor) map on the sensor board.
--- @param ctrl  	ctrl object
+-- @param ub  	ub object
 -- @return		none 
-local function set_phy_to_log(ctrl)
+local function set_phy_to_log(ub)
 	local phy_to_log = {}
 
 	for i = 1, MAX_SENSORS do
 		if flukso[tostring(i)] ~= nil then
-			if flukso[tostring(i)]['class'] == 'analog' and i > MAX_ANALOG_SENSORS then
-				print(string.format('Error. Analog sensor %s should be less than or equal to max_analog_sensors (%s)', i, MAX_ANALOG_SENSORS))
+			if flukso[tostring(i)]["class"] == "analog" and i > MAX_ANALOG_SENSORS then
+				print(string.format("Error. Analog sensor %s should be less than or equal to max_analog_sensors (%s)", i, MAX_ANALOG_SENSORS))
 				exit(5)
 			end
 
@@ -280,7 +227,7 @@ local function set_phy_to_log(ctrl)
 
 			for j = 1, #ports do
 				if tonumber(ports[j]) > MAX_SENSORS then
-					print(string.format('Error. Port numbering in sensor %s should be less than or equal to max_sensors (%s)', i, MAX_SENSORS))
+					print(string.format("Error. Port numbering in sensor %s should be less than or equal to max_sensors (%s)", i, MAX_SENSORS))
 					exit(6)
 
 				else
@@ -297,27 +244,27 @@ local function set_phy_to_log(ctrl)
 		end
 	end
 
-	local cmd = SET_PHY_TO_LOG .. ' ' .. table.concat(phy_to_log, ' ', 0)
-	send(ctrl, cmd)
+	local cmd = SET_PHY_TO_LOG .. " " .. table.concat(phy_to_log, " ", 0)
+	send(ub, cmd)
 end
 
 --- Populate each sensor's meterconstant on the sensor board.
--- @param ctrl  	ctrl object
+-- @param ub  	ub object
 -- @return		none 
-local function set_meterconst(ctrl)
+local function set_meterconst(ub)
 	for i = 1, MAX_SENSORS do
 		local cmd = { }
 
 		if flukso[tostring(i)] == nil then
 			cmd[1] = string.format(SET_METERCONST, toc(i), 0)
 
-		elseif flukso[tostring(i)]['class'] == 'analog' then
+		elseif flukso[tostring(i)]["class"] == "analog" then
 			local voltage = tonumber(flukso[tostring(i)].voltage or "0")
 			local current = tonumber(flukso[tostring(i)].current or "0")
 
 			cmd[1] = string.format(SET_METERCONST, toc(i), math.floor(METERCONST_FACTOR * voltage * current))
 
-		elseif flukso[tostring(i)]['class'] == 'pulse'then
+		elseif flukso[tostring(i)]["class"] == "pulse" then
 			local real = tonumber(flukso[tostring(i)].constant or "0")
 			local meterconst = math.floor(real)
 			local fraction = math.floor((real % 1) * 1000)
@@ -332,41 +279,41 @@ local function set_meterconst(ctrl)
 			cmd[2] = string.format(SET_FRACTION, toc(i), 0)
 		end
 
-		send(ctrl, cmd[1])
-		send(ctrl, cmd[2])
+		send(ub, cmd[1])
+		send(ub, cmd[2])
 	end
 end
 
 --- Reset each sensor's counter on the sensor board.
--- @param ctrl  	ctrl object
+-- @param ub  	ub object
 -- @return		none 
-local function reset_counters(ctrl)
+local function reset_counters(ub)
 	for i = 1, MAX_SENSORS do
 		local cmd = string.format(SET_COUNTER, toc(i), 0)
-		send(ctrl, cmd)
+		send(ub, cmd)
 	end
 
-	uci:set('flukso', 'main', 'reset_counters', 0)
-	uci:commit('flukso')
+	uci:set("flukso", "main", "reset_counters", 0)
+	uci:commit("flukso")
 end
 
 --- Activate the enabled sensors on the sensor board.
--- @param ctrl  	ctrl object
+-- @param ub  	ub object
 -- @return		none 
-local function enable_sensors(ctrl)
+local function enable_sensors(ub)
 	for i = 1, MAX_SENSORS do
-		if flukso[tostring(i)] ~= nil and flukso[tostring(i)].enable == '1' then
+		if flukso[tostring(i)] ~= nil and flukso[tostring(i)].enable == "1" then
 			cmd = string.format(SET_ENABLE, toc(i), 1)
-			send(ctrl, cmd)
+			send(ub, cmd)
 		end
 	end
 end
 
 --- Commit all changes on the sensor board.
--- @param ctrl  	ctrl object
+-- @param ub  	ub object
 -- @return		none 
-local function commit(ctrl)
-	send(ctrl, COMMIT)
+local function commit(ub)
+	send(ub, COMMIT)
 end
 
 --- Remove all /sensor/xyz endpoint mappings to the cgi script.
@@ -388,16 +335,16 @@ local function create_symlinks()
 	-- generate new symlinks
 	for i = 1, LAST_PROV_SENSOR do
 		if flukso[tostring(i)] ~= nil
-			and flukso[tostring(i)].enable == '1'
+			and flukso[tostring(i)].enable == "1"
 			and flukso[tostring(i)].id
-			and flukso[tostring(i)].class ~= 'uart'
+			and flukso[tostring(i)].class ~= "uart"
 			then
 
 			local sensor_id = flukso[tostring(i)].id
 
 			if sensor_id then
 				nixio.fs.symlink(CGI_SCRIPT, API_PATH .. sensor_id)
-				print(string.format('ln -s %s %s%s .. ok', CGI_SCRIPT, API_PATH, sensor_id))
+				print(string.format("ln -s %s %s%s .. ok", CGI_SCRIPT, API_PATH, sensor_id))
 			end
 		end
 	end
@@ -424,9 +371,9 @@ local function create_avahi_config()
 
 	for i = 1, LAST_PROV_SENSOR do
 		if flukso[tostring(i)] ~= nil
-			and flukso[tostring(i)].enable == '1'
+			and flukso[tostring(i)].enable == "1"
 			and flukso[tostring(i)].id
-			and flukso[tostring(i)].class ~= 'uart'
+			and flukso[tostring(i)].class ~= "uart"
 			then
 
 			avahi.body[#avahi.body + 1] = string.format('    <txt-record>id%d=%s</txt-record>' , i, flukso[tostring(i)].id)
@@ -440,18 +387,18 @@ local function create_avahi_config()
 
 	-- generate the new flukso service
 	fd = nixio.open(AVAHI_PATH, O_RDWR_CREAT)
-	print(string.format('generating a new %s', AVAHI_PATH))
+	print(string.format("generating a new %s", AVAHI_PATH))
 
 	for i = 1, #avahi.head do
-		fd:write(avahi.head[i] .. '\n')
+		fd:write(avahi.head[i] .. "\n")
 	end
 
 	for i = 1, #avahi.body do
-		fd:write(avahi.body[i] .. '\n')
+		fd:write(avahi.body[i] .. "\n")
 	end
 
 	for i = 1, #avahi.tail do
-		fd:write(avahi.tail[i] .. '\n')
+		fd:write(avahi.tail[i] .. "\n")
 	end
 end
 
@@ -482,17 +429,17 @@ local function phone_home()
 	end
 
 	local headers = {}
-	headers['Content-Type'] = 'application/json'
-	headers['X-Version'] = '1.0'
-	headers['User-Agent'] = USER_AGENT
+	headers["Content-Type"] = "application/json"
+	headers["X-Version"] = "1.0"
+	headers["User-Agent"] = USER_AGENT
 
 	local options = {}
 	options.sndtimeo = 5
 	options.rcvtimeo = 5
 
-	options.tls_context_set_verify = 'peer'
+	options.tls_context_set_verify = "peer"
 	options.cacert = CACERT
-	options.method  = 'POST'
+	options.method  = "POST"
 	options.headers = headers
 
 	local http_persist = httpclient.create_persistent()
@@ -504,17 +451,17 @@ local function phone_home()
 			local sensor_id = flukso[tostring(i)].id
 
 			if i ~= LAST_PROV_SENSOR then
-				options.headers['Connection'] = 'keep-alive'
+				options.headers["Connection"] = "keep-alive"
 			else
-				options.headers['Connection'] = 'close'
+				options.headers["Connection"] = "close"
 			end
 
 			options.body = json_config(tostring(i))
-			options.headers['Content-Length'] = tostring(#options.body)
+			options.headers["Content-Length"] = tostring(#options.body)
 
-			local hash = nixio.crypto.hmac('sha1', WAN_KEY)
+			local hash = nixio.crypto.hmac("sha1", WAN_KEY)
 			hash:update(options.body)
-			options.headers['X-Digest'] = hash:final()
+			options.headers["X-Digest"] = hash:final()
 
 			local url = WAN_BASE_URL .. sensor_id
 			local response, code, call_info = http_persist(url, options)
@@ -522,22 +469,22 @@ local function phone_home()
 			local level
 
 			if code == 200 or code == 204 then
-				level = 'info'
+				level = "info"
 			else
-				level = 'err'
+				level = "err"
 				err = true
 			end
 
-			nixio.syslog(level, string.format('%s %s: %s', options.method, url, code))
+			nixio.syslog(level, string.format("%s %s: %s", options.method, url, code))
 
 			-- if available, send additional error info to the syslog
-			if type(call_info) == 'string' then
-				nixio.syslog('err', call_info)
-			elseif type(call_info) == 'table'  then
-				local auth_error = call_info.headers['WWW-Authenticate']
+			if type(call_info) == "string" then
+				nixio.syslog("err", call_info)
+			elseif type(call_info) == "table"  then
+				local auth_error = call_info.headers["WWW-Authenticate"]
 
 				if auth_error then
-					nixio.syslog('err', string.format('WWW-Authenticate: %s', auth_error))
+					nixio.syslog("err", string.format("WWW-Authenticate: %s", auth_error))
 				end
 			end
 		end
@@ -549,30 +496,25 @@ local function phone_home()
 end
 
 -- open the connection to the syslog deamon, specifying our identity
-nixio.openlog('fsync', 'pid')
+nixio.openlog("fsync", "pid")
 
 -- sync config to sensor board
-local ctrl = ctrl_init()
+check_hw_version(ub)
+disable_all_sensors(ub)
 
-check_hw_version(ctrl)
-disable_all_sensors(ctrl)
-
-if MODEL == 'FLM02B' or MODEL == 'FLM02C' then
-	set_hardware_lines(ctrl)
+if MODEL == "FLM02B" or MODEL == "FLM02C" then
+	set_hardware_lines(ub)
 end
 
-set_phy_to_log(ctrl)
-set_meterconst(ctrl)
+set_phy_to_log(ub)
+set_meterconst(ub)
 
 if RESET_COUNTERS then
-	reset_counters(ctrl)
+	reset_counters(ub)
 end
 
-enable_sensors(ctrl)
-commit(ctrl)
-
-ctrl_close(ctrl)
-
+enable_sensors(ub)
+commit(ub)
 
 -- sync config locally
 remove_symlinks()
@@ -588,6 +530,5 @@ if WAN_ENABLED then
 	phone_home()
 end
 
-
-print(arg[0] .. ' completed successfully. Bye!')
+print(arg[0] .. " completed successfully. Bye!")
 exit(0)
