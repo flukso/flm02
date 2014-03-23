@@ -53,6 +53,7 @@ local FIRMWARE_BLOCK_SIZE = 64
 local O_RDONLY = nixio.open_flags("rdonly")
 local ULOOP_TIMEOUT = 1000 --ms
 
+local FMT_CMD_SET_GROUP = "sg %s"
 local FMT_HEADER = "< grp:u1 [1| ctl:b1 dst:b1 ack:b1 nid:u5] len:u1"
 local FMT_PAIR_REQUEST = "< hw_type:u2 grp:u1 nid:u1 check:u2 hw_id:s16"
 local FMT_PAIR_REPLY = "< hw_type:u2 grp:u1 nid:u1 key:s16"
@@ -94,6 +95,11 @@ local function load_config()
 		dbg.vardump(SENSOR)
 		dbg.vardump(REGISTRY)
 	end
+end
+
+local function set_group(grp)
+	local cmd = string.format(FMT_CMD_SET_GROUP, grp)
+	ub:call("flukso.flx", "ctrl", { cmd = cmd })
 end
 
 local function decode(script, pkt)
@@ -320,7 +326,7 @@ local root = state {
 	collecting = state {
 		entry = function()
 				load_config()
-				--TODO listen on collecting grp
+				set_group(KUBE.main.collect_group)
 		end,
 
 		-- rFSM does not support internal transitions
@@ -370,7 +376,7 @@ local root = state {
 
 	pairing = state {
 		entry = function()
-				-- TODO listen on pairing grp 212
+				set_group(KUBE.main.pair_group)
 			end,
 
 		receiving = state { },
@@ -391,6 +397,8 @@ local root = state {
 						key = KUBE.main.key
 					}
 
+					-- little hack to make sure the radio collects the upgrade request
+					set_group(KUBE.main.collect_group)
 					reply(e_arg.hdr, FMT_PAIR_REPLY, pld)
 				end
 			end
