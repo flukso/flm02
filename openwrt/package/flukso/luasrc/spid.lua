@@ -45,8 +45,6 @@ local SPI_CT_DELAY_NS       = 5e8
 local POLL_TIMEOUT_MS       = (MODEL == "FLM02A") and 100 or 50
 local DELTA_TIMEOUT_MS      = 1e3
 
---local UART_MAX_BYTES        = 256
-
 local GET_DELTA             = "gd"
 
 local DAEMON                = os.getenv("DAEMON") or "spid"
@@ -73,8 +71,6 @@ function mkfifos(input)
 		line = fdin:linesource() }
 end
 
---local uart = mkfifos("uart")
-local ctrl = mkfifos("ctrl")
 local delta = mkfifos("delta")
 
 local spidev = nixio.open(SPI_DEV, O_RDWR_NONBLOCK)
@@ -82,13 +78,13 @@ nixio.spi.setspeed(spidev, SPI_MAX_CLK_SPEED_HZ, SPI_MIN_BYTE_DELAY_US)
 spidev:lock("lock") -- blocks until it can place a write lock on the spidev device
 
 
-local function dispatch(msg)
+local function dispatch(msg, req)
 	msg:rx(spidev)
 	local decode = msg:decode()
 	if DEBUG then dbg.vardump(msg) end
 
 	if decode.ctrl then
-		ctrl.fdout:write(decode.ctrl .. "\n")
+		ub:reply(req, { success = true, result = decode.ctrl })
 	end
 
 	if decode.delta then
@@ -96,7 +92,6 @@ local function dispatch(msg)
 	end
 
 	if decode.uart then
-		-- uart.fdout:write(decode.uart)
 		ub:send("flukso.kube.packet.rx", { hex = decode.uart })
 	end
 end
@@ -121,29 +116,28 @@ utimer_delta = uloop.timer(
 		dispatch(msg)	
 	end, DELTA_TIMEOUT_MS)
 
-local ufd_ctrl = uloop.fd(ctrl.fdin:fileno(), uloop.READ,
-	function(events)
-		local msg = spi.new_msg("ctrl", ctrl.line())
-		msg:parse()
-		msg:encode()
-		msg:tx(spidev)
-		msg:wait(SPI_TX_RX_DELAY_NS, SPI_CT_DELAY_NS)
-		dispatch(msg)
-	end)
---[[
-local ufd_uart = uloop.fd(uart.fdin:fileno(), uloop.READ,
-	function(events)
-		local msg = spi.new_msg("uart", uart.fdin:read(UART_MAX_BYTES))
-		msg:encode() --TODO do we still need an encoding step?
-		msg:tx(spidev)
-		msg:wait(SPI_TX_RX_DELAY_NS, SPI_CT_DELAY_NS)
-		dispatch(msg)	
-	end)
-]]--
+local ub_methods = {
+	["flukso.flx"] = {
+		ctrl = {
+			function(req, rpc)
+				if type(rpc.cmd) ~= "string" then return end
+				local msg = spi.new_msg("ctrl", rpc.cmd)
+				msg:parse()
+				msg:encode()
+				msg:tx(spidev)
+				msg:wait(SPI_TX_RX_DELAY_NS, SPI_CT_DELAY_NS)
+				dispatch(msg, req)
+			end, { cmd = ubus.STRING }
+		}
+	}
+}
+
+ub:add(ub_methods)
+
 local ub_events = {
-	["flukso.kube.packet.tx"] = function(msg)
-		if type(msg.hex) ~= "string" then return end
-		local msg = spi.new_msg("uart", msg.hex)
+	["flukso.kube.packet.tx"] = function(pkt)
+		if type(pkt.hex) ~= "string" then return end
+		local msg = spi.new_msg("uart", pkt.hex)
 		msg:encode() --TODO do we still need an encoding step?
 		msg:tx(spidev)
 		msg:wait(SPI_TX_RX_DELAY_NS, SPI_CT_DELAY_NS)
