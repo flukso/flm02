@@ -51,7 +51,7 @@ local KUBE, SENSOR, REGISTRY
 local FIRMWARE = {}
 local FIRMWARE_BLOCK_SIZE = 64
 local O_RDONLY = nixio.open_flags("rdonly")
-local ULOOP_TIMEOUT = 1000 --ms
+local ULOOP_TIMEOUT_MS = 1000
 
 local FMT_CMD_SET_GROUP = "sg %s"
 local FMT_HEADER = "< grp:u1 [1| ctl:b1 dst:b1 ack:b1 nid:u5] len:u1"
@@ -574,8 +574,8 @@ ub:listen(ub_events)
 
 local ut
 ut = uloop.timer(function()
-		ut:set(ULOOP_TIMEOUT)
+		ut:set(ULOOP_TIMEOUT_MS)
 		event:process()
-	end, ULOOP_TIMEOUT)
+	end, ULOOP_TIMEOUT_MS)
 
 uloop:run()
