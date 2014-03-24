@@ -26,6 +26,7 @@ local nixio = require "nixio"
 nixio.util = require "nixio.util"
 local luci = require "luci"
 luci.json = require "luci.json"
+luci.util = require "luci.util"
 local uci = require "luci.model.uci".cursor()
 local uloop = require "uloop"
 uloop.init()
@@ -36,6 +37,7 @@ vstruct.cache = true
 local rfsm = require "rfsm"
 rfsm.pp = require "rfsm.pp"
 rfsm.timeevent = require "rfsm.timeevent"
+local mosq = require "mosquitto"
 
 local function rfsm_gettime()
 	local secs, usecs = nixio.gettimeofday()
@@ -47,13 +49,31 @@ rfsm.timeevent.set_gettime_hook(rfsm_gettime)
 local hex, unhex = nixio.bin.hexlify, nixio.bin.unhexlify
 local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
 
+local DAEMON = os.getenv("DAEMON") or "kubed"
+local DEVICE = uci:get_first("system", "system", "device")
 local KUBE, SENSOR, REGISTRY
 local FIRMWARE = {}
 local FIRMWARE_BLOCK_SIZE = 64
 local O_RDONLY = nixio.open_flags("rdonly")
 local ULOOP_TIMEOUT_MS = 1000
 
+-- mosquitto client params
+local MOSQ_ID = DAEMON
+local MOSQ_CLN_SESSION = true
+local MOSQ_HOST = "localhost"
+local MOSQ_PORT = 1883
+local MOSQ_KEEPALIVE = 300
+local MOSQ_TIMEOUT = 0 -- return instantly from select call
+local MOSQ_MAX_PKTS = 10 -- packets
+local MOSQ_QOS = 0
+local MOSQ_RETAIN = true
+
+local MOSQ_KUBE_TOPIC = string.format("/device/%s/config/kube", DEVICE)
+local MOSQ_SENSOR_TOPIC = string.format("/device/%s/config/sensor", DEVICE)
+
 local FMT_CMD_SET_GROUP = "sg %s"
+
+-- bootloader packet formats
 local FMT_HEADER = "< grp:u1 [1| ctl:b1 dst:b1 ack:b1 nid:u5] len:u1"
 local FMT_PAIR_REQUEST = "< hw_type:u2 grp:u1 nid:u1 check:u2 hw_id:s16"
 local FMT_PAIR_REPLY = "< hw_type:u2 grp:u1 nid:u1 key:s16"
@@ -68,7 +88,33 @@ local DEBUG = {
 	encode = false
 }
 
+-- connect to the MQTT broker
+mosq.init()
+local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
+mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE)
+
 local function load_config()
+	local function config_clean(itbl)
+		local otbl = luci.util.clone(itbl, true)
+		for section, section_tbl in pairs(otbl) do
+			section_tbl[".index"] = nil
+			section_tbl[".name"] = nil
+			section_tbl[".type"] = nil
+			section_tbl[".anonymous"] = nil
+
+			for option, value in pairs(section_tbl) do
+				section_tbl[option] = tonumber(value) or value
+				if type(value) == "table" then -- we're dealing with a list
+					for i in pairs(value) do
+						value[i] = tonumber(value[i]) or value[i]
+					end 
+				end
+			end
+		end
+
+		return otbl
+	end
+
 	KUBE = uci:get_all("kube")
 	SENSOR = uci:get_all("flukso")
 	REGISTRY = {}
@@ -89,6 +135,11 @@ local function load_config()
 	end
 
 	--TODO raise error when KUBE, SENSOR or REGISTRY are nil
+
+	local kube = luci.json.encode(config_clean(KUBE))
+	local sensor = luci.json.encode(config_clean(SENSOR))
+	mqtt:publish(MOSQ_KUBE_TOPIC, kube, MOSQ_QOS, MOSQ_RETAIN)
+	mqtt:publish(MOSQ_SENSOR_TOPIC, sensor, MOSQ_QOS, MOSQ_RETAIN)
 
 	if DEBUG.config then
 		dbg.vardump(KUBE)
@@ -575,7 +626,12 @@ ub:listen(ub_events)
 local ut
 ut = uloop.timer(function()
 		ut:set(ULOOP_TIMEOUT_MS)
+		-- service the rFSM timers
 		event:process()
+		-- service the mosquitto loop
+		if not mqtt:loop(MOSQ_TIMEOUT, MOSQ_MAX_PKTS) then
+			mqtt:reconnect()
+		end
 	end, ULOOP_TIMEOUT_MS)
 
 uloop:run()
