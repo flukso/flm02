@@ -197,6 +197,20 @@ local function encode(format, data)
 	return vstruct.pack(format, data)
 end
 
+local function scale(script, pkt)
+	-- when encoding offset first, then scale
+	-- when decoding we do the reverse operation
+	for sensor_t, value in pairs(pkt.pld) do
+		local offset = script.sensors[sensor_t].offset
+		local scale = script.sensors[sensor_t].scale
+		if scale then value = value * scale end
+		if offset then value = value + offset end
+		pkt.pld[sensor_t] = value
+	end
+
+	if DEBUG.decode then dbg.vardump(pkt.pld) end
+end
+
 local function publish(script, pkt)
 	local timestamp = os.time()
 	if timestamp < TIMESTAMP_MIN then return end
@@ -440,7 +454,7 @@ local root = state {
 				end
 
 				decode(DECODE_CACHE[kid][sw_version], e_arg)
-				--scale(DECODE_CACHE[kid][sw_version], e_arg.pld)
+				scale(DECODE_CACHE[kid][sw_version], e_arg)
 				publish(DECODE_CACHE[kid][sw_version], e_arg)
 			end
 		},
