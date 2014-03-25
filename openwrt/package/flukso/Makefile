@@ -64,7 +64,7 @@ define Package/flukso/install
 	for link in fluksod spid parsed kubed supd; do \
 		$(LN) /usr/sbin/luad $(1)/usr/sbin/"$$$$link"; \
 	done
-	$(INSTALL_BIN) ./luasrc/{fluksod,spid,parsed,supd}.lua $(1)/usr/sbin/
+	$(INSTALL_BIN) ./luasrc/{fluksod,spid,parsed,kubed,supd}.lua $(1)/usr/sbin/
 
 	$(INSTALL_DIR) $(1)/usr/bin
 	for file in heartbeat fsync fdude fbackup ftest \
