@@ -43,6 +43,13 @@ load_config()
 		uci set flukso.main.max_provisioned_sensors=$i
 	done
 
+	if [ $(uci get kube.main.collect_group) == 0 ]
+	then
+		# GRP will be in the range [1..128]
+		uci set kube.main.collect_group=$(($(hexdump -v -e '1/1 "%d"' -s $((0x11020)) -n 1 /dev/mtd6) + 1))
+	fi
+
+	uci set kube.main.key=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11010)) -n 16 /dev/mtd6)
 	uci commit
 
 	logger 'configuring flukso device and sensor ids at firstboot'
@@ -161,6 +168,9 @@ start()
 
 	# Configure cron
 	echo -e "$MINUTE * * * * $HEARTBEAT 0\n*/15 * * * * $FCHECK" | crontab -
+
+	# Making sure all committed uci changes are written to flash
+	sync
 }
 
 stop()
