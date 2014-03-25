@@ -1,0 +1,15 @@
+config settings main
+	option pair_group 212
+	option collect_group 0
+	option max_nodes 30
+	option key 0123456789abcdef0123456789abcdef
+	option null_key 0123456789abcdef0123456789abcdef
+	option encryption 0
+	list registry_url http://www.flukso.net/files/kube/registry/flukso
+	option cache /usr/share/kube
+
+### node config options
+# config node 1..30
+#	option hw_id <uid>
+#	option hw_type <uint16>
+#	option sw_version <uint16>

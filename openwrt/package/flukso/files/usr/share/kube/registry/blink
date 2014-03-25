@@ -1,0 +1,61 @@
+{
+"512": {
+	"description": "Jeenode",
+	"controller": "Atmega328p",
+	"radio": "RFM12B",
+	"1" : {
+		"url": "http://url.home",
+		"size": 48,
+		"crc16": 3427,
+		"decode": {
+			"type_bits": 8,
+			"1": "temperature:u4 pressure:u4",
+			"sensors": {
+				"temperature": {
+					"offset": 10,
+					"scale": 2,
+					"unit": "K",
+					"data_type": "gauge"
+				},
+				"pressure": {
+					"offset": 0,
+					"scale": 1,
+					"unit": "Pa",
+					"data_type": "gauge"
+				}
+			}
+		},
+		"encode": {
+		}
+	}
+},
+
+"19217" : {
+	"description": "FluksoKube FLK01A",
+	"controller": "LPC812",
+	"radio": "RFM69CW",
+	"1" : {
+		"url": "http://url.home",
+		"size": 28,
+		"crc16": 15841,
+		"decode": {
+			"type_bits": 0,
+			"8": "temperature:u4 pressure:u4",
+			"sensors": {
+				"temperature": {
+					"offset": 10,
+					"scale": 2,
+					"unit": "K",
+					"data_type": "gauge"
+				},
+				"pressure": {
+					"offset": 0,
+					"scale": 1,
+					"unit": "Pa",
+					"data_type": "gauge"
+				}
+			}
+		}
+	}
+}
+}
