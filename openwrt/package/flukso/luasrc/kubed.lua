@@ -66,7 +66,8 @@ local MOSQ_PORT = 1883
 local MOSQ_KEEPALIVE = 300
 local MOSQ_TIMEOUT = 0 -- return instantly from select call
 local MOSQ_MAX_PKTS = 10 -- packets
-local MOSQ_QOS = 0
+local MOSQ_QOS0 = 0
+local MOSQ_QOS1 = 1
 local MOSQ_RETAIN = true
 
 local MOSQ_TOPIC_KUBE_CONFIG = string.format("/device/%s/config/kube", DEVICE)
@@ -140,9 +141,9 @@ local function load_config()
 	--TODO raise error when KUBE, SENSOR or REGISTRY are nil
 
 	local kube = luci.json.encode(config_clean(KUBE))
-	mqtt:publish(MOSQ_TOPIC_KUBE_CONFIG, kube, MOSQ_QOS, MOSQ_RETAIN)
+	mqtt:publish(MOSQ_TOPIC_KUBE_CONFIG, kube, MOSQ_QOS0, MOSQ_RETAIN)
 	local sensor = luci.json.encode(config_clean(SENSOR))
-	mqtt:publish(MOSQ_TOPIC_SENSOR_CONFIG, sensor, MOSQ_QOS, MOSQ_RETAIN)
+	mqtt:publish(MOSQ_TOPIC_SENSOR_CONFIG, sensor, MOSQ_QOS0, MOSQ_RETAIN)
 
 	if DEBUG.config then
 		dbg.vardump(KUBE)
@@ -214,7 +215,8 @@ end
 local function publish(script, pkt)
 	local timestamp = os.time()
 	if timestamp < TIMESTAMP_MIN then return end
-	--TODO map ACK to QoS1
+	local mosq_qos = (pkt.hdr.ack and MOSQ_QOS1) or MOSQ_QOS0
+
 	for sensor_t, value in pairs(pkt.pld) do
 		local sid = script.sensors[sensor_t].sid
 		--data_type is gauge or counter
@@ -222,7 +224,7 @@ local function publish(script, pkt)
 		local topic = string.format(MOSQ_TOPIC_SENSOR, sid, data_t)
 		local unit = script.sensors[sensor_t].unit
 		local payload = luci.json.encode({ timestamp, value, unit })
-		mqtt:publish(topic, payload, MOSQ_QOS, MOSQ_RETAIN)
+		mqtt:publish(topic, payload, mosq_qos, MOSQ_RETAIN)
 	end
 end
 
