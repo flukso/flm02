@@ -121,12 +121,14 @@ start()
 	then
 		set_ttyS0_B
 		/usr/sbin/parsed -u flukso
+		/usr/sbin/kubed -u flukso
 	fi
 
 	if [ $MODEL == FLM02C ]
 	then
 		set_ttyS0_C
 		/usr/sbin/parsed -u flukso
+		/usr/sbin/kubed -u flukso
 	fi
 
 
@@ -169,6 +171,9 @@ stop()
 
 	if [ $MODEL == FLM02B -o $MODEL == FLM02C ]
 	then
+		/usr/sbin/kubed -k
+		rm -rf /var/run/kubed
+
 		/usr/sbin/parsed -k
 		rm -rf /var/run/parsed
 	fi
