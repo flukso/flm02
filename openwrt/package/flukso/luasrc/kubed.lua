@@ -52,11 +52,12 @@ local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
 local DAEMON = os.getenv("DAEMON") or "kubed"
 local DEVICE = uci:get_first("system", "system", "device")
 local KUBE, SENSOR, REGISTRY
-local FIRMWARE = {}
+local FIRMWARE, DECODE_CACHE = {}, {}
 local FIRMWARE_BLOCK_SIZE = 64
 local O_RDONLY = nixio.open_flags("rdonly")
 local ULOOP_TIMEOUT_MS = 1000
-
+local TIMESTAMP_MIN = 1234567890
+	
 -- mosquitto client params
 local MOSQ_ID = DAEMON
 local MOSQ_CLN_SESSION = true
@@ -68,13 +69,15 @@ local MOSQ_MAX_PKTS = 10 -- packets
 local MOSQ_QOS = 0
 local MOSQ_RETAIN = true
 
-local MOSQ_KUBE_TOPIC = string.format("/device/%s/config/kube", DEVICE)
-local MOSQ_SENSOR_TOPIC = string.format("/device/%s/config/sensor", DEVICE)
+local MOSQ_TOPIC_KUBE_CONFIG = string.format("/device/%s/config/kube", DEVICE)
+local MOSQ_TOPIC_SENSOR_CONFIG = string.format("/device/%s/config/sensor", DEVICE)
+local MOSQ_TOPIC_SENSOR = "/sensor/%s/%s"
 
 local FMT_CMD_SET_GROUP = "sg %s"
 
 -- bootloader packet formats
 local FMT_HEADER = "< grp:u1 [1| ctl:b1 dst:b1 ack:b1 nid:u5] len:u1"
+local FMT_PREFIX = "@3 "
 local FMT_PAIR_REQUEST = "< hw_type:u2 grp:u1 nid:u1 check:u2 hw_id:s16"
 local FMT_PAIR_REPLY = "< hw_type:u2 grp:u1 nid:u1 key:s16"
 local FMT_UPGRADE_REQUEST = "< hw_type:u2 sw_version:u2 sw_size:u2 sw_crc:u2"
@@ -137,15 +140,30 @@ local function load_config()
 	--TODO raise error when KUBE, SENSOR or REGISTRY are nil
 
 	local kube = luci.json.encode(config_clean(KUBE))
+	mqtt:publish(MOSQ_TOPIC_KUBE_CONFIG, kube, MOSQ_QOS, MOSQ_RETAIN)
 	local sensor = luci.json.encode(config_clean(SENSOR))
-	mqtt:publish(MOSQ_KUBE_TOPIC, kube, MOSQ_QOS, MOSQ_RETAIN)
-	mqtt:publish(MOSQ_SENSOR_TOPIC, sensor, MOSQ_QOS, MOSQ_RETAIN)
+	mqtt:publish(MOSQ_TOPIC_SENSOR_CONFIG, sensor, MOSQ_QOS, MOSQ_RETAIN)
 
 	if DEBUG.config then
 		dbg.vardump(KUBE)
 		dbg.vardump(SENSOR)
 		dbg.vardump(REGISTRY)
 	end
+end
+
+local function add_kube_to_decode_cache(kid, hw_type, sw_version)
+	if not DECODE_CACHE[kid] then DECODE_CACHE[kid] = { }  end
+	DECODE_CACHE[kid][sw_version] = luci.util.clone(
+		REGISTRY[tostring(hw_type)][tostring(sw_version)].decode, true)
+
+	for sidx, params in pairs(SENSOR) do
+		if tonumber(sidx) and tonumber(params.kid) == kid then
+			DECODE_CACHE[kid][sw_version]["sensors"][params["type"]].sid = params.id
+		end
+	end
+
+	if DEBUG.decode then dbg.vardump(DECODE_CACHE) end
+    return true
 end
 
 local function set_group(grp)
@@ -155,10 +173,20 @@ end
 
 local function decode(script, pkt)
 	if type(script) == "string" then
-		vstruct.unpack(script, pkt.bin, pkt.pld)
+		vstruct.unpack(FMT_PREFIX .. script, pkt.bin, pkt.pld)
 	elseif type(script) == "table" then
 		if script.type_bits == 0 then
+			local len_s = tostring(pkt.hdr.len)
+			if not script[len_s] then return end --TODO raise error
+			vstruct.unpack(FMT_PREFIX .. script[len_s], pkt.bin, pkt.pld)
+		elseif script.type_bits % 8 ~= 0 then return --TODO raise error
 		else
+            local type_bytes = script.type_bits / 8
+			local fmt_type = string.format("< u%s", type_bytes)
+			local pkt_type_s = table.concat(vstruct.unpack(FMT_PREFIX .. fmt_type, pkt.bin))
+			if not script[pkt_type_s] then return end --TODO raise error
+			local fmt_prefix = string.format("@%s ", 3 + type_bytes)
+			vstruct.unpack(fmt_prefix .. script[pkt_type_s], pkt.bin, pkt.pld)
 		end
 	end
 
@@ -167,6 +195,21 @@ end
 
 local function encode(format, data)
 	return vstruct.pack(format, data)
+end
+
+local function publish(script, pkt)
+	local timestamp = os.time()
+	if timestamp < TIMESTAMP_MIN then return end
+	--TODO map ACK to QoS1
+	for sensor_t, value in pairs(pkt.pld) do
+		local sid = script.sensors[sensor_t].sid
+		--data_type is gauge or counter
+		local data_t = script.sensors[sensor_t].data_type
+		local topic = string.format(MOSQ_TOPIC_SENSOR, sid, data_t)
+		local unit = script.sensors[sensor_t].unit
+		local payload = luci.json.encode({ timestamp, value, unit })
+		mqtt:publish(topic, payload, MOSQ_QOS, MOSQ_RETAIN)
+	end
 end
 
 local function send(hdr, format, pld)
@@ -383,9 +426,27 @@ local root = state {
 		-- rFSM does not support internal transitions
 		-- resorting to a nested state without entry/exit actions as a workaround
 		receiving = state { },
+		decode = state {
+			entry = function()
+				local kid = e_arg.hdr.nid
+				local kid_s = tostring(kid)
+				if not KUBE[kid_s] then return end -- TODO raise error
+				local hw_type = tonumber(KUBE[kid_s].hw_type)
+				local sw_version = tonumber(KUBE[kid_s].sw_version)
+				if not (DECODE_CACHE[kid] and DECODE_CACHE[kid][sw_version]) then
+					if not add_kube_to_decode_cache(kid, hw_type, sw_version) then
+						return --TODO raise error
+					end
+				end
+
+				decode(DECODE_CACHE[kid][sw_version], e_arg)
+				--scale(DECODE_CACHE[kid][sw_version], e_arg.pld)
+				publish(DECODE_CACHE[kid][sw_version], e_arg)
+			end
+		},
 		upgrade = state {
 			entry = function()
-				decode("@3 " .. FMT_UPGRADE_REQUEST, e_arg)
+				decode(FMT_UPGRADE_REQUEST, e_arg)
 				local kid_s = tostring(e_arg.hdr.nid)
 				local hw_type_s = tostring(e_arg.pld.hw_type)
 				if not is_kid_allocated(kid_s, hw_type_s) then return end --TODO raise error
@@ -399,7 +460,7 @@ local root = state {
 		},
 		download = state {
 			entry = function()
-				decode("@3 " .. FMT_DOWNLOAD_REQUEST, e_arg)
+				decode(FMT_DOWNLOAD_REQUEST, e_arg)
 				local kid_s = tostring(e_arg.hdr.nid)
 				if not is_kid_allocated(kid_s) then return end --TODO raise error
 				local hw_type = tonumber(KUBE[kid_s].hw_type)
@@ -417,8 +478,8 @@ local root = state {
 			end
 		},
 		trans { src = "initial", tgt = "receiving" },
-		trans { src = "receiving", tgt = "receiving", events = { "e_packet" },
-				effect = decode(collect_script, e_arg) }, --TODO map to JSON packet description
+		trans { src = "receiving", tgt = "decode", events = { "e_packet" } },
+		trans { src = "decode", tgt = "receiving", events = { "e_done" } },
 		trans { src = "receiving", tgt = "upgrade", events = { "e_upgrade_request" } },
 		trans { src = "upgrade", tgt = "receiving", events = { "e_done" } },
 		trans { src = "receiving", tgt = "download", events = { "e_download_request" } },
@@ -433,7 +494,7 @@ local root = state {
 		receiving = state { },
 		pair_request = state {
 			entry = function()
-				decode("@3 " .. FMT_PAIR_REQUEST, e_arg)
+				decode(FMT_PAIR_REQUEST, e_arg)
 			end
 		},
 		pair_reply = state {
