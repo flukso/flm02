@@ -18,8 +18,10 @@ include $(INCLUDE_DIR)/package.mk
 define Package/flukso
 	SECTION:=flukso
 	CATEGORY:=Flukso
-	DEPENDS:=+libdaemon +liblua +luci-lib-nixio +rrdtool1
-	TITLE:=Fluksometer daemon
+	DEPENDS:=+libdaemon +liblua +luci-lib-nixio +luci-lib-core \
+		+luci-lib-httpclient +luci-lib-json +luci-lib-sys +rrdtool1 \
+		+libubox-lua +libubus-lua +rFSM +vstruct
+	TITLE:=Fluksometer daemon collection
 	URL:=http://www.flukso.net
 	MAINTAINER:=Bart Van Der Meerssche <bart@flukso.net>
 endef
@@ -48,7 +50,9 @@ define Package/flukso/install
 	$(SED) 's,$$$$G,$(FLUKSO_COMMIT),g' $(1)/etc/banner
 
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_DATA) ./config/flukso.uci $(1)/etc/config/flukso
+	for file in flukso kube; do \
+		$(INSTALL_DATA) ./config/"$$$$file".uci $(1)/etc/config/"$$$$file"; \
+	done
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./config/flukso.init $(1)/etc/init.d/flukso
 
@@ -57,16 +61,16 @@ define Package/flukso/install
 
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/luad $(1)/usr/sbin/
-	for link in fluksod spid parsed supd; do \
+	for link in fluksod spid parsed kubed supd; do \
 		$(LN) /usr/sbin/luad $(1)/usr/sbin/"$$$$link"; \
 	done
 	$(INSTALL_BIN) ./luasrc/{fluksod,spid,parsed,supd}.lua $(1)/usr/sbin/
 
 	$(INSTALL_DIR) $(1)/usr/bin
-	for file in heartbeat fsync fdude fbackup ftest fp1 ftic restful; do \
+	for file in heartbeat fsync fdude fbackup ftest \
+				fp1 ftic restful kube_bin_add; do \
 		$(INSTALL_BIN) ./luasrc/"$$$$file".lua $(1)/usr/bin/"$$$$file"; \
 	done
-
 	for file in fcheck fntp; do \
 		$(INSTALL_BIN) ./config/"$$$$file".sh $(1)/usr/bin/"$$$$file"; \
 	done
