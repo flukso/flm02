@@ -52,6 +52,7 @@ define Package/flukso/install
 	$(INSTALL_DIR) $(1)/etc/config
 	for file in flukso kube; do \
 		$(INSTALL_DATA) ./config/"$$$$file".uci $(1)/etc/config/"$$$$file"; \
+		chmod a+w $(1)/etc/config/"$$$$file"; \
 	done
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./config/flukso.init $(1)/etc/init.d/flukso
