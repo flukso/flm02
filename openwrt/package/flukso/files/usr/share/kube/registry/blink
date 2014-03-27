@@ -12,14 +12,11 @@
 			"1": "temperature:u4 pressure:u4",
 			"sensors": {
 				"temperature": {
-					"offset": 10,
-					"scale": 2,
+					"scale": "2*x + 10",
 					"unit": "K",
 					"data_type": "gauge"
 				},
 				"pressure": {
-					"offset": 0,
-					"scale": 1,
 					"unit": "Pa",
 					"data_type": "gauge"
 				}
@@ -43,14 +40,11 @@
 			"8": "temperature:u4 pressure:u4",
 			"sensors": {
 				"temperature": {
-					"offset": 10,
-					"scale": 2,
+					"scale": "2*x + 10",
 					"unit": "K",
 					"data_type": "gauge"
 				},
 				"pressure": {
-					"offset": 0,
-					"scale": 1,
 					"unit": "Pa",
 					"data_type": "gauge"
 				}

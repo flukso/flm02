@@ -119,6 +119,19 @@ local function load_config()
 		return otbl
 	end
 
+	local function load_scaling_functions(hw_entry)
+		for k, v in pairs(hw_entry) do
+			if tonumber(k) then -- we're dealing with a software entry
+				for sensor, params in pairs(v.decode.sensors) do
+					if params.scale then
+						local chunk = "local x = ...; return " .. params.scale
+						params.scale = assert(loadstring(chunk))
+					end
+				end
+			end
+		end
+	end
+
 	KUBE = uci:get_all("kube")
 	SENSOR = uci:get_all("flukso")
 	REGISTRY = {}
@@ -132,6 +145,7 @@ local function load_config()
 		if registry then
 			for k, v in pairs(registry) do
 				REGISTRY[k] = v
+				load_scaling_functions(v)
 			end
 		else
 			--TODO raise error when file is not json decodable
@@ -199,13 +213,9 @@ local function encode(format, data)
 end
 
 local function scale(script, pkt)
-	-- when encoding offset first, then scale
-	-- when decoding we do the reverse operation
 	for sensor_t, value in pairs(pkt.pld) do
-		local offset = script.sensors[sensor_t].offset
-		local scale = script.sensors[sensor_t].scale
-		if scale then value = value * scale end
-		if offset then value = value + offset end
+		local scl = script.sensors[sensor_t].scale
+		if type(scl) == "function" then value = scl(value) end
 		pkt.pld[sensor_t] = value
 	end
 
@@ -214,7 +224,7 @@ end
 
 local function publish(script, pkt)
 	local timestamp = os.time()
-	if timestamp < TIMESTAMP_MIN then return end
+	if timestamp < TIMESTAMP_MIN then return end --TODO raise error
 	local mosq_qos = (pkt.hdr.ack and MOSQ_QOS1) or MOSQ_QOS0
 
 	for sensor_t, value in pairs(pkt.pld) do
