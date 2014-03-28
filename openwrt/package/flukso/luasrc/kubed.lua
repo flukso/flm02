@@ -51,9 +51,9 @@ local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
 
 local DAEMON = os.getenv("DAEMON") or "kubed"
 local DEVICE = uci:get_first("system", "system", "device")
-local KUBE, SENSOR, REGISTRY
-local FIRMWARE, DECODE = {}, {}
+local KUBE, SENSOR, REGISTRY, FIRMWARE, DECODE
 local FIRMWARE_BLOCK_SIZE = 64
+local FF = string.char(255)
 local O_RDONLY = nixio.open_flags("rdonly")
 local ULOOP_TIMEOUT_MS = 1000
 local TIMESTAMP_MIN = 1234567890
@@ -134,7 +134,7 @@ local function load_config()
 
 	KUBE = uci:get_all("kube")
 	SENSOR = uci:get_all("flukso")
-	REGISTRY = {}
+	REGISTRY, FIRMWARE, DECODE = { }, { }, { }
 
 	for file in nixio.fs.dir(KUBE.main.cache .. "/registry") do
 		local path = string.format("%s/registry/%s", KUBE.main.cache, file)
@@ -412,29 +412,46 @@ local function update_kube_sw_version(kid_s, sw_version_s)
 	end
 end
 
-local function kube_target_sw(hw_type_s)
-	local sw_version_s = latest_kube_firmware(hw_type_s)
-	local sw_size = REGISTRY[hw_type_s][sw_version_s].size
-	local sw_crc = REGISTRY[hw_type_s][sw_version_s].crc16
-	return tonumber(sw_version_s), sw_size, sw_crc
+local function load_kube_sw(hw_type, sw_version)
+	if not FIRMWARE[hw_type] then FIRMWARE[hw_type] = { } end
+	if FIRMWARE[hw_type][sw_version] then return true end
+
+	local path = string.format("%s/firmware/%d.%d", KUBE.main.cache, hw_type, sw_version)
+	local fd = nixio.open(path, O_RDONLY)
+	if not fd then return false end --TODO raise error
+	local firmware = fd:readall()
+	fd:close()
+
+	local padding = FIRMWARE_BLOCK_SIZE - firmware:len() % FIRMWARE_BLOCK_SIZE
+	if (padding < FIRMWARE_BLOCK_SIZE) then
+		firmware = firmware .. string.rep(FF, padding)
+	end
+
+	FIRMWARE[hw_type][sw_version] = {
+		size = firmware:len() / 16,
+		crc16 = nixio.bin.crc16(firmware),
+		bin = nixio.bin.white(firmware)
+	}
+
+	return true
+end
+
+local function kube_target_sw(hw_type)
+	local sw_version = tonumber(latest_kube_firmware(tostring(hw_type)))
+	if not load_kube_sw(hw_type, sw_version) then return nil end
+	local sw_size = FIRMWARE[hw_type][sw_version].size
+	local sw_crc = FIRMWARE[hw_type][sw_version].crc16
+	return sw_version, sw_size, sw_crc
 end
 
 local function get_firmware_block(hw_type, sw_version, sw_index)
-	if not FIRMWARE[hw_type] then FIRMWARE[hw_type] = { } end
-	if not FIRMWARE[hw_type][sw_version] then
-		local path = string.format("%s/firmware/%d.%d", KUBE.main.cache, hw_type, sw_version)
-		local fd = nixio.open(path, O_RDONLY)
-		if not fd then return nil end --TODO raise error
-		FIRMWARE[hw_type][sw_version] = fd:readall()
-		fd:close()
-	end
-
-	local size = FIRMWARE[hw_type][sw_version]:len()
+	if not load_kube_sw(hw_type, sw_version) then return nil end
+	local len = FIRMWARE[hw_type][sw_version]["bin"]:len()
 	local start = sw_index * FIRMWARE_BLOCK_SIZE + 1
-	if start > size then return nil end
+	if start > len then return nil end
 	local finish = (sw_index + 1) * FIRMWARE_BLOCK_SIZE
-	if finish > size then finish = size end
-	return FIRMWARE[hw_type][sw_version]:sub(start, finish)
+	if finish > len then finish = len end
+	return FIRMWARE[hw_type][sw_version]["bin"]:sub(start, finish)
 end
 
 -- rFSM event parameters
@@ -480,8 +497,8 @@ local root = state {
 				update_kube_sw_version(kid_s, sw_version_s)
 
 				local pld = { hw_type = e_arg.pld.hw_type }
-				pld.sw_version, pld.sw_size, pld.sw_crc = kube_target_sw(hw_type_s)
-				reply(e_arg.hdr, FMT_UPGRADE_REPLY, pld)
+				pld.sw_version, pld.sw_size, pld.sw_crc = kube_target_sw(e_arg.pld.hw_type)
+				if pld.sw_version then reply(e_arg.hdr, FMT_UPGRADE_REPLY, pld) end
 			end
 		},
 		download = state {
