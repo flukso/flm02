@@ -32,7 +32,9 @@ if (padding < MOD) then
 end
 
 local crc16 = nixio.bin.crc16(firmware)
-print(string.format("Firmware %d.%d has crc16 of %d.", hw_type, sw_version, crc16))
+local size = firmware:len() / 16
+local tpl = "Firmware %d.%d has size = %d and crc16 = %d."
+print(string.format(tpl, hw_type, sw_version, size, crc16))
 local fd = nixio.open(path, O_RDWR_CREAT)
 local firmware_white = nixio.bin.white(firmware)
 fd:write(firmware_white)
