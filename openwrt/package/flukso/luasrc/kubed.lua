@@ -52,7 +52,7 @@ local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
 local DAEMON = os.getenv("DAEMON") or "kubed"
 local DEVICE = uci:get_first("system", "system", "device")
 local KUBE, SENSOR, REGISTRY
-local FIRMWARE, DECODE_CACHE = {}, {}
+local FIRMWARE, DECODE = {}, {}
 local FIRMWARE_BLOCK_SIZE = 64
 local O_RDONLY = nixio.open_flags("rdonly")
 local ULOOP_TIMEOUT_MS = 1000
@@ -167,17 +167,17 @@ local function load_config()
 end
 
 local function add_kube_to_decode_cache(kid, hw_type, sw_version)
-	if not DECODE_CACHE[kid] then DECODE_CACHE[kid] = { }  end
-	DECODE_CACHE[kid][sw_version] = luci.util.clone(
+	if not DECODE[kid] then DECODE[kid] = { }  end
+	DECODE[kid][sw_version] = luci.util.clone(
 		REGISTRY[tostring(hw_type)][tostring(sw_version)].decode, true)
 
 	for sidx, params in pairs(SENSOR) do
 		if tonumber(sidx) and tonumber(params.kid) == kid then
-			DECODE_CACHE[kid][sw_version]["sensors"][params["type"]].sid = params.id
+			DECODE[kid][sw_version]["sensors"][params["type"]].sid = params.id
 		end
 	end
 
-	if DEBUG.decode then dbg.vardump(DECODE_CACHE) end
+	if DEBUG.decode then dbg.vardump(DECODE) end
     return true
 end
 
@@ -459,15 +459,15 @@ local root = state {
 				if not KUBE[kid_s] then return end -- TODO raise error
 				local hw_type = tonumber(KUBE[kid_s].hw_type)
 				local sw_version = tonumber(KUBE[kid_s].sw_version)
-				if not (DECODE_CACHE[kid] and DECODE_CACHE[kid][sw_version]) then
+				if not (DECODE[kid] and DECODE[kid][sw_version]) then
 					if not add_kube_to_decode_cache(kid, hw_type, sw_version) then
 						return --TODO raise error
 					end
 				end
 
-				decode(DECODE_CACHE[kid][sw_version], e_arg)
-				scale(DECODE_CACHE[kid][sw_version], e_arg)
-				publish(DECODE_CACHE[kid][sw_version], e_arg)
+				decode(DECODE[kid][sw_version], e_arg)
+				scale(DECODE[kid][sw_version], e_arg)
+				publish(DECODE[kid][sw_version], e_arg)
 			end
 		},
 		upgrade = state {
