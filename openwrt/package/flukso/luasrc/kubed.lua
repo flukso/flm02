@@ -120,12 +120,28 @@ local function load_config()
 	end
 
 	local function load_scaling_functions(hw_entry)
+		-- define a read-only proxy table, see PiL p.127
+		local function set_readonly(t)
+			local proxy = { }
+			local mt = {
+				__index = t,
+				__newindex = function(t, k, v)
+					error("Attempt to update a read-only table", 2)
+				end,
+				__metatable = false
+			}
+			setmetatable(proxy, mt)
+			return proxy
+		end
+
 		for k, v in pairs(hw_entry) do
 			if tonumber(k) then -- we're dealing with a software entry
 				for sensor, params in pairs(v.decode.sensors) do
 					if params.scale then
 						local chunk = "local x = ...; return " .. params.scale
 						params.scale = assert(loadstring(chunk))
+						local env = set_readonly({ math = math })
+						setfenv(params.scale, env)
 					end
 				end
 			end
