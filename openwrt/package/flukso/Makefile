@@ -69,7 +69,7 @@ define Package/flukso/install
 
 	$(INSTALL_DIR) $(1)/usr/bin
 	for file in heartbeat fsync fdude fbackup ftest \
-				fp1 ftic restful kube_bin_add; do \
+				fp1 ftic restful; do \
 		$(INSTALL_BIN) ./luasrc/"$$$$file".lua $(1)/usr/bin/"$$$$file"; \
 	done
 	for file in fcheck fntp; do \
