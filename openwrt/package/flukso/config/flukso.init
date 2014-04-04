@@ -73,7 +73,7 @@ set_hw_version()
 
 program_sensor_board()
 {
-	fdude 2>1 >&- <&-
+	fdude &> /tmp/fdude.out
 	logger 'flashing the sensor board at firstboot'
 }
 
