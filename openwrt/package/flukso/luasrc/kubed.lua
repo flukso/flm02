@@ -475,6 +475,14 @@ local e_arg
 
 local root = state {
 	dbg = false,
+	warn = function(...)
+		local msg = table.concat({...}, " ")
+		error(msg, 0)
+	end,
+	err = function(...)
+		local msg = table.concat({...}, " ")
+		error(msg, 0)
+	end,
 
 	collecting = state {
 		entry = function()
