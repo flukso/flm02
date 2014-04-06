@@ -1,8 +1,8 @@
 #!/bin/sh
 #
-#  fcheck - Check whether the Flukso daemon components are still running.
+#  fcheck - check Flukso daemons
 #
-#  Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+#  Copyright (C) 2014 Bart Van Der Meerssche <bart@flukso.net>
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -28,8 +28,9 @@ MODEL=$(uci get system.@system[0].model)
 if [ $MODEL == FLM02B -o $MODEL == FLM02C ]
 then
 	[ -z "$(ps | grep 'parse[d]')" ] && STATUS=3
+	[ -z "$(ps | grep 'kube[d]')" ] && STATUS=4
 fi
 
-[ -z "$(ps | grep 'sup[d]')" ] && STATUS=4
+[ -z "$(ps | grep 'sup[d]')" ] && STATUS=5
 
 [ $STATUS -ne 0 ] && /etc/init.d/flukso restart
