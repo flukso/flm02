@@ -43,18 +43,11 @@ define Package/rFSM/install
 		$(1)/usr/lib/lua/rfsm
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rfsmpp.lua \
 		$(1)/usr/lib/lua/rfsm/pp.lua
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rfsm_marsh.lua \
-		$(1)/usr/lib/lua/rfsm/marsh.lua
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rfsm_await.lua \
-		$(1)/usr/lib/lua/rfsm/await.lua
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rfsm_checkevents.lua \
-		$(1)/usr/lib/lua/rfsm/checkevents.lua
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rfsm_emem.lua \
-		$(1)/usr/lib/lua/rfsm/emem.lua
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rfsm_preview.lua \
-		$(1)/usr/lib/lua/rfsm/preview.lua
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/rfsm_timeevent.lua \
-		$(1)/usr/lib/lua/rfsm/timeevent.lua
+
+	for module in marsh await checkevents emem preview timeevent; do \
+		$(INSTALL_DATA) $(PKG_BUILD_DIR)/rfsm_"$$$$module".lua \
+			$(1)/usr/lib/lua/rfsm/"$$$$module".lua; \
+	done
 endef
 
 $(eval $(call BuildPackage,rFSM))
