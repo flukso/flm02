@@ -65,3 +65,4 @@ patch -p0 < $REPO_PATH/patches/970-add_libubox-lua_bindings.patch
 patch -p0 < $REPO_PATH/patches/971-fd_support_for_uloop_lua_bindings.patch
 patch -p0 < $REPO_PATH/patches/980-update_ubus_package.patch
 patch -p0 < $REPO_PATH/patches/981-set_ubus_sock_a+rw.patch
+patch -p0 < $REPO_PATH/patches/990-expand_uci_permissions.patch
