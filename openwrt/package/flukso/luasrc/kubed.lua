@@ -51,7 +51,7 @@ local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
 
 local DAEMON = os.getenv("DAEMON") or "kubed"
 local DEVICE = uci:get_first("system", "system", "device")
-local KUBE, SENSOR, REGISTRY, FIRMWARE, DECODE
+local KUBE, SENSOR, CACHEDIR, REGISTRY, FIRMWARE, DECODE
 local FIRMWARE_BLOCK_SIZE = 64
 local FF = string.char(255)
 local O_RDONLY = nixio.open_flags("rdonly")
@@ -98,6 +98,32 @@ local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
 mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE)
 
 local function load_config()
+	local function load_cachedir()
+		local path = { }
+		local default = KUBE.main.cache .. "/default"
+		local remote = KUBE.main.cache .. "/remote"
+		local loc = KUBE.main.cache .. "/local"
+
+		if nixio.fs.stat(default, "type") == "dir" then
+			path[#path+1] = default
+		end
+
+		if nixio.fs.stat(remote, "type") == "dir" then
+			for entry in nixio.fs.dir(remote) do
+				local abs = remote .. "/" .. entry
+				if nixio.fs.stat(abs, "type") == "dir" then
+					path[#path+1] = abs
+				end
+			end
+		end
+
+		if nixio.fs.stat(loc, "type") == "dir" then
+			path[#path+1] = loc
+		end
+
+		return path
+	end
+
 	local function config_clean(itbl)
 		local otbl = luci.util.clone(itbl, true)
 		for section, section_tbl in pairs(otbl) do
@@ -150,21 +176,26 @@ local function load_config()
 
 	KUBE = uci:get_all("kube")
 	SENSOR = uci:get_all("flukso")
+	CACHEDIR = load_cachedir()
 	REGISTRY, FIRMWARE, DECODE = { }, { }, { }
 
-	for file in nixio.fs.dir(KUBE.main.cache .. "/registry") do
-		local path = string.format("%s/registry/%s", KUBE.main.cache, file)
-		local fd = nixio.open(path, O_RDONLY)
-		local registry = luci.json.decode(fd:readall())
-		fd:close()
+	for i, cachedir in ipairs(CACHEDIR) do
+		for file in nixio.fs.dir(cachedir .. "/registry") do
+			if file ~= "README" then
+				local path = string.format("%s/registry/%s", cachedir, file)
+				local fd = nixio.open(path, O_RDONLY)
+				local registry = luci.json.decode(fd:readall())
+				fd:close()
 
-		if registry then
-			for k, v in pairs(registry) do
-				REGISTRY[k] = v
-				load_scaling_functions(v)
+				if registry then
+					for k, v in pairs(registry) do
+						REGISTRY[k] = v
+						load_scaling_functions(v)
+					end
+				else
+					--TODO raise error when file is not json decodable
+				end
 			end
-		else
-			--TODO raise error when file is not json decodable
 		end
 	end
 
@@ -178,6 +209,7 @@ local function load_config()
 	if DEBUG.config then
 		dbg.vardump(KUBE)
 		dbg.vardump(SENSOR)
+		dbg.vardump(CACHEDIR)
 		dbg.vardump(REGISTRY)
 	end
 end
@@ -429,27 +461,40 @@ local function update_kube_sw_version(kid_s, sw_version_s)
 end
 
 local function load_kube_sw(hw_type, sw_version)
+	-- reversed ipairs
+	local function ripairs(tbl)
+		local r = function(x, y) return x > y end
+		return luci.util.spairs(tbl, r)
+	end
+
 	if not FIRMWARE[hw_type] then FIRMWARE[hw_type] = { } end
 	if FIRMWARE[hw_type][sw_version] then return true end
 
-	local path = string.format("%s/firmware/%d.%d", KUBE.main.cache, hw_type, sw_version)
-	local fd = nixio.open(path, O_RDONLY)
-	if not fd then return false end --TODO raise error
-	local firmware = fd:readall()
-	fd:close()
+	for i, cachedir in ripairs(CACHEDIR) do
+		local path = string.format("%s/bin/%d.%d", cachedir, hw_type, sw_version)
+		local fd = nixio.open(path, O_RDONLY)
 
-	local padding = FIRMWARE_BLOCK_SIZE - firmware:len() % FIRMWARE_BLOCK_SIZE
-	if (padding < FIRMWARE_BLOCK_SIZE) then
-		firmware = firmware .. string.rep(FF, padding)
+		if fd then
+			local firmware = fd:readall()
+			fd:close()
+
+			local padding = FIRMWARE_BLOCK_SIZE - firmware:len() % FIRMWARE_BLOCK_SIZE
+			if (padding < FIRMWARE_BLOCK_SIZE) then
+				firmware = firmware .. string.rep(FF, padding)
+			end
+
+			FIRMWARE[hw_type][sw_version] = {
+				size = firmware:len() / 16,
+				crc16 = nixio.bin.crc16(firmware),
+				bin = nixio.bin.white(firmware)
+			}
+
+			return true	
+		end
 	end
 
-	FIRMWARE[hw_type][sw_version] = {
-		size = firmware:len() / 16,
-		crc16 = nixio.bin.crc16(firmware),
-		bin = nixio.bin.white(firmware)
-	}
-
-	return true
+	-- TODO raise error
+	return false
 end
 
 local function kube_target_sw(hw_type)
