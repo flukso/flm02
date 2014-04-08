@@ -19,7 +19,7 @@ define Package/flukso
 	SECTION:=flukso
 	CATEGORY:=Flukso
 	DEPENDS:=+libdaemon +liblua +luci-lib-nixio +luci-lib-core \
-		+luci-lib-httpclient +luci-lib-json +luci-lib-sys +rrdtool1 \
+		+luci-lib-httpclient +luci-lib-json +luci-lib-sys \
 		+libubox-lua +libubus-lua +rFSM +vstruct
 	TITLE:=Fluksometer daemon collection
 	URL:=http://www.flukso.net
@@ -58,7 +58,7 @@ define Package/flukso/install
 	$(INSTALL_BIN) ./config/flukso.init $(1)/etc/init.d/flukso
 
 	$(INSTALL_DIR) $(1)/usr/lib/lua
-	$(CP) ./luasrc/{dbg.lua,flukso,rrd} $(1)/usr/lib/lua/
+	$(CP) ./luasrc/{dbg.lua,flukso} $(1)/usr/lib/lua/
 
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/luad $(1)/usr/sbin/
