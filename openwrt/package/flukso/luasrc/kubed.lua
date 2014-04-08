@@ -39,13 +39,6 @@ rfsm.pp = require "rfsm.pp"
 rfsm.timeevent = require "rfsm.timeevent"
 local mosq = require "mosquitto"
 
-local function rfsm_gettime()
-	local secs, usecs = nixio.gettimeofday()
-	return secs, usecs * 1e3
-end
-
-rfsm.timeevent.set_gettime_hook(rfsm_gettime)
-
 local hex, unhex = nixio.bin.hexlify, nixio.bin.unhexlify
 local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
 
@@ -57,7 +50,7 @@ local FF = string.char(255)
 local O_RDONLY = nixio.open_flags("rdonly")
 local ULOOP_TIMEOUT_MS = 1000
 local TIMESTAMP_MIN = 1234567890
-	
+
 -- mosquitto client params
 local MOSQ_ID = DAEMON
 local MOSQ_CLN_SESSION = true
@@ -91,6 +84,14 @@ local DEBUG = {
 	decode = false,
 	encode = false
 }
+
+-- define gettime function for rFSM
+local function rfsm_gettime()
+	local secs, usecs = nixio.gettimeofday()
+	return secs, usecs * 1e3
+end
+
+rfsm.timeevent.set_gettime_hook(rfsm_gettime)
 
 -- connect to the MQTT broker
 mosq.init()
