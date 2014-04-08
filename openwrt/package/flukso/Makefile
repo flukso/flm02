@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 OpenWrt.org
+# Copyright (C) 2014 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -73,7 +73,7 @@ define Package/flukso/install
 		$(INSTALL_BIN) ./luasrc/"$$$$file".lua $(1)/usr/bin/"$$$$file"; \
 	done
 	for file in fcheck fntp; do \
-		$(INSTALL_BIN) ./config/"$$$$file".sh $(1)/usr/bin/"$$$$file"; \
+		$(INSTALL_BIN) ./script/"$$$$file".sh $(1)/usr/bin/"$$$$file"; \
 	done
 
 	$(INSTALL_DIR) $(1)/usr/bin/avr/{a,b}
