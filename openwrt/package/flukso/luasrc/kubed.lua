@@ -652,6 +652,7 @@ local root = state {
 	},
 
 	trans { src = "initial", tgt = "collecting" },
+	trans { src = "collecting", tgt = "collecting", events = { "e_init" } },
 	trans { src = "collecting", tgt = "pairing", events = { "e_pair" } },
 	trans { src = "pairing", tgt = "collecting", events = { "e_after(30)" } },
 	trans { src = ".pairing.pair_reply", tgt = "collecting", events = { "e_done" } },

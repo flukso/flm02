@@ -72,7 +72,7 @@ define Package/flukso/install
 				fp1 ftic restful; do \
 		$(INSTALL_BIN) ./luasrc/"$$$$file".lua $(1)/usr/bin/"$$$$file"; \
 	done
-	for file in fcheck fntp; do \
+	for file in fcheck fntp kregcheck; do \
 		$(INSTALL_BIN) ./script/"$$$$file".sh $(1)/usr/bin/"$$$$file"; \
 	done
 
