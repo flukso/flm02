@@ -23,7 +23,7 @@ define Package/avrdude
   CATEGORY:=Utilities
   TITLE:=AVR Downloader/UploaDEr
   URL:=http://www.bsdhome.com/avrdude/
-  DEPENDS:=@GPIO_SUPPORT +libncurses
+  DEPENDS:=@GPIO_SUPPORT
 endef
 
 define Package/avrdude/description
