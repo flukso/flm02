@@ -48,7 +48,9 @@ local KUBE, SENSOR, CACHEDIR, REGISTRY, FIRMWARE, DECODE
 local FIRMWARE_BLOCK_SIZE = 64
 local FF = string.char(255)
 local O_RDONLY = nixio.open_flags("rdonly")
-local ULOOP_TIMEOUT_MS = 1000
+local ULOOP_TIMEOUT_MS = 1e3
+local KREGCHECK = "/usr/bin/kregcheck"
+local KREGCHECK_TIMEOUT_MS = 36e5 --1h
 local TIMESTAMP_MIN = 1234567890
 
 -- mosquitto client params
@@ -590,13 +592,24 @@ local root = state {
 				end
 			end
 		},
+
+		kregcheck = state {
+			entry = function()
+				if nixio.fork() == 0 then -- child process
+					nixio.exec(KREGCHECK)
+				end
+			end
+		},
+
 		trans { src = "initial", tgt = "receiving" },
 		trans { src = "receiving", tgt = "decode", events = { "e_packet" } },
 		trans { src = "decode", tgt = "receiving", events = { "e_done" } },
 		trans { src = "receiving", tgt = "upgrade", events = { "e_upgrade_request" } },
 		trans { src = "upgrade", tgt = "receiving", events = { "e_done" } },
 		trans { src = "receiving", tgt = "download", events = { "e_download_request" } },
-		trans { src = "download", tgt = "receiving", events = { "e_done" } }
+		trans { src = "download", tgt = "receiving", events = { "e_done" } },
+		trans { src = "receiving", tgt = "kregcheck", events = { "e_kregcheck" } },
+		trans { src = "kregcheck", tgt = "receiving", events = { "e_done" } }
 	},
 
 	pairing = state {
@@ -808,5 +821,11 @@ ut = uloop.timer(function()
 			mqtt:reconnect()
 		end
 	end, ULOOP_TIMEOUT_MS)
+
+local ut_kregcheck
+ut_kregcheck = uloop.timer(function()
+		ut_kregcheck:set(KREGCHECK_TIMEOUT_MS)
+		event:process("e_kregcheck")
+	end, KREGCHECK_TIMEOUT_MS)
 
 uloop:run()
