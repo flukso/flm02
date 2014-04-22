@@ -8,9 +8,9 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luazlib
-PKG_VERSION:=0.2
+PKG_VERSION:=0.3
 PKG_RELEASE:=1
-PKG_CMT:=8d076690cd84702d051a548740dfa0f2102dc28e
+PKG_CMT:=c0014bcbc4c3fd65ba3519b10965f0c184c1a059
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git://github.com/brimworks/lua-zlib.git
@@ -29,7 +29,7 @@ define Package/luazlib
   TITLE:=Lua-zlib
   URL:=https://github.com/brimworks/lua-zlib
   DEPENDS:=+lua +zlib
-  MAINTAINER:=Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+  MAINTAINER:=Bart Van Der Meerssche <bart@flukso.net>
 endef
 
 define Package/luazlib/description
