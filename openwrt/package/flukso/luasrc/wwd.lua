@@ -37,15 +37,43 @@ rfsm.timeevent = require "rfsm.timeevent"
 
 local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
 
+local DEBUG = {
+	packet = false
+}
+
+local O_RDWR_NONBLOCK = nixio.open_flags("rdwr", "nonblock")
 local UART_DEV = "/dev/ttyS0"
 local UART_BUFFER_SIZE = 4096
 local UART_SYNC_PATTERN = "\170\170\170\170" -- 0xaaaaaaaa
 local UART_FMT_SEQ_LENGTH = "> @%d seq:u2 length:u2" -- big endian!
 local UART_FMT_ADLER32 = "> @%d adler32:u4"
-local O_RDWR_NONBLOCK = nixio.open_flags("rdwr", "nonblock")
-
-local DEBUG = {
-	packet = false
+local UART_FMT_TLV = "> @%d typ:u2 length:u2"
+local UART_RX_EVENT = {
+	[0] = "e_rx_ping",
+	[1] = "e_rx_basic_usage_data",
+	[2] = "e_rx_technical_usage_data",
+	[3] = "e_rx_power_consumption_data",
+	[9] = "e_rx_error_warning_messages",
+--	[10] = "e_rx_subscription_request",
+--	[11] = "e_rx_version_info_request",
+	[12] = "e_rx_version_info",
+--	[13] = "e_rx_statistics_info_request",
+	[14] = "e_rx_statistics_info",
+--	[15] = "e_rx_config_info_request",
+	[16] = "e_rx_battery type data",
+	[17] = "e_rx_generator_type_data",
+	[18] = "e_rx_embedded_system_status_update",
+--	[19] = "e_rx_upgrade_request",
+	[20] = "e_rx_upgrade_confirmation",
+	[21] = "e_rx_upgrade_reject",
+	[22] = "e_rx_shutdown_request",
+--	[23] = "e_rx_shutdown_confirmation",
+--	[24] = "e_rx_shutdown_reject",
+--	[251] = "e_rx_open_debug_interface",
+--	[252] = "e_rx_close_debug_interface",
+--	[253] = "e_rx_debug_interface_data_in",
+	[254] = "e_rx_debug_interface_data_out",
+	[255] = "e_rx_ping_response"
 }
 
 -- define gettime function for rFSM
@@ -75,12 +103,13 @@ local root = state {
 		end
 	},
 
-	trans { src = "initial", tgt = "tmp" }
+	trans { src = "initial", tgt = "tmp" },
+	trans { src = "tmp", tgt = "tmp", events = { "e_tmp" } }
 }
---[[
+
 local fsm = rfsm.init(root)
 rfsm.run(fsm)
-]]--
+
 local event = {
 	lock = false,
 	head = 1,
@@ -138,9 +167,10 @@ local uart = {
 	length = nil,
 	adler32 = nil,
 	payload = nil,
+	tlv_head = nil,
 
 	debug = function(self, ...)
-		if DEBUG.packet then
+		if DEBUG.packet and self.buffer then
 			self.hex = nixio.bin.hexlify(self.buffer)
 			dbg.vardump(self)
 		end
@@ -186,14 +216,43 @@ local uart = {
 			return self:debug(false)
 		end
 
+		self.tlv_head = self.head + 8
 		return self:debug(true)
 	end,
+
+	tlv = function(self)
+		return function()
+			if self.tlv_head > self.tail - 4 then
+				-- pop packet
+				self.buffer = self.buffer:sub(self.tail + 1, -1)
+				return nil
+			end
+
+			local tlv = {}
+			local fmt = UART_FMT_TLV:format(self.tlv_head - 1)
+			vstruct.unpack(fmt, self.buffer, tlv)
+			if not tlv.typ then return nil end --TODO raise error
+			tlv.tail = self.tlv_head - 1 + 4 + tlv.length
+			tlv.value = self.buffer:sub(self.tlv_head + 4, tlv.tail)
+			self.tlv_head = tlv.tail + 1
+
+			if DEBUG.packet	then
+				tlv.hex = nixio.bin.hexlify(tlv.value)
+				dbg.vardump(tlv)
+			end
+			return tlv.typ, tlv.length, tlv.value
+		end
+	end
 }
 
 uart:flush()
 local ufd = uloop.fd(uart:fileno(), uloop.READ, function(events)
 		uart:read()
 		while uart:packet() do
+			for typ, length, value in uart:tlv() do
+				e_arg = value
+				event:process(UART_RX_EVENT[typ])
+			end
 		end
 	end)
 
