@@ -249,8 +249,8 @@ uart:flush()
 local ufd = uloop.fd(uart:fileno(), uloop.READ, function(events)
 		uart:read()
 		while uart:packet() do
-			for typ, length, e_arg in uart:tlv() do
-				event:process(UART_RX_EVENT[typ])
+			for typ, length, value in uart:tlv() do
+				event:process(UART_RX_EVENT[typ], value)
 			end
 		end
 	end)
@@ -288,5 +288,15 @@ local ub_methods = {
 }
 
 ub:add(ub_methods)
+
+local ub_events = {
+	["flukso.ww.event"] = function(msg)
+		if type(msg.event) == "string" then
+			event:process(msg.event, msg.arg)
+		end
+	end
+}
+
+ub:listen(ub_events)
 
 uloop:run()
