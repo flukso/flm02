@@ -38,7 +38,7 @@ rfsm.timeevent = require "rfsm.timeevent"
 local state, trans, conn = rfsm.state, rfsm.trans, rfsm.conn
 
 local DEBUG = {
-	packet = false
+	decode = false
 }
 
 local O_RDWR_NONBLOCK = nixio.open_flags("rdwr", "nonblock")
@@ -170,7 +170,7 @@ local uart = {
 	tlv_head = nil,
 
 	debug = function(self, ...)
-		if DEBUG.packet and self.buffer then
+		if DEBUG.decode and self.buffer then
 			self.hex = nixio.bin.hexlify(self.buffer)
 			dbg.vardump(self)
 		end
@@ -221,7 +221,7 @@ local uart = {
 	end,
 
 	tlv = function(self)
-		return function()
+		return function() -- iterator
 			if self.tlv_head > self.tail - 4 then
 				-- pop packet
 				self.buffer = self.buffer:sub(self.tail + 1, -1)
@@ -236,7 +236,7 @@ local uart = {
 			tlv.value = self.buffer:sub(self.tlv_head + 4, tlv.tail)
 			self.tlv_head = tlv.tail + 1
 
-			if DEBUG.packet	then
+			if DEBUG.decode	then
 				tlv.hex = nixio.bin.hexlify(tlv.value)
 				dbg.vardump(tlv)
 			end
@@ -249,11 +249,44 @@ uart:flush()
 local ufd = uloop.fd(uart:fileno(), uloop.READ, function(events)
 		uart:read()
 		while uart:packet() do
-			for typ, length, value in uart:tlv() do
-				e_arg = value
+			for typ, length, e_arg in uart:tlv() do
 				event:process(UART_RX_EVENT[typ])
 			end
 		end
 	end)
+
+local ub_methods = {
+	["flukso.ww"] = {
+		debug = {
+			function(req, msg)
+				if type(msg.fsm) == "boolean" then
+					if msg.fsm then
+						fsm.dbg = rfsm.pp.gen_dbgcolor("ww", {
+							STATE_ENTER = true,
+							STATE_EXIT = true,
+							EFFECT = false,
+							DOO = false,
+							EXEC_PATH = false,
+							ERROR = true,
+							HIBERNATING = false,
+							RAISED = true,
+							TIMEEVENT = false
+						}, false)
+					else
+						fsm.dbg = function() return end
+					end
+				end
+
+				if type(msg.decode) == "boolean" then
+					DEBUG.decode = msg.decode
+				end
+
+				ub:reply(req, { success = true, msg = "wwd debugging flags updated" })
+			end, { fsm = ubus.BOOLEAN, decode = ubus.BOOLEAN }
+		}
+	}
+}
+
+ub:add(ub_methods)
 
 uloop:run()
