@@ -52,9 +52,11 @@ local UART_FMT_ADLER32 = "> @%d adler32:u4"
 local UART_FMT_TLV = "> @%d typ:u2 length:u2"
 local UART_FMT_PACKET = "> sync:s seq:u2 length:u2 t:u2 l:u2 v:s"
 
-local UART_RX_EVENT = {
-	[0] = "e_rx_ping",
-	[1] = "e_rx_basic_usage_data",
+local UART_RX_ELEMENT = {
+	[0] = { event = "e_rx_ping", fmt = "" },
+	[1] = { event = "e_rx_basic_usage_data",
+			fmt = [[> time_index:u2 generated_power:u2 rpm:u2 energy_charged_to_battery:u2
+			        battery_charge_status:u1 selected_profile:u1]] },
 	[2] = "e_rx_technical_usage_data",
 	[3] = "e_rx_power_consumption_data",
 	[9] = "e_rx_error_warning_messages",
@@ -84,7 +86,6 @@ local UART_TX_ELEMENT = {
 	ping = { typ = 0, fmt = "" },
 	pong = { typ = 255, fmt = "" },
 }
-
 
 local uart = {
 	fd = nixio.open(UART_DEV, O_RDWR_NONBLOCK),
@@ -170,7 +171,7 @@ local uart = {
 				tlv.hex = nixio.bin.hexlify(tlv.value)
 				dbg.vardump(tlv)
 			end
-			return tlv.typ, tlv.length, tlv.value
+			return { t = tlv.typ, l = tlv.length, v = tlv.value }
 		end
 	end,
 
@@ -192,6 +193,93 @@ local uart = {
 
 		if DEBUG.encode then print("[tx] = " .. nixio.bin.hexlify(packet)) end
 	end
+}
+
+local SENSOR = {
+	generated_power = {
+		typ = "electricity",
+		unit = "W",
+		data_type = "gauge"
+	},
+	rpm = {
+		typ = "velocity",
+		unit = "Hz",
+		data_type = "gauge"
+	},
+	energy_charged_to_battery = {
+		typ = "electricity",
+		unit = "W",
+		data_type = "gauge"
+	},
+	battery_charge_status = {
+		typ = "fraction",
+		unit = "%",
+		data_type = "gauge"
+	},
+	selected_profile = {
+		typ = "profile",
+		unit = "",
+		data_type = "gauge"
+	},
+}
+
+local sensor = {
+	config = SENSOR,
+
+	provision = function(self)
+		local function num_entries(T)
+			local i = 0
+			for _ in pairs(T) do i = i + 1 end
+			return i 
+		end
+
+		local function get_free_sensors(list)
+			local range = list.main and list.main.max_provisioned_sensors
+			if not range then return nil end
+
+			local first_free, total_free = nil, range
+
+			for i = 1, range do
+				if list[tostring(i)] and list[tostring(i)].enable then
+					total_free = total_free - 1
+				elseif not first_free then
+					first_free = i
+				end
+			end
+
+			return first_free and tostring(first_free), total_free
+		end
+
+		local flukso = uci:get_all("flukso")
+		local first_free, total_free = get_free_sensors(flukso)
+		if num_entries(self.config) > total_free then return false end
+
+		for sname, sprop in pairs(self.config) do
+			local sidx = get_free_sensors(flukso)
+			local values = {
+				["class"] = "ww",
+				["type"] = sprop.typ,
+				["function"] = sname,
+				["enable"] = 1
+			}
+
+			uci:tset("flukso", sidx, values)
+			uci:save("flukso")
+			flukso = uci:get_all("flukso")
+		end
+		uci:commit("flukso")
+		return true
+	end,
+
+	load_cfg = function(self)
+		local flukso = uci:get_all("flukso")
+		for sidx, sprop in pairs(flukso) do
+			if sprop["function"]  and self.config[sprop["function"]] then
+				self.config[sprop["function"]].id = sprop.id
+			end
+		end
+		dbg.vardump(self.config)
+	end,
 }
 
 -- define gettime function for rFSM
@@ -216,25 +304,48 @@ local root = state {
 		error(msg, 0)
 	end,
 
+	load_config = state {
+		entry = function()
+			sensor:load_cfg()
+		end
+	},
+
 	receiving = state {
 		entry = function()
 		end
 	},
 
-	ping = state {
+	provision = state {
+		entry = function()
+			e_arg(sensor:provision())
+		end
+	},
+
+	ping = state { -- outgoing ping
 		entry = function()
 			s_ctx = e_arg -- store cb function in ctx
 			uart:write("ping")
 		end
 	},
 
-	pong = state {
+	pong = state { -- incoming ping
 		entry = function()
 			uart:write("pong")
 		end
 	},
 
-	trans { src = "initial", tgt = "receiving" },
+	basic_usage_data = state {
+		entry = function()
+			local data = { }
+			vstruct.unpack(UART_RX_ELEMENT[e_arg.t].fmt, e_arg.v, data) 
+			--TODO publish data on mqtt
+		end
+	},
+
+	trans { src = "initial", tgt = "load_config" },
+	trans { src = "load_config", tgt = "receiving", events = { "e_done" } },
+	trans { src = "receiving", tgt = "provision", events = { "e_provision" } },
+	trans { src = "provision", tgt = "load_config", events = { "e_done" } },
 	trans { src = "receiving", tgt = "ping", events = { "e_tx_ping" } },
 	trans { src = "ping", tgt = "receiving", events = { "e_rx_pong" },
 		effect = function() s_ctx(true) end
@@ -244,7 +355,10 @@ local root = state {
 	},
 	trans { src = "receiving", tgt = "pong", events = { "e_rx_ping" } },
 	trans { src = "pong", tgt = "receiving", events = { "e_done" } },
+	trans { src = "receiving", tgt = "basic_usage_data", events = { "e_rx_basic_usage_data" } },
+	trans { src = "basic_usage_data", tgt = "receiving", events = { "e_done" } },
 }
+
 
 local fsm = rfsm.init(root)
 rfsm.run(fsm)
@@ -328,6 +442,15 @@ local ub_methods = {
 
 				ub:reply(req, { success = true, msg = "wwd debugging flags updated" })
 			end, { fsm = ubus.BOOLEAN, decode = ubus.BOOLEAN }
+		},
+
+		provision = {
+			function(req, msg)
+				event:process("e_provision", function(success)
+					local reply = success and "sensors povisioned" or "not enough free sensors"
+					ub:reply(req, { success = success, msg = reply })
+				end)
+			end, { }
 		}
 	}
 }
@@ -362,8 +485,8 @@ uart:flush()
 local ufd = uloop.fd(uart:fileno(), uloop.READ, function(events)
 		uart:read()
 		while uart:packet() do
-			for typ, length, value in uart:tlv() do
-				event:process(UART_RX_EVENT[typ], value)
+			for elmt in uart:tlv() do
+				event:process(UART_RX_ELEMENT[elmt.t].event, elmt)
 			end
 		end
 	end)
