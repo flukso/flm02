@@ -45,6 +45,11 @@ local DEBUG = {
 	encode = false
 }
 
+local DEVICE = uci:get_first("system", "system", "device")
+local ULOOP_TIMEOUT_MS = 1e3
+local O_RDWR_NONBLOCK = nixio.open_flags("rdwr", "nonblock")
+local TIMESTAMP_MIN = 1234567890
+
 -- mosquitto client params
 local MOSQ_ID = DAEMON
 local MOSQ_CLN_SESSION = true
@@ -56,16 +61,13 @@ local MOSQ_MAX_PKTS = 10 -- packets
 local MOSQ_QOS0 = 0
 local MOSQ_QOS1 = 1
 local MOSQ_RETAIN = true
+local MOSQ_TOPIC_SENSOR_CONFIG = string.format("/device/%s/config/sensor", DEVICE)
 local MOSQ_TOPIC_SENSOR = "/sensor/%s/%s"
 
 -- connect to the MQTT broker
 mosq.init()
 local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
 mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE)
-
-local ULOOP_TIMEOUT_MS = 1e3
-local O_RDWR_NONBLOCK = nixio.open_flags("rdwr", "nonblock")
-local TIMESTAMP_MIN = 1234567890
 
 local UART_DEV = "/dev/ttyS0"
 local UART_BUFFER_SIZE = 4096
@@ -316,6 +318,32 @@ local sensor = {
 				mqtt:publish(topic, payload, MOSQ_QOS0, MOSQ_RETAIN)
 			end
 		end
+	end,
+
+	publish_cfg = function(self)
+		local function config_clean(itbl)
+			local otbl = luci.util.clone(itbl, true)
+			for section, section_tbl in pairs(otbl) do
+				section_tbl[".index"] = nil
+				section_tbl[".name"] = nil
+				section_tbl[".type"] = nil
+				section_tbl[".anonymous"] = nil
+
+				for option, value in pairs(section_tbl) do
+					section_tbl[option] = tonumber(value) or value
+					if type(value) == "table" then -- we're dealing with a list
+						for i in pairs(value) do
+							value[i] = tonumber(value[i]) or value[i]
+						end 
+					end
+				end
+			end
+
+			return otbl
+		end
+
+		local flukso = luci.json.encode(config_clean(uci:get_all("flukso")))
+		mqtt:publish(MOSQ_TOPIC_SENSOR_CONFIG, flukso, MOSQ_QOS0, MOSQ_RETAIN)
 	end
 }
 
@@ -344,6 +372,7 @@ local root = state {
 	load_config = state {
 		entry = function()
 			sensor:load_cfg()
+			sensor:publish_cfg()
 		end
 	},
 
