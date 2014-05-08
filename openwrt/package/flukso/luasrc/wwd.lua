@@ -23,6 +23,8 @@
 
 local dbg = require "dbg"
 local nixio = require "nixio"
+local luci = require "luci"
+luci.json = require "luci.json"
 local uci = require "luci.model.uci".cursor()
 local uloop = require "uloop"
 uloop.init()
@@ -34,6 +36,7 @@ vstruct.cache = true
 local rfsm = require "rfsm"
 rfsm.pp = require "rfsm.pp"
 rfsm.timeevent = require "rfsm.timeevent"
+local mosq = require "mosquitto"
 
 local state, trans, conn, yield = rfsm.state, rfsm.trans, rfsm.conn, rfsm.yield
 
@@ -42,8 +45,28 @@ local DEBUG = {
 	encode = false
 }
 
+-- mosquitto client params
+local MOSQ_ID = DAEMON
+local MOSQ_CLN_SESSION = true
+local MOSQ_HOST = "localhost"
+local MOSQ_PORT = 1883
+local MOSQ_KEEPALIVE = 300
+local MOSQ_TIMEOUT = 0 -- return instantly from select call
+local MOSQ_MAX_PKTS = 10 -- packets
+local MOSQ_QOS0 = 0
+local MOSQ_QOS1 = 1
+local MOSQ_RETAIN = true
+local MOSQ_TOPIC_SENSOR = "/sensor/%s/%s"
+
+-- connect to the MQTT broker
+mosq.init()
+local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
+mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE)
+
 local ULOOP_TIMEOUT_MS = 1e3
 local O_RDWR_NONBLOCK = nixio.open_flags("rdwr", "nonblock")
+local TIMESTAMP_MIN = 1234567890
+
 local UART_DEV = "/dev/ttyS0"
 local UART_BUFFER_SIZE = 4096
 local UART_SYNC_PATTERN = "\170\170\170\170" -- 0xaaaaaaaa
@@ -280,6 +303,20 @@ local sensor = {
 		end
 		dbg.vardump(self.config)
 	end,
+
+	publish = function(self, data)
+		local timestamp = os.time()
+		if timestamp < TIMESTAMP_MIN then return end --TODO raise error
+
+		for sname, svalue in pairs(data) do
+			local cfg = self.config[sname]
+			if cfg and cfg.id then
+				local topic = string.format(MOSQ_TOPIC_SENSOR, cfg.id, cfg.data_type)
+				local payload = luci.json.encode({ timestamp, svalue, cfg.unit })
+				mqtt:publish(topic, payload, MOSQ_QOS0, MOSQ_RETAIN)
+			end
+		end
+	end
 }
 
 -- define gettime function for rFSM
@@ -338,7 +375,7 @@ local root = state {
 		entry = function()
 			local data = { }
 			vstruct.unpack(UART_RX_ELEMENT[e_arg.t].fmt, e_arg.v, data) 
-			--TODO publish data on mqtt
+			sensor:publish(data)
 		end
 	},
 
@@ -479,6 +516,10 @@ ut = uloop.timer(function()
 		ut:set(ULOOP_TIMEOUT_MS)
 		-- service the rFSM timers
 		event:process()
+		-- service the mosquitto loop
+		if not mqtt:loop(MOSQ_TIMEOUT, MOSQ_MAX_PKTS) then
+			mqtt:reconnect()
+		end
 	end, ULOOP_TIMEOUT_MS)
 
 uart:flush()
