@@ -80,10 +80,10 @@ local UART_FMT_PACKET = "> sync:s seq:u2 length:u2 t:u2 l:u2 v:s"
 local UART_RX_ELEMENT = {
 	[0] = { event = "e_rx_ping", fmt = "" },
 	[1] = { event = "e_rx_basic_usage_data",
-			fmt = [[> time_index:u2 generated_power:u2 rpm:u2 energy_charged_to_battery:u2
-			        battery_charge_status:u1 selected_profile:u1]] },
-	[2] = "e_rx_technical_usage_data",
-	[3] = "e_rx_power_consumption_data",
+	        fmt = [[> time_index:u2 generated_power:u2 rpm:u2 energy_charged_to_battery:u2
+	              battery_charge_status:u1 selected_profile:u1]] },
+	[2] = { event = "e_rx_technical_usage_data" },
+	[3] = { event = "e_rx_power_consumption_data" },
 	[9] = "e_rx_error_warning_messages",
 --	[10] = "e_rx_subscription_request",
 --	[11] = "e_rx_version_info_request",
@@ -109,6 +109,8 @@ local UART_RX_ELEMENT = {
 
 local UART_TX_ELEMENT = {
 	ping = { typ = 0, fmt = "" },
+	subscription_request = { typ = 10, fmt = [=[[1| x5 power_consumption_data:b1
+		technical_usage_data:b1 basic_usage_data:b1]]=] },
 	pong = { typ = 255, fmt = "" },
 }
 
@@ -303,7 +305,6 @@ local sensor = {
 				self.config[sprop["function"]].id = sprop.id
 			end
 		end
-		dbg.vardump(self.config)
 	end,
 
 	publish = function(self, data)
@@ -408,6 +409,12 @@ local root = state {
 		end
 	},
 
+	subscription_request = state {
+		entry = function()
+			uart:write("subscription_request", e_arg)
+		end
+	},
+
 	trans { src = "initial", tgt = "load_config" },
 	trans { src = "load_config", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "provision", events = { "e_provision" } },
@@ -423,6 +430,8 @@ local root = state {
 	trans { src = "pong", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "basic_usage_data", events = { "e_rx_basic_usage_data" } },
 	trans { src = "basic_usage_data", tgt = "receiving", events = { "e_done" } },
+	trans { src = "receiving", tgt = "subscription_request", events = { "e_subscription_request" } },
+	trans { src = "subscription_request", tgt = "receiving", events = { "e_done" } },
 }
 
 
@@ -507,7 +516,7 @@ local ub_methods = {
 				end
 
 				ub:reply(req, { success = true, msg = "wwd debugging flags updated" })
-			end, { fsm = ubus.BOOLEAN, decode = ubus.BOOLEAN }
+			end, { fsm = ubus.BOOLEAN, decode = ubus.BOOLEAN, encode = ubus.BOOLEAN }
 		},
 
 		provision = {
@@ -517,6 +526,33 @@ local ub_methods = {
 					ub:reply(req, { success = success, msg = reply })
 				end)
 			end, { }
+		},
+
+		subscription_request = {
+			function(req, msg)
+				subs = { -- defaults
+					basic_usage_data = true,
+					technical_usage_data = false,
+					power_consumption_data = false
+				}
+
+				if type(msg.basic) == "boolean" then
+					subs.basic_usage_data = msg.basic
+				end
+
+				if type(msg.tech) == "boolean" then
+					subs.technical_usage_data = msg.tech
+				end
+
+				if type(msg.power) == "boolean" then
+					subs.power_consumption_data = msg.power
+				end
+
+				event:process("e_subscription_request", subs, function()
+					local reply = "subscription requests updated"
+					ub:reply(req, { success = true, msg = reply })
+				end)
+			end, { basic = ubus.BOOLEAN, tech = ubus.BOOLEAN, power = ubus.BOOLEAN }
 		}
 	}
 }
