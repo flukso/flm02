@@ -82,8 +82,14 @@ local UART_RX_ELEMENT = {
 	[1] = { event = "e_rx_basic_usage_data",
 	        fmt = [[> time_index:u2 generated_power:u2 rpm:u2 energy_charged_to_battery:u2
 	              battery_charge_status:u1 selected_profile:u1]] },
-	[2] = { event = "e_rx_technical_usage_data" },
-	[3] = { event = "e_rx_power_consumption_data" },
+	[2] = { event = "e_rx_technical_usage_data",
+	        fmt = [[> battery_voltage:u2 generator_voltage:u2 generator_current:u2
+	              charge_current:u2 x_load_current:u2 mainboard_temperature:i2
+	              x_load_temperature:i2]] },
+	[3] = { event = "e_rx_power_consumption_data",
+	        fmt = [[> highpower_output_voltage:u2 highpower_output_current:u2
+	              QI_output_voltage:u2 QI_output_current:u2 USB_output_voltage:u2
+	              USB_output_current:u2]] },
 	[9] = "e_rx_error_warning_messages",
 --	[10] = "e_rx_subscription_request",
 --	[11] = "e_rx_version_info_request",
@@ -110,7 +116,7 @@ local UART_RX_ELEMENT = {
 local UART_TX_ELEMENT = {
 	ping = { typ = 0, fmt = "" },
 	subscription_request = { typ = 10, fmt = [=[[1| x5 power_consumption_data:b1
-		technical_usage_data:b1 basic_usage_data:b1]]=] },
+	    technical_usage_data:b1 basic_usage_data:b1]]=] },
 	pong = { typ = 255, fmt = "" },
 }
 
@@ -248,6 +254,71 @@ local SENSOR = {
 		unit = "",
 		data_type = "gauge"
 	},
+	battery_voltage = {
+		typ = "voltage",
+		unit = "mV",
+		data_type = "gauge"
+	},
+	generator_voltage = {
+		typ = "voltage",
+		unit = "mV",
+		data_type = "gauge"
+	},
+	generator_current = {
+		typ = "current",
+		unit = "mA",
+		data_type = "gauge"
+	},
+	charge_current = {
+		typ = "current",
+		unit = "mA",
+		data_type = "gauge"
+	},
+	x_load_current = {
+		typ = "current",
+		unit = "mA",
+		data_type = "gauge"
+	},
+	mainboard_temperature = {
+		typ = "temperature",
+		unit = "0.1°C", --TODO implement scaling
+		data_type = "gauge"
+	},
+	x_load_temperature = {
+		typ = "temperature",
+		unit = "0.1°C", --TODO implement scaling
+		data_type = "gauge"
+	},
+	highpower_output_voltage = {
+		typ = "voltage",
+		unit = "mV",
+		data_type = "gauge"
+	},
+	highpower_output_current = {
+		typ = "current",
+		unit = "mA",
+		data_type = "gauge"
+	},
+	QI_output_voltage = {
+		typ = "voltage",
+		unit = "mV",
+		data_type = "gauge"
+	},
+	QI_output_current = {
+		typ = "current",
+		unit = "mA",
+		data_type = "gauge"
+	},
+	USB_output_voltage = {
+		typ = "voltage",
+		unit = "mV",
+		data_type = "gauge"
+	},
+	USB_output_current = {
+		typ = "current",
+		unit = "mA",
+		data_type = "gauge"
+	},
 }
 
 local sensor = {
@@ -307,10 +378,12 @@ local sensor = {
 		end
 	end,
 
-	publish = function(self, data)
+	publish = function(self, elmnt)
 		local timestamp = os.time()
 		if timestamp < TIMESTAMP_MIN then return end --TODO raise error
 
+		local data = { }
+		vstruct.unpack(UART_RX_ELEMENT[elmnt.t].fmt, elmnt.v, data) 
 		for sname, svalue in pairs(data) do
 			local cfg = self.config[sname]
 			if cfg and cfg.id then
@@ -401,11 +474,9 @@ local root = state {
 		end
 	},
 
-	basic_usage_data = state {
+	data = state {
 		entry = function()
-			local data = { }
-			vstruct.unpack(UART_RX_ELEMENT[e_arg.t].fmt, e_arg.v, data) 
-			sensor:publish(data)
+			sensor:publish(e_arg)
 		end
 	},
 
@@ -428,8 +499,12 @@ local root = state {
 	},
 	trans { src = "receiving", tgt = "pong", events = { "e_rx_ping" } },
 	trans { src = "pong", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "basic_usage_data", events = { "e_rx_basic_usage_data" } },
-	trans { src = "basic_usage_data", tgt = "receiving", events = { "e_done" } },
+	trans { src = "receiving", tgt = "data", events = {
+		"e_rx_basic_usage_data" ,
+		"e_rx_technical_usage_data",
+		"e_rx_power_consumption_data" }
+	},
+	trans { src = "data", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "subscription_request", events = { "e_subscription_request" } },
 	trans { src = "subscription_request", tgt = "receiving", events = { "e_done" } },
 }
