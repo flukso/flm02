@@ -99,7 +99,7 @@ local UART_RX_ELEMENT = {
 	               mainboard_serial_number:u4]],
 	         topic = "/device/%s/ww/version" },
 --	[13] = "e_rx_statistics_info_request",
-	[14] = "e_rx_statistics_info",
+	[14] = { event = "e_rx_statistics_info", fmt = "" },
 --	[15] = "e_rx_config_info_request",
 	[16] = { event = "e_rx_battery type data", fmt = "" },
 	[17] = { event = "e_rx_generator_type_data", fmt = "" },
@@ -122,6 +122,7 @@ local UART_TX_ELEMENT = {
 	subscription_request = { typ = 10, fmt = [=[[1| x5 power_consumption_data:b1
 	    technical_usage_data:b1 basic_usage_data:b1]]=] },
 	version_info_request = { typ = 11, fmt = "" },
+	statistics_info_request = { typ = 13, fmt = "" },
 	config_info_request = { typ = 15, fmt = "" },
 	pong = { typ = 255, fmt = "" },
 }
@@ -325,7 +326,18 @@ local SENSOR = {
 		unit = "mA",
 		data_type = "gauge"
 	},
+	total_time_used = {
+		typ = "time",
+		unit = "s",
+		data_type = "counter"
+	},
+	total_energy_generated = {
+		typ = "electricity",
+		unit = "J",
+		data_type = "counter"
+	},
 }
+
 
 local sensor = {
 	config = SENSOR,
@@ -507,6 +519,12 @@ local root = state {
 		end
 	},
 
+	statistics_info_request = state {
+		entry = function()
+			uart:write("statistics_info_request")
+		end
+	},
+
 	config_info_request = state {
 		entry = function()
 			uart:write("config_info_request")
@@ -535,13 +553,16 @@ local root = state {
 	trans { src = "receiving", tgt = "data", events = {
 		"e_rx_basic_usage_data" ,
 		"e_rx_technical_usage_data",
-		"e_rx_power_consumption_data" }
+		"e_rx_power_consumption_data",
+		"e_rx_statistics_info" }
 	},
 	trans { src = "data", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "subscription_request", events = { "e_subscription_request" } },
 	trans { src = "subscription_request", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "version_info_request", events = { "e_version_info_request" } },
 	trans { src = "version_info_request", tgt = "receiving", events = { "e_done" } },
+	trans { src = "receiving", tgt = "statistics_info_request", events = { "e_statistics_info_request" } },
+	trans { src = "statistics_info_request", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "config_info_request", events = { "e_config_info_request" } },
 	trans { src = "config_info_request", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "response", events = {
