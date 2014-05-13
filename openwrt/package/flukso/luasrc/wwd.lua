@@ -101,8 +101,8 @@ local UART_RX_ELEMENT = {
 --	[13] = "e_rx_statistics_info_request",
 	[14] = "e_rx_statistics_info",
 --	[15] = "e_rx_config_info_request",
-	[16] = "e_rx_battery type data",
-	[17] = "e_rx_generator_type_data",
+	[16] = { event = "e_rx_battery type data", fmt = "" },
+	[17] = { event = "e_rx_generator_type_data", fmt = "" },
 	[18] = "e_rx_embedded_system_status_update",
 --	[19] = "e_rx_upgrade_request",
 	[20] = "e_rx_upgrade_confirmation",
@@ -122,6 +122,7 @@ local UART_TX_ELEMENT = {
 	subscription_request = { typ = 10, fmt = [=[[1| x5 power_consumption_data:b1
 	    technical_usage_data:b1 basic_usage_data:b1]]=] },
 	version_info_request = { typ = 11, fmt = "" },
+	config_info_request = { typ = 15, fmt = "" },
 	pong = { typ = 255, fmt = "" },
 }
 
@@ -506,6 +507,12 @@ local root = state {
 		end
 	},
 
+	config_info_request = state {
+		entry = function()
+			uart:write("config_info_request")
+		end
+	},
+
 	response = state {
 		entry = function()
 			ww:publish(e_arg)
@@ -535,6 +542,8 @@ local root = state {
 	trans { src = "subscription_request", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "version_info_request", events = { "e_version_info_request" } },
 	trans { src = "version_info_request", tgt = "receiving", events = { "e_done" } },
+	trans { src = "receiving", tgt = "config_info_request", events = { "e_config_info_request" } },
+	trans { src = "config_info_request", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "response", events = {
 		"e_rx_version_info" }
 	},
