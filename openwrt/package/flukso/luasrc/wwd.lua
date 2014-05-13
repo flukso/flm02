@@ -93,7 +93,11 @@ local UART_RX_ELEMENT = {
 	[9] = "e_rx_error_warning_messages",
 --	[10] = "e_rx_subscription_request",
 --	[11] = "e_rx_version_info_request",
-	[12] = "e_rx_version_info",
+	[12] = { event = "e_rx_version_info",
+	         fmt = [[> mainboard_embedded_sw_version:{ major:u1, minor:u1 }
+	               ui_element_version:{ major: u1, minor: u1 }
+	               mainboard_serial_number:u4]],
+	         topic = "/device/%s/ww/version" },
 --	[13] = "e_rx_statistics_info_request",
 	[14] = "e_rx_statistics_info",
 --	[15] = "e_rx_config_info_request",
@@ -117,6 +121,7 @@ local UART_TX_ELEMENT = {
 	ping = { typ = 0, fmt = "" },
 	subscription_request = { typ = 10, fmt = [=[[1| x5 power_consumption_data:b1
 	    technical_usage_data:b1 basic_usage_data:b1]]=] },
+	version_info_request = { typ = 11, fmt = "" },
 	pong = { typ = 255, fmt = "" },
 }
 
@@ -421,6 +426,15 @@ local sensor = {
 	end
 }
 
+local ww = {
+	publish = function(self, elmnt)
+		local data = { }
+		vstruct.unpack(UART_RX_ELEMENT[elmnt.t].fmt, elmnt.v, data)
+		local topic = string.format(UART_RX_ELEMENT[elmnt.t].topic, DEVICE)
+		mqtt:publish(topic, luci.json.encode(data), MOSQ_QOS0, MOSQ_RETAIN)
+	end,
+}
+
 -- define gettime function for rFSM
 local function rfsm_gettime()
 	local secs, usecs = nixio.gettimeofday()
@@ -486,6 +500,18 @@ local root = state {
 		end
 	},
 
+	version_info_request = state {
+		entry = function()
+			uart:write("version_info_request")
+		end
+	},
+
+	response = state {
+		entry = function()
+			ww:publish(e_arg)
+		end
+	},
+
 	trans { src = "initial", tgt = "load_config" },
 	trans { src = "load_config", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "provision", events = { "e_provision" } },
@@ -507,6 +533,12 @@ local root = state {
 	trans { src = "data", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "subscription_request", events = { "e_subscription_request" } },
 	trans { src = "subscription_request", tgt = "receiving", events = { "e_done" } },
+	trans { src = "receiving", tgt = "version_info_request", events = { "e_version_info_request" } },
+	trans { src = "version_info_request", tgt = "receiving", events = { "e_done" } },
+	trans { src = "receiving", tgt = "response", events = {
+		"e_rx_version_info" }
+	},
+	trans { src = "response", tgt = "receiving", events = { "e_done" } },
 }
 
 
