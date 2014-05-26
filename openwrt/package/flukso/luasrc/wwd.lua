@@ -105,10 +105,10 @@ local UART_RX_ELEMENT = {
 	[17] = { event = "e_rx_generator_type_data", fmt = "" },
 	[18] = "e_rx_embedded_system_status_update",
 --	[19] = "e_rx_upgrade_request",
-	[20] = "e_rx_upgrade_confirmation",
-	[21] = "e_rx_upgrade_reject",
+	[20] = { event = "e_rx_upgrade_confirm", fmt = "" },
+	[21] = { event = "e_rx_upgrade_reject", fmt = "" },
 	[22] = "e_rx_shutdown_request",
---	[23] = "e_rx_shutdown_confirmation",
+--	[23] = "e_rx_shutdown_confirm",
 --	[24] = "e_rx_shutdown_reject",
 --	[251] = "e_rx_open_debug_interface",
 --	[252] = "e_rx_close_debug_interface",
@@ -124,6 +124,7 @@ local UART_TX_ELEMENT = {
 	version_info_request = { typ = 11, fmt = "" },
 	statistics_info_request = { typ = 13, fmt = "" },
 	config_info_request = { typ = 15, fmt = "" },
+	upgrade_request = { typ = 19, fmt = "" },
 	pong = { typ = 255, fmt = "" },
 }
 
@@ -537,6 +538,39 @@ local root = state {
 		end
 	},
 
+	upgrade_request = state {
+		entry = function()
+			s_ctx = e_arg
+			uart:write("upgrade_request")
+		end
+	},
+
+	upgrade = state {
+		entry = function()
+			local pid, code, err = nixio.fork()
+			if not pid then
+				error(string.format("forking failed: %s/%s", code, err))
+			elseif pid == 0 then --child
+				nixio.exec("/usr/bin/stm32flash",
+					"-b115200",
+					"-i3,0,-0:-3,0,-0",
+					-- TODO	"-w /usr/share/ww/bin/xyz",
+					"/dev/ttyS0")
+			elseif pid > 0 then --parent
+				local cpid, term, info = nixio.waitpid()
+				if term == "exited" and info == 0 then
+					-- success!
+				elseif term == "exited" and info > 0 then
+					--TODO re-init terminal settings
+				else
+					error(string.format("stm32flashing failed: %s/%s", term, info))
+				end
+
+				return
+			end
+		end
+	},
+
 	trans { src = "initial", tgt = "load_config" },
 	trans { src = "load_config", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "provision", events = { "e_provision" } },
@@ -557,18 +591,29 @@ local root = state {
 		"e_rx_statistics_info" }
 	},
 	trans { src = "data", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "subscription_request", events = { "e_subscription_request" } },
+	trans { src = "receiving", tgt = "subscription_request", events = { "e_tx_subscription_request" } },
 	trans { src = "subscription_request", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "version_info_request", events = { "e_version_info_request" } },
+	trans { src = "receiving", tgt = "version_info_request", events = { "e_tx_version_info_request" } },
 	trans { src = "version_info_request", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "statistics_info_request", events = { "e_statistics_info_request" } },
+	trans { src = "receiving", tgt = "statistics_info_request", events = { "e_tx_statistics_info_request" } },
 	trans { src = "statistics_info_request", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "config_info_request", events = { "e_config_info_request" } },
+	trans { src = "receiving", tgt = "config_info_request", events = { "e_tx_config_info_request" } },
 	trans { src = "config_info_request", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "response", events = {
 		"e_rx_version_info" }
 	},
 	trans { src = "response", tgt = "receiving", events = { "e_done" } },
+	trans { src = "receiving", tgt = "upgrade_request", events = { "e_tx_upgrade_request" } },
+	trans { src = "upgrade_request", tgt = "receiving", events = { "e_after(5)" },
+		effect = function() s_ctx("timeout") end
+	},
+	trans { src = "upgrade_request", tgt = "receiving", events = { "e_rx_upgrade_reject" },
+		effect = function() s_ctx("reject") end
+	},
+	trans { src = "upgrade_request", tgt = "upgrade", events = { "e_rx_upgrade_confirm" } },
+	trans { src = "upgrade", tgt = "receiving", events = { "e_done" },
+		effect = function() s_ctx("upgrade") end
+	},
 }
 
 
@@ -685,7 +730,7 @@ local ub_methods = {
 					subs.power_consumption_data = msg.power
 				end
 
-				event:process("e_subscription_request", subs, function()
+				event:process("e_tx_subscription_request", subs, function()
 					local reply = "subscription requests updated"
 					ub:reply(req, { success = true, msg = reply })
 				end)
@@ -708,8 +753,23 @@ local ub_events = {
 			local reply = success and "pong!" or "ping failed"
 			ub:send("flukso.ww.pong", { success = success, msg = reply })
 		end)
-	end
-}
+	end,
+
+	["flukso.ww.upgrade.request"] = function(msg)
+		event:process("e_tx_upgrade_request", function(result)
+					local success, reply
+					if result == "timeout" then
+						success, reply = false, "upgrade request timeout"
+					elseif result == "reject" then
+						success, reply = false, "upgrade request rejected"
+					elseif result == "upgrade" then
+						success, reply = true, "successful upgrade"
+					end
+
+					ub:send("flukso.ww.upgrade.response", { success = success, msg = reply })
+				end)
+			end, { }
+}	
 
 ub:listen(ub_events)
 
