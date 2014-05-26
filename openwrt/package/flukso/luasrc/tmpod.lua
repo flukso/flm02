@@ -23,6 +23,7 @@
 
 local dbg = require "dbg"
 local nixio = require "nixio"
+nixio.fs = require "nixio.fs"
 local luci = require "luci"
 luci.json = require "luci.json"
 luci.util = require "luci.util"
@@ -41,6 +42,7 @@ local SLEEP_S, SLEEP_NS = 1, 0
 local TIMESTAMP_MIN = 1234567890
 local TMPO_BLOCK8_SPAN = 2^8 --256 secs
 local TMPO_BLOCK8_GRACE = 5 --secs TODO randomize!
+local TMPO_PATH_TPL = "/usr/share/tmpo/sensor/%s/%s/%s" -- /xyz/8/1401108736
 
 -- mosquitto client params
 local MOSQ_ID = DAEMON
@@ -101,12 +103,16 @@ local tmpo = {
 		if time < self.close8 + TMPO_BLOCK8_GRACE then return end
 
 		for sid, b8s in pairs(self.block8) do
+			nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, 8, ""))
+
 			for b8id, b8data in pairs(b8s) do
 				if b8id < self.close8 then
 					local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, b8id)
 					local payload = luci.json.encode(b8data)
 					mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
 					b8s[b8id] = nil
+
+					nixio.fs.writefile(TMPO_PATH_TPL:format(sid, 8, b8id), payload)
 				end
 			end
 		end
