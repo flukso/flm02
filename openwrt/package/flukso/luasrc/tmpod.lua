@@ -41,6 +41,7 @@ local ULOOP_TIMEOUT_MS = 1e3
 local SLEEP_S, SLEEP_NS = 1, 0
 local TIMESTAMP_MIN = 1234567890
 
+local TMPO_NICE = 10
 local TMPO_BLOCK8_SPAN = 2^8 --256 secs
 local TMPO_BLOCK12_SPAN = 2^12 -- 68 mins
 local TMPO_BLOCK16_SPAN = 2^16 -- 18 hours
@@ -64,6 +65,9 @@ local MOSQ_RETAIN = true
 local MOSQ_ERROR = "MQTT error: %s"
 local MOSQ_TOPIC_SENSOR_SUB = "/sensor/#"
 local MOSQ_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/8/%s"
+
+-- increase process niceness
+nixio.nice(TMPO_NICE)
 
 -- connect to the MQTT broker
 mosq.init()
