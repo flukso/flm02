@@ -40,9 +40,14 @@ local DAEMON = os.getenv("DAEMON") or "tmpod"
 local ULOOP_TIMEOUT_MS = 1e3
 local SLEEP_S, SLEEP_NS = 1, 0
 local TIMESTAMP_MIN = 1234567890
+
 local TMPO_BLOCK8_SPAN = 2^8 --256 secs
-local TMPO_BLOCK8_GRACE = 5 --secs TODO randomize!
-local TMPO_PATH_TPL = "/usr/share/tmpo/sensor/%s/%s/%s" -- /xyz/8/1401108736
+local TMPO_BLOCK12_SPAN = 2^12 -- 68 mins
+local TMPO_BLOCK16_SPAN = 2^16 -- 18 hours
+local TMPO_BLOCK20_SPAN = 2^20 -- 12 days
+local TMPO_CLOSE8_GRACE = 5 --secs TODO randomize!
+local TMPO_BASE_PATH = "/usr/share/tmpo/sensor/"
+local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s" -- /xyz/8/1401108736
 
 -- mosquitto client params
 local MOSQ_ID = DAEMON
@@ -72,7 +77,7 @@ local tmpo = {
 	close8 = nil, --block8 closing time
 	block8 = { },
 
-	push = function(self, sid, time, value, unit)
+	push8 = function(self, sid, time, value, unit)
 		if not self.block8[sid] then
 			self.block8[sid] = { }
 		end
@@ -94,13 +99,13 @@ local tmpo = {
 		if DEBUG.block then dbg.vardump(self.block8) end
 	end,
 
-	publish = function(self)
+	flush8 = function(self)
 		local time = os.time()
-		if time < TIMESTAMP_MIN then return end
+		if time < TIMESTAMP_MIN then return false end
 		if not self.close8 then
 			self.close8 = math.ceil(time / TMPO_BLOCK8_SPAN) * TMPO_BLOCK8_SPAN
 		end
-		if time < self.close8 + TMPO_BLOCK8_GRACE then return end
+		if time < self.close8 + TMPO_CLOSE8_GRACE then return false end
 
 		for sid, b8s in pairs(self.block8) do
 			nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, 8, ""))
@@ -118,6 +123,75 @@ local tmpo = {
 		end
 
 		self.close8 = math.ceil(time / TMPO_BLOCK8_SPAN) * TMPO_BLOCK8_SPAN
+		return true
+	end,
+
+	compact = function(self)
+		local function dir(path) --return a sorted array of (int) dir entries
+			local files = { }
+			for file in nixio.fs.dir(path) do
+				files[#files + 1] = tonumber(file) or file
+			end
+			table.sort(files)
+			return files
+		end
+
+		local function must_compact(bid, time, lvl)
+			local span = 2 ^ lvl
+			return math.floor(bid / span) < math.floor(time / span)
+		end
+
+		local function in_same_compaction(bid1, bid2, lvl)
+			local span = 2 ^ lvl
+			return math.floor(bid1 / span) == math.floor(bid2 / span)
+		end
+
+		local function pop(sid, lvl, bids)
+			local bid = table.remove(bids, 1)
+			local span = 2 ^ (lvl + 4)
+			local bid_compact = math.floor(bid / span) * span
+			local jblock = nixio.fs.readfile(TMPO_PATH_TPL:format(sid, lvl, bid))
+			return bid, luci.json.decode(jblock), bid_compact
+		end
+
+		local function join(block1, block2)
+			local function stitch(series1, series2)
+				series2[1] = series2[1] - series1[#series1]
+				series1[#series1] = nil
+				return luci.util.combine(series1, series2)
+			end
+
+			return { t = stitch(block1.t, block2.t), v = stitch(block1.v, block2.v) }
+		end
+
+		local time = os.time()
+		if time < TIMESTAMP_MIN then return false end
+
+		for sid in nixio.fs.dir(TMPO_BASE_PATH) do
+			for _, lvl in ipairs(dir(TMPO_BASE_PATH .. sid)) do --possibly 8/12/16/20
+				lvl = tonumber(lvl)
+				if lvl < 20 then --we don't compact level 20
+					nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, lvl + 4, ""))
+					local bids = dir(TMPO_PATH_TPL:format(sid, lvl, ""))
+					while #bids > 0 and must_compact(bids[1], time, lvl + 4) do
+						local bids_rm = { }
+						local bid, block, bid_compact = pop(bids)
+						bids_rm[#bids_rm + 1] = bid
+						while #bids > 0 and in_same_compaction(bid_compact, bids[1], lvl + 4) do
+							local bidn, blockn =  pop(bids)
+							bids_rm[#bids_rm + 1] = bidn
+							block = join(block, blockn)
+						end
+
+						local jblock = luci.json.encode(block)
+						nixio.fs.writefile(TMPO_PATH_TPL:format(sid, lvl + 4, bid_compact), jblock)
+						for _, bid in ipairs(bids_rm) do
+							nixio.fs.unlink(TMPO_PATH_TPL:format(sid, lvl, bid))
+						end
+					end
+				end
+			end
+		end
 	end
 }
 
@@ -127,7 +201,7 @@ mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
 	if not (sid and stype == "counter") then return end --TODO use data_type entry as filter
 	local payload = luci.json.decode(jpayload)
 	local time, value, unit = payload[1], payload[2], payload[3]
-	tmpo:push(sid, time, value, unit)
+	tmpo:push8(sid, time, value, unit)
 end)
 
 local ufdr = uloop.fd(mqtt:socket(), uloop.READ, function(events)
@@ -145,8 +219,8 @@ ut = uloop.timer(function()
 		local success, errno, err = mqtt:misc()
 		if not success then error(MOSQ_ERROR:format(err)) end
 
-		-- publish tmpo blocks
-		tmpo:publish()
+		-- tmpo block servicing
+		if tmpo:flush8() then tmpo:compact() end
 	end, ULOOP_TIMEOUT_MS)
 
 uloop:run()
