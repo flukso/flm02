@@ -48,7 +48,9 @@ local TMPO_BLOCK16_SPAN = 2^16 -- 18 hours
 local TMPO_BLOCK20_SPAN = 2^20 -- 12 days
 local TMPO_CLOSE8_GRACE = 5 --secs TODO randomize!
 local TMPO_BASE_PATH = "/usr/share/tmpo/sensor/"
-local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s" -- /xyz/8/1401108736
+local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s" -- xyz/8/1401108736.t
+local TMPO_REGEX_BLOCK = '^{"h":(.+),"t":%[0(.+)%],"v":%[0(.+)%]}$'
+local TMPO_FMT_CONCAT = '{"h":%s,"t":%s,"v":%s}'
 
 -- mosquitto client params
 local MOSQ_ID = DAEMON
@@ -89,15 +91,20 @@ local tmpo = {
 		local b8id = math.floor(time / TMPO_BLOCK8_SPAN) * TMPO_BLOCK8_SPAN
 
 		if not b8s[b8id] then
-			b8s[b8id] = { t = { time, time }, v = { value, value } }
+			b8s[b8id] = {
+				h = { head = { time, value }, tail = { time, value } },
+				t = { 0 },
+				v = { 0 }
+			}
 		else
-			local tseries = b8s[b8id].t
-			local vseries = b8s[b8id].v
-			local tail = #b8s[b8id].t
-			tseries[tail] = time - tseries[tail]
-			vseries[tail] = value - vseries[tail]
-			tseries[tail + 1] = time
-			vseries[tail + 1] = value
+			local b8data = b8s[b8id]
+			if time > b8data.h.tail[1] then -- ts must increase monotonously
+				local n = #b8data.t
+				b8data.t[n + 1] = time - b8data.h.tail[1]
+				b8data.v[n + 1] = value - b8data.h.tail[2]
+				b8data.h.tail[1] = time
+				b8data.h.tail[2] = value
+			end
 		end
 
 		if DEBUG.block then dbg.vardump(self.block8) end
@@ -121,7 +128,8 @@ local tmpo = {
 					mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
 					b8s[b8id] = nil
 
-					nixio.fs.writefile(TMPO_PATH_TPL:format(sid, 8, b8id), payload)
+					nixio.fs.writefile(TMPO_PATH_TPL:format(sid, 8, b8id),
+						luci.json.encode(b8data))
 				end
 			end
 		end
@@ -150,22 +158,40 @@ local tmpo = {
 			return math.floor(bid1 / span) == math.floor(bid2 / span)
 		end
 
-		local function pop(sid, lvl, bids)
+		local function pop(sid, lvl, bids, first)
 			local bid = table.remove(bids, 1)
 			local span = 2 ^ (lvl + 4)
 			local bid_compact = math.floor(bid / span) * span
 			local jblock = nixio.fs.readfile(TMPO_PATH_TPL:format(sid, lvl, bid))
-			return bid, luci.json.decode(jblock), bid_compact
+			local eblock = { } --editable block
+			eblock.h, eblock.t, eblock.v = jblock:match(TMPO_REGEX_BLOCK)
+			eblock.h = luci.json.decode(eblock.h)
+
+			if first then
+				eblock.t = { "[0", eblock.t, "]" }
+				eblock.v = { "[0", eblock.v, "]" }
+			end
+			return bid, eblock, bid_compact
 		end
 
-		local function join(block1, block2)
-			local function stitch(series1, series2)
-				series2[1] = series2[1] - series1[#series1]
-				series1[#series1] = nil
-				return luci.util.combine(series1, series2)
-			end
+		local function join(eblock1, eblock2)
+			local dtime = eblock2.h.head[1] - eblock1.h.tail[1]
+			local dvalue = eblock2.h.head[2] - eblock1.h.tail[2]
+			table.insert(eblock1.t, #eblock1.t, "," .. dtime)
+			table.insert(eblock1.v, #eblock1.v, "," .. dvalue)
+			table.insert(eblock1.t, #eblock1.t, eblock2.t)
+			table.insert(eblock1.v, #eblock1.v, eblock2.v)
+			eblock1.h.tail = eblock2.h.tail
+			return eblock1
+		end
 
-			return { t = stitch(block1.t, block2.t), v = stitch(block1.v, block2.v) }
+		local function concat(eblock)
+			local jblock = {
+				h = luci.json.encode(eblock.h),
+				t = table.concat(eblock.t),
+				v = table.concat(eblock.v)
+			}			
+			return TMPO_FMT_CONCAT:format(jblock.h, jblock.t, jblock.v)
 		end
 
 		local time = os.time()
@@ -173,21 +199,20 @@ local tmpo = {
 
 		for sid in nixio.fs.dir(TMPO_BASE_PATH) do
 			for _, lvl in ipairs(dir(TMPO_BASE_PATH .. sid)) do --possibly 8/12/16/20
-				lvl = tonumber(lvl)
-				if lvl < 20 then --we don't compact level 20
+				if lvl < 20 then --we only compact levels 8/12/16
 					nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, lvl + 4, ""))
 					local bids = dir(TMPO_PATH_TPL:format(sid, lvl, ""))
 					while #bids > 0 and must_compact(bids[1], time, lvl + 4) do
 						local bids_rm = { }
-						local bid, block, bid_compact = pop(bids)
+						local bid, eblock, bid_compact = pop(sid, lvl, bids, true)
 						bids_rm[#bids_rm + 1] = bid
 						while #bids > 0 and in_same_compaction(bid_compact, bids[1], lvl + 4) do
-							local bidn, blockn =  pop(bids)
+							local bidn, eblockn =  pop(sid, lvl, bids, false)
 							bids_rm[#bids_rm + 1] = bidn
-							block = join(block, blockn)
+							eblock = join(eblock, eblockn)
 						end
 
-						local jblock = luci.json.encode(block)
+						local jblock = concat(eblock)
 						nixio.fs.writefile(TMPO_PATH_TPL:format(sid, lvl + 4, bid_compact), jblock)
 						for _, bid in ipairs(bids_rm) do
 							nixio.fs.unlink(TMPO_PATH_TPL:format(sid, lvl, bid))
@@ -224,7 +249,7 @@ ut = uloop.timer(function()
 		if not success then error(MOSQ_ERROR:format(err)) end
 
 		-- tmpo block servicing
-		if tmpo:flush8() then tmpo:compact() end
+		if tmpo:flush8() then end --tmpo:compact() end
 	end, ULOOP_TIMEOUT_MS)
 
 uloop:run()
