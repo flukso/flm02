@@ -49,7 +49,7 @@ local TMPO_BLOCK20_SPAN = 2^20 -- 12 days
 local TMPO_CLOSE8_GRACE = 5 --secs TODO randomize!
 local TMPO_BASE_PATH = "/usr/share/tmpo/sensor/"
 local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s" -- xyz/8/1401108736
-local TMPO_REGEX_BLOCK = '^{"h":(.+),"t":%[0(.+)%],"v":%[0(.+)%]}$'
+local TMPO_REGEX_BLOCK = '^{"h":(.+),"t":%[0(.*)%],"v":%[0(.*)%]}$'
 local TMPO_FMT_CONCAT = '{"h":%s,"t":%s,"v":%s}'
 
 -- mosquitto client params
