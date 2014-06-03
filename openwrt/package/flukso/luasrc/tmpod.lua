@@ -48,7 +48,7 @@ local TMPO_BLOCK16_SPAN = 2^16 -- 18 hours
 local TMPO_BLOCK20_SPAN = 2^20 -- 12 days
 local TMPO_CLOSE8_GRACE = 5 --secs TODO randomize!
 local TMPO_BASE_PATH = "/usr/share/tmpo/sensor/"
-local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s" -- xyz/8/1401108736.t
+local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s" -- xyz/8/1401108736
 local TMPO_REGEX_BLOCK = '^{"h":(.+),"t":%[0(.+)%],"v":%[0(.+)%]}$'
 local TMPO_FMT_CONCAT = '{"h":%s,"t":%s,"v":%s}'
 
@@ -139,7 +139,7 @@ local tmpo = {
 	end,
 
 	compact = function(self)
-		local function dir(path) --return a sorted array of (int) dir entries
+		local function sdir(path) --return a sorted array of (int) dir entries
 			local files = { }
 			for file in nixio.fs.dir(path) do
 				files[#files + 1] = tonumber(file) or file
@@ -158,8 +158,9 @@ local tmpo = {
 			return math.floor(bid1 / span) == math.floor(bid2 / span)
 		end
 
-		local function pop(sid, lvl, bids, first)
+		local function pop(sid, lvl, bids, bids_rm, first)
 			local bid = table.remove(bids, 1)
+			bids_rm[#bids_rm + 1] = bid
 			local span = 2 ^ (lvl + 4)
 			local bid_compact = math.floor(bid / span) * span
 			local jblock = nixio.fs.readfile(TMPO_PATH_TPL:format(sid, lvl, bid))
@@ -194,31 +195,35 @@ local tmpo = {
 			return TMPO_FMT_CONCAT:format(jblock.h, jblock.t, jblock.v)
 		end
 
+		local function rm(sid, lvl, bids)
+			for _, bid in ipairs(bids) do
+				nixio.fs.unlink(TMPO_PATH_TPL:format(sid, lvl, bid))
+			end
+		end
+
+		local function scan(sid, lvl, time)
+			nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, lvl + 4, ""))
+			local bids = sdir(TMPO_PATH_TPL:format(sid, lvl, ""))
+			while #bids > 0 and must_compact(bids[1], time, lvl + 4) do
+				local bids_rm = { }
+				local bid, eblock, bid_compact = pop(sid, lvl, bids, bids_rm, true)
+				while #bids > 0 and in_same_compaction(bid_compact, bids[1], lvl + 4) do
+					local bidn, eblockn =  pop(sid, lvl, bids, bids_rm, false)
+					eblock = join(eblock, eblockn)
+				end
+
+				local jblock = concat(eblock)
+				nixio.fs.writefile(TMPO_PATH_TPL:format(sid, lvl + 4, bid_compact), jblock)
+				rm(sid, lvl, bids_rm)
+			end
+		end
+
 		local time = os.time()
 		if time < TIMESTAMP_MIN then return false end
 
 		for sid in nixio.fs.dir(TMPO_BASE_PATH) do
-			for _, lvl in ipairs(dir(TMPO_BASE_PATH .. sid)) do --possibly 8/12/16/20
-				if lvl < 20 then --we only compact levels 8/12/16
-					nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, lvl + 4, ""))
-					local bids = dir(TMPO_PATH_TPL:format(sid, lvl, ""))
-					while #bids > 0 and must_compact(bids[1], time, lvl + 4) do
-						local bids_rm = { }
-						local bid, eblock, bid_compact = pop(sid, lvl, bids, true)
-						bids_rm[#bids_rm + 1] = bid
-						while #bids > 0 and in_same_compaction(bid_compact, bids[1], lvl + 4) do
-							local bidn, eblockn =  pop(sid, lvl, bids, false)
-							bids_rm[#bids_rm + 1] = bidn
-							eblock = join(eblock, eblockn)
-						end
-
-						local jblock = concat(eblock)
-						nixio.fs.writefile(TMPO_PATH_TPL:format(sid, lvl + 4, bid_compact), jblock)
-						for _, bid in ipairs(bids_rm) do
-							nixio.fs.unlink(TMPO_PATH_TPL:format(sid, lvl, bid))
-						end
-					end
-				end
+			for _, lvl in ipairs(sdir(TMPO_BASE_PATH .. sid)) do --possibly 8/12/16/20
+				if lvl < 20 then scan(sid, lvl, time) end
 			end
 		end
 	end
@@ -249,7 +254,7 @@ ut = uloop.timer(function()
 		if not success then error(MOSQ_ERROR:format(err)) end
 
 		-- tmpo block servicing
-		if tmpo:flush8() then end --tmpo:compact() end
+		if tmpo:flush8() then tmpo:compact() end
 	end, ULOOP_TIMEOUT_MS)
 
 uloop:run()
