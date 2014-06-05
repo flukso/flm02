@@ -33,7 +33,8 @@ uloop.init()
 local mosq = require "mosquitto"
 
 local DEBUG = {
-	block = false
+	block8 = false,
+	compact = false
 }
 
 local DAEMON = os.getenv("DAEMON") or "tmpod"
@@ -51,6 +52,8 @@ local TMPO_BASE_PATH = "/usr/share/tmpo/sensor/"
 local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s" -- xyz/8/1401108736
 local TMPO_REGEX_BLOCK = '^{"h":(.+),"t":%[0(.*)%],"v":%[0(.*)%]}$'
 local TMPO_FMT_CONCAT = '{"h":%s,"t":%s,"v":%s}'
+local TMPO_DBG_COMPACT_INFO = "time:%d sid:%s lvl:%2d bid:%d cid:%d"
+local TMPO_DBG_COMPACT_ERR = "time:%d sid:%s lvl:%2d bid:%d cid:%d eblock err!"
 
 -- mosquitto client params
 local MOSQ_ID = DAEMON
@@ -107,7 +110,7 @@ local tmpo = {
 			end
 		end
 
-		if DEBUG.block then dbg.vardump(self.block8) end
+		if DEBUG.block8 then dbg.vardump(self.block8) end
 	end,
 
 	flush8 = function(self)
@@ -158,30 +161,39 @@ local tmpo = {
 			return math.floor(bid1 / span) == math.floor(bid2 / span)
 		end
 
-		local function pop(sid, lvl, bids, bids_rm, first)
-			local bid = table.remove(bids, 1)
-			bids_rm[#bids_rm + 1] = bid
+		local function compaction_id(bid, lvl)
 			local span = 2 ^ (lvl + 4)
-			local bid_compact = math.floor(bid / span) * span
-			local jblock = nixio.fs.readfile(TMPO_PATH_TPL:format(sid, lvl, bid))
-			local eblock = { } --editable block
-			eblock.h, eblock.t, eblock.v = jblock:match(TMPO_REGEX_BLOCK)
-			eblock.h = luci.json.decode(eblock.h)
+			return math.floor(bid / span) * span
+		end
 
-			if first then
-				eblock.t = { "[0", eblock.t, "]" }
-				eblock.v = { "[0", eblock.v, "]" }
+		local function eload(sid, lvl, bid)
+			local jblock = nixio.fs.readfile(TMPO_PATH_TPL:format(sid, lvl, bid))
+			local h, t, v = jblock:match(TMPO_REGEX_BLOCK)
+			if not (h and t and v) then return false end
+
+			local eblock = { --editable block
+				h = luci.json.decode(h),
+				t =	{ "[0", t, "]" },
+				v = { "[0", v, "]" }
+			}
+
+			return eblock.h and eblock
+		end
+
+		local function rm(sid, lvl, bids) --TODO make this operation atomic
+			for _, bid in ipairs(bids) do
+				nixio.fs.unlink(TMPO_PATH_TPL:format(sid, lvl, bid))
 			end
-			return bid, eblock, bid_compact
 		end
 
 		local function join(eblock1, eblock2)
+			if not eblock1 then return eblock2 end
 			local dtime = eblock2.h.head[1] - eblock1.h.tail[1]
 			local dvalue = eblock2.h.head[2] - eblock1.h.tail[2]
 			table.insert(eblock1.t, #eblock1.t, "," .. dtime)
 			table.insert(eblock1.v, #eblock1.v, "," .. dvalue)
-			table.insert(eblock1.t, #eblock1.t, eblock2.t)
-			table.insert(eblock1.v, #eblock1.v, eblock2.v)
+			table.insert(eblock1.t, #eblock1.t, eblock2.t[2])
+			table.insert(eblock1.v, #eblock1.v, eblock2.v[2])
 			eblock1.h.tail = eblock2.h.tail
 			return eblock1
 		end
@@ -195,27 +207,44 @@ local tmpo = {
 			return TMPO_FMT_CONCAT:format(jblock.h, jblock.t, jblock.v)
 		end
 
-		local function rm(sid, lvl, bids)
-			for _, bid in ipairs(bids) do
-				nixio.fs.unlink(TMPO_PATH_TPL:format(sid, lvl, bid))
+		local function sibling_bids(sid, lvl, time)
+			local bids = sdir(TMPO_PATH_TPL:format(sid, lvl, ""))
+			return function() --iterator
+				local cbids = { }
+				if #bids > 0 and must_compact(bids[1], time, lvl + 4) then
+					cbids[1] = bids[1]
+					table.remove(bids, 1)
+					while #bids > 0 and in_same_compaction(cbids[1], bids[1], lvl + 4) do
+						cbids[#cbids + 1] = bids[1]
+						table.remove(bids, 1)
+					end
+					return cbids
+				end
+				return nil
 			end
 		end
 
-		local function scan(sid, lvl, time)
-			nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, lvl + 4, ""))
-			local bids = sdir(TMPO_PATH_TPL:format(sid, lvl, ""))
-			while #bids > 0 and must_compact(bids[1], time, lvl + 4) do
-				local bids_rm = { }
-				local bid, eblock, bid_compact = pop(sid, lvl, bids, bids_rm, true)
-				while #bids > 0 and in_same_compaction(bid_compact, bids[1], lvl + 4) do
-					local bidn, eblockn =  pop(sid, lvl, bids, bids_rm, false)
-					eblock = join(eblock, eblockn)
-				end
-
-				local jblock = concat(eblock)
-				nixio.fs.writefile(TMPO_PATH_TPL:format(sid, lvl + 4, bid_compact), jblock)
-				rm(sid, lvl, bids_rm)
+		local function run_compaction(sid, lvl, cbids)
+			local function dbgprint(fmt, ...)
+				if DEBUG.compact then print(fmt:format(os.time(), ...)) end
 			end
+
+			local cid = compaction_id(cbids[1], lvl)	
+			local cblock 
+			for _, bid in pairs(cbids) do
+				local eblock = eload(sid, lvl, bid)
+				if eblock then
+					cblock = join(cblock, eblock)
+					dbgprint(TMPO_DBG_COMPACT_INFO, sid, lvl, bid, cid)
+				else --TODO report eblock error
+					dbgprint(TMPO_DBG_COMPACT_ERR, sid, lvl, bid, cid)
+				end
+			end
+
+			local jblock = concat(cblock)
+			nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, lvl + 4, ""))
+			nixio.fs.writefile(TMPO_PATH_TPL:format(sid, lvl + 4, cid), jblock)
+			rm(sid, lvl, cbids) --TODO turn into atomic operation
 		end
 
 		local time = os.time()
@@ -223,7 +252,11 @@ local tmpo = {
 
 		for sid in nixio.fs.dir(TMPO_BASE_PATH) do
 			for _, lvl in ipairs(sdir(TMPO_BASE_PATH .. sid)) do --possibly 8/12/16/20
-				if lvl < 20 then scan(sid, lvl, time) end
+				if lvl < 20 then
+					for cbids in sibling_bids(sid, lvl, time) do
+						run_compaction(sid, lvl, cbids)
+					end
+				end
 			end
 		end
 	end
