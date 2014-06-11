@@ -74,7 +74,7 @@ local MOSQ_RETAIN = true
 
 local MOSQ_ERROR = "MQTT error: %s"
 local MOSQ_TOPIC_SENSOR_SUB = "/sensor/#"
-local MOSQ_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/8/%s"
+local MOSQ_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/%d/%d/gz"
 
 -- increase process niceness
 nixio.nice(TMPO_NICE)
@@ -131,15 +131,17 @@ local tmpo = {
 
 			for b8id, b8data in pairs(b8s) do
 				if b8id < self.close8 then
-					local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, b8id)
-					local payload = luci.json.encode(b8data)
-					mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
-					b8s[b8id] = nil
-
 					local path = TMPO_PATH_TPL:format(sid, 8, b8id)
 					local sink = assert(gzio.open(path, "w9f"))
 					sink:write(luci.json.encode(b8data))
 					sink:close()
+					b8s[b8id] = nil
+
+					local source = assert(io.open(path, "r"))
+					local payload = source:read("*all")
+					local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, 8, b8id)
+					mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
+					source:close()
 				end
 			end
 		end
@@ -326,6 +328,12 @@ local tmpo = {
 			sink:close()
 			rm(sid, lvl, cbids)
 			dprint(TMPO_DBG_COMPACT_INFO, sid, lvl + 4, cid)
+
+			local source = assert(io.open(path, "r"))
+			local payload = source:read("*all")
+			local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, lvl + 4, cid)
+			mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
+			source:close()
 		end
 
 		local time = os.time()
