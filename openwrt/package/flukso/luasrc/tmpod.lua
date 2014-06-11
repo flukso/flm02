@@ -22,6 +22,7 @@
 ]]--
 
 local dbg = require "dbg"
+local gzio = require "gzio"
 local nixio = require "nixio"
 nixio.fs = require "nixio.fs"
 local luci = require "luci"
@@ -52,8 +53,12 @@ local TMPO_BASE_PATH = "/usr/share/tmpo/sensor/"
 local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s" -- xyz/8/1401108736
 local TMPO_REGEX_BLOCK = '^{"h":(.+),"t":%[0(.*)%],"v":%[0(.*)%]}$'
 local TMPO_FMT_CONCAT = '{"h":%s,"t":%s,"v":%s}'
-local TMPO_DBG_COMPACT_INFO = "time:%d sid:%s lvl:%2d bid:%d cid:%d"
-local TMPO_DBG_COMPACT_ERR = "time:%d sid:%s lvl:%2d bid:%d cid:%d eblock err!"
+local TMPO_DBG_COMPACT_INFO = "time:%d flash(4kB):%d ram(kB):%.0f sid:%s lvl:%2d cid:%d"
+local TMPO_BLOCK_SIZE = 4096
+local TMPO_REGEX_H = '^{"h":(.+),"t":%[0(.*)$'
+local TMPO_REGEX_T = '^(.-)%](.*)$'
+local TMPO_REGEX_V1 = '^,"v":%[0(.*)$'
+local TMPO_REGEX_V2 = '^(.-)%].*$'
 
 -- mosquitto client params
 local MOSQ_ID = DAEMON
@@ -131,8 +136,10 @@ local tmpo = {
 					mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
 					b8s[b8id] = nil
 
-					nixio.fs.writefile(TMPO_PATH_TPL:format(sid, 8, b8id),
-						luci.json.encode(b8data))
+					local path = TMPO_PATH_TPL:format(sid, 8, b8id)
+					local sink = assert(gzio.open(path, "w9f"))
+					sink:write(luci.json.encode(b8data))
+					sink:close()
 				end
 			end
 		end
@@ -151,65 +158,19 @@ local tmpo = {
 			return files
 		end
 
-		local function must_compact(bid, time, lvl)
-			local span = 2 ^ lvl
-			return math.floor(bid / span) < math.floor(time / span)
-		end
-
-		local function in_same_compaction(bid1, bid2, lvl)
-			local span = 2 ^ lvl
-			return math.floor(bid1 / span) == math.floor(bid2 / span)
-		end
-
-		local function compaction_id(bid, lvl)
-			local span = 2 ^ (lvl + 4)
-			return math.floor(bid / span) * span
-		end
-
-		local function eload(sid, lvl, bid)
-			local jblock = nixio.fs.readfile(TMPO_PATH_TPL:format(sid, lvl, bid))
-			local h, t, v = jblock:match(TMPO_REGEX_BLOCK)
-			if not (h and t and v) then return false end
-
-			local eblock = { --editable block
-				h = luci.json.decode(h),
-				t =	{ "[0", t, "]" },
-				v = { "[0", v, "]" }
-			}
-
-			return eblock.h and eblock
-		end
-
-		local function rm(sid, lvl, bids) --TODO make this operation atomic
-			for _, bid in ipairs(bids) do
-				nixio.fs.unlink(TMPO_PATH_TPL:format(sid, lvl, bid))
-			end
-		end
-
-		local function join(eblock1, eblock2)
-			if not eblock1 then return eblock2 end
-			local dtime = eblock2.h.head[1] - eblock1.h.tail[1]
-			local dvalue = eblock2.h.head[2] - eblock1.h.tail[2]
-			table.insert(eblock1.t, #eblock1.t, "," .. dtime)
-			table.insert(eblock1.v, #eblock1.v, "," .. dvalue)
-			table.insert(eblock1.t, #eblock1.t, eblock2.t[2])
-			table.insert(eblock1.v, #eblock1.v, eblock2.v[2])
-			eblock1.h.tail = eblock2.h.tail
-			return eblock1
-		end
-
-		local function concat(eblock)
-			local jblock = {
-				h = luci.json.encode(eblock.h),
-				t = table.concat(eblock.t),
-				v = table.concat(eblock.v)
-			}			
-			return TMPO_FMT_CONCAT:format(jblock.h, jblock.t, jblock.v)
-		end
-
 		local function sibling_bids(sid, lvl, time)
 			local bids = sdir(TMPO_PATH_TPL:format(sid, lvl, ""))
 			return function() --iterator
+				local function must_compact(bid, time, lvl)
+					local span = 2 ^ lvl
+					return math.floor(bid / span) < math.floor(time / span)
+				end
+
+				local function in_same_compaction(bid1, bid2, lvl)
+					local span = 2 ^ lvl
+					return math.floor(bid1 / span) == math.floor(bid2 / span)
+				end
+
 				local cbids = { }
 				if #bids > 0 and must_compact(bids[1], time, lvl + 4) then
 					cbids[1] = bids[1]
@@ -225,33 +186,153 @@ local tmpo = {
 		end
 
 		local function run_compaction(sid, lvl, cbids)
-			local function dbgprint(fmt, ...)
-				if DEBUG.compact then print(fmt:format(os.time(), ...)) end
-			end
-
-			local cid = compaction_id(cbids[1], lvl)	
-			local cblock 
-			for _, bid in pairs(cbids) do
-				local eblock = eload(sid, lvl, bid)
-				if eblock then
-					cblock = join(cblock, eblock)
-					dbgprint(TMPO_DBG_COMPACT_INFO, sid, lvl, bid, cid)
-				else --TODO report eblock error
-					dbgprint(TMPO_DBG_COMPACT_ERR, sid, lvl, bid, cid)
+			local function dprint(fmt, ...)
+				if DEBUG.compact then
+					print(fmt:format(
+						os.time(),
+						nixio.fs.statvfs(TMPO_BASE_PATH).bfree,
+						collectgarbage("count"),
+						...))
 				end
 			end
 
-			local jblock = concat(cblock)
+			local function compaction_id(bid, lvl)
+				local span = 2 ^ (lvl + 4)
+				return math.floor(bid / span) * span
+			end
+
+	 		local function rm(sid, lvl, bids)
+	    		for _, bid in ipairs(bids) do
+		    		nixio.fs.unlink(TMPO_PATH_TPL:format(sid, lvl, bid))
+		    	end
+	    	end
+
+			local function gzinit(sid, lvl, cbids)
+				local function stream(sid, lvl, cbid)
+					local path = TMPO_PATH_TPL:format(sid, lvl, cbid)
+					local gzfd = assert(gzio.open(path, "r"))
+					local state, buffer = "h", nil
+
+					return function() --return a stream iterator
+						if not gzfd then
+							return nil, "tmpo file streaming completed"
+						end
+
+						if not buffer then
+							buffer = gzfd:read(TMPO_BLOCK_SIZE)
+							if not buffer then
+								gzfd:close()
+								return state, "", true
+							end
+						else
+							local buffer1 = gzfd:read(TMPO_BLOCK_SIZE)
+							if buffer1 then buffer = buffer .. buffer1 end
+						end
+
+						local head, tail
+						if state == "h" then
+							state = "t"
+							head, buffer = buffer:match(TMPO_REGEX_H)
+							return "h", head, true
+						elseif state == "t" then
+							head, tail = buffer:match(TMPO_REGEX_T)
+							if not head then
+								head, buffer = buffer, nil
+								return "t", head, false
+							else
+								state, buffer = "v1", tail
+								return "t", head, true
+							end
+						elseif state == "v1" then
+							state, buffer = "v2", buffer:match(TMPO_REGEX_V1)
+							return "v", "", false
+						elseif state == "v2" then
+							head = buffer:match(TMPO_REGEX_V2)
+							if not head then
+								head, buffer = buffer, nil
+								return "v", head, false
+							else
+								gzfd:close()
+								buffer, gzfd = nil, nil
+								return "v", head, true
+							end
+						end
+					end
+				end
+
+				local sources = { }
+				for _, cbid in ipairs(cbids) do
+					--if no stream iterator can be created,
+					--then it's not added to sources either
+					sources[#sources + 1] = stream(sid, lvl, cbid)
+				end
+				return sources
+			end
+
+			local function gzhead(sources, sink)
+				local headers = { } 
+				for _, stream in ipairs(sources) do
+					local state, jchunk, last = stream()
+					if state and state == "h" and last then
+						headers[#headers + 1] = luci.json.decode(jchunk)
+					else
+						--TODO report error
+					end
+				end
+
+				local h = {
+					head = headers[1].head,
+					tail = headers[#headers].tail
+				}
+				sink:write('{"h":', luci.json.encode(h), ',"t":[0')
+				return headers
+			end
+
+			local function gzdata(key, headers, sources, sink)
+				local function delta(j, header1, header2)
+					return header1
+						and "," .. (header2.head[j] - header1.tail[j])
+						or ""
+				end
+
+				for i, stream in ipairs(sources) do
+					while true do
+						local state, chunk, last = stream()
+						if state and state == key then
+							sink:write(delta(key == "t" and 1 or 2,
+								headers[i - 1], headers[i]), chunk)
+						else
+							--TODO report error
+						end
+						if last then break end
+					end
+				end
+
+				if key == "t" then
+					sink:write('],"v":[0')
+				elseif key == "v" then
+					sink:write(']}')
+				end
+			end
+
 			nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, lvl + 4, ""))
-			nixio.fs.writefile(TMPO_PATH_TPL:format(sid, lvl + 4, cid), jblock)
-			rm(sid, lvl, cbids) --TODO turn into atomic operation
+			local cid = compaction_id(cbids[1], lvl)	
+			local sources = gzinit(sid, lvl, cbids)
+			local path = TMPO_PATH_TPL:format(sid, lvl + 4, cid)
+			local sink = assert(gzio.open(path, "w9f"))
+			local headers = gzhead(sources, sink)
+			gzdata("t", headers, sources, sink)
+			gzdata("v", headers, sources, sink)
+			sink:close()
+			rm(sid, lvl, cbids)
+			dprint(TMPO_DBG_COMPACT_INFO, sid, lvl + 4, cid)
 		end
 
 		local time = os.time()
 		if time < TIMESTAMP_MIN then return false end
 
 		for sid in nixio.fs.dir(TMPO_BASE_PATH) do
-			for _, lvl in ipairs(sdir(TMPO_BASE_PATH .. sid)) do --possibly 8/12/16/20
+			for _, lvl in ipairs(sdir(TMPO_BASE_PATH .. sid)) do --8/12/16/20
 				if lvl < 20 then
 					for cbids in sibling_bids(sid, lvl, time) do
 						run_compaction(sid, lvl, cbids)
