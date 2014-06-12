@@ -43,6 +43,7 @@ local ULOOP_TIMEOUT_MS = 1e3
 local SLEEP_S, SLEEP_NS = 1, 0
 local TIMESTAMP_MIN = 1234567890
 
+local TMPO_FORMAT_VERSION = 1
 local TMPO_NICE = 10
 local TMPO_BLOCK8_SPAN = 2^8 --256 secs
 local TMPO_BLOCK12_SPAN = 2^12 -- 68 mins
@@ -53,7 +54,7 @@ local TMPO_BASE_PATH = "/usr/share/tmpo/sensor/"
 local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s" -- xyz/8/1401108736
 local TMPO_REGEX_BLOCK = '^{"h":(.+),"t":%[0(.*)%],"v":%[0(.*)%]}$'
 local TMPO_FMT_CONCAT = '{"h":%s,"t":%s,"v":%s}'
-local TMPO_DBG_COMPACT_INFO = "time:%d flash(4kB):%d ram(kB):%.0f sid:%s lvl:%2d cid:%d"
+local TMPO_DBG_COMPACT_INFO = "time:%d flash[4kB]:%d ram[kB]:%.0f sid:%s lvl:%2d cid:%d"
 local TMPO_BLOCK_SIZE = 4096
 local TMPO_REGEX_H = '^{"h":(.+),"t":%[0(.*)$'
 local TMPO_REGEX_T = '^(.-)%](.*)$'
@@ -100,7 +101,11 @@ local tmpo = {
 
 		if not b8s[b8id] then
 			b8s[b8id] = {
-				h = { head = { time, value }, tail = { time, value } },
+				h = {
+					head = { time, value },
+					tail = { time, value },
+					vsn = TMPO_FORMAT_VERSION
+				},
 				t = { 0 },
 				v = { 0 }
 			}
