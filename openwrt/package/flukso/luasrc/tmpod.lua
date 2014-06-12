@@ -419,6 +419,14 @@ local ufdw = uloop.fd(mqtt:socket(), uloop.WRITE, function(events)
 		mqtt:write(MOSQ_MAX_PKTS)
     end)
 
+local ub_events = {
+	["flukso.tmpo.reload"] = function(msg)
+		config:load()
+	end
+}
+
+ub:listen(ub_events)
+
 local ut
 ut = uloop.timer(function()
 		ut:set(ULOOP_TIMEOUT_MS)
