@@ -368,8 +368,8 @@ local function provision_kube(hw_id_hex, hw_type_s)
 	end
 
 	local function update_recycle(sidx_s)
-		local recycle = SENSOR[sidx_s].recycle
-		return tostring((recycle and tonumber(recycle) + 1) or 0)
+		local rid = SENSOR[sidx_s].rid -- recycling id
+		return tostring((rid and tonumber(rid) + 1) or 0)
 	end
 
 	local kid_s = get_free(KUBE)
@@ -402,7 +402,7 @@ local function provision_kube(hw_id_hex, hw_type_s)
 				class = "kube",
 				["type"] = sensor_type_s,
 				kid = kid_s,
-				recycle = update_recycle(sidx_s),
+				rid = update_recycle(sidx_s),
 				enable = 1
 			}
 
