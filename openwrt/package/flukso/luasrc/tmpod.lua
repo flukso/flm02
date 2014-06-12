@@ -42,19 +42,20 @@ local DAEMON = os.getenv("DAEMON") or "tmpod"
 local ULOOP_TIMEOUT_MS = 1e3
 local SLEEP_S, SLEEP_NS = 1, 0
 local TIMESTAMP_MIN = 1234567890
+local SENSOR
 
 local TMPO_FORMAT_VERSION = 1
 local TMPO_NICE = 10
-local TMPO_BLOCK8_SPAN = 2^8 --256 secs
+local TMPO_BLOCK8_SPAN = 2^8 -- 256 secs
 local TMPO_BLOCK12_SPAN = 2^12 -- 68 mins
 local TMPO_BLOCK16_SPAN = 2^16 -- 18 hours
 local TMPO_BLOCK20_SPAN = 2^20 -- 12 days
-local TMPO_CLOSE8_GRACE = 5 --secs TODO randomize!
+local TMPO_CLOSE8_GRACE = 5 -- secs TODO randomize!
 local TMPO_BASE_PATH = "/usr/share/tmpo/sensor/"
-local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s" -- xyz/8/1401108736
+local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s/%s" -- [sid]/[rid]/[lvl]/[bid].gz
 local TMPO_REGEX_BLOCK = '^{"h":(.+),"t":%[0(.*)%],"v":%[0(.*)%]}$'
 local TMPO_FMT_CONCAT = '{"h":%s,"t":%s,"v":%s}'
-local TMPO_DBG_COMPACT_INFO = "time:%d flash[4kB]:%d ram[kB]:%.0f sid:%s lvl:%2d cid:%d"
+local TMPO_DBG_COMPACT_INFO = "time:%d flash[4kB]:%d ram[kB]:%.0f sid:%s rid:%d lvl:%2d cid:%d"
 local TMPO_BLOCK_SIZE = 4096
 local TMPO_REGEX_H = '^{"h":(.+),"t":%[0(.*)$'
 local TMPO_REGEX_T = '^(.-)%](.*)$'
@@ -75,7 +76,8 @@ local MOSQ_RETAIN = true
 
 local MOSQ_ERROR = "MQTT error: %s"
 local MOSQ_TOPIC_SENSOR_SUB = "/sensor/#"
-local MOSQ_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/%d/%d/gz"
+local MOSQ_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/%d/%d/%d/gz"
+-- /sensor/[sid]/tmpo/[rid]/[lvl]/[bid]/gz
 
 -- increase process niceness
 nixio.nice(TMPO_NICE)
@@ -88,6 +90,40 @@ while not mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE) do
 end
 mqtt:subscribe(MOSQ_TOPIC_SENSOR_SUB, MOSQ_QOS0)
 
+local config = {
+	sensor = nil,
+
+	load = function(self)
+		local function clean(itbl)
+			local otbl = { }
+			for sidx, params in pairs(itbl) do
+				if tonumber(sidx) then -- only interested in sensor entries
+					otbl[params.id] = params
+					params[".index"] = nil
+					params[".name"] = nil
+					params[".type"] = nil
+					params[".anonymous"] = nil
+					if not params.rid then params.rid = 0 end
+
+					for option, value in pairs(params) do
+						params[option] = tonumber(value) or value
+						if type(value) == "table" then -- dealing with a list
+							for i in pairs(value) do
+								value[i] = tonumber(value[i]) or value[i]
+							end 
+						else
+							params[option] = tonumber(value) or value
+						end
+					end
+				end
+			end
+			return otbl
+		end
+
+		self.sensor = clean(uci:get_all("flukso"))
+	end
+}
+
 local tmpo = {
 	close8 = nil, --block8 closing time
 	block8 = { },
@@ -98,19 +134,26 @@ local tmpo = {
 		end
 		local b8s = self.block8[sid]
 		local b8id = math.floor(time / TMPO_BLOCK8_SPAN) * TMPO_BLOCK8_SPAN
+		local params = config.sensor[sid]
+		local rid = (params and params.rid) or 0 
 
-		if not b8s[b8id] then
-			b8s[b8id] = {
+		if not b8s[rid] then
+			b8s[rid] = { }
+		end
+
+		if not b8s[rid][b8id] then
+			b8s[rid][b8id] = {
 				h = {
 					head = { time, value },
 					tail = { time, value },
-					vsn = TMPO_FORMAT_VERSION
+					vsn = TMPO_FORMAT_VERSION,
+					cfg = params
 				},
 				t = { 0 },
 				v = { 0 }
 			}
 		else
-			local b8data = b8s[b8id]
+			local b8data = b8s[rid][b8id]
 			if time > b8data.h.tail[1] then -- ts must increase monotonously
 				local n = #b8data.t
 				b8data.t[n + 1] = time - b8data.h.tail[1]
@@ -132,21 +175,23 @@ local tmpo = {
 		if time < self.close8 + TMPO_CLOSE8_GRACE then return false end
 
 		for sid, b8s in pairs(self.block8) do
-			nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, 8, ""))
+			for rid, b8sr in pairs(b8s) do
+				nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, rid, 8, ""))
 
-			for b8id, b8data in pairs(b8s) do
-				if b8id < self.close8 then
-					local path = TMPO_PATH_TPL:format(sid, 8, b8id)
-					local sink = assert(gzio.open(path, "w9f"))
-					sink:write(luci.json.encode(b8data))
-					sink:close()
-					b8s[b8id] = nil
+				for b8id, b8data in pairs(b8sr) do
+					if b8id < self.close8 then
+						local path = TMPO_PATH_TPL:format(sid, rid, 8, b8id)
+						local sink = assert(gzio.open(path, "w9f"))
+						sink:write(luci.json.encode(b8data))
+						sink:close()
+						b8sr[b8id] = nil
 
-					local source = assert(io.open(path, "r"))
-					local payload = source:read("*all")
-					local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, 8, b8id)
-					mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
-					source:close()
+						local source = assert(io.open(path, "r"))
+						local payload = source:read("*all")
+						local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, rid, 8, b8id)
+						mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
+						source:close()
+					end
 				end
 			end
 		end
@@ -165,8 +210,8 @@ local tmpo = {
 			return files
 		end
 
-		local function sibling_bids(sid, lvl, time)
-			local bids = sdir(TMPO_PATH_TPL:format(sid, lvl, ""))
+		local function sibling_bids(sid, rid, lvl, time)
+			local bids = sdir(TMPO_PATH_TPL:format(sid, rid, lvl, ""))
 			return function() --iterator
 				local function must_compact(bid, time, lvl)
 					local span = 2 ^ lvl
@@ -192,7 +237,7 @@ local tmpo = {
 			end
 		end
 
-		local function run_compaction(sid, lvl, cbids)
+		local function run_compaction(sid, rid, lvl, cbids)
 			local function dprint(fmt, ...)
 				if DEBUG.compact then
 					print(fmt:format(
@@ -208,15 +253,15 @@ local tmpo = {
 				return math.floor(bid / span) * span
 			end
 
-	 		local function rm(sid, lvl, bids)
+	 		local function rm(sid, rid, lvl, bids)
 	    		for _, bid in ipairs(bids) do
-		    		nixio.fs.unlink(TMPO_PATH_TPL:format(sid, lvl, bid))
+		    		nixio.fs.unlink(TMPO_PATH_TPL:format(sid, rid, lvl, bid))
 		    	end
 	    	end
 
-			local function gzinit(sid, lvl, cbids)
-				local function stream(sid, lvl, cbid)
-					local path = TMPO_PATH_TPL:format(sid, lvl, cbid)
+			local function gzinit(sid, rid, lvl, cbids)
+				local function stream(sid, rid, lvl, cbid)
+					local path = TMPO_PATH_TPL:format(sid, rid, lvl, cbid)
 					local gzfd = assert(gzio.open(path, "r"))
 					local state, buffer = "h", nil
 
@@ -271,7 +316,7 @@ local tmpo = {
 				for _, cbid in ipairs(cbids) do
 					--if no stream iterator can be created,
 					--then it's not added to sources either
-					sources[#sources + 1] = stream(sid, lvl, cbid)
+					sources[#sources + 1] = stream(sid, rid, lvl, cbid)
 				end
 				return sources
 			end
@@ -287,10 +332,8 @@ local tmpo = {
 					end
 				end
 
-				local h = {
-					head = headers[1].head,
-					tail = headers[#headers].tail
-				}
+				local h = luci.util.clone(headers[#headers])
+				h.head = headers[1].head
 				sink:write('{"h":', luci.json.encode(h), ',"t":[0')
 				return headers
 			end
@@ -322,21 +365,21 @@ local tmpo = {
 				end
 			end
 
-			nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, lvl + 4, ""))
+			nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, rid, lvl + 4, ""))
 			local cid = compaction_id(cbids[1], lvl)	
-			local sources = gzinit(sid, lvl, cbids)
-			local path = TMPO_PATH_TPL:format(sid, lvl + 4, cid)
+			local sources = gzinit(sid, rid, lvl, cbids)
+			local path = TMPO_PATH_TPL:format(sid, rid, lvl + 4, cid)
 			local sink = assert(gzio.open(path, "w9f"))
 			local headers = gzhead(sources, sink)
 			gzdata("t", headers, sources, sink)
 			gzdata("v", headers, sources, sink)
 			sink:close()
-			rm(sid, lvl, cbids)
-			dprint(TMPO_DBG_COMPACT_INFO, sid, lvl + 4, cid)
+			rm(sid, rid, lvl, cbids)
+			dprint(TMPO_DBG_COMPACT_INFO, sid, rid, lvl + 4, cid)
 
 			local source = assert(io.open(path, "r"))
 			local payload = source:read("*all")
-			local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, lvl + 4, cid)
+			local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, rid, lvl + 4, cid)
 			mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
 			source:close()
 		end
@@ -345,10 +388,13 @@ local tmpo = {
 		if time < TIMESTAMP_MIN then return false end
 
 		for sid in nixio.fs.dir(TMPO_BASE_PATH) do
-			for _, lvl in ipairs(sdir(TMPO_BASE_PATH .. sid)) do --8/12/16/20
-				if lvl < 20 then
-					for cbids in sibling_bids(sid, lvl, time) do
-						run_compaction(sid, lvl, cbids)
+			for _, rid in ipairs(sdir(TMPO_BASE_PATH .. sid)) do
+				for _, lvl in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, "", ""))) do
+					--can be 8/12/16/20
+					if lvl < 20 then
+						for cbids in sibling_bids(sid, rid, lvl, time) do
+							run_compaction(sid, rid, lvl, cbids)
+						end
 					end
 				end
 			end
@@ -384,4 +430,5 @@ ut = uloop.timer(function()
 		if tmpo:flush8() then tmpo:compact() end
 	end, ULOOP_TIMEOUT_MS)
 
+config:load()
 uloop:run()
