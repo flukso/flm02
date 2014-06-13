@@ -42,7 +42,6 @@ local DAEMON = os.getenv("DAEMON") or "tmpod"
 local ULOOP_TIMEOUT_MS = 1e3
 local SLEEP_S, SLEEP_NS = 1, 0
 local TIMESTAMP_MIN = 1234567890
-local SENSOR
 
 local TMPO_FORMAT_VERSION = 1
 local TMPO_NICE = 10
@@ -50,7 +49,8 @@ local TMPO_BLOCK8_SPAN = 2^8 -- 256 secs
 local TMPO_BLOCK12_SPAN = 2^12 -- 68 mins
 local TMPO_BLOCK16_SPAN = 2^16 -- 18 hours
 local TMPO_BLOCK20_SPAN = 2^20 -- 12 days
-local TMPO_CLOSE8_GRACE = 5 -- secs TODO randomize!
+math.randomseed(os.time())
+local TMPO_CLOSE8_GRACE = 2^2 + math.floor(math.random() * 2^4) -- 4-20 secs
 local TMPO_BASE_PATH = "/usr/share/tmpo/sensor/"
 local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s/%s" -- [sid]/[rid]/[lvl]/[bid].gz
 local TMPO_REGEX_BLOCK = '^{"h":(.+),"t":%[0(.*)%],"v":%[0(.*)%]}$'
