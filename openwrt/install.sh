@@ -49,20 +49,10 @@ cp -r files $INSTALL_PATH
 # copy flash utility to the tools dir
 cp ../tools/ap51-flash $INSTALL_PATH/tools
 
-# patch files of the OpenWRT build system
+# patch the OpenWRT build system with 900-series patches
 cd $INSTALL_PATH
-patch -p0 < $REPO_PATH/patches/900-disable_console.patch
-patch -p0 < $REPO_PATH/patches/910-redirect-console-to-devnull.patch
-patch -p0 < $REPO_PATH/patches/915-kernel_posix_mqueue_support.patch
-patch -p0 < $REPO_PATH/patches/920-add-make-flash-option.patch
-patch -p0 < $REPO_PATH/patches/921-add-make-publish-option.patch
-patch -p0 < $REPO_PATH/patches/925-add_mac_address_to_radio0.patch
-patch -p0 < $REPO_PATH/patches/930-boot_crond_without_crontabs.patch
-patch -p0 < $REPO_PATH/patches/940-wpa_supd_hook.patch
-patch -p0 < $REPO_PATH/patches/950-ntpd_supd_hook.patch
-patch -p0 < $REPO_PATH/patches/960-remove_default_banner.patch
-patch -p0 < $REPO_PATH/patches/970-add_libubox-lua_bindings.patch
-patch -p0 < $REPO_PATH/patches/971-fd_support_for_uloop_lua_bindings.patch
-patch -p0 < $REPO_PATH/patches/980-update_ubus_package.patch
-patch -p0 < $REPO_PATH/patches/981-set_ubus_sock_a+rw.patch
-patch -p0 < $REPO_PATH/patches/990-expand_uci_permissions.patch
+
+for file in $REPO_PATH/patches/9*.patch
+do
+	patch -p0 < $file
+done
