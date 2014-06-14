@@ -31,6 +31,8 @@ luci.util = require "luci.util"
 local uci = require "luci.model.uci".cursor()
 local uloop = require "uloop"
 uloop.init()
+local ubus = require "ubus"
+local ub = assert(ubus.connect(), "unable to connect to ubus")
 local mosq = require "mosquitto"
 
 local DEBUG = {
@@ -259,6 +261,12 @@ local tmpo = {
 		    	end
 	    	end
 
+			local function fsync(path)
+				local fs = nixio.open(path, "a")
+				fs:sync()
+				fs:close()
+			end
+
 			local function gzinit(sid, rid, lvl, cbids)
 				local function stream(sid, rid, lvl, cbid)
 					local path = TMPO_PATH_TPL:format(sid, rid, lvl, cbid)
@@ -374,6 +382,8 @@ local tmpo = {
 			gzdata("t", headers, sources, sink)
 			gzdata("v", headers, sources, sink)
 			sink:close()
+			--gzio does not have an fsync method on a file handle
+			fsync(path)
 			rm(sid, rid, lvl, cbids)
 			dprint(TMPO_DBG_COMPACT_INFO, sid, rid, lvl + 4, cid)
 
@@ -420,7 +430,7 @@ local ufdw = uloop.fd(mqtt:socket(), uloop.WRITE, function(events)
     end)
 
 local ub_events = {
-	["flukso.tmpo.reload"] = function(msg)
+	["flukso.reload"] = function(msg)
 		config:load()
 	end
 }
