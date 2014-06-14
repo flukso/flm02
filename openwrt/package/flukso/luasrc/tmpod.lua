@@ -189,7 +189,7 @@ local tmpo = {
 						local source = assert(io.open(path, "r"))
 						local payload = source:read("*all")
 						local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, rid, 8, b8id)
-						mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
+						mqtt:publish(topic, payload, MOSQ_QOS0, not MOSQ_RETAIN)
 						source:close()
 					end
 				end
@@ -380,7 +380,7 @@ local tmpo = {
 			local source = assert(io.open(path, "r"))
 			local payload = source:read("*all")
 			local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, rid, lvl + 4, cid)
-			mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
+			mqtt:publish(topic, payload, MOSQ_QOS0, not MOSQ_RETAIN)
 			source:close()
 		end
 
