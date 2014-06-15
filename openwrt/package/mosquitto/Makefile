@@ -19,7 +19,7 @@ PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
-MAKE_FLAGS+=WITH_MEMORY_TRACKING=no WITH_EC=no WITH_DOCS=no
+MAKE_FLAGS+=WITH_WEBSOCKETS=yes WITH_MEMORY_TRACKING=no WITH_EC=no WITH_DOCS=no
 TARGET_CFLAGS+=-ggdb3
 include $(INCLUDE_DIR)/version.mk
 # The version of libopenssl in backfire doesn't support psk.
@@ -33,7 +33,7 @@ define Package/$(PKG_NAME)/default
   CATEGORY:=Network
   TITLE:=mosquitto - an MQTT message broker
   URL:=http://www.mosquitto.org/
-  DEPENDS:= +librt
+  DEPENDS:= +librt +libwebsockets
 endef
 
 define Package/$(PKG_NAME)
