@@ -1,6 +1,5 @@
 #
-# Copyright (C) 2011,2012 OpenWrt.org
-# Copyright (C) 2010 Jo-Philipp Wich <xm@subsignal.org>
+# Copyright (C) 2014 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -9,20 +8,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mosquitto
-PKG_VERSION:=1.3.1
-PKG_RELEASE:=1
+PKG_SOURCE_VERSION:=c6e7daaa3cd3a82c0b8b13ed8cf182977ef81925
+PKG_VERSION:=2014-06-15
+PKG_RELEASE:=$(PKG_SOURCE_VERSION)
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-#PKG_REV:=4b30e412ab77
-#PKG_SOURCE:=$(PKG_REV).tar.bz2
-PKG_SOURCE_URL:=http://mosquitto.org/files/source/
-#PKG_SOURCE_URL:=https://bitbucket.org/oojah/mosquitto/get/
-#PKG_BUILD_DIR:=$(BUILD_DIR)/oojah-mosquitto-$(PKG_REV)
-PKG_MD5SUM:=2f2870e965cf6f0b5df4ecaf2a0955d2
+PKG_SOURCE_PROTO:=hg
+PKG_SOURCE_URL:=https://bitbucket.org/flukso/$(PKG_NAME)
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.bz2
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
-MAKE_FLAGS+=WITH_MEMORY_TRACKING=no
+MAKE_FLAGS+=WITH_MEMORY_TRACKING=no WITH_EC=no WITH_DOCS=no
 TARGET_CFLAGS+=-ggdb3
 include $(INCLUDE_DIR)/version.mk
 # The version of libopenssl in backfire doesn't support psk.
