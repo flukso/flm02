@@ -78,7 +78,7 @@ local MOSQ_QOS1 = 1
 local MOSQ_RETAIN = true
 
 local MOSQ_ERROR = "MQTT error: %s"
-local MOSQ_TOPIC_SENSOR_SUB = "/sensor/#"
+local MOSQ_TOPIC_SENSOR_SUB = "/sensor/+/+"
 local MOSQ_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/%d/%d/%d/gz"
 -- /sensor/[sid]/tmpo/[rid]/[lvl]/[bid]/gz
 
