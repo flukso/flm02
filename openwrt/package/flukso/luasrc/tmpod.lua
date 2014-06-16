@@ -460,7 +460,7 @@ local ufdw = uloop.fd(mqtt:socket(), uloop.WRITE, function(events)
     end)
 
 local ub_events = {
-	["flukso.reload"] = function(msg)
+	["flukso.sighup"] = function(msg)
 		config:load()
 	end
 }
