@@ -130,6 +130,7 @@ local config = {
 local tmpo = {
 	close8 = nil, --block8 closing time
 	block8 = { },
+	cocompact = nil,
 
 	push8 = function(self, sid, time, value, unit)
 		if not self.block8[sid] then
@@ -396,24 +397,28 @@ local tmpo = {
 		end
 
 		local time = os.time()
-		if time < TIMESTAMP_MIN then return false end
+		if time < TIMESTAMP_MIN then return end
 
-		for sid in nixio.fs.dir(TMPO_BASE_PATH) do
-			for _, rid in ipairs(sdir(TMPO_BASE_PATH .. sid)) do
-				for _, lvl in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, "", ""))) do
-					--can be 8/12/16/20
-					if lvl < 20 then
-						for cbids in sibling_bids(sid, rid, lvl, time) do
-							run_compaction(sid, rid, lvl, cbids)
+		return coroutine.wrap(function()
+			for sid in nixio.fs.dir(TMPO_BASE_PATH) do
+				for _, rid in ipairs(sdir(TMPO_BASE_PATH .. sid)) do
+					for _, lvl in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, "", ""))) do
+						--can be 8/12/16/20
+						if lvl < 20 then
+							for cbids in sibling_bids(sid, rid, lvl, time) do
+								run_compaction(sid, rid, lvl, cbids)
+								-- cut tmpod some slack to catch up
+								-- with queued mqtt sensor readings
+								self.close8 =
+									math.ceil(os.time() / TMPO_BLOCK8_SPAN + 0.5) *
+									TMPO_BLOCK8_SPAN
+								coroutine.yield(true)
+							end
 						end
 					end
 				end
 			end
-		end
-
-		-- cut tmpod some slack to catch up with queued mqtt sensor readings
-		self.close8 = math.ceil(os.time() / TMPO_BLOCK8_SPAN + 0.5) * TMPO_BLOCK8_SPAN
-		return true
+		end)
 	end,
 
 	gc20 = function(self)
@@ -473,16 +478,20 @@ ub:listen(ub_events)
 
 local ut
 ut = uloop.timer(function()
-		ut:set(ULOOP_TIMEOUT_MS)
 		-- mosquitto connection maintenance
 		local success, errno, err = mqtt:misc()
 		if not success then error(MOSQ_ERROR:format(err)) end
 
 		-- tmpo block servicing
-		if tmpo:flush8() then
-			tmpo:gc20()
-			tmpo:compact()
+		if tmpo:flush8() and not tmpo.cocompact then
+			tmpo.cocompact = tmpo:compact() -- returns a coroutine!
 		end
+		if tmpo.cocompact then
+			tmpo:gc20()
+			if not tmpo:cocompact() then tmpo.cocompact = nil end
+		end
+
+		ut:set(ULOOP_TIMEOUT_MS)
 	end, ULOOP_TIMEOUT_MS)
 
 config:load()
