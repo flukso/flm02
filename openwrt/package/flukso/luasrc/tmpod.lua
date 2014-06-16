@@ -54,7 +54,7 @@ local TMPO_BLOCK20_SPAN = 2^20 -- 12 days
 math.randomseed(os.time())
 local TMPO_CLOSE8_GRACE = 2^2 + math.floor(math.random() * 2^4) -- 4-20 secs
 local TMPO_BASE_PATH = "/usr/share/tmpo/sensor/"
-local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s/%s" -- [sid]/[rid]/[lvl]/[bid].gz
+local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s/%s" -- [sid]/[rid]/[lvl]/[bid]
 local TMPO_REGEX_BLOCK = '^{"h":(.+),"t":%[0(.*)%],"v":%[0(.*)%]}$'
 local TMPO_FMT_CONCAT = '{"h":%s,"t":%s,"v":%s}'
 local TMPO_DBG_COMPACT_INFO = "time:%d flash[4kB]:%d ram[kB]:%.0f sid:%s rid:%d lvl:%2d cid:%d"
@@ -63,6 +63,7 @@ local TMPO_REGEX_H = '^{"h":(.+),"t":%[0(.*)$'
 local TMPO_REGEX_T = '^(.-)%](.*)$'
 local TMPO_REGEX_V1 = '^,"v":%[0(.*)$'
 local TMPO_REGEX_V2 = '^(.-)%].*$'
+local TMPO_GC20_THRESHOLD = 100 -- 100 free 4kB blocks out of +-1000 in jffs2 = 90% full
 
 -- mosquitto client params
 local MOSQ_ID = DAEMON
@@ -409,6 +410,35 @@ local tmpo = {
 				end
 			end
 		end
+	end,
+
+	gc20 = function(self)
+		if nixio.fs.statvfs(TMPO_BASE_PATH).bfree > TMPO_GC20_THRESHOLD then
+			return false
+		end
+	
+		local block20, oldest = { }, nil
+		for sid in nixio.fs.dir(TMPO_BASE_PATH) do
+			for rid in nixio.fs.dir(TMPO_BASE_PATH .. sid) do
+				for bid in nixio.fs.dir(TMPO_PATH_TPL:format(sid, rid, 20, "")) do
+					local bidn = tonumber(bid)
+					local path = TMPO_PATH_TPL:format(sid, rid, 20, bid)
+					block20[path] = bidn
+					if (not oldest) or bidn < oldest then oldest = bidn end
+				end
+			end
+		end
+
+		if oldest then
+			for path, bid in pairs(block20) do
+				if bid == oldest then
+					nixio.fs.unlink(path)
+				end
+			end
+		else
+			--TODO flash nearly full with no block20's to erase
+		end
+		return true
 	end
 }
 
@@ -445,7 +475,10 @@ ut = uloop.timer(function()
 		if not success then error(MOSQ_ERROR:format(err)) end
 
 		-- tmpo block servicing
-		if tmpo:flush8() then tmpo:compact() end
+		if tmpo:flush8() then
+			tmpo:gc20()
+			tmpo:compact()
+		end
 	end, ULOOP_TIMEOUT_MS)
 
 config:load()
