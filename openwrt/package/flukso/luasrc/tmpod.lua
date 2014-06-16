@@ -410,6 +410,10 @@ local tmpo = {
 				end
 			end
 		end
+
+		-- cut tmpod some slack to catch up with queued mqtt sensor readings
+		self.close8 = math.ceil(os.time() / TMPO_BLOCK8_SPAN + 0.5) * TMPO_BLOCK8_SPAN
+		return true
 	end,
 
 	gc20 = function(self)
