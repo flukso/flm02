@@ -135,15 +135,56 @@ local tmpo = {
 	cocompact = nil,
 
 	init = function()
-		local function gzcheck(path)
-			for line in luci.util.execi(TMPO_GZCHECK_EXEC_FMT:format(path)) do
+		-- gzip file integrity check
+		local function gzcheck()
+			local cmd = TMPO_GZCHECK_EXEC_FMT:format(TMPO_BASE_PATH)
+			for line in luci.util.execi(cmd) do
 				local file = line:match(TMPO_GZCHECK_FILE_REGEX)
 				if file then nixio.fs.unlink(file) end
-				--TODO report corrupted gzip files
 			end
 		end
 
-		gzcheck(TMPO_BASE_PATH)
+		-- check for blocks that have already been compacted
+		local function compactcheck()
+			--return a sorted array of (int) dir entries
+			local function sdir(path)
+				local files = { }
+				for file in nixio.fs.dir(path) do
+					files[#files + 1] = tonumber(file) or file
+				end
+				table.sort(files)
+				return files
+			end
+
+			local function compacted(sid, rid, lvl, bid)
+				local function compaction_id(bid, lvl)
+					local span = 2 ^ (lvl + 4)
+					return math.floor(bid / span) * span
+				end
+
+				local cbid = compaction_id(bid, lvl)
+				local file = TMPO_PATH_TPL:format(sid, rid, lvl + 4, cbid)
+				return (nixio.fs.stat(file) and true) or false
+			end
+
+			for sid in nixio.fs.dir(TMPO_BASE_PATH) do
+				for _, rid in ipairs(sdir(TMPO_BASE_PATH .. sid)) do
+					for _, lvl in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, "", ""))) do
+						if lvl < 20 then
+							for _, bid in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, lvl, ""))) do
+								if compacted(sid, rid, lvl, bid) then
+									local file = TMPO_PATH_TPL:format(sid, rid, lvl, bid)
+									nixio.fs.unlink(file)
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+
+		gzcheck()
+		compactcheck()
 	end,
 
 	push8 = function(self, sid, time, value, unit)
