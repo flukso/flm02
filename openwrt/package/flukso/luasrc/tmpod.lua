@@ -64,6 +64,8 @@ local TMPO_REGEX_T = '^(.-)%](.*)$'
 local TMPO_REGEX_V1 = '^,"v":%[0(.*)$'
 local TMPO_REGEX_V2 = '^(.-)%].*$'
 local TMPO_GC20_THRESHOLD = 100 -- 100 free 4kB blocks out of +-1000 in jffs2 = 90% full
+local TMPO_GZCHECK_EXEC_FMT = "gzip -trS '' %s 2>&1"
+local TMPO_GZCHECK_FILE_REGEX = "^gzip:%s*([%w%.%-_/]+):.*$"
 
 -- mosquitto client params
 local MOSQ_ID = DAEMON
@@ -131,6 +133,18 @@ local tmpo = {
 	close8 = nil, --block8 closing time
 	block8 = { },
 	cocompact = nil,
+
+	init = function()
+		local function gzcheck(path)
+			for line in luci.util.execi(TMPO_GZCHECK_EXEC_FMT:format(path)) do
+				local file = line:match(TMPO_GZCHECK_FILE_REGEX)
+				if file then nixio.fs.unlink(file) end
+				--TODO report corrupted gzip files
+			end
+		end
+
+		gzcheck(TMPO_BASE_PATH)
+	end,
 
 	push8 = function(self, sid, time, value, unit)
 		if not self.block8[sid] then
@@ -495,4 +509,5 @@ ut = uloop.timer(function()
 	end, ULOOP_TIMEOUT_MS)
 
 config:load()
+tmpo:init()
 uloop:run()
