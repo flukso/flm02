@@ -455,6 +455,8 @@ local tmpo = {
 		if time < TIMESTAMP_MIN then return end
 
 		return coroutine.wrap(function()
+			local costart, costop = os.time(), nil
+
 			for sid in nixio.fs.dir(TMPO_BASE_PATH) do
 				for _, rid in ipairs(sdir(TMPO_BASE_PATH .. sid)) do
 					for _, lvl in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, "", ""))) do
@@ -464,10 +466,14 @@ local tmpo = {
 								run_compaction(sid, rid, lvl, cbids)
 								-- cut tmpod some slack to catch up
 								-- with queued mqtt sensor readings
-								self.close8 =
-									math.ceil(os.time() / TMPO_BLOCK8_SPAN + 0.5) *
-									TMPO_BLOCK8_SPAN
-								coroutine.yield(true)
+								costop = os.time()
+								while os.time() < costop + 1 + (costop - costart) / 2 do
+									self.close8 =
+										math.ceil(os.time() / TMPO_BLOCK8_SPAN + 0.5) *
+										TMPO_BLOCK8_SPAN
+									coroutine.yield(true)
+								end
+								costart = os.time()
 							end
 						end
 					end
