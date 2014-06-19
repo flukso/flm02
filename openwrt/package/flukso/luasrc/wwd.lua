@@ -377,6 +377,7 @@ local sensor = {
 				["class"] = "ww",
 				["type"] = sprop.typ,
 				["function"] = sname,
+				["data_type"] = sprop.data_type,
 				["enable"] = 1
 			}
 

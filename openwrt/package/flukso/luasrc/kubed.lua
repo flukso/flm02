@@ -394,13 +394,14 @@ local function provision_kube(hw_id_hex, hw_type_s)
 		uci:commit("kube")
 		KUBE = uci:get_all("kube")
 
-		for sensor_type_s in pairs(REGISTRY[hw_type_s]
+		for sensor_type_s, params in pairs(REGISTRY[hw_type_s]
 			[latest_kube_firmware(hw_type_s)].decode.sensors) do
 			sidx_s = get_free(SENSOR)
 
 			local values = {
 				class = "kube",
 				["type"] = sensor_type_s,
+				data_type = params.data_type,
 				kid = kid_s,
 				rid = update_recycle(sidx_s),
 				enable = 1
@@ -422,7 +423,7 @@ local function deprovision_kube(kid_s)
 	uci:foreach("flukso", "sensor", function(sensor)
 		if sensor.kid == kid_s then
 			local sidx = sensor[".name"]
-			local entries = { "class", "type", "function", "kid", "enable" }
+			local entries = { "class", "type", "data_type", "function", "kid", "enable" }
 			for i, entry in ipairs(entries) do
 				uci:delete("flukso", sidx, entry)
 			end
