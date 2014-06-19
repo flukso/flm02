@@ -36,6 +36,7 @@ local ub = assert(ubus.connect(), "unable to connect to ubus")
 local mosq = require "mosquitto"
 
 local DEBUG = {
+	config = false,
 	block8 = false,
 	compact = false
 }
@@ -102,12 +103,17 @@ local config = {
 		local function clean(itbl)
 			local otbl = { }
 			for sidx, params in pairs(itbl) do
-				if tonumber(sidx) then -- only interested in sensor entries
+				if tonumber(sidx) -- only interested in sensor entries
+				and params.enable
+				and params.enable == "1"
+				then
 					otbl[params.id] = params
 					params[".index"] = nil
 					params[".name"] = nil
 					params[".type"] = nil
 					params[".anonymous"] = nil
+					params.enable = nil
+					if not params.data_type then params.data_type = "counter" end
 					if not params.rid then params.rid = 0 end
 
 					for option, value in pairs(params) do
@@ -126,6 +132,7 @@ local config = {
 		end
 
 		self.sensor = clean(uci:get_all("flukso"))
+		if DEBUG.config then dbg.vardump(self.sensor) end
 	end
 }
 
@@ -514,8 +521,9 @@ local tmpo = {
 
 mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
 	if retain then return end
-	local sid, stype = topic:match("^/sensor/(%x+)/(%l+)$")
-	if not (sid and stype == "counter") then return end --TODO use data_type entry as filter
+	local sid, dtype = topic:match("^/sensor/(%x+)/(%l+)$")
+	local sparams = config.sensor[sid]
+	if not (sid and sparams and dtype == sparams.data_type) then return end
 	local payload = luci.json.decode(jpayload)
 	local time, value, unit = payload[1], payload[2], payload[3]
 	tmpo:push8(sid, time, value, unit)
