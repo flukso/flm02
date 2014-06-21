@@ -20,7 +20,7 @@ define Package/flukso
 	CATEGORY:=Flukso
 	DEPENDS:=+libdaemon +liblua +luci-lib-nixio +luci-lib-core \
 		+luci-lib-httpclient +luci-lib-json +luci-lib-sys \
-		+libubox-lua +libubus-lua +rFSM +vstruct
+		+libubox-lua +libubus-lua +lua-mosquitto +rFSM +vstruct
 	TITLE:=Fluksometer daemon collection
 	URL:=http://www.flukso.net
 	MAINTAINER:=Bart Van Der Meerssche <bart@flukso.net>
@@ -62,10 +62,13 @@ define Package/flukso/install
 
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/luad $(1)/usr/sbin/
-	for link in fluksod spid parsed kubed supd; do \
+	for link in fluksod spid parsed kubed tmpod supd; do \
 		$(LN) /usr/sbin/luad $(1)/usr/sbin/"$$$$link"; \
 	done
-	$(INSTALL_BIN) ./luasrc/{fluksod,spid,parsed,kubed,supd}.lua $(1)/usr/sbin/
+	$(INSTALL_BIN) ./luasrc/{fluksod,spid,parsed,kubed,tmpod,supd}.lua $(1)/usr/sbin/
+
+	$(INSTALL_DIR) $(1)/usr/share/tmpo/sensor
+	chmod a+w $(1)/usr/share/tmpo/sensor
 
 	$(INSTALL_DIR) $(1)/usr/bin
 	for file in heartbeat fsync fdude fbackup ftest \

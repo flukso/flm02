@@ -32,5 +32,6 @@ then
 fi
 
 [ -z "$(ps | grep 'sup[d]')" ] && STATUS=5
+[ -z "$(ps | grep 'tmpo[d]')" ] && STATUS=6
 
 [ $STATUS -ne 0 ] && /etc/init.d/flukso restart

@@ -121,6 +121,7 @@ start()
 	/usr/sbin/supd
 	/usr/sbin/spid -u flukso
 	/usr/sbin/fluksod -u flukso
+	/usr/sbin/tmpod -u flukso
 
 	MODEL=$(uci get system.@system[0].model)
 
@@ -187,6 +188,9 @@ stop()
 		/usr/sbin/parsed -k
 		rm -rf /var/run/parsed
 	fi
+
+	/usr/sbin/tmpod -k
+	rm -rf /var/run/tmpod
 
 	/usr/sbin/fluksod -k
 	rm -rf /var/run/fluksod
