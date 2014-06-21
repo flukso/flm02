@@ -1,0 +1,9 @@
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+    <name replace-wildcards="yes">MQTT over Websockets on %h</name>
+    <service>
+        <type>_ws._tcp</type>
+        <port>8083</port>
+    </service>
+</service-group>
