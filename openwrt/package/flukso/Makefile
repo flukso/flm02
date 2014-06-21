@@ -44,7 +44,8 @@ FLUKSO_COMMIT:=$(shell git rev-parse HEAD | awk '{print substr($$0,1,16)}')
 
 define Package/flukso/install
 	$(CP) ./files/* $(1)/
-	
+	chmod a+w $(1)/usr/share/kube/remote
+
 	$(SED) 's,$$$$R,$(REVISION),g' $(1)/etc/banner
 	$(SED) 's,$$$$F,$(PKG_VERSION)-$(PKG_RELEASE),g' $(1)/etc/banner
 	$(SED) 's,$$$$G,$(FLUKSO_COMMIT),g' $(1)/etc/banner
