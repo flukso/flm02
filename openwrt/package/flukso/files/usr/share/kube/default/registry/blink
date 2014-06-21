@@ -4,7 +4,6 @@
 	"controller": "Atmega328p",
 	"radio": "RFM12B",
 	"1" : {
-		"url": "http://url.home",
 		"decode": {
 			"type_bits": 8,
 			"1": "temperature:u4 pressure:u4",
@@ -30,7 +29,6 @@
 	"controller": "LPC812",
 	"radio": "RFM69CW",
 	"1" : {
-		"url": "http://url.home",
 		"decode": {
 			"type_bits": 0,
 			"8": "temperature:u4 pressure:u4",
