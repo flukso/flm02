@@ -1,5 +1,5 @@
---- a/mosquitto.conf	2014-06-21 11:12:30.885848330 +0200
-+++ b/mosquitto.conf	2014-06-21 11:14:56.513845141 +0200
+--- a/mosquitto.conf	2014-06-22 07:14:39.080271768 +0200
++++ b/mosquitto.conf	2014-06-22 07:15:11.132271064 +0200
 @@ -133,7 +133,7 @@
  #bind_address
  
@@ -17,7 +17,8 @@
 +protocol mqtt
  
  # -----------------------------------------------------------------
- # Certificate based SSL/TLS support@ -257,7 +257,7 @@
+ # Certificate based SSL/TLS support
+@@ -257,7 +257,7 @@
  # address and so restrict access to the associated network and 
  # interface. By default, mosquitto will listen on all interfaces.
  # listener port-number [ip address/host name]
