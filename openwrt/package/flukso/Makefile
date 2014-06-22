@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=flukso
-PKG_VERSION:=2.4.0
+PKG_VERSION:=2.4.1
 PKG_RELEASE:=alpha
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
@@ -28,6 +28,12 @@ endef
 
 define Package/flukso/description
 	This package contains the Flukso daemon code and support libraries.
+endef
+
+define Package/flukso/conffiles
+/usr/share/kube/local
+/usr/share/kube/remote
+/usr/share/tmpo
 endef
 
 define Build/Prepare
