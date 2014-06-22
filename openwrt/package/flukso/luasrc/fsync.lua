@@ -33,6 +33,7 @@ local ubus = require "ubus"
 local ub = assert(ubus.connect(), "unable to connect to ubus")
 
 local HW_CHECK_OVERRIDE = (arg[1] == "-f")
+local SKIP_SERVER_SYNC = (arg[1] == "-s")
 local O_RDWR_CREAT = nixio.open_flags('rdwr', 'creat')
 local MAX_TRIES	= 5
 
@@ -526,7 +527,7 @@ if LAN_ENABLED then
 end
 
 -- sync config with the server
-if WAN_ENABLED then
+if WAN_ENABLED and not SKIP_SERVER_SYNC then
 	phone_home()
 end
 
