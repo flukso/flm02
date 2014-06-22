@@ -25,14 +25,20 @@ config settings daemon
 	option cacert /etc/ssl/certs/flukso.ca.crt
 
 ### sensor config options
-# config sensor 1..6
+# config sensor 1..64
 #	option id <uuid>
-#	option type electricity|water
-#	option class analog|pulse|uart
+#	option type electricity|water|gas|...
+#	option data_type counter|gauge
+#	option class analog|pulse|uart|cosem|kube
 #	list port 1..6
-#	option constant [<meterconstant>]
-#	option voltage [<volts>]
-#	option current [<amps>]
+#	option constant <meterconstant>
+#	option voltage <volts>
+#	option current <amps>
+#	option protocol dlms
+#	option obis <obis_id>
+#	option kid <kube_id>
+#	option rid <recycle_id>
+#	option enable 0|1
 
 config sensor 1
 	option id 0123456789abcdef0123456789abcde1
