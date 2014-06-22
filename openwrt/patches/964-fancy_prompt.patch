@@ -1,0 +1,11 @@
+--- package/base-files/files/etc/profile	2014-06-22 14:39:36.155688234 +0200
++++ package/base-files/files/etc/profile	2014-06-22 14:39:52.595687864 +0200
+@@ -4,7 +4,7 @@
+ export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+ export HOME=$(grep -e "^${USER:-root}:" /etc/passwd | cut -d ":" -f 6)
+ export HOME=${HOME:-/root}
+-export PS1='\u@\h:\w\$ '
++export PS1='\[\033[01;32m\]\u@\[\033[01;32m\]\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+ 
+ [ -x /bin/more ] || alias more=less
+ [ -x /usr/bin/vim ] && alias vi=vim || alias vim=vi
