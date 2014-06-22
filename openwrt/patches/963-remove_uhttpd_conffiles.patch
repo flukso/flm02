@@ -1,0 +1,15 @@
+--- package/uhttpd/Makefile	2014-06-22 10:36:35.360006933 +0200
++++ package/uhttpd/Makefile	2014-06-22 10:36:51.980006572 +0200
+@@ -129,12 +129,6 @@
+ 	-DTLS_LDFLAGS="$(TLS_LDFLAGS)" \
+ 
+ 
+-define Package/uhttpd/conffiles
+-/etc/config/uhttpd
+-/etc/uhttpd.crt
+-/etc/uhttpd.key
+-endef
+-
+ define Package/uhttpd/install
+ 	$(INSTALL_DIR) $(1)/etc/init.d
+ 	$(INSTALL_BIN) ./files/uhttpd.init $(1)/etc/init.d/uhttpd
