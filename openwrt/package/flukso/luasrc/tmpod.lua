@@ -113,6 +113,7 @@ local config = {
 					params[".type"] = nil
 					params[".anonymous"] = nil
 					params.enable = nil
+					params.counter = nil
 					if not params.data_type then params.data_type = "counter" end
 					if not params.rid then params.rid = 0 end
 
