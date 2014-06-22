@@ -137,12 +137,6 @@ define Package/libmosquitto-nossl/description
     This package is built without SSL support
 endef
 
-
-define Package/$(PKG_NAME)/conffiles
-/etc/mosquitto/mosquitto.conf
-/etc/config/mosquitto
-endef
-
 Package/$(PKG_NAME)-nossl/conffiles = $(Package/$(PKG_NAME)/conffiles)
 
 define Package/$(PKG_NAME)/install
