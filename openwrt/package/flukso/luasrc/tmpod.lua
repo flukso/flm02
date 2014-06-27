@@ -224,7 +224,12 @@ local tmpo = {
 			if time > b8data.h.tail[1] then -- ts must increase monotonously
 				local n = #b8data.t
 				b8data.t[n + 1] = time - b8data.h.tail[1]
-				b8data.v[n + 1] = value - b8data.h.tail[2]
+				local delta = value - b8data.h.tail[2]
+				if math.floor(delta) ~= delta then
+					delta = delta + 0.005
+					delta = delta - delta%0.001 -- round to 3 decimals
+				end
+				b8data.v[n + 1] = delta
 				b8data.h.tail[1] = time
 				b8data.h.tail[2] = value
 			end
