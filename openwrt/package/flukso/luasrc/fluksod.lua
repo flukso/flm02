@@ -209,8 +209,7 @@ local function wan_buffer(child)
 			if timestamp > TIMESTAMP_MIN
 				and timestamp > (previous[sensor_id].timestamp or 0)
 				and counter ~= (previous[sensor_id].counter or 0) 
-				then
-
+			then
 				nixio.syslog('info', string.format('processed pulse %s:%s:%s', sensor_id, timestamp, counter))
 
 				local topic = string.format(topic_fmt, sensor_id)
@@ -218,7 +217,9 @@ local function wan_buffer(child)
 				local payload = string.format(payload_fmt, timestamp, counter, unit)
 				mqtt:publish(topic, payload, MOSQ_QOS, MOSQ_RETAIN)
 
-				measurements:add(sensor_id, timestamp, counter)
+				if math.floor(counter) == counter then --int check
+					measurements:add(sensor_id, timestamp, counter)
+				end
 				previous[sensor_id].timestamp = timestamp
 				previous[sensor_id].counter = counter
 			end
