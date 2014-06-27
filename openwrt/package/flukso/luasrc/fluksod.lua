@@ -196,7 +196,7 @@ local function wan_buffer(child)
 		local previous = {}
 
 		local topic_fmt = '/sensor/%s/counter'
-		local payload_fmt = '[%d,%f,"%s"]'
+		local payload_fmt = '[%d,%s,"%s"]'
 
 		while true do
 			if not previous[sensor_id] then
