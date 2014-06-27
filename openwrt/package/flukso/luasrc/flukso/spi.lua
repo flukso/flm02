@@ -235,13 +235,19 @@ function decode(msg)
 		msg.decoded.args = msg.received.l:sub(3, -1)
 
 		if msg.decoded.cmd == 'gd' and msg.decoded.args ~= '' then
-			for i = 1, msg.decoded.args:len() / 18 do
+			for i = 1, msg.decoded.args:len() / 22 do
 				msg.decoded[(i-1)*3 + 1] =
-					hextonum(msg.decoded.args:sub((i-1)*18 +  1, (i-1)*18 +  2))
+					hextonum(msg.decoded.args:sub((i-1)*22 +  1, (i-1)*22 +  2))
 				msg.decoded[(i-1)*3 + 2] =
-					hextonum(msg.decoded.args:sub((i-1)*18 +  3, (i-1)*18 + 10))
+					hextonum(msg.decoded.args:sub((i-1)*22 +  3, (i-1)*22 + 10))
+				local milli =
+					hextonum(msg.decoded.args:sub((i-1)*22 + 11, (i-1)*22 + 14))
+				if milli > 0 then
+					msg.decoded[(i-1)*3 + 2] = msg.decoded[(i-1)*3 + 2] +
+						milli / 1e3
+				end
 				msg.decoded[(i-1)*3 + 3] =
-					hextonum(msg.decoded.args:sub((i-1)*18 + 11, (i-1)*18 + 18))
+					hextonum(msg.decoded.args:sub((i-1)*22 + 15, (i-1)*22 + 22))
 			end
 
 			msg.decoded.delta = os.time() .. ' ' .. table.concat(msg.decoded, ' ')
