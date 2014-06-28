@@ -226,7 +226,7 @@ local tmpo = {
 				b8data.t[n + 1] = time - b8data.h.tail[1]
 				local delta = value - b8data.h.tail[2]
 				if math.floor(delta) ~= delta then
-					delta = delta + 0.005
+					delta = delta + 0.0005
 					delta = delta - delta%0.001 -- round to 3 decimals
 				end
 				b8data.v[n + 1] = delta
