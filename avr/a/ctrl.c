@@ -462,6 +462,7 @@ void ctrlCmdSet(uint8_t cmd)
 
 			ctrlWriteCharToTxBuffer(i);
 			ctrlWriteShortToTxBuffer(sensor[i].fraction);
+			state[i].milli = 0;
 		}
 		break;
 
