@@ -232,16 +232,13 @@ static inline void register_pulse(volatile sensor_t *psensor, volatile state_t *
 {
 	psensor->counter += psensor->meterconst;
 	pstate->milli += psensor->fraction;
-
-	if (psensor->meterconst || pstate->milli >= M_UNIT) {
-		pstate->flags |= STATE_PULSE;
-		pstate->timestamp = time.ms;
-
-		if (pstate->milli >= M_UNIT) {
-			pstate->milli -= M_UNIT;
-			psensor->counter++;
-		}
+	if (pstate->milli >= M_UNIT) {
+		pstate->milli -= M_UNIT;
+		psensor->counter++;
 	}
+
+	pstate->flags |= STATE_PULSE;
+	pstate->timestamp = time.ms;
 }
 
 ISR(PCINT1_vect)

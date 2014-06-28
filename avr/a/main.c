@@ -189,16 +189,13 @@ void register_pulse(volatile struct sensor_struct *psensor, volatile struct stat
 {
 	psensor->counter += psensor->meterconst;
 	pstate->milli += psensor->fraction;
-
-	if (psensor->meterconst || pstate->milli >= M_UNIT) {
-		pstate->flags |= STATE_PULSE;
-		pstate->timestamp = time.ms;
-
-		if (pstate->milli >= M_UNIT) {
-			pstate->milli -= M_UNIT;
-			psensor->counter++;
-		}
+	if (pstate->milli >= M_UNIT) {
+		pstate->milli -= M_UNIT;
+		psensor->counter++;
 	}
+
+	pstate->flags |= STATE_PULSE;
+	pstate->timestamp = time.ms;
 }
 
 ISR(TIMER1_COMPA_vect)
