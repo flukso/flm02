@@ -170,6 +170,9 @@ local function dispatch(wan_child, lan_child)
 				local sensor_id = FLUKSO[tostring(tolua(i))]['id']
 				local sensor_class = FLUKSO[tostring(tolua(i))]['class']
 				local sensor_derive = (FLUKSO[tostring(tolua(i))]['derive'] == '1')
+				local sensor_floor = (FLUKSO[tostring(tolua(i))]['floor'] == '1')
+
+				if sensor_floor then math.floor(counter) end
 
 				-- resume both branches
 				if WAN_ENABLED then
