@@ -35,7 +35,7 @@ local FLUKSO = uci:get_all("flukso")
 local MAX_SENSORS	= tonumber(FLUKSO.main.max_sensors)
 
 -- sensor board commands
-local SET_COUNTER	= "sc %d %d"
+local SET_COUNTER	= "sc %d %s"
 local GET_COUNTER	= "gc %d"
 local GET_COUNTER_R	= "^gc%s+(%d+)%s+(%d+)$"
 local COMMIT		= "ct"
@@ -76,7 +76,7 @@ end
 -- @return		none
 local function restore(ub, uci)
 	for i = 1, MAX_SENSORS do
-		local counter = tonumber(uci:get("flukso", i, "counter"))
+		local counter = uci:get("flukso", i, "counter")
 		local cmd = string.format(SET_COUNTER, toc(i), counter)
 		local reply = ub:call("flukso.flx", "ctrl", { cmd = cmd })
 

@@ -189,16 +189,13 @@ void register_pulse(volatile struct sensor_struct *psensor, volatile struct stat
 {
 	psensor->counter += psensor->meterconst;
 	pstate->milli += psensor->fraction;
-
-	if (psensor->meterconst || pstate->milli >= M_UNIT) {
-		pstate->flags |= STATE_PULSE;
-		pstate->timestamp = time.ms;
-
-		if (pstate->milli >= M_UNIT) {
-			pstate->milli -= M_UNIT;
-			psensor->counter++;
-		}
+	if (pstate->milli >= M_UNIT) {
+		pstate->milli -= M_UNIT;
+		psensor->counter++;
 	}
+
+	pstate->flags |= STATE_PULSE;
+	pstate->timestamp = time.ms;
 }
 
 ISR(TIMER1_COMPA_vect)
@@ -285,6 +282,9 @@ void setup_datastructs(void)
 	eeprom_read_block((void*)&enabled, (const void*)&EEPROM_enabled, sizeof(enabled));
 	eeprom_read_block((void*)&phy_to_log, (const void*)&EEPROM_phy_to_log, sizeof(phy_to_log));
 	eeprom_read_block((void*)&sensor, (const void*)&EEPROM_sensor, sizeof(sensor));
+
+	for (uint8_t i=0; i<MAX_SENSORS; i++)
+		state[i].milli = 0;
 }
 
 void setup_led(void)

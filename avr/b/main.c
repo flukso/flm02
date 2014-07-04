@@ -232,16 +232,13 @@ static inline void register_pulse(volatile sensor_t *psensor, volatile state_t *
 {
 	psensor->counter += psensor->meterconst;
 	pstate->milli += psensor->fraction;
-
-	if (psensor->meterconst || pstate->milli >= M_UNIT) {
-		pstate->flags |= STATE_PULSE;
-		pstate->timestamp = time.ms;
-
-		if (pstate->milli >= M_UNIT) {
-			pstate->milli -= M_UNIT;
-			psensor->counter++;
-		}
+	if (pstate->milli >= M_UNIT) {
+		pstate->milli -= M_UNIT;
+		psensor->counter++;
 	}
+
+	pstate->flags |= STATE_PULSE;
+	pstate->timestamp = time.ms;
 }
 
 ISR(PCINT1_vect)
@@ -389,7 +386,10 @@ static inline void setup_datastructs(void)
 	eeprom_read_block((void*)&enabled, (const void*)&enabled_eep, sizeof(enabled));
 	eeprom_read_block((void*)&phy_to_log, (const void*)&phy_to_log_eep, sizeof(phy_to_log));
 	eeprom_read_block((void*)&sensor, (const void*)&sensor_eep, sizeof(sensor));
-}
+
+	for (uint8_t i=0; i<MAX_SENSORS; i++)
+		state[i].milli = 0;
+}	
 
 void setup_ar_uart(void)
 {

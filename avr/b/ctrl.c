@@ -264,6 +264,7 @@ void ctrlDecode(void)
 void ctrlCmdGet(uint8_t cmd)
 {
 	uint8_t i = 0;
+	uint16_t tmp16;
 	uint32_t tmp32, tmp32_bis;
 
 	switch (cmd) {
@@ -274,11 +275,13 @@ void ctrlCmdGet(uint8_t cmd)
 
 				cli();
 				tmp32 = sensor[i].counter;
+				tmp16 = state[i].milli;
 				tmp32_bis = (i < max_analog_sensors) ? state[i].power : state[i].timestamp;
 				state[i].flags &= ~(STATE_PULSE | STATE_POWER);
 				sei();
 
 				ctrlWriteLongToTxBuffer(tmp32);
+				ctrlWriteShortToTxBuffer(tmp16);
 				ctrlWriteLongToTxBuffer(tmp32_bis);
 			}
 		}
@@ -455,6 +458,7 @@ void ctrlCmdSet(uint8_t cmd)
 
 			ctrlWriteCharToTxBuffer(i);
 			ctrlWriteShortToTxBuffer(sensor[i].fraction);
+			state[i].milli = 0;
 		}
 		break;
 
