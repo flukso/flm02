@@ -123,6 +123,13 @@ config rule
 	option proto		tcp
 	option dest_port	8883
 	option target		ACCEPT
+
+#Allow access to MQTT over Websockets on the wan itf
+config rule
+	option src		wan
+	option proto		tcp
+	option dest_port	8083
+	option target		ACCEPT
                                                                 
 # include a file with users custom iptables rules
 config include
