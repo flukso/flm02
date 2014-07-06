@@ -147,7 +147,7 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/mosquitto.init $(1)/etc/init.d/mosquitto
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) ./files/mosquitto.uci.convert $(1)/usr/bin
+	$(INSTALL_BIN) ./files/fmosq.sh $(1)/usr/bin/fmosq
 endef
 Package/$(PKG_NAME)-nossl/install = $(Package/$(PKG_NAME)/install)
 

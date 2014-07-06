@@ -24,6 +24,12 @@ config settings daemon
 	option upgrade_url http://www.flukso.net/files/upgrade/
 	option cacert /etc/ssl/certs/flukso.ca.crt
 
+config settings mqtt
+	option bridge_address flukso.net
+	option bridge_port 8883
+	option bridge_keepalive 60
+	option bridge_restart_timeout 30
+
 ### sensor config options
 # config sensor 1..64
 #	option id <uuid>
