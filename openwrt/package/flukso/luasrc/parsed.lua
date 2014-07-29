@@ -138,7 +138,12 @@ while true do
 				local value, unit
 
 				if protocol == "dlms" then
-					value, unit = telegram[obis]:match("^%(([%d%.]+)%*([%w]+)%)$")
+					value, unit = telegram[obis]:match("^%(([%d%.]+)%*(%w+)%)$")
+					-- for DSMR4.0 compliance
+					-- [0-1:24.2.1] = (140729130000S)(00009.400*m3)
+					if not value then
+						value, unit = telegram[obis]:match("^%(%w+%)%(([%d%.]+)%*(%w+)%)$")
+					end
 				elseif protocol == "tic" then
 					value, unit = telegram[obis], map.unit
 				end
