@@ -14,6 +14,7 @@ config settings main
 	option max_analog_sensors 3
 	option reset_counters 0
 	option phase 1
+	option dsmr 4.0
 
 config settings daemon
 	option logmask info
