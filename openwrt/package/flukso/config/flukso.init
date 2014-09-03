@@ -65,6 +65,9 @@ set_hw_version()
 	elif [ $MODEL == FLM02B ]
 	then
 		MINOR=2
+	elif [ $MODEL == FLM02W ]
+	then
+		MINOR=0    
 	fi
 
 	uci set flukso.main.hw_minor=$MINOR
@@ -111,16 +114,51 @@ set_ttyS0_C()
 		inpck -parodd cs7 -cstopb
 }
 
+set_ttyS0_W()
+{
+	stty -F /dev/ttyS0 115200 min 255 time 1 \
+		-icanon -isig -iexten -echo -brkint -icrnl -ignbrk \
+		-igncr -inlcr -inpck -istrip -ixon -opost -parenb \
+		-inpck cs8 -cstopb
+}
 
-start()
+start_ww()
 {
 	FIRSTBOOT=$(uci get system.@system[0].firstboot)
 
 	if [ $FIRSTBOOT -eq '1' ]
 	then
-		set_version
-		load_config
-		set_hw_version
+		uci set system.@system[0].firstboot='0'
+		uci set system.@system[0].restore='0'
+		uci commit
+	fi
+	
+	chmod 666 /sys/class/leds/globe/trigger
+	/usr/sbin/supd
+	/usr/sbin/wwd -u flukso
+	/usr/sbin/tmpod -u flukso
+	set_ttyS0_W
+	echo 0 > /sys/devices/virtual/gpio/gpio4/value
+	HEARTBEAT=/usr/bin/heartbeat
+	FCHECK=/usr/bin/fcheck
+	MINUTE=$(date '+%M')
+
+	# Tell the server we've had a reset
+	$HEARTBEAT 1 >&- 2>&- <&-
+
+	# Configure cron
+	echo -e "$MINUTE * * * * $HEARTBEAT 0\n*/15 * * * * $FCHECK" | crontab -
+
+	# Making sure all committed uci changes are written to flash
+	sync
+}
+
+start_fl()
+{
+	FIRSTBOOT=$(uci get system.@system[0].firstboot)
+
+	if [ $FIRSTBOOT -eq '1' ]
+	then
 		program_sensor_board
 	fi
 
@@ -190,7 +228,22 @@ start()
 	sync
 }
 
-stop()
+stop_ww()
+{
+	crontab -r
+
+	/usr/sbin/tmpod -k
+	rm -rf /var/run/tmpod
+
+   	/usr/sbin/wwd -k
+	rm -rf /var/run/wwd
+
+	/usr/sbin/supd -k
+	rm -rf /var/run/supd
+}
+
+
+stop_fl()
 {
 	crontab -r
 
@@ -216,5 +269,38 @@ stop()
 
 	/usr/sbin/supd -k
 	rm -rf /var/run/supd
+}
+
+start()
+{
+	FIRSTBOOT=$(uci get system.@system[0].firstboot)
+
+	if [ $FIRSTBOOT -eq '1' ]
+	then
+		set_version
+		load_config
+		set_hw_version
+	fi
+
+	MODEL=$(uci get system.@system[0].model)
+
+	if [ $MODEL == FLM02W ]
+	then
+		start_ww
+	else
+		start_fl
+	fi
+}
+
+stop()
+{
+	MODEL=$(uci get system.@system[0].model)
+
+	if [ $MODEL == FLM02W ]
+	then
+		stop_ww
+	else
+		stop_fl
+	fi
 }
 

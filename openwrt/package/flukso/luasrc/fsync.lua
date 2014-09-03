@@ -499,23 +499,25 @@ end
 -- open the connection to the syslog deamon, specifying our identity
 nixio.openlog("fsync", "pid")
 
--- sync config to sensor board
-check_hw_version(ub)
-disable_all_sensors(ub)
+if MODEL ~= "FLM02W" then
+	-- sync config to sensor board
+	check_hw_version(ub)
+	disable_all_sensors(ub)
 
-if MODEL == "FLM02B" or MODEL == "FLM02C" then
-	set_hardware_lines(ub)
+	if MODEL == "FLM02B" or MODEL == "FLM02C" then
+		set_hardware_lines(ub)
+	end
+
+	set_phy_to_log(ub)
+	set_meterconst(ub)
+
+	if RESET_COUNTERS then
+		reset_counters(ub)
+	end
+
+	enable_sensors(ub)
+	commit(ub)
 end
-
-set_phy_to_log(ub)
-set_meterconst(ub)
-
-if RESET_COUNTERS then
-	reset_counters(ub)
-end
-
-enable_sensors(ub)
-commit(ub)
 
 -- sync config locally
 remove_symlinks()
