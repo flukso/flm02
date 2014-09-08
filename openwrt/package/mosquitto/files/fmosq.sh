@@ -28,5 +28,6 @@ echo "try_private false" >> $CONFFILE
 echo "cleansession true" >> $CONFFILE
 echo "keepalive_interval $KEEPALIVE" >> $CONFFILE
 echo "restart_timeout $TIMEOUT" >> $CONFFILE
+echo 'topic /device/+/tmpo/sync out 0 "" ""' >> $CONFFILE
 echo 'topic /sensor/+/tmpo/# out 0 "" ""' >> $CONFFILE
 

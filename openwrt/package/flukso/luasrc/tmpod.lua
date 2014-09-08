@@ -71,6 +71,7 @@ local TMPO_REGEX_V2 = '^(.-)%].*$'
 local TMPO_REGEX_SYNC = "^/d/device/(%x+)/tmpo/sync$"
 local TMPO_REGEX_SENSOR = "^/sensor/(%x+)/(%l+)$"
 local TMPO_TOPIC_SYNC_SUB = "/d/device/%s/tmpo/sync"
+local TMPO_TOPIC_SYNC_PUB = "/device/%s/tmpo/sync"
 local TMPO_TOPIC_SENSOR_SUB = "/sensor/+/+"
 local TMPO_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/%d/%d/%d/gz"
 -- /sensor/[sid]/tmpo/[rid]/[lvl]/[bid]/gz
@@ -201,6 +202,7 @@ local tmpo = {
 
 		gzcheck()
 		compactcheck()
+		mqtt:publish(TMPO_TOPIC_SYNC_PUB:format(DEVICE), "", MOSQ_QOS0, not MOSQ_RETAIN)
 	end,
 
 	push8 = function(self, sid, time, value, unit)
@@ -571,7 +573,6 @@ local tmpo = {
 		end
 
 		if not self.synclist then return end
-		if DEBUG.sync then dbg.vardump(self.synclist) end
 		for _, s in ipairs(self.synclist) do
 			local stail = tail(s.lvl, s.bid)
 			for _, rid in ipairs(sdir(TMPO_BASE_PATH .. s.sid)) do
