@@ -487,6 +487,7 @@ local tmpo = {
 						if lvl < 20 then
 							for cbids in sibling_bids(sid, rid, lvl, time) do
 								run_compaction(sid, rid, lvl, cbids)
+								collectgarbage()
 								-- cut tmpod some slack to catch up
 								-- with queued mqtt sensor readings
 								costop = os.time()
