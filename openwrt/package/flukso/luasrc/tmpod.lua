@@ -38,10 +38,12 @@ local mosq = require "mosquitto"
 local DEBUG = {
 	config = false,
 	block8 = false,
-	compact = false
+	compact = false,
+	sync = false
 }
 
 local DAEMON = os.getenv("DAEMON") or "tmpod"
+local DEVICE = uci:get_first("system", "system", "device")
 local ULOOP_TIMEOUT_MS = 1e3
 local SLEEP_S, SLEEP_NS = 1, 0
 local TIMESTAMP_MIN = 1234567890
@@ -52,6 +54,7 @@ local TMPO_BLOCK8_SPAN = 2^8 -- 256 secs
 local TMPO_BLOCK12_SPAN = 2^12 -- 68 mins
 local TMPO_BLOCK16_SPAN = 2^16 -- 18 hours
 local TMPO_BLOCK20_SPAN = 2^20 -- 12 days
+local TMPO_LVLS_REVERSE = { 20, 16, 12, 8 }
 math.randomseed(os.time())
 local TMPO_CLOSE8_GRACE = 2^2 + math.floor(math.random() * 2^4) -- 4-20 secs
 local TMPO_BASE_PATH = "/usr/share/tmpo/sensor/"
@@ -59,11 +62,18 @@ local TMPO_PATH_TPL = TMPO_BASE_PATH .. "%s/%s/%s/%s" -- [sid]/[rid]/[lvl]/[bid]
 local TMPO_REGEX_BLOCK = '^{"h":(.+),"t":%[0(.*)%],"v":%[0(.*)%]}$'
 local TMPO_FMT_CONCAT = '{"h":%s,"t":%s,"v":%s}'
 local TMPO_DBG_COMPACT_INFO = "time:%d flash[4kB]:%d ram[kB]:%.0f sid:%s rid:%d lvl:%2d cid:%d"
+local TMPO_DBG_SYNC_INFO = "time:%d flash[4kB]:%d ram[kB]:%.0f sid:%s rid:%d lvl:%2d bid:%d [s]"
 local TMPO_BLOCK_SIZE = 4096
 local TMPO_REGEX_H = '^{"h":(.+),"t":%[0(.*)$'
 local TMPO_REGEX_T = '^(.-)%](.*)$'
 local TMPO_REGEX_V1 = '^,"v":%[0(.*)$'
 local TMPO_REGEX_V2 = '^(.-)%].*$'
+local TMPO_REGEX_SYNC = "^/d/device/(%x+)/tmpo/sync$"
+local TMPO_REGEX_SENSOR = "^/sensor/(%x+)/(%l+)$"
+local TMPO_TOPIC_SYNC_SUB = "/d/device/%s/tmpo/sync"
+local TMPO_TOPIC_SENSOR_SUB = "/sensor/+/+"
+local TMPO_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/%d/%d/%d/gz"
+-- /sensor/[sid]/tmpo/[rid]/[lvl]/[bid]/gz
 local TMPO_GC20_THRESHOLD = 100 -- 100 free 4kB blocks out of +-1000 in jffs2 = 90% full
 local TMPO_GZCHECK_EXEC_FMT = "gzip -trS '' %s 2>&1"
 local TMPO_GZCHECK_FILE_REGEX = "^gzip:%s*([%w%.%-_/]+):.*$"
@@ -79,11 +89,7 @@ local MOSQ_MAX_PKTS = 1 -- packets
 local MOSQ_QOS0 = 0
 local MOSQ_QOS1 = 1
 local MOSQ_RETAIN = true
-
 local MOSQ_ERROR = "MQTT error: %s"
-local MOSQ_TOPIC_SENSOR_SUB = "/sensor/+/+"
-local MOSQ_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/%d/%d/%d/gz"
--- /sensor/[sid]/tmpo/[rid]/[lvl]/[bid]/gz
 
 -- increase process niceness
 nixio.nice(TMPO_NICE)
@@ -94,7 +100,8 @@ local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
 while not mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE) do
 	nixio.nanosleep(SLEEP_S, SLEEP_NS)
 end
-mqtt:subscribe(MOSQ_TOPIC_SENSOR_SUB, MOSQ_QOS0)
+mqtt:subscribe(TMPO_TOPIC_SYNC_SUB:format(DEVICE), MOSQ_QOS0)
+mqtt:subscribe(TMPO_TOPIC_SENSOR_SUB, MOSQ_QOS0)
 
 local config = {
 	sensor = nil,
@@ -141,6 +148,7 @@ local tmpo = {
 	close8 = nil, --block8 closing time
 	block8 = { },
 	cocompact = nil,
+	synclist = nil,
 
 	init = function()
 		-- gzip file integrity check
@@ -260,7 +268,7 @@ local tmpo = {
 
 						local source = assert(io.open(path, "r"))
 						local payload = source:read("*all")
-						local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, rid, 8, b8id)
+						local topic = TMPO_TOPIC_SENSOR_PUB:format(sid, rid, 8, b8id)
 						mqtt:publish(topic, payload, MOSQ_QOS0, not MOSQ_RETAIN)
 						source:close()
 					end
@@ -275,7 +283,7 @@ local tmpo = {
 	compact = function(self)
 		local function sdir(path) --return a sorted array of (int) dir entries
 			local files = { }
-			for file in nixio.fs.dir(path) do
+			for file in nixio.fs.dir(path) or function() end do --dummy iterator
 				files[#files + 1] = tonumber(file) or file
 			end
 			table.sort(files)
@@ -459,7 +467,7 @@ local tmpo = {
 
 			local source = assert(io.open(path, "r"))
 			local payload = source:read("*all")
-			local topic = MOSQ_TOPIC_SENSOR_PUB:format(sid, rid, lvl + 4, cid)
+			local topic = TMPO_TOPIC_SENSOR_PUB:format(sid, rid, lvl + 4, cid)
 			mqtt:publish(topic, payload, MOSQ_QOS0, not MOSQ_RETAIN)
 			source:close()
 		end
@@ -522,26 +530,94 @@ local tmpo = {
 			--TODO flash nearly full with no block20's to erase
 		end
 		return true
+	end,
+
+	sync1 = function(self, synclist)
+		self.synclist = synclist
+	end,
+
+	sync2 = function(self)
+		local function dprint(fmt, ...)
+			if DEBUG.sync then
+				print(fmt:format(
+					os.time(),
+					nixio.fs.statvfs(TMPO_BASE_PATH).bfree,
+					collectgarbage("count"),
+					...))
+			end
+		end
+
+		local function tail(lvl, bid)
+			return bid + 2^lvl - 1
+		end
+
+		local function sdir(path)
+			local files = { }
+			for file in nixio.fs.dir(path) or function() end do --dummy iterator
+				files[#files + 1] = tonumber(file) or file
+			end
+			table.sort(files)
+			return files
+		end
+
+		local function publish(sid, rid, lvl, bid)
+			dprint(TMPO_DBG_SYNC_INFO, sid, rid, lvl, bid)
+			local path = TMPO_PATH_TPL:format(sid, rid, lvl, bid)
+			local source = assert(io.open(path, "r"))
+			local payload = source:read("*all")
+			local topic = TMPO_TOPIC_SENSOR_PUB:format(sid, rid, lvl, bid)
+			mqtt:publish(topic, payload, MOSQ_QOS0, not MOSQ_RETAIN)
+			source:close()
+		end
+
+		if not self.synclist then return end
+		if DEBUG.sync then dbg.vardump(self.synclist) end
+		for _, s in ipairs(self.synclist) do
+			local stail = tail(s.lvl, s.bid)
+			for _, rid in ipairs(sdir(TMPO_BASE_PATH .. s.sid)) do
+				if rid >= s.rid then
+					for _, lvl in ipairs(TMPO_LVLS_REVERSE) do
+						for _, bid in ipairs(sdir(TMPO_PATH_TPL:format(s.sid, rid, lvl, ""))) do
+							local btail = tail(lvl, bid)
+							if btail > stail then publish(s.sid, rid, lvl, bid) end
+						end
+					end
+				end
+			end
+		end
+		self.synclist = nil
 	end
 }
 
 mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
+	local function sensor(sid, dtype)
+		local sparams = config.sensor[sid]
+		if not (sid and sparams and dtype == sparams.data_type) then return end
+		local payload = luci.json.decode(jpayload)
+		local time, value, unit = payload[1], payload[2], payload[3]
+		tmpo:push8(sid, time, value, unit)
+		return true
+	end
+
+	local function sync(device)
+		if not (device and device == DEVICE) then return end
+		local payload = luci.json.decode(jpayload)
+		tmpo:sync1(payload)
+	end
+
 	if retain then return end
-	local sid, dtype = topic:match("^/sensor/(%x+)/(%l+)$")
-	local sparams = config.sensor[sid]
-	if not (sid and sparams and dtype == sparams.data_type) then return end
-	local payload = luci.json.decode(jpayload)
-	local time, value, unit = payload[1], payload[2], payload[3]
-	tmpo:push8(sid, time, value, unit)
+	if not sensor(topic:match(TMPO_REGEX_SENSOR)) then
+		sync(topic:match(TMPO_REGEX_SYNC))
+	end
 end)
 
 local ufdr = uloop.fd(mqtt:socket(), uloop.READ, function(events)
-		mqtt:read(MOSQ_MAX_PKTS)
-    end)
+	mqtt:read(MOSQ_MAX_PKTS)
+end)
 
 local ufdw = uloop.fd(mqtt:socket(), uloop.WRITE, function(events)
-		mqtt:write(MOSQ_MAX_PKTS)
-    end)
+	mqtt:write(MOSQ_MAX_PKTS)
+end)
 
 local ub_events = {
 	["flukso.sighup"] = function(msg)
@@ -556,6 +632,9 @@ ut = uloop.timer(function()
 		-- mosquitto connection maintenance
 		local success, errno, err = mqtt:misc()
 		if not success then error(MOSQ_ERROR:format(err)) end
+
+		-- run sync algo if needed
+		tmpo:sync2()
 
 		-- tmpo block servicing
 		if tmpo:flush8() and not tmpo.cocompact then
