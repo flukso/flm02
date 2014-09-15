@@ -353,7 +353,7 @@ local tmpo = {
 					local gzfd = assert(gzio.open(path, "r"))
 					local state, buffer = "h", nil
 
-					return function() --return a stream iterator
+					return function() --iterator returning: state, chunk, last
 						if not gzfd then
 							return nil, "tmpo file streaming completed"
 						end
@@ -428,17 +428,19 @@ local tmpo = {
 
 			local function gzdata(key, headers, sources, sink)
 				local function delta(j, header1, header2)
+					--no delta insertion for the first stream 
 					return header1
 						and "," .. (header2.head[j] - header1.tail[j])
 						or ""
 				end
 
 				for i, stream in ipairs(sources) do
+					sink:write(delta(key == "t" and 1 or 2,
+						headers[i - 1], headers[i]))
 					while true do
 						local state, chunk, last = stream()
 						if state and state == key then
-							sink:write(delta(key == "t" and 1 or 2,
-								headers[i - 1], headers[i]), chunk)
+							sink:write(chunk)
 						else
 							--TODO report error
 						end
