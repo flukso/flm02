@@ -457,8 +457,12 @@ local tmpo = {
 
 			nixio.fs.mkdirr(TMPO_PATH_TPL:format(sid, rid, lvl + 4, ""))
 			local cid = compaction_id(cbids[1], lvl)	
-			local sources = gzinit(sid, rid, lvl, cbids)
 			local path = TMPO_PATH_TPL:format(sid, rid, lvl + 4, cid)
+			if nixio.fs.stat(path) then --never overwrite an existing tmpo block
+				rm(sid, rid, lvl, cbids)
+				return
+			end
+			local sources = gzinit(sid, rid, lvl, cbids)
 			local sink = assert(gzio.open(path, "w9f"))
 			local headers = gzhead(sources, sink)
 			gzdata("t", headers, sources, sink)
