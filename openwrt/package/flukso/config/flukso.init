@@ -280,6 +280,7 @@ start()
 		set_version
 		load_config
 		set_hw_version
+		chown -R flukso:flukso /usr/share/tmpo
 	fi
 
 	MODEL=$(uci get system.@system[0].model)
