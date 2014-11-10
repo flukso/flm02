@@ -5,43 +5,8 @@
 	"radio": "RFM12B",
 	"1" : {
 		"decode": {
-			"type_bits": 8,
-			"1": "temperature:u4 pressure:u4",
-			"sensors": {
-				"temperature": {
-					"scale": "2*x + 10",
-					"unit": "K",
-					"data_type": "gauge"
-				},
-				"pressure": {
-					"unit": "Pa",
-					"data_type": "gauge"
-				}
-			}
-		},
-		"encode": {
-		}
-	}
-},
-
-"19217" : {
-	"description": "FluksoKube FLK01A",
-	"controller": "LPC812",
-	"radio": "RFM69CW",
-	"1" : {
-		"decode": {
 			"type_bits": 0,
-			"8": "temperature:u4 pressure:u4",
 			"sensors": {
-				"temperature": {
-					"scale": "2*x + 10",
-					"unit": "K",
-					"data_type": "gauge"
-				},
-				"pressure": {
-					"unit": "Pa",
-					"data_type": "gauge"
-				}
 			}
 		}
 	}
