@@ -6,11 +6,16 @@
 	"1" : {
 		"decode": {
 			"type_bits": 0,
-			"5": "< temperature:u2 humidity:u2 error:u1",
+			"6": "< temperature:u2 humidity:u2 battery:u1 error:u1",
 			"4": "< movement:u4",
 			"sensors": {
 				"error": {
 					"unit": "",
+					"data_type": "gauge"
+				},
+				"battery": {
+					"scale": "math.floor((27.43 * x^(-1.04)) * 10 + 0.5) / 10",
+					"unit": "V",
 					"data_type": "gauge"
 				},
 				"temperature": {
