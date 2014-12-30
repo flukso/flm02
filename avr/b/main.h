@@ -49,7 +49,7 @@ typedef struct {
 #define STATE_POWER_CALC	0x08
 #define STATE_POWER			0x10
 
-#define PULSE_MASK_MS 5
+#define PULSE_DEBOUNCE_MS 5
 
 typedef struct {
 	uint8_t  flags;
@@ -59,7 +59,7 @@ typedef struct {
 	uint32_t nano_end;
 	uint8_t  pulse_count;
 	uint8_t  pulse_count_final;
-	uint8_t  pulse_mask; /* ignore state changes while mask > 0 (ms) */
+	uint8_t  pulse_debounce; /* ignore state changes while mask > 0 (ms) */
 
 	uint16_t milli;
 
