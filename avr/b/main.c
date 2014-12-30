@@ -220,12 +220,16 @@ static inline bool port_low(uint8_t pinx, uint8_t i)
 
 static inline bool high_to_low(state_t state, uint8_t pinx, uint8_t i)
 {
-	return (state.flags & STATE_PULSE_HIGH) && port_low(pinx, i);
+	return !state.pulse_mask
+		&& (state.flags & STATE_PULSE_HIGH)
+		&& port_low(pinx, i);
 }
 
 static inline bool low_to_high(state_t state, uint8_t pinx, uint8_t i)
 {
-	return !(state.flags & STATE_PULSE_HIGH) && port_high(pinx, i);
+	return !state.pulse_mask
+		&& !(state.flags & STATE_PULSE_HIGH)
+		&& port_high(pinx, i);
 }
 
 static inline void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate)
@@ -241,6 +245,14 @@ static inline void register_pulse(volatile sensor_t *psensor, volatile state_t *
 	pstate->timestamp = time.ms;
 }
 
+static inline void pulse_mask_update()
+{
+	for (uint8_t i = max_analog_sensors; i < MAX_SENSORS; i++) {
+		if (state[i].pulse_mask > 0)
+			state[i].pulse_mask--;
+	}
+}
+
 ISR(PCINT1_vect)
 {
 	DBG_ISR_BEGIN();
@@ -253,6 +265,7 @@ ISR(PCINT1_vect)
 	for (i = max_analog_sensors; i < MAX_SENSORS; i++) {
 		if (high_to_low(state[i], pinc, i)) {
 			state[i].flags &= ~STATE_PULSE_HIGH;
+			state[i].pulse_mask = PULSE_MASK_MS;
 
 			if (port_enabled(i)) {
 				register_pulse(&sensor[i], &state[i]);
@@ -264,6 +277,7 @@ ISR(PCINT1_vect)
 
 		if (low_to_high(state[i], pinc, i)) {
 			state[i].flags |= STATE_PULSE_HIGH;
+			state[i].pulse_mask = PULSE_MASK_MS;
 
 			if (port_led_ctrl(i)) {
 				DBG_LED_ON();
@@ -314,7 +328,10 @@ ISR(TIMER1_COMPA_vect)
 	if (timer > SECOND) timer = 0;
 
 	/* In order to map this to 1000Hz (=ms) we have to skip every second interrupt. */
-	if (!time.skip) time.ms++ ;
+	if (!time.skip) {
+		time.ms++;
+		pulse_mask_update();
+	}
 	time.skip ^= 1;
 
 	ADMUX &= 0xF8;
