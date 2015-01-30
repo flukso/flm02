@@ -75,6 +75,10 @@ local TMPO_TOPIC_SYNC_PUB = "/device/%s/tmpo/sync"
 local TMPO_TOPIC_SENSOR_SUB = "/sensor/+/+"
 local TMPO_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/%d/%d/%d/gz"
 -- /sensor/[sid]/tmpo/[rid]/[lvl]/[bid]/gz
+
+local TMPO_TOPIC_QUERY_PUB = "/sensor/%s/query" -- provide queried data as payload
+local TMPO_TOPIC_QUERY_SUB = "/query/+" -- get sensor to query with payload interval
+
 local TMPO_GC20_THRESHOLD = 100 -- 100 free 4kB blocks out of +-1000 in jffs2 = 90% full
 local TMPO_GZCHECK_EXEC_FMT = "gzip -trS '' %s 2>&1"
 local TMPO_GZCHECK_FILE_REGEX = "^gzip:%s*([%w%.%-_/]+):.*$"
@@ -103,6 +107,8 @@ while not mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE) do
 end
 mqtt:subscribe(TMPO_TOPIC_SYNC_SUB:format(DEVICE), MOSQ_QOS0)
 mqtt:subscribe(TMPO_TOPIC_SENSOR_SUB, MOSQ_QOS0)
+-- subscribe to query topic
+mqtt:subscribe(TMPO_TOPIC_QUERY_SUB, MOSQ_QOS0)
 
 local config = {
 	sensor = nil,
@@ -613,9 +619,16 @@ mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
 		tmpo:sync1(payload)
 	end
 
+    local function query(sid)
+        local payload = luci.json.decode(jpayload)
+        return true
+    end
+
 	if retain then return end
 	if not sensor(topic:match(TMPO_REGEX_SENSOR)) then
-		sync(topic:match(TMPO_REGEX_SYNC))
+        if not query(topic:match(TMPO_REGEX_SENSOR)) then
+            sync(topic:match(TMPO_REGEX_SYNC))
+        end
 	end
 end)
 
