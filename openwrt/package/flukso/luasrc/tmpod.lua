@@ -257,8 +257,11 @@ local tmpo = {
 		if DEBUG.block8 then dbg.vardump(self.block8) end
 	end,
 
-	flush8 = function(self)
+	flush8 = function(self, force)
 		local time = os.time()
+		-- make sure time > close8 when force == true
+		if force then time = time + TMPO_BLOCK8_SPAN + TMPO_CLOSE8_GRACE end
+
 		if time < TIMESTAMP_MIN then return false end
 		if not self.close8 then
 			self.close8 = math.ceil(time / TMPO_BLOCK8_SPAN) * TMPO_BLOCK8_SPAN
@@ -642,6 +645,22 @@ local ufdw = uloop.fd(mqtt:socket(), uloop.WRITE, function(events)
 	merror(mqtt:write(MOSQ_MAX_PKTS))
 end)
 
+local ub_methods = {
+	["flukso.tmpo"] = {
+		flush = {
+			function(req, msg)
+				if tmpo:flush8(true) then
+					ub:reply(req, { success = true, msg = "tmpo blocks flushed" })
+				else
+					ub:reply(req, { success = false, msg = "tmpo block flushing failed" })
+				end
+			end, { }
+		}
+	}
+}
+
+ub:add(ub_methods)
+
 local ub_events = {
 	["flukso.sighup"] = function(msg)
 		config:load()
@@ -659,7 +678,7 @@ ut = uloop.timer(function()
 		tmpo:sync2()
 
 		-- tmpo block servicing
-		if tmpo:flush8() and not tmpo.cocompact then
+		if tmpo:flush8(false) and not tmpo.cocompact then
 			tmpo.cocompact = tmpo:compact() -- returns a coroutine!
 		end
 		if tmpo.cocompact then
