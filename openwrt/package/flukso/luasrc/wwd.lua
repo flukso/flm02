@@ -102,7 +102,7 @@ local UART_RX_ELEMENT = {
 	[18] = { event = "e_rx_embedded_system_status_update", fmt = "" }, --TODO
 	[20] = { event = "e_rx_upgrade_confirm", fmt = "" }, --TODO
 	[21] = { event = "e_rx_upgrade_reject", fmt = "" },  --TODO
-	[22] = { event = "e_rx_shutdown_request", fmt = "" }, --TODO
+	[22] = { event = "e_rx_shutdown_request", fmt = "" },
 	[254] = { event = "e_rx_debug_itf_data_out", fmt = "" }, --TODO
 	[255] = { event = "e_rx_pong", fmt = "" }
 }
@@ -115,8 +115,8 @@ local UART_TX_ELEMENT = {
 	statistics_info_request = { typ = 13, fmt = "" }, --TODO
 	config_info_request = { typ = 15, fmt = "" }, --TODO
 	upgrade_request = { typ = 19, fmt = "" }, --TODO
-	shutdown_confirm = { typ = 23, fmt = "" }, --TODO
-	shutdown_reject = { typ = 24, fmt = "" }, --TODO
+	shutdown_confirm = { typ = 23, fmt = "" },
+	shutdown_reject = { typ = 24, fmt = "" },
 	open_debug_itf = { typ = 251, fmt = "" }, --TODO
 	close_debug_itf = { typ = 252, fmt = "" }, --TODO
 	debug_itf_data_in = { typ = 253, fmt = "" }, --TODO
@@ -570,16 +570,26 @@ local root = state {
 		end
 	},
 
+	shutdown = state {
+		entry = function()
+			if ub:call("flukso.tmpo", "flush", { }).success then
+				uart:write("shutdown_confirm")
+			else
+				uart:write("shutdown_reject")
+			end
+		end
+	},
+
 	trans { src = "initial", tgt = "load_config" },
 	trans { src = "load_config", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "provision", events = { "e_provision" } },
 	trans { src = "provision", tgt = "load_config", events = { "e_done" } },
 	trans { src = "receiving", tgt = "ping", events = { "e_tx_ping" } },
 	trans { src = "ping", tgt = "receiving", events = { "e_rx_pong" },
-		effect = function() s_ctx(true) end
+		effect = function() s_ctx.fun(true) end
 	},
 	trans { src = "ping", tgt = "receiving", events = { "e_after(1)" },
-		effect = function() s_ctx(false) end
+		effect = function() s_ctx.fun(false) end
 	},
 	trans { src = "receiving", tgt = "pong", events = { "e_rx_ping" } },
 	trans { src = "pong", tgt = "receiving", events = { "e_done" } },
@@ -613,6 +623,8 @@ local root = state {
 	trans { src = "upgrade", tgt = "receiving", events = { "e_done" },
 		effect = function() s_ctx.fun("upgrade") end
 	},
+	trans { src = "receiving", tgt = "shutdown", events = { "e_rx_shutdown_request" } },
+	trans { src = "shutdown", tgt = "receiving", events = { "e_after(15)" } },
 }
 
 
@@ -748,10 +760,10 @@ local ub_events = {
 	end,
 
 	["flukso.ww.ping"] = function(msg)
-		event:process("e_tx_ping", function(success)
+		event:process("e_tx_ping", { fun = function(success)
 			local reply = success and "pong!" or "ping failed"
 			ub:send("flukso.ww.pong", { success = success, msg = reply })
-		end)
+		end })
 	end,
 
 	["flukso.ww.upgrade.request"] = function(msg)
@@ -766,7 +778,7 @@ local ub_events = {
 			end
 
 			ub:send("flukso.ww.upgrade.response", { success = success, msg = reply })
-		end})
+		end })
 	end
 }	
 
