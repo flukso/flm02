@@ -4,7 +4,7 @@
     
     wwd.lua
 
-    Copyright (C) 2014 Bart Van Der Meerssche <bart@flukso.net>
+    Copyright (C) 2015 Bart Van Der Meerssche <bart@flukso.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -91,30 +91,20 @@ local UART_RX_ELEMENT = {
 	              QI_output_voltage:u2 QI_output_current:u2 USB_output_voltage:u2
 	              USB_output_current:u2]] },
 	[9] = "e_rx_error_warning_messages",
---	[10] = "e_rx_subscription_request",
---	[11] = "e_rx_version_info_request",
 	[12] = { event = "e_rx_version_info",
 	         fmt = [[> mainboard_embedded_sw_version:{ major:u1, minor:u1 }
 	               ui_element_version:{ major: u1, minor: u1 }
 	               mainboard_serial_number:u4]],
 	         topic = "/device/%s/ww/version" },
---	[13] = "e_rx_statistics_info_request",
-	[14] = { event = "e_rx_statistics_info", fmt = "" },
---	[15] = "e_rx_config_info_request",
-	[16] = { event = "e_rx_battery type data", fmt = "" },
-	[17] = { event = "e_rx_generator_type_data", fmt = "" },
-	[18] = "e_rx_embedded_system_status_update",
---	[19] = "e_rx_upgrade_request",
-	[20] = { event = "e_rx_upgrade_confirm", fmt = "" },
-	[21] = { event = "e_rx_upgrade_reject", fmt = "" },
-	[22] = "e_rx_shutdown_request",
---	[23] = "e_rx_shutdown_confirm",
---	[24] = "e_rx_shutdown_reject",
---	[251] = "e_rx_open_debug_interface",
---	[252] = "e_rx_close_debug_interface",
---	[253] = "e_rx_debug_interface_data_in",
-	[254] = "e_rx_debug_interface_data_out",
-	[255] = "e_rx_pong"
+	[14] = { event = "e_rx_statistics_info", fmt = "" }, --TODO
+	[16] = { event = "e_rx_battery type data", fmt = "" }, --TODO
+	[17] = { event = "e_rx_generator_type_data", fmt = "" }, --TODO
+	[18] = { event = "e_rx_embedded_system_status_update", fmt = "" }, --TODO
+	[20] = { event = "e_rx_upgrade_confirm", fmt = "" }, --TODO
+	[21] = { event = "e_rx_upgrade_reject", fmt = "" },  --TODO
+	[22] = { event = "e_rx_shutdown_request", fmt = "" }, --TODO
+	[254] = { event = "e_rx_debug_itf_data_out", fmt = "" }, --TODO
+	[255] = { event = "e_rx_pong", fmt = "" }
 }
 
 local UART_TX_ELEMENT = {
@@ -122,9 +112,14 @@ local UART_TX_ELEMENT = {
 	subscription_request = { typ = 10, fmt = [=[[1| x5 power_consumption_data:b1
 	    technical_usage_data:b1 basic_usage_data:b1]]=] },
 	version_info_request = { typ = 11, fmt = "" },
-	statistics_info_request = { typ = 13, fmt = "" },
-	config_info_request = { typ = 15, fmt = "" },
-	upgrade_request = { typ = 19, fmt = "" },
+	statistics_info_request = { typ = 13, fmt = "" }, --TODO
+	config_info_request = { typ = 15, fmt = "" }, --TODO
+	upgrade_request = { typ = 19, fmt = "" }, --TODO
+	shutdown_confirm = { typ = 23, fmt = "" }, --TODO
+	shutdown_reject = { typ = 24, fmt = "" }, --TODO
+	open_debug_itf = { typ = 251, fmt = "" }, --TODO
+	close_debug_itf = { typ = 252, fmt = "" }, --TODO
+	debug_itf_data_in = { typ = 253, fmt = "" }, --TODO
 	pong = { typ = 255, fmt = "" },
 }
 
@@ -548,14 +543,17 @@ local root = state {
 
 	upgrade = state {
 		entry = function()
+			assert(type(s_ctx.path) == "string", "stm32 bin path error")
 			local pid, code, err = nixio.fork()
 			if not pid then
 				error(string.format("forking failed: %s/%s", code, err))
 			elseif pid == 0 then --child
 				nixio.exec("/usr/bin/stm32flash",
+					"-v",
 					"-b115200",
 					"-i3,0,-0:-3,0,-0",
 					-- TODO	"-w /usr/share/ww/bin/xyz",
+					string.format("-w %s", s_ctx.path),
 					"/dev/ttyS0")
 			elseif pid > 0 then --parent
 				local cpid, term, info = nixio.waitpid()
@@ -564,7 +562,7 @@ local root = state {
 				elseif term == "exited" and info > 0 then
 					--TODO re-init terminal settings
 				else
-					error(string.format("stm32flashing failed: %s/%s", term, info))
+					error(string.format("stm32 flashing failed: %s/%s", term, info))
 				end
 
 				return
@@ -606,14 +604,14 @@ local root = state {
 	trans { src = "response", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "upgrade_request", events = { "e_tx_upgrade_request" } },
 	trans { src = "upgrade_request", tgt = "receiving", events = { "e_after(5)" },
-		effect = function() s_ctx("timeout") end
+		effect = function() s_ctx.fun("timeout") end
 	},
 	trans { src = "upgrade_request", tgt = "receiving", events = { "e_rx_upgrade_reject" },
-		effect = function() s_ctx("reject") end
+		effect = function() s_ctx.fun("reject") end
 	},
 	trans { src = "upgrade_request", tgt = "upgrade", events = { "e_rx_upgrade_confirm" } },
 	trans { src = "upgrade", tgt = "receiving", events = { "e_done" },
-		effect = function() s_ctx("upgrade") end
+		effect = function() s_ctx.fun("upgrade") end
 	},
 }
 
@@ -757,19 +755,19 @@ local ub_events = {
 	end,
 
 	["flukso.ww.upgrade.request"] = function(msg)
-		event:process("e_tx_upgrade_request", function(result)
-					local success, reply
-					if result == "timeout" then
-						success, reply = false, "upgrade request timeout"
-					elseif result == "reject" then
-						success, reply = false, "upgrade request rejected"
-					elseif result == "upgrade" then
-						success, reply = true, "successful upgrade"
-					end
+		event:process("e_tx_upgrade_request", { path = msg.path , fun = function(result)
+			local success, reply
+			if result == "timeout" then
+				success, reply = false, "upgrade request timeout"
+			elseif result == "reject" then
+				success, reply = false, "upgrade request rejected"
+			elseif result == "upgrade" then
+				success, reply = true, "successful upgrade"
+			end
 
-					ub:send("flukso.ww.upgrade.response", { success = success, msg = reply })
-				end)
-			end, { }
+			ub:send("flukso.ww.upgrade.response", { success = success, msg = reply })
+		end})
+	end
 }	
 
 ub:listen(ub_events)
