@@ -96,7 +96,8 @@ local UART_RX_ELEMENT = {
 	               ui_element_version:{ major: u1, minor: u1 }
 	               mainboard_serial_number:u4]],
 	         topic = "/device/%s/ww/version" },
-	[14] = { event = "e_rx_statistics_info", fmt = "" }, --TODO
+	[14] = { event = "e_rx_statistics_info",
+	         fmt = "> total_time_used:u4 total_energy_generated:u4" },
 	[16] = { event = "e_rx_battery type data", fmt = "" }, --TODO
 	[17] = { event = "e_rx_generator_type_data", fmt = "" }, --TODO
 	[18] = { event = "e_rx_embedded_system_status_update", fmt = "" }, --TODO
@@ -113,7 +114,7 @@ local UART_TX_ELEMENT = {
 	    technical_usage_data:b1 basic_usage_data:b1]]=] },
 	version_info_request = { typ = 11, fmt = "" },
 	statistics_info_request = { typ = 13, fmt = "" }, --TODO
-	config_info_request = { typ = 15, fmt = "" }, --TODO
+	config_info_request = { typ = 15, fmt = "" },
 	upgrade_request = { typ = 19, fmt = "" }, --TODO
 	shutdown_confirm = { typ = 23, fmt = "" },
 	shutdown_reject = { typ = 24, fmt = "" },
