@@ -113,7 +113,7 @@ local UART_TX_ELEMENT = {
 	subscription_request = { typ = 10, fmt = [=[[1| x5 power_consumption_data:b1
 	    technical_usage_data:b1 basic_usage_data:b1]]=] },
 	version_info_request = { typ = 11, fmt = "" },
-	statistics_info_request = { typ = 13, fmt = "" }, --TODO
+	statistics_info_request = { typ = 13, fmt = "" },
 	config_info_request = { typ = 15, fmt = "" },
 	upgrade_request = { typ = 19, fmt = "" }, --TODO
 	shutdown_confirm = { typ = 23, fmt = "" },
@@ -529,7 +529,7 @@ local root = state {
 		end
 	},
 
-	response = state {
+	version_info_response = state {
 		entry = function()
 			ww:publish(e_arg)
 		end
@@ -609,10 +609,10 @@ local root = state {
 	trans { src = "statistics_info_request", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "config_info_request", events = { "e_tx_config_info_request" } },
 	trans { src = "config_info_request", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "response", events = {
+	trans { src = "receiving", tgt = "version_info_response", events = {
 		"e_rx_version_info" }
 	},
-	trans { src = "response", tgt = "receiving", events = { "e_done" } },
+	trans { src = "version_info_response", tgt = "receiving", events = { "e_done" } },
 	trans { src = "receiving", tgt = "upgrade_request", events = { "e_tx_upgrade_request" } },
 	trans { src = "upgrade_request", tgt = "receiving", events = { "e_after(5)" },
 		effect = function() s_ctx.fun("timeout") end
