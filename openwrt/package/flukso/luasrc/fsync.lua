@@ -528,6 +528,9 @@ if LAN_ENABLED then
 	create_avahi_config()
 end
 
+-- notify other flukso daemons of a config change
+ub:send("flukso.sighup", {})
+
 -- sync config with the server
 if WAN_ENABLED and not SKIP_SERVER_SYNC then
 	phone_home()
