@@ -70,6 +70,7 @@ local TMPO_REGEX_V1 = '^,"v":%[0(.*)$'
 local TMPO_REGEX_V2 = '^(.-)%].*$'
 local TMPO_REGEX_SYNC = "^/d/device/(%x+)/tmpo/sync$"
 local TMPO_REGEX_SENSOR = "^/sensor/(%x+)/(%l+)$"
+local TMPO_REGEX_QUERY = "^/query/(%x+)/tmpo$"
 local TMPO_TOPIC_SYNC_SUB = "/d/device/%s/tmpo/sync"
 local TMPO_TOPIC_SYNC_PUB = "/device/%s/tmpo/sync"
 local TMPO_TOPIC_SENSOR_SUB = "/sensor/+/+"
@@ -77,7 +78,7 @@ local TMPO_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/%d/%d/%d/gz"
 -- /sensor/[sid]/tmpo/[rid]/[lvl]/[bid]/gz
 
 local TMPO_TOPIC_QUERY_PUB = "/sensor/%s/query" -- provide queried data as payload
-local TMPO_TOPIC_QUERY_SUB = "/query/+" -- get sensor to query with payload interval
+local TMPO_TOPIC_QUERY_SUB = "/query/+/tmpo" -- get sensor to query with payload interval
 
 local TMPO_GC20_THRESHOLD = 100 -- 100 free 4kB blocks out of +-1000 in jffs2 = 90% full
 local TMPO_GZCHECK_EXEC_FMT = "gzip -trS '' %s 2>&1"
@@ -604,6 +605,15 @@ local tmpo = {
 }
 
 mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
+	local function sdir(path)
+		local files = { }
+		for file in nixio.fs.dir(path) or function() end do --dummy iterator
+			files[#files + 1] = tonumber(file) or file
+		end
+		table.sort(files)
+		return files
+	end
+
 	local function sensor(sid, dtype)
 		local sparams = config.sensor[sid]
 		if not (sid and sparams and dtype == sparams.data_type) then return end
@@ -619,16 +629,29 @@ mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
 		tmpo:sync1(payload)
 	end
 
-    local function query(sid)
-        local payload = luci.json.decode(jpayload)
-        return true
-    end
+-- publish the stored files on a query request
+	local function query(sid)
+-- payload contains query time interval {from:fromtimestamp, to:totimestamp}
+        	local payload = luci.json.decode(jpayload)
+		for rid in nixio.fs.dir(TMPO_BASE_PATH .. sid) do
+			for _, lvl in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, "", ""))) do
+				for _, bid in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, lvl, ""))) do
+					if bid >= payload.from and bid <= payload.to
+						-- publish the respective file containing the requested values
+						-- note, the query interval may be smaller than a file's content
+						-- then the respective file must be sent
+					end
+				end
+			end
+		end
+        	return true
+	end
 
 	if retain then return end
 	if not sensor(topic:match(TMPO_REGEX_SENSOR)) then
-        if not query(topic:match(TMPO_REGEX_SENSOR)) then
-            sync(topic:match(TMPO_REGEX_SYNC))
-        end
+        	if not query(topic:match(TMPO_REGEX_QUERY)) then
+            		sync(topic:match(TMPO_REGEX_SYNC))
+        	end
 	end
 end)
 
