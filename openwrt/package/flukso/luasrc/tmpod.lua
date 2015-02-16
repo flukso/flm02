@@ -79,7 +79,7 @@ local TMPO_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/%d/%d/%d/gz"
 -- /sensor/[sid]/tmpo/[rid]/[lvl]/[bid]/gz
 
 local TMPO_REGEX_QUERY = "^/query/(%x+)/tmpo$"
-local TMPO_TOPIC_QUERY_PUB = "/sensor/%s/query" -- provide queried data as payload
+local TMPO_TOPIC_QUERY_PUB = "/sensor/%s/query/%s/%s" -- provide queried data as payload
 local TMPO_TOPIC_QUERY_SUB = "/query/+/tmpo" -- get sensor to query with payload interval
 local TMPO_FMT_QUERY = "time:%d sid:%s rid:%d lvl:%2d bid:%d"
 
@@ -643,12 +643,12 @@ mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
                 end
         end
 
-        local function publish(sid, rid, lvl, bid)
+        local function publish(sid, rid, lvl, bid, from, to)
                 dprint(TMPO_FMT_QUERY, sid, rid, lvl, bid)
                 local path = TMPO_PATH_TPL:format(sid, rid, lvl, bid)
                 local source = assert(io.open(path, "r"))
                 local payload = source:read("*all")
-                local topic = TMPO_TOPIC_QUERY_PUB:format(sid)
+                local topic = TMPO_TOPIC_QUERY_PUB:format(sid, from, to)
                 if DEBUG.query then
                         print("publishing", topic, payload)
                 end
@@ -673,21 +673,25 @@ mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
 
         -- publish the stored files on a query request
         local function query(sid)
+        	if not sid then return end
                 -- payload contains query time interval [fromtimestamp, totimestamp]
                 local payload = luci.json.decode(jpayload)
+                if payload == nil then return end
                 local lastbid = 0
+                local from = payload[1]
+                local to = payload[2]
                 if DEBUG.query then
-                        print("entered query with ", sid, payload[1], payload[2])
+                        print("entered query with ", sid, from, to)
                 end
                 for rid in nixio.fs.dir(TMPO_BASE_PATH .. sid) do
                         for _, lvl in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, "", ""))) do
                                 for _, bid in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, lvl, ""))) do
                                         -- detect store with containing or overlapping values
-                                        if ((payload[1] <= bid) and (bid <= payload[2])) then
-                                                publish(sid, rid, lvl, bid)
+                                        if ((from <= bid) and (bid <= to)) then
+                                                publish(sid, rid, lvl, bid, from, to)
                                         end
-                                        if ((lastbid ~= 0) and (bid >= payload[2]) and (lastbid <= payload[1])) then
-                                                publish(sid, rid, lvl, lastbid)
+                                        if ((lastbid ~= 0) and (lastbid < from) and (bid > to)) then
+                                                publish(sid, rid, lvl, lastbid, from, to)
                                         end
                                         lastbid = bid
                                 end
