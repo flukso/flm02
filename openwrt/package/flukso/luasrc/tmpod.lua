@@ -690,7 +690,7 @@ mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
                                         if ((from <= bid) and (bid <= to)) then
                                                 publish(sid, rid, lvl, bid, from, to)
                                         end
-                                        if ((lastbid ~= 0) and (lastbid < from) and (bid > to)) then
+                                        if ((lastbid ~= 0) and (lastbid < from) and (bid > from)) then
                                                 publish(sid, rid, lvl, lastbid, from, to)
                                         end
                                         lastbid = bid
