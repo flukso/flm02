@@ -677,6 +677,7 @@ mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
                 -- payload contains query time interval [fromtimestamp, totimestamp]
                 local payload = luci.json.decode(jpayload)
                 if payload == nil then return end
+                local lastlvl = 0
                 local lastbid = 0
                 local from = payload[1]
                 local to = payload[2]
@@ -684,15 +685,16 @@ mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
                         print("entered query with ", sid, from, to)
                 end
                 for rid in nixio.fs.dir(TMPO_BASE_PATH .. sid) do
-                        for _, lvl in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, "", ""))) do
+                        for _, lvl in ipairs(TMPO_LVLS_REVERSE) do -- storage has to be queried from past to now
                                 for _, bid in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, lvl, ""))) do
                                         -- detect store with containing or overlapping values
                                         if ((from <= bid) and (bid <= to)) then
                                                 publish(sid, rid, lvl, bid, from, to)
                                         end
                                         if ((lastbid ~= 0) and (lastbid < from) and (bid > from)) then
-                                                publish(sid, rid, lvl, lastbid, from, to)
+                                                publish(sid, rid, lastlvl, lastbid, from, to)
                                         end
+                                        lastlvl = lvl
                                         lastbid = bid
                                 end
                         end
