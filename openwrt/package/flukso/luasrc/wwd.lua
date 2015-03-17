@@ -50,6 +50,8 @@ local ULOOP_TIMEOUT_MS = 1e3
 local O_RDWR_NONBLOCK = nixio.open_flags("rdwr", "nonblock")
 local TIMESTAMP_MIN = 1234567890
 
+local WW_STATISTICS_INFO_INTERVAL_S = 5
+
 -- mosquitto client params
 local MOSQ_ID = DAEMON
 local MOSQ_CLN_SESSION = true
@@ -790,6 +792,10 @@ ut = uloop.timer(function()
 		ut:set(ULOOP_TIMEOUT_MS)
 		-- service the rFSM timers
 		event:process()
+		-- request statistics info every 5secs
+		if os.time() % WW_STATISTICS_INFO_INTERVAL_S == 0 then
+			event:process("e_tx_statistics_info_request")
+		end
 		-- service the mosquitto loop
 		if not mqtt:loop(MOSQ_TIMEOUT, MOSQ_MAX_PKTS) then
 			mqtt:reconnect()
