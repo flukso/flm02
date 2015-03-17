@@ -595,7 +595,7 @@ local root = state {
 		effect = function() s_ctx.fun(false) end
 	},
 	trans { src = "receiving", tgt = "pong", events = { "e_rx_ping" } },
-	trans { src = "pong", tgt = "receiving", events = { "e_done" } },
+	trans { src = "pong", tgt = "version_info_request", events = { "e_done" } },
 	trans { src = "receiving", tgt = "data", events = {
 		"e_rx_basic_usage_data" ,
 		"e_rx_technical_usage_data",
