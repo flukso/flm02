@@ -51,6 +51,7 @@ local O_RDWR_NONBLOCK = nixio.open_flags("rdwr", "nonblock")
 local TIMESTAMP_MIN = 1234567890
 
 local WW_STATISTICS_INFO_INTERVAL_S = 5
+local WW_FLASH_CMD = "stm32flash -v -b 115200 -i 3,0,-0:-3,0,-0 -g 0x0 -w %s %s"
 
 -- mosquitto client params
 local MOSQ_ID = DAEMON
@@ -226,6 +227,14 @@ local uart = {
 
 	fileno = function(self)
 		return self.fd:fileno()
+	end,
+
+	open = function(self)
+		self.fd = nixio.open(UART_DEV, O_RDWR_NONBLOCK)
+	end,
+
+	close = function(self)
+		self.fd:close()
 	end,
 
 	flush = function(self)
@@ -662,29 +671,10 @@ local root = state {
 	upgrade = state {
 		entry = function()
 			assert(type(s_ctx.path) == "string", "stm32 bin path error")
-			local pid, code, err = nixio.fork()
-			if not pid then
-				error(string.format("forking failed: %s/%s", code, err))
-			elseif pid == 0 then --child
-				nixio.exec("/usr/bin/stm32flash",
-					"-v",
-					"-b115200",
-					"-i3,0,-0:-3,0,-0",
-					-- TODO	"-w /usr/share/ww/bin/xyz",
-					string.format("-w %s", s_ctx.path),
-					"/dev/ttyS0")
-			elseif pid > 0 then --parent
-				local cpid, term, info = nixio.waitpid()
-				if term == "exited" and info == 0 then
-					-- success!
-				elseif term == "exited" and info > 0 then
-					--TODO re-init terminal settings
-				else
-					error(string.format("stm32 flashing failed: %s/%s", term, info))
-				end
-
-				return
-			end
+			ub:call("flukso.tmpo", "flush", { })
+			uart:close()
+			os.execute(WW_FLASH_CMD:format(s_ctx.path, UART_DEV))
+			uart:open()
 		end
 	},
 
