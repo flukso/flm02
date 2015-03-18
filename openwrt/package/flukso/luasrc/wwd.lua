@@ -104,7 +104,7 @@ local UART_RX_ELEMENT = {
 	},
 	[9] = {
 		event = "e_rx_error_warning_messages",
-		fmt = ""
+		fmt = "> %s*{ id:u1 value:u2 }"
 	},
 	[12] = {
 		event = "e_rx_version_info",
@@ -412,6 +412,11 @@ local SENSOR = {
 		unit = "J",
 		data_type = "counter"
 	},
+	error_warning_flags = {
+		typ = "bitfield",
+		unit = "",
+		data_type = "gauge"
+	}
 }
 
 
@@ -486,6 +491,33 @@ local sensor = {
 				local payload = luci.json.encode({ timestamp, svalue, cfg.unit })
 				mqtt:publish(topic, payload, MOSQ_QOS0, MOSQ_RETAIN)
 			end
+		end
+	end,
+
+	publish_warn_err = function(self, elmnt)
+		local timestamp = os.time()
+		if timestamp < TIMESTAMP_MIN then return end --TODO raise error
+
+		local fmt = UART_RX_ELEMENT[elmnt.t].fmt:format(elmnt.l / 3)
+		local data = { }
+		vstruct.unpack(fmt, elmnt.v, data)
+		if DEBUG.decode then
+			dbg.vardump(data)
+		end
+		local bitfield, offset = 0, 0
+		for i, warn_err in ipairs(data) do
+			if warn_err.id < 127 then
+				offset = 0
+			else
+				offset = -128 + 16 -- map to uint32 bitfield
+			end
+			bitfield = bitfield + 2 ^ (offset + warn_err.id)
+		end
+		local cfg = self.config["error_warning_flags"]
+		if cfg and cfg.id then
+			local topic = string.format(MOSQ_TOPIC_SENSOR, cfg.id, cfg.data_type)
+			local payload = luci.json.encode({ timestamp, bitfield, cfg.unit })
+			mqtt:publish(topic, payload, MOSQ_QOS0, MOSQ_RETAIN)
 		end
 	end,
 
@@ -581,6 +613,12 @@ local root = state {
 	data = state {
 		entry = function()
 			sensor:publish(e_arg)
+		end
+	},
+
+	error_warning_messages = state {
+		entry = function()
+			sensor:publish_warn_err(e_arg)
 		end
 	},
 
@@ -725,6 +763,11 @@ local root = state {
 		src = "receiving",
 		tgt = "error_warning_messages",
 		events = { "e_rx_error_warning_messages" }
+	},
+	trans {
+		src = "error_warning_messages",
+		tgt = "receiving",
+		events = { "e_done" }
 	},
 	trans {
 		src = "receiving",
