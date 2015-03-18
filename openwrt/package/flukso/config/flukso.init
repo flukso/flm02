@@ -135,7 +135,7 @@ start_ww()
 	
 	chmod 666 /sys/class/leds/globe/trigger
 	/usr/sbin/supd
-	/usr/sbin/wwd -u flukso
+	/usr/sbin/wwd
 	/usr/sbin/tmpod -u flukso
 	set_ttyS0_W
 	echo 0 > /sys/devices/virtual/gpio/gpio4/value
