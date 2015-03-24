@@ -23,6 +23,7 @@
 
 local dbg = require "dbg"
 local nixio = require "nixio"
+nixio.fs = require "nixio.fs"
 local luci = require "luci"
 luci.json = require "luci.json"
 local uci = require "luci.model.uci".cursor()
@@ -48,10 +49,12 @@ local DEBUG = {
 local DEVICE = uci:get_first("system", "system", "device")
 local ULOOP_TIMEOUT_MS = 1e3
 local O_RDWR_NONBLOCK = nixio.open_flags("rdwr", "nonblock")
+local SLEEP_S, SLEEP_NS = 1, 0
 local TIMESTAMP_MIN = 1234567890
 
 local WW_STATISTICS_INFO_INTERVAL_S = 5
 local WW_FLASH_CMD = "stm32flash -v -b 115200 -i 3,0,-0:-3,0,-0 -g 0x0 -w %s %s"
+local WW_UPGRADE_PATH = "/tmp/ww.hex"
 
 -- mosquitto client params
 local MOSQ_ID = DAEMON
@@ -66,11 +69,22 @@ local MOSQ_QOS1 = 1
 local MOSQ_RETAIN = true
 local MOSQ_TOPIC_SENSOR_CONFIG = string.format("/device/%s/config/sensor", DEVICE)
 local MOSQ_TOPIC_SENSOR = "/sensor/%s/%s"
+local MOSQ_TOPIC_WW_UPGRADE = "/device/%s/ww/upgrade"
+
+local function merror(success, errno, err)
+	--TODO explicitely cancel the uloop on error
+	if not success then error(MOSQ_ERROR:format(err)) end
+end
 
 -- connect to the MQTT broker
 mosq.init()
 local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
-mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE)
+if not mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE) then
+	repeat
+		nixio.nanosleep(SLEEP_S, SLEEP_NS)
+	until mqtt:reconnect()
+end
+merror(mqtt:subscribe(MOSQ_TOPIC_WW_UPGRADE:format(DEVICE), MOSQ_QOS0))
 
 local UART_DEV = "/dev/ttyS0"
 local UART_BUFFER_SIZE = 4096
@@ -130,11 +144,11 @@ local UART_RX_ELEMENT = {
 		event = "e_rx_embedded_system_status_update",
 		fmt = ""
 	},
-	[20] = { --TODO
+	[20] = {
 		event = "e_rx_upgrade_confirm",
 		fmt = ""
 	},
-	[21] = { --TODO
+	[21] = {
 		event = "e_rx_upgrade_reject",
 		fmt = ""
 	},
@@ -174,7 +188,7 @@ local UART_TX_ELEMENT = {
 		typ = 15,
 		fmt = ""
 	},
-	upgrade_request = { --TODO
+	upgrade_request = {
 		typ = 19,
 		fmt = ""
 	},
@@ -558,7 +572,7 @@ local sensor = {
 }
 
 local ww = {
-	publish = function(self, elmnt)
+	publish_version = function(self, elmnt)
 		local data = { }
 		vstruct.unpack(UART_RX_ELEMENT[elmnt.t].fmt, elmnt.v, data)
 		local topic = string.format(UART_RX_ELEMENT[elmnt.t].topic, DEVICE)
@@ -657,7 +671,7 @@ local root = state {
 
 	version_info_response = state {
 		entry = function()
-			ww:publish(e_arg)
+			ww:publish_version(e_arg)
 		end
 	},
 
@@ -900,6 +914,23 @@ local event = {
 	end
 }
 
+mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, payload, qos, retain)
+	if retain then return end
+	nixio.fs.writefile(WW_UPGRADE_PATH, payload)
+	event:process("e_tx_upgrade_request", {
+		path = WW_UPGRADE_PATH,
+		fun = function() end
+	})
+end)
+
+local ufdr = uloop.fd(mqtt:socket(), uloop.READ, function(events)
+	merror(mqtt:read(MOSQ_MAX_PKTS))
+end)
+
+local ufdw = uloop.fd(mqtt:socket(), uloop.WRITE, function(events)
+	merror(mqtt:write(MOSQ_MAX_PKTS))
+end)
+
 local ub_methods = {
 	["flukso.ww"] = {
 		debug = {
@@ -1016,9 +1047,7 @@ ut = uloop.timer(function()
 			event:process("e_tx_statistics_info_request")
 		end
 		-- service the mosquitto loop
-		if not mqtt:loop(MOSQ_TIMEOUT, MOSQ_MAX_PKTS) then
-			mqtt:reconnect()
-		end
+		merror(mqtt:misc())
 	end, ULOOP_TIMEOUT_MS)
 
 uart:flush()
