@@ -8,8 +8,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mosquitto
-PKG_SOURCE_VERSION:=79f3b57da5b5a4498bcbe1e97917ce3aff874245
-PKG_VERSION:=2015-02-18
+PKG_SOURCE_VERSION:=9c9df007460f98bed029c61f070a50a7eff23ab5
+PKG_VERSION:=2015-04-03
 PKG_RELEASE:=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
@@ -33,13 +33,13 @@ define Package/$(PKG_NAME)/default
   CATEGORY:=Network
   TITLE:=mosquitto - an MQTT message broker
   URL:=http://www.mosquitto.org/
-  DEPENDS:= +librt +libwebsockets +libuuid
+  DEPENDS:= +librt +libuuid
 endef
 
 define Package/$(PKG_NAME)
     $(call Package/mosquitto/default)
     TITLE+= (with SSL support)
-    DEPENDS+= +libopenssl
+    DEPENDS+= +libopenssl +libwebsockets-openssl
     VARIANT:=ssl
 endef
 
