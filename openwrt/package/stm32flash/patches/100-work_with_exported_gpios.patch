@@ -1,6 +1,6 @@
---- a/init.c	2014-05-18 14:49:14.945840659 +0200
-+++ b/init.c	2014-05-18 14:58:48.637828119 +0200
-@@ -56,44 +56,30 @@
+--- a/init.c
++++ b/init.c
+@@ -58,58 +58,34 @@ static int write_to(const char *filename, const char *value)
  }
  
  #if !defined(__linux__)
@@ -18,7 +18,7 @@
 +	char lvl[16];
  	char file[48]; /* sized to carry longest filename */
  	struct stat buf;
- 	struct gpio_list *new;
+-	struct gpio_list *new;
  	int ret;
  
 -	sprintf(file, "/sys/class/gpio/gpio%d/direction", n);
@@ -54,19 +54,25 @@
  }
  #endif
  
-@@ -107,7 +93,6 @@
- 
- static int gpio_sequence(serial_t *serial, const char *s, size_t l)
+-static int release_gpio(int n)
+-{
+-	char num[16]; /* sized to carry MAX_INT */
+-
+-	sprintf(num, "%d", n);
+-	return write_to("/sys/class/gpio/unexport", num);
+-}
+-
+ static int gpio_sequence(struct port_interface *port, const char *s, size_t l)
  {
 -	struct gpio_list *gpio_to_release = NULL, *to_free;
  	int ret, level, gpio;
  
  	ret = 1;
-@@ -154,18 +139,12 @@
+@@ -156,18 +132,12 @@ static int gpio_sequence(struct port_interface *port, const char *s, size_t l)
  			}
  		}
  		if (gpio < 0)
--			ret = (serial_gpio(serial, -gpio, level) == SERIAL_ERR_OK);
+-			ret = (port->gpio(port, -gpio, level) == PORT_ERR_OK);
 +			ret = drive_gpio(-gpio, level);
  		else
 -			ret = drive_gpio(gpio, level, &gpio_to_release);
