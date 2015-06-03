@@ -149,6 +149,7 @@ local config = {
 			return otbl
 		end
 
+		uci:load("flukso")
 		self.sensor = clean(uci:get_all("flukso"))
 		if DEBUG.config then dbg.vardump(self.sensor) end
 	end

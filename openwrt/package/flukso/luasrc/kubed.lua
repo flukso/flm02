@@ -177,6 +177,9 @@ local function load_config()
 		end
 	end
 
+	-- forcing uci to reload kube and flukso configs from file
+	uci:load("kube")
+	uci:load("flukso")
 	KUBE = uci:get_all("kube")
 	SENSOR = uci:get_all("flukso")
 	CACHEDIR = load_cachedir()
@@ -412,6 +415,7 @@ local function provision_kube(hw_id_hex, hw_type_s)
 			SENSOR = uci:get_all("flukso")
 		end
 		uci:commit("flukso")
+		ub:send("flukso.sighup", {})
 
 		return tonumber(kid_s)
 	end
@@ -435,6 +439,7 @@ local function deprovision_kube(kid_s)
 	uci:delete("kube", kid_s)
 	uci:save("kube")
 	uci:commit("kube")
+	ub:send("flukso.sighup", {})
 end
 
 local function is_kid_allocated(kid_s, hw_type_s)
@@ -780,10 +785,18 @@ local ub_methods = {
 ub:add(ub_methods)
 
 local ub_events = {
+	["flukso.sighup"] = function(msg)
+		event:process("e_init")
+	end,
+
 	["flukso.kube.event"] = function(msg)
 		if type(msg.event) == "string" then
 			event:process(msg.event)
 		end
+	end,
+
+	["flukso.kube.pair"] = function(msg)
+		event:process("e_pair")
 	end,
 
 	["flukso.kube.packet.rx"] = function(msg)
