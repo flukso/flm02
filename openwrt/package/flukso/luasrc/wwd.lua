@@ -23,6 +23,7 @@
 
 local dbg = require "dbg"
 local nixio = require "nixio"
+nixio.fs = require "nixio.fs"
 local luci = require "luci"
 luci.json = require "luci.json"
 local uci = require "luci.model.uci".cursor()
@@ -48,7 +49,12 @@ local DEBUG = {
 local DEVICE = uci:get_first("system", "system", "device")
 local ULOOP_TIMEOUT_MS = 1e3
 local O_RDWR_NONBLOCK = nixio.open_flags("rdwr", "nonblock")
+local SLEEP_S, SLEEP_NS = 1, 0
 local TIMESTAMP_MIN = 1234567890
+
+local WW_STATISTICS_INFO_INTERVAL_S = 5
+local WW_FLASH_CMD = "stm32flash -v -b 115200 -i 3,0,-0:-3,0,-0 -g 0x0 -w %s %s"
+local WW_UPGRADE_PATH = "/tmp/ww.hex"
 
 -- mosquitto client params
 local MOSQ_ID = DAEMON
@@ -63,11 +69,22 @@ local MOSQ_QOS1 = 1
 local MOSQ_RETAIN = true
 local MOSQ_TOPIC_SENSOR_CONFIG = string.format("/device/%s/config/sensor", DEVICE)
 local MOSQ_TOPIC_SENSOR = "/sensor/%s/%s"
+local MOSQ_TOPIC_WW_UPGRADE = "/device/%s/ww/upgrade"
+
+local function merror(success, errno, err)
+	--TODO explicitely cancel the uloop on error
+	if not success then error(MOSQ_ERROR:format(err)) end
+end
 
 -- connect to the MQTT broker
 mosq.init()
 local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
-mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE)
+if not mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE) then
+	repeat
+		nixio.nanosleep(SLEEP_S, SLEEP_NS)
+	until mqtt:reconnect()
+end
+merror(mqtt:subscribe(MOSQ_TOPIC_WW_UPGRADE:format(DEVICE), MOSQ_QOS0))
 
 local UART_DEV = "/dev/ttyS0"
 local UART_BUFFER_SIZE = 4096
@@ -78,50 +95,127 @@ local UART_FMT_TLV = "> @%d typ:u2 length:u2"
 local UART_FMT_PACKET = "> sync:s seq:u2 length:u2 t:u2 l:u2 v:s"
 
 local UART_RX_ELEMENT = {
-	[0] = { event = "e_rx_ping", fmt = "" },
-	[1] = { event = "e_rx_basic_usage_data",
-	        fmt = [[> time_index:u2 generated_power:u2 rpm:u2 energy_charged_to_battery:u2
-	              battery_charge_status:u1 selected_profile:u1]] },
-	[2] = { event = "e_rx_technical_usage_data",
-	        fmt = [[> battery_voltage:u2 generator_voltage:u2 generator_current:u2
-	              charge_current:u2 x_load_current:u2 mainboard_temperature:i2
-	              x_load_temperature:i2]] },
-	[3] = { event = "e_rx_power_consumption_data",
-	        fmt = [[> highpower_output_voltage:u2 highpower_output_current:u2
-	              QI_output_voltage:u2 QI_output_current:u2 USB_output_voltage:u2
-	              USB_output_current:u2]] },
-	[9] = "e_rx_error_warning_messages",
-	[12] = { event = "e_rx_version_info",
-	         fmt = [[> mainboard_embedded_sw_version:{ major:u1, minor:u1 }
-	               ui_element_version:{ major: u1, minor: u1 }
-	               mainboard_serial_number:u4]],
-	         topic = "/device/%s/ww/version" },
-	[14] = { event = "e_rx_statistics_info",
-	         fmt = "> total_time_used:u4 total_energy_generated:u4" },
-	[16] = { event = "e_rx_battery type data", fmt = "" }, --TODO
-	[17] = { event = "e_rx_generator_type_data", fmt = "" }, --TODO
-	[18] = { event = "e_rx_embedded_system_status_update", fmt = "" }, --TODO
-	[20] = { event = "e_rx_upgrade_confirm", fmt = "" }, --TODO
-	[21] = { event = "e_rx_upgrade_reject", fmt = "" },  --TODO
-	[22] = { event = "e_rx_shutdown_request", fmt = "" },
-	[254] = { event = "e_rx_debug_itf_data_out", fmt = "" }, --TODO
-	[255] = { event = "e_rx_pong", fmt = "" }
+	[0] = {
+		event = "e_rx_ping",
+		fmt = ""
+	},
+	[1] = {
+		event = "e_rx_basic_usage_data",
+		fmt = [[> time_index:u2 generated_power:u2 rpm:u2
+		      energy_charged_to_battery:u2 battery_charge_status:u1
+		      selected_profile:u1]]
+	},
+	[2] = {
+		event = "e_rx_technical_usage_data",
+		fmt = [[> battery_voltage:u2 generator_voltage:u2 generator_current:u2
+		      charge_current:u2 x_load_current:u2 mainboard_temperature:i2
+	          x_load_temperature:i2]]
+	},
+	[3] = {
+		event = "e_rx_power_consumption_data",
+		fmt = [[> highpower_output_voltage:u2 highpower_output_current:u2
+	          QI_output_voltage:u2 QI_output_current:u2 USB_output_voltage:u2
+	          USB_output_current:u2]]
+	},
+	[9] = {
+		event = "e_rx_error_warning_messages",
+		fmt = "> %s*{ id:u1 value:u2 }"
+	},
+	[12] = {
+		event = "e_rx_version_info",
+		fmt = [[> mainboard_embedded_sw_version:{ major:u1, minor:u1 }
+		      ui_element_version:{ major: u1, minor: u1 }
+		      mainboard_serial_number:u4]],
+		topic = "/device/%s/ww/version"
+	},
+	[14] = {
+		event = "e_rx_statistics_info",
+	    fmt = "> total_time_used:u4 total_energy_generated:u4"
+	},
+	[16] = { --TODO
+		event = "e_rx_battery type data",
+		fmt = ""
+	},
+	[17] = { --TODO
+		event = "e_rx_generator_type_data",
+		fmt = ""
+	},
+	[18] = { --TODO
+		event = "e_rx_embedded_system_status_update",
+		fmt = ""
+	},
+	[20] = {
+		event = "e_rx_upgrade_confirm",
+		fmt = ""
+	},
+	[21] = {
+		event = "e_rx_upgrade_reject",
+		fmt = ""
+	},
+	[22] = {
+		event = "e_rx_shutdown_request",
+		fmt = ""
+	},
+	[254] = { --TODO
+		event = "e_rx_debug_itf_data_out",
+		fmt = ""
+	},
+	[255] = {
+		event = "e_rx_pong",
+		fmt = ""
+	}
 }
 
 local UART_TX_ELEMENT = {
-	ping = { typ = 0, fmt = "" },
-	subscription_request = { typ = 10, fmt = [=[[1| x5 power_consumption_data:b1
-	    technical_usage_data:b1 basic_usage_data:b1]]=] },
-	version_info_request = { typ = 11, fmt = "" },
-	statistics_info_request = { typ = 13, fmt = "" },
-	config_info_request = { typ = 15, fmt = "" },
-	upgrade_request = { typ = 19, fmt = "" }, --TODO
-	shutdown_confirm = { typ = 23, fmt = "" },
-	shutdown_reject = { typ = 24, fmt = "" },
-	open_debug_itf = { typ = 251, fmt = "" }, --TODO
-	close_debug_itf = { typ = 252, fmt = "" }, --TODO
-	debug_itf_data_in = { typ = 253, fmt = "" }, --TODO
-	pong = { typ = 255, fmt = "" },
+	ping = {
+		typ = 0,
+		fmt = ""
+	},
+	subscription_request = {
+		typ = 10,
+		fmt = [=[[1| x5 power_consumption_data:b1 technical_usage_data:b1
+		      basic_usage_data:b1]]=]
+    },
+	version_info_request = {
+		typ = 11,
+		fmt = ""
+	},
+	statistics_info_request = {
+		typ = 13,
+		fmt = ""
+	},
+	config_info_request = {
+		typ = 15,
+		fmt = ""
+	},
+	upgrade_request = {
+		typ = 19,
+		fmt = ""
+	},
+	shutdown_confirm = {
+		typ = 23,
+		fmt = ""
+	},
+	shutdown_reject = {
+		typ = 24,
+		fmt = ""
+	},
+	open_debug_itf = { --TODO
+		typ = 251,
+		fmt = ""
+	},
+	close_debug_itf = { --TODO
+		typ = 252,
+		fmt = ""
+	},
+	debug_itf_data_in = { --TODO
+		typ = 253,
+		fmt = ""
+	},
+	pong = {
+		typ = 255,
+		fmt = ""
+	}
 }
 
 local uart = {
@@ -147,6 +241,14 @@ local uart = {
 
 	fileno = function(self)
 		return self.fd:fileno()
+	end,
+
+	open = function(self)
+		self.fd = nixio.open(UART_DEV, O_RDWR_NONBLOCK)
+	end,
+
+	close = function(self)
+		self.fd:close()
 	end,
 
 	flush = function(self)
@@ -333,6 +435,11 @@ local SENSOR = {
 		unit = "J",
 		data_type = "counter"
 	},
+	error_warning_flags = {
+		typ = "bitfield",
+		unit = "",
+		data_type = "gauge"
+	}
 }
 
 
@@ -410,6 +517,33 @@ local sensor = {
 		end
 	end,
 
+	publish_warn_err = function(self, elmnt)
+		local timestamp = os.time()
+		if timestamp < TIMESTAMP_MIN then return end --TODO raise error
+
+		local fmt = UART_RX_ELEMENT[elmnt.t].fmt:format(elmnt.l / 3)
+		local data = { }
+		vstruct.unpack(fmt, elmnt.v, data)
+		if DEBUG.decode then
+			dbg.vardump(data)
+		end
+		local bitfield, offset = 0, 0
+		for i, warn_err in ipairs(data) do
+			if warn_err.id < 127 then
+				offset = 0
+			else
+				offset = -128 + 16 -- map to uint32 bitfield
+			end
+			bitfield = bitfield + 2 ^ (offset + warn_err.id)
+		end
+		local cfg = self.config["error_warning_flags"]
+		if cfg and cfg.id then
+			local topic = string.format(MOSQ_TOPIC_SENSOR, cfg.id, cfg.data_type)
+			local payload = luci.json.encode({ timestamp, bitfield, cfg.unit })
+			mqtt:publish(topic, payload, MOSQ_QOS0, MOSQ_RETAIN)
+		end
+	end,
+
 	publish_cfg = function(self)
 		local function config_clean(itbl)
 			local otbl = luci.util.clone(itbl, true)
@@ -438,7 +572,7 @@ local sensor = {
 }
 
 local ww = {
-	publish = function(self, elmnt)
+	publish_version = function(self, elmnt)
 		local data = { }
 		vstruct.unpack(UART_RX_ELEMENT[elmnt.t].fmt, elmnt.v, data)
 		local topic = string.format(UART_RX_ELEMENT[elmnt.t].topic, DEVICE)
@@ -505,6 +639,12 @@ local root = state {
 		end
 	},
 
+	error_warning_messages = state {
+		entry = function()
+			sensor:publish_warn_err(e_arg)
+		end
+	},
+
 	subscription_request = state {
 		entry = function()
 			uart:write("subscription_request", e_arg)
@@ -531,7 +671,7 @@ local root = state {
 
 	version_info_response = state {
 		entry = function()
-			ww:publish(e_arg)
+			ww:publish_version(e_arg)
 		end
 	},
 
@@ -545,29 +685,10 @@ local root = state {
 	upgrade = state {
 		entry = function()
 			assert(type(s_ctx.path) == "string", "stm32 bin path error")
-			local pid, code, err = nixio.fork()
-			if not pid then
-				error(string.format("forking failed: %s/%s", code, err))
-			elseif pid == 0 then --child
-				nixio.exec("/usr/bin/stm32flash",
-					"-v",
-					"-b115200",
-					"-i3,0,-0:-3,0,-0",
-					-- TODO	"-w /usr/share/ww/bin/xyz",
-					string.format("-w %s", s_ctx.path),
-					"/dev/ttyS0")
-			elseif pid > 0 then --parent
-				local cpid, term, info = nixio.waitpid()
-				if term == "exited" and info == 0 then
-					-- success!
-				elseif term == "exited" and info > 0 then
-					--TODO re-init terminal settings
-				else
-					error(string.format("stm32 flashing failed: %s/%s", term, info))
-				end
-
-				return
-			end
+			ub:call("flukso.tmpo", "flush", { })
+			uart:close()
+			os.execute(WW_FLASH_CMD:format(s_ctx.path, UART_DEV))
+			uart:open()
 		end
 	},
 
@@ -581,51 +702,165 @@ local root = state {
 		end
 	},
 
-	trans { src = "initial", tgt = "load_config" },
-	trans { src = "load_config", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "provision", events = { "e_provision" } },
-	trans { src = "provision", tgt = "load_config", events = { "e_done" } },
-	trans { src = "receiving", tgt = "ping", events = { "e_tx_ping" } },
-	trans { src = "ping", tgt = "receiving", events = { "e_rx_pong" },
+	trans {
+		src = "initial",
+		tgt = "load_config"
+	},
+	trans {
+		src = "load_config",
+		tgt = "receiving",
+		events = { "e_done" }
+	},
+	trans {
+		src = "receiving",
+		tgt = "provision",
+		events = { "e_provision" }
+	},
+	trans {
+		src = "provision",
+		tgt = "load_config",
+		events = { "e_done" }
+	},
+	trans {
+		src = "receiving",
+		tgt = "ping",
+		events = { "e_tx_ping" }
+	},
+	trans {
+		src = "ping",
+		tgt = "receiving",
+		events = { "e_rx_pong" },
 		effect = function() s_ctx.fun(true) end
 	},
-	trans { src = "ping", tgt = "receiving", events = { "e_after(1)" },
+	trans {
+		src = "ping",
+		tgt = "receiving",
+		events = { "e_after(1)" },
 		effect = function() s_ctx.fun(false) end
 	},
-	trans { src = "receiving", tgt = "pong", events = { "e_rx_ping" } },
-	trans { src = "pong", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "data", events = {
-		"e_rx_basic_usage_data" ,
-		"e_rx_technical_usage_data",
-		"e_rx_power_consumption_data",
-		"e_rx_statistics_info" }
+	trans {
+		src = "receiving",
+		tgt = "pong",
+		events = { "e_rx_ping" }
 	},
-	trans { src = "data", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "subscription_request", events = { "e_tx_subscription_request" } },
-	trans { src = "subscription_request", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "version_info_request", events = { "e_tx_version_info_request" } },
-	trans { src = "version_info_request", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "statistics_info_request", events = { "e_tx_statistics_info_request" } },
-	trans { src = "statistics_info_request", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "config_info_request", events = { "e_tx_config_info_request" } },
-	trans { src = "config_info_request", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "version_info_response", events = {
-		"e_rx_version_info" }
+	trans {
+		src = "pong",
+		tgt = "version_info_request",
+		events = { "e_done" }
 	},
-	trans { src = "version_info_response", tgt = "receiving", events = { "e_done" } },
-	trans { src = "receiving", tgt = "upgrade_request", events = { "e_tx_upgrade_request" } },
-	trans { src = "upgrade_request", tgt = "receiving", events = { "e_after(5)" },
+	trans {
+		src = "receiving",
+		tgt = "data",
+		events = {
+			"e_rx_basic_usage_data" ,
+			"e_rx_technical_usage_data",
+			"e_rx_power_consumption_data",
+			"e_rx_statistics_info"
+		}
+	},
+	trans {
+		src = "data",
+		tgt = "receiving",
+		events = { "e_done" }
+	},
+	trans {
+		src = "receiving",
+		tgt = "error_warning_messages",
+		events = { "e_rx_error_warning_messages" }
+	},
+	trans {
+		src = "error_warning_messages",
+		tgt = "receiving",
+		events = { "e_done" }
+	},
+	trans {
+		src = "receiving",
+		tgt = "subscription_request",
+		events = { "e_tx_subscription_request" }
+	},
+	trans {
+		src = "subscription_request",
+		tgt = "receiving",
+		events = { "e_done" }
+	},
+	trans {
+		src = "receiving",
+		tgt = "version_info_request",
+		events = { "e_tx_version_info_request" }
+	},
+	trans {
+		src = "version_info_request",
+		tgt = "receiving",
+		events = { "e_done" }
+	},
+	trans {
+		src = "receiving",
+		tgt = "statistics_info_request",
+		events = { "e_tx_statistics_info_request" }
+	},
+	trans {
+		src = "statistics_info_request",
+		tgt = "receiving",
+		events = { "e_done" }
+	},
+	trans {
+		src = "receiving",
+		tgt = "config_info_request",
+		events = { "e_tx_config_info_request" }
+	},
+	trans {
+		src = "config_info_request",
+		tgt = "receiving",
+		events = { "e_done" }
+	},
+	trans {
+		src = "receiving",
+		tgt = "version_info_response",
+		events = { "e_rx_version_info" }
+	},
+	trans {
+		src = "version_info_response",
+		tgt = "receiving",
+		events = { "e_done" }
+	},
+	trans {
+		src = "receiving",
+		tgt = "upgrade_request",
+		events = { "e_tx_upgrade_request" }
+	},
+	trans {
+		src = "upgrade_request",
+		tgt = "receiving",
+		events = { "e_after(5)" },
 		effect = function() s_ctx.fun("timeout") end
 	},
-	trans { src = "upgrade_request", tgt = "receiving", events = { "e_rx_upgrade_reject" },
+	trans {
+		src = "upgrade_request",
+		tgt = "receiving",
+		events = { "e_rx_upgrade_reject" },
 		effect = function() s_ctx.fun("reject") end
 	},
-	trans { src = "upgrade_request", tgt = "upgrade", events = { "e_rx_upgrade_confirm" } },
-	trans { src = "upgrade", tgt = "receiving", events = { "e_done" },
+	trans {
+		src = "upgrade_request",
+		tgt = "upgrade",
+		events = { "e_rx_upgrade_confirm" }
+	},
+	trans {
+		src = "upgrade",
+		tgt = "receiving",
+		events = { "e_done" },
 		effect = function() s_ctx.fun("upgrade") end
 	},
-	trans { src = "receiving", tgt = "shutdown", events = { "e_rx_shutdown_request" } },
-	trans { src = "shutdown", tgt = "receiving", events = { "e_after(15)" } },
+	trans {
+		src = "receiving",
+		tgt = "shutdown",
+		events = { "e_rx_shutdown_request" }
+	},
+	trans {
+		src = "shutdown",
+		tgt = "receiving",
+		events = { "e_after(15)" }
+	}
 }
 
 
@@ -678,6 +913,23 @@ local event = {
 		self:run()
 	end
 }
+
+mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, payload, qos, retain)
+	if retain then return end
+	nixio.fs.writefile(WW_UPGRADE_PATH, payload)
+	event:process("e_tx_upgrade_request", {
+		path = WW_UPGRADE_PATH,
+		fun = function() end
+	})
+end)
+
+local ufdr = uloop.fd(mqtt:socket(), uloop.READ, function(events)
+	merror(mqtt:read(MOSQ_MAX_PKTS))
+end)
+
+local ufdw = uloop.fd(mqtt:socket(), uloop.WRITE, function(events)
+	merror(mqtt:write(MOSQ_MAX_PKTS))
+end)
 
 local ub_methods = {
 	["flukso.ww"] = {
@@ -790,10 +1042,12 @@ ut = uloop.timer(function()
 		ut:set(ULOOP_TIMEOUT_MS)
 		-- service the rFSM timers
 		event:process()
-		-- service the mosquitto loop
-		if not mqtt:loop(MOSQ_TIMEOUT, MOSQ_MAX_PKTS) then
-			mqtt:reconnect()
+		-- request statistics info every 5secs
+		if os.time() % WW_STATISTICS_INFO_INTERVAL_S == 0 then
+			event:process("e_tx_statistics_info_request")
 		end
+		-- service the mosquitto loop
+		merror(mqtt:misc())
 	end, ULOOP_TIMEOUT_MS)
 
 uart:flush()
