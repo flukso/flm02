@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mosquitto
-PKG_SOURCE_VERSION:=ecd0d582ab8c747cd9df15c539f4d233cdd7e1dd
-PKG_VERSION:=2014-08-19
+PKG_SOURCE_VERSION:=e9bcc641b18c947b3d19223bcb3fc6c79f665949
+PKG_VERSION:=2015-05-07
 PKG_RELEASE:=$(PKG_SOURCE_VERSION)
 
-PKG_SOURCE_PROTO:=hg
-PKG_SOURCE_URL:=https://bitbucket.org/oojah/$(PKG_NAME)
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=http://git.eclipse.org/gitroot/mosquitto/org.eclipse.$(PKG_NAME).git
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.bz2
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
@@ -33,13 +33,13 @@ define Package/$(PKG_NAME)/default
   CATEGORY:=Network
   TITLE:=mosquitto - an MQTT message broker
   URL:=http://www.mosquitto.org/
-  DEPENDS:= +librt +libwebsockets +libuuid
+  DEPENDS:= +librt +libuuid
 endef
 
 define Package/$(PKG_NAME)
     $(call Package/mosquitto/default)
     TITLE+= (with SSL support)
-    DEPENDS+= +libopenssl
+    DEPENDS+= +libopenssl +libwebsockets-openssl
     VARIANT:=ssl
 endef
 
