@@ -100,6 +100,27 @@ mosq.init()
 local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
 mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE)
 
+local function config_clean(itbl)
+	local otbl = luci.util.clone(itbl, true)
+	for section, section_tbl in pairs(otbl) do
+		section_tbl[".index"] = nil
+		section_tbl[".name"] = nil
+		section_tbl[".type"] = nil
+		section_tbl[".anonymous"] = nil
+
+		for option, value in pairs(section_tbl) do
+			section_tbl[option] = tonumber(value) or value
+			if type(value) == "table" then -- we're dealing with a list
+				for i in pairs(value) do
+					value[i] = tonumber(value[i]) or value[i]
+				end 
+			end
+		end
+	end
+
+	return otbl
+end
+
 local function load_config()
 	local function load_cachedir()
 		local path = { }
@@ -125,27 +146,6 @@ local function load_config()
 		end
 
 		return path
-	end
-
-	local function config_clean(itbl)
-		local otbl = luci.util.clone(itbl, true)
-		for section, section_tbl in pairs(otbl) do
-			section_tbl[".index"] = nil
-			section_tbl[".name"] = nil
-			section_tbl[".type"] = nil
-			section_tbl[".anonymous"] = nil
-
-			for option, value in pairs(section_tbl) do
-				section_tbl[option] = tonumber(value) or value
-				if type(value) == "table" then -- we're dealing with a list
-					for i in pairs(value) do
-						value[i] = tonumber(value[i]) or value[i]
-					end 
-				end
-			end
-		end
-
-		return otbl
 	end
 
 	local function load_scaling_functions(hw_entry)
@@ -465,7 +465,10 @@ local function update_kube_sw_version(kid_s, sw_version_s)
 		uci:set("kube", kid_s, "sw_version", sw_version_s)
 		uci:save("kube")
 		uci:commit("kube")
+		-- small local change, no need to re-init via collecting state
 		KUBE = uci:get_all("kube")
+		local kube = luci.json.encode(config_clean(KUBE))
+		mqtt:publish(MOSQ_TOPIC_KUBE_CONFIG, kube, MOSQ_QOS0, MOSQ_RETAIN)
 	end
 end
 
@@ -673,7 +676,7 @@ local root = state {
 	trans { src = "initial", tgt = "collecting" },
 	trans { src = "collecting", tgt = "collecting", events = { "e_init" } },
 	trans { src = "collecting", tgt = "pairing", events = { "e_pair" } },
-	trans { src = "pairing", tgt = "collecting", events = { "e_after(30)" } },
+	trans { src = "pairing", tgt = "collecting", events = { "e_after(20)" } },
 	trans { src = ".pairing.pair_reply", tgt = "collecting", events = { "e_done" } },
 	trans { src = "collecting", tgt = "deprovision", events = { "e_deprovision" },
 		guard = function()
