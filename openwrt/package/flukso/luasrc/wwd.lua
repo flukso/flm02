@@ -67,7 +67,6 @@ local MOSQ_MAX_PKTS = 10 -- packets
 local MOSQ_QOS0 = 0
 local MOSQ_QOS1 = 1
 local MOSQ_RETAIN = true
-local MOSQ_TOPIC_SENSOR_CONFIG = string.format("/device/%s/config/sensor", DEVICE)
 local MOSQ_TOPIC_SENSOR = "/sensor/%s/%s"
 local MOSQ_TOPIC_WW_UPGRADE = "/device/%s/ww/upgrade"
 
@@ -542,32 +541,6 @@ local sensor = {
 			local payload = luci.json.encode({ timestamp, bitfield, cfg.unit })
 			mqtt:publish(topic, payload, MOSQ_QOS0, MOSQ_RETAIN)
 		end
-	end,
-
-	publish_cfg = function(self)
-		local function config_clean(itbl)
-			local otbl = luci.util.clone(itbl, true)
-			for section, section_tbl in pairs(otbl) do
-				section_tbl[".index"] = nil
-				section_tbl[".name"] = nil
-				section_tbl[".type"] = nil
-				section_tbl[".anonymous"] = nil
-
-				for option, value in pairs(section_tbl) do
-					section_tbl[option] = tonumber(value) or value
-					if type(value) == "table" then -- we're dealing with a list
-						for i in pairs(value) do
-							value[i] = tonumber(value[i]) or value[i]
-						end 
-					end
-				end
-			end
-
-			return otbl
-		end
-
-		local flukso = luci.json.encode(config_clean(uci:get_all("flukso")))
-		mqtt:publish(MOSQ_TOPIC_SENSOR_CONFIG, flukso, MOSQ_QOS0, MOSQ_RETAIN)
 	end
 }
 
@@ -605,7 +578,6 @@ local root = state {
 	load_config = state {
 		entry = function()
 			sensor:load_cfg()
-			sensor:publish_cfg()
 		end
 	},
 

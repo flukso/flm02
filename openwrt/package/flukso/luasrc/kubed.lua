@@ -66,7 +66,6 @@ local MOSQ_QOS1 = 1
 local MOSQ_RETAIN = true
 
 local MOSQ_TOPIC_KUBE_CONFIG = string.format("/device/%s/config/kube", DEVICE)
-local MOSQ_TOPIC_SENSOR_CONFIG = string.format("/device/%s/config/sensor", DEVICE)
 local MOSQ_TOPIC_SENSOR = "/sensor/%s/%s"
 
 local FMT_CMD_SET_GROUP = "sg %s"
@@ -209,8 +208,6 @@ local function load_config()
 
 	local kube = luci.json.encode(config_clean(KUBE))
 	mqtt:publish(MOSQ_TOPIC_KUBE_CONFIG, kube, MOSQ_QOS0, MOSQ_RETAIN)
-	local sensor = luci.json.encode(config_clean(SENSOR))
-	mqtt:publish(MOSQ_TOPIC_SENSOR_CONFIG, sensor, MOSQ_QOS0, MOSQ_RETAIN)
 
 	if DEBUG.config then
 		dbg.vardump(KUBE)
