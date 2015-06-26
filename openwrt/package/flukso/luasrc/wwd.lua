@@ -970,6 +970,9 @@ local ub_methods = {
 				event:process("e_provision", function(success)
 					local reply = success and "sensors povisioned" or "not enough free sensors"
 					ub:reply(req, { success = success, msg = reply })
+					if success then
+						ub:send("flukso.sighup", {})
+					end
 				end)
 			end, { }
 		},
