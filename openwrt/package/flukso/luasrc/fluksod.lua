@@ -126,15 +126,6 @@ mosq.init()
 local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
 mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE)
 
--- publish configuration data
-local luci = require "luci"
-luci.json = require "luci.json"
-local DEVICE = uci:get_first('system', 'system', 'device')
-local MOSQ_TOPIC_SENSOR_CONFIG = string.format('/device/%s/config/sensor', DEVICE)
-local flm_config = luci.json.encode(FLUKSO)
-mqtt:publish(MOSQ_TOPIC_SENSOR_CONFIG, flm_config, MOSQ_QOS, MOSQ_RETAIN)
--- end of publishing configuration
-
 local function dispatch(wan_child, lan_child)
 	return coroutine.create(function()
 		local delta = {
