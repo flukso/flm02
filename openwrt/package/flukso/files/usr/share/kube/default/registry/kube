@@ -41,14 +41,8 @@
 				"proximity": {
 					"data_type": "counter"
 				},
-				"acceleration_x": {
-					"data_type": "gauge"
-				},
-				"acceleration_y": {
-					"data_type": "gauge"
-				},
-				"acceleration_z": {
-					"data_type": "gauge"
+				"vibration": {
+					"data_type": "counter"
 				}
 			}
 		}

@@ -5,7 +5,7 @@ config settings main
 	option key 0123456789abcdef0123456789abcdef
 	option null_key 0123456789abcdef0123456789abcdef
 	option encryption 0
-	list registry_url http://www.flukso.net/files/kube/registry/flukso
+#	list registry_url http://www.flukso.net/files/kube/registry/flukso
 	option cache /usr/share/kube
 
 ### node config options
