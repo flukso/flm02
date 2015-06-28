@@ -4,7 +4,7 @@
     
     fsync.lua - synchronize /etc/config/flukso settings with the sensor board
 
-    Copyright (C) 2014 Bart Van Der Meerssche <bart@flukso.net>
+    Copyright (C) 2015 Bart Van Der Meerssche <bart@flukso.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ local MAX_PROV_SENSORS      = tonumber(flukso.main.max_provisioned_sensors)
 local MAX_ANALOG_SENSORS    = tonumber(flukso.main.max_analog_sensors)
 local ANALOG_ENABLE         = (MAX_ANALOG_SENSORS == 3) and 1 or 0
 local RESET_COUNTERS        = (flukso.main.reset_counters == "1")
+local LED_MODE              = tonumber(flukso.main.led_mode or 256)
 local WAN_ENABLED           = (flukso.daemon.enable_wan_branch == "1")
 local LAN_ENABLED           = (flukso.daemon.enable_lan_branch == "1")
 
@@ -69,6 +70,7 @@ local GET_HW_VERSION    = "gh"
 local GET_HW_VERSION_R  = "^gh%s+(%d+)%s+(%d+)$"
 local SET_ENABLE        = "se %d %d"
 local SET_HW_LINES      = "sk %d %d %d" -- ANALOG_EN, UART_RX_INV, UART_TX_INV
+local SET_LED_MODE      = "si %d" -- [0..255] with 255 being default heartbeat
 local SET_PHY_TO_LOG    = "sp" -- with [1..MAX_SENSORS] arguments
 local SET_METERCONST    = "sm %d %d"
 local SET_FRACTION      = "sf %d %d"
@@ -198,7 +200,7 @@ end
 -- @return		none 
 local function disable_all_sensors(ub)
 	for i = 1, MAX_SENSORS do
-		local cmd = string.format(SET_ENABLE, toc(i), 0)
+		local cmd = SET_ENABLE:format(toc(i), 0)
 		send(ub, cmd)
 	end
 end
@@ -207,7 +209,15 @@ end
 -- @param ub  	ub object
 -- @return		none 
 local function set_hardware_lines(ub)
-	local cmd = string.format(SET_HW_LINES, ANALOG_ENABLE, UART_RX_INVERT, UART_TX_INVERT)
+	local cmd = SET_HW_LINES:format(ANALOG_ENABLE, UART_RX_INVERT, UART_TX_INVERT)
+	send(ub, cmd)
+end
+
+--- Set the mode of the heatbeat LED.
+-- @param ub  	ub object
+-- @return		none 
+local function set_led_mode(ub)
+	local cmd = SET_LED_MODE:format(toc(LED_MODE))
 	send(ub, cmd)
 end
 
@@ -257,27 +267,27 @@ local function set_meterconst(ub)
 		local cmd = { }
 
 		if flukso[tostring(i)] == nil then
-			cmd[1] = string.format(SET_METERCONST, toc(i), 0)
+			cmd[1] = SET_METERCONST:format(toc(i), 0)
 
 		elseif flukso[tostring(i)]["class"] == "analog" then
 			local voltage = tonumber(flukso[tostring(i)].voltage or "0")
 			local current = tonumber(flukso[tostring(i)].current or "0")
 
-			cmd[1] = string.format(SET_METERCONST, toc(i), math.floor(METERCONST_FACTOR * voltage * current))
+			cmd[1] = SET_METERCONST:format(toc(i), math.floor(METERCONST_FACTOR * voltage * current))
 
 		elseif flukso[tostring(i)]["class"] == "pulse" then
 			local real = tonumber(flukso[tostring(i)].constant or "0")
 			local meterconst = math.floor(real)
 			local fraction = math.floor((real % 1) * 1000)
 
-			cmd[1] = string.format(SET_METERCONST, toc(i), meterconst)
-			cmd[2] = string.format(SET_FRACTION, toc(i), fraction) 
+			cmd[1] = SET_METERCONST:format(toc(i), meterconst)
+			cmd[2] = SET_FRACTION:format(toc(i), fraction) 
 		else
-			cmd[1] = string.format(SET_METERCONST, toc(i), 0)
+			cmd[1] = SET_METERCONST:format(toc(i), 0)
 		end
 
 		if not cmd[2] then
-			cmd[2] = string.format(SET_FRACTION, toc(i), 0)
+			cmd[2] = SET_FRACTION:format(toc(i), 0)
 		end
 
 		send(ub, cmd[1])
@@ -290,7 +300,7 @@ end
 -- @return		none 
 local function reset_counters(ub)
 	for i = 1, MAX_SENSORS do
-		local cmd = string.format(SET_COUNTER, toc(i), 0)
+		local cmd = SET_COUNTER:format(toc(i), 0)
 		send(ub, cmd)
 	end
 
@@ -304,7 +314,7 @@ end
 local function enable_sensors(ub)
 	for i = 1, MAX_SENSORS do
 		if flukso[tostring(i)] ~= nil and flukso[tostring(i)].enable == "1" then
-			cmd = string.format(SET_ENABLE, toc(i), 1)
+			cmd = SET_ENABLE:format(toc(i), 1)
 			send(ub, cmd)
 		end
 	end
@@ -506,6 +516,7 @@ if MODEL ~= "FLM02W" then
 
 	if MODEL == "FLM02B" or MODEL == "FLM02C" then
 		set_hardware_lines(ub)
+		set_led_mode(ub)
 	end
 
 	set_phy_to_log(ub)

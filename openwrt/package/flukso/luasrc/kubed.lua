@@ -66,7 +66,6 @@ local MOSQ_QOS1 = 1
 local MOSQ_RETAIN = true
 
 local MOSQ_TOPIC_KUBE_CONFIG = string.format("/device/%s/config/kube", DEVICE)
-local MOSQ_TOPIC_SENSOR_CONFIG = string.format("/device/%s/config/sensor", DEVICE)
 local MOSQ_TOPIC_SENSOR = "/sensor/%s/%s"
 
 local FMT_CMD_SET_GROUP = "sg %s"
@@ -100,6 +99,27 @@ mosq.init()
 local mqtt = mosq.new(MOSQ_ID, MOSQ_CLN_SESSION)
 mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE)
 
+local function config_clean(itbl)
+	local otbl = luci.util.clone(itbl, true)
+	for section, section_tbl in pairs(otbl) do
+		section_tbl[".index"] = nil
+		section_tbl[".name"] = nil
+		section_tbl[".type"] = nil
+		section_tbl[".anonymous"] = nil
+
+		for option, value in pairs(section_tbl) do
+			section_tbl[option] = tonumber(value) or value
+			if type(value) == "table" then -- we're dealing with a list
+				for i in pairs(value) do
+					value[i] = tonumber(value[i]) or value[i]
+				end 
+			end
+		end
+	end
+
+	return otbl
+end
+
 local function load_config()
 	local function load_cachedir()
 		local path = { }
@@ -125,27 +145,6 @@ local function load_config()
 		end
 
 		return path
-	end
-
-	local function config_clean(itbl)
-		local otbl = luci.util.clone(itbl, true)
-		for section, section_tbl in pairs(otbl) do
-			section_tbl[".index"] = nil
-			section_tbl[".name"] = nil
-			section_tbl[".type"] = nil
-			section_tbl[".anonymous"] = nil
-
-			for option, value in pairs(section_tbl) do
-				section_tbl[option] = tonumber(value) or value
-				if type(value) == "table" then -- we're dealing with a list
-					for i in pairs(value) do
-						value[i] = tonumber(value[i]) or value[i]
-					end 
-				end
-			end
-		end
-
-		return otbl
 	end
 
 	local function load_scaling_functions(hw_entry)
@@ -177,6 +176,9 @@ local function load_config()
 		end
 	end
 
+	-- forcing uci to reload kube and flukso configs from file
+	uci:load("kube")
+	uci:load("flukso")
 	KUBE = uci:get_all("kube")
 	SENSOR = uci:get_all("flukso")
 	CACHEDIR = load_cachedir()
@@ -206,8 +208,6 @@ local function load_config()
 
 	local kube = luci.json.encode(config_clean(KUBE))
 	mqtt:publish(MOSQ_TOPIC_KUBE_CONFIG, kube, MOSQ_QOS0, MOSQ_RETAIN)
-	local sensor = luci.json.encode(config_clean(SENSOR))
-	mqtt:publish(MOSQ_TOPIC_SENSOR_CONFIG, sensor, MOSQ_QOS0, MOSQ_RETAIN)
 
 	if DEBUG.config then
 		dbg.vardump(KUBE)
@@ -412,6 +412,7 @@ local function provision_kube(hw_id_hex, hw_type_s)
 			SENSOR = uci:get_all("flukso")
 		end
 		uci:commit("flukso")
+		ub:send("flukso.sighup", {})
 
 		return tonumber(kid_s)
 	end
@@ -435,6 +436,7 @@ local function deprovision_kube(kid_s)
 	uci:delete("kube", kid_s)
 	uci:save("kube")
 	uci:commit("kube")
+	ub:send("flukso.sighup", {})
 end
 
 local function is_kid_allocated(kid_s, hw_type_s)
@@ -460,7 +462,10 @@ local function update_kube_sw_version(kid_s, sw_version_s)
 		uci:set("kube", kid_s, "sw_version", sw_version_s)
 		uci:save("kube")
 		uci:commit("kube")
+		-- small local change, no need to re-init via collecting state
 		KUBE = uci:get_all("kube")
+		local kube = luci.json.encode(config_clean(KUBE))
+		mqtt:publish(MOSQ_TOPIC_KUBE_CONFIG, kube, MOSQ_QOS0, MOSQ_RETAIN)
 	end
 end
 
@@ -668,7 +673,7 @@ local root = state {
 	trans { src = "initial", tgt = "collecting" },
 	trans { src = "collecting", tgt = "collecting", events = { "e_init" } },
 	trans { src = "collecting", tgt = "pairing", events = { "e_pair" } },
-	trans { src = "pairing", tgt = "collecting", events = { "e_after(30)" } },
+	trans { src = "pairing", tgt = "collecting", events = { "e_after(20)" } },
 	trans { src = ".pairing.pair_reply", tgt = "collecting", events = { "e_done" } },
 	trans { src = "collecting", tgt = "deprovision", events = { "e_deprovision" },
 		guard = function()
@@ -780,10 +785,18 @@ local ub_methods = {
 ub:add(ub_methods)
 
 local ub_events = {
+	["flukso.sighup"] = function(msg)
+		event:process("e_init")
+	end,
+
 	["flukso.kube.event"] = function(msg)
 		if type(msg.event) == "string" then
 			event:process(msg.event)
 		end
+	end,
+
+	["flukso.kube.pair"] = function(msg)
+		event:process("e_pair")
 	end,
 
 	["flukso.kube.packet.rx"] = function(msg)
