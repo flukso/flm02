@@ -628,7 +628,7 @@ local tmpo = {
 	-- mqtt connection servicing
 	misc = function(self)
 		merror(mqtt:misc())
-		merror(mqtt:publish(TMPO_TOPIC_MQTT_CHECK, "", MOSQ_QOS0, not MOSQ_RETAIN))
+		-- merror(mqtt:publish(TMPO_TOPIC_MQTT_CHECK, "", MOSQ_QOS0, not MOSQ_RETAIN))
 	end
 }
 
