@@ -22,6 +22,8 @@ echo "connection flukso" >> $CONFFILE
 echo "address $ADDRESS:$PORT" >> $CONFFILE
 echo "username $USERNAME" >> $CONFFILE
 echo "password $PASSWORD" >> $CONFFILE
+echo "local_clientid $ADDRESS" >> $CONFFILE
+echo "bridge_attempt_unsubscribe false" >> $CONFFILE
 echo "bridge_cafile $CACERT" >> $CONFFILE
 echo "start_type automatic" >> $CONFFILE
 echo "try_private false" >> $CONFFILE
