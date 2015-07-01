@@ -26,14 +26,10 @@ local dbg = require "dbg"
 local nixio	= require "nixio"
 nixio.fs = require "nixio.fs"
 local uci = require "luci.model.uci".cursor()
-local luci = require "luci"
-luci.json = require "luci.json"
-local httpclient = require "luci.httpclient"
 local ubus = require "ubus"
 local ub = assert(ubus.connect(), "unable to connect to ubus")
 
 local HW_CHECK_OVERRIDE = (arg[1] == "-f")
-local SKIP_SERVER_SYNC = (arg[1] == "-s")
 local O_RDWR_CREAT = nixio.open_flags('rdwr', 'creat')
 local MAX_TRIES	= 5
 
@@ -48,7 +44,6 @@ local MAX_ANALOG_SENSORS    = tonumber(flukso.main.max_analog_sensors)
 local ANALOG_ENABLE         = (MAX_ANALOG_SENSORS == 3) and 1 or 0
 local RESET_COUNTERS        = (flukso.main.reset_counters == "1")
 local LED_MODE              = tonumber(flukso.main.led_mode or 256)
-local WAN_ENABLED           = (flukso.daemon.enable_wan_branch == "1")
 local LAN_ENABLED           = (flukso.daemon.enable_lan_branch == "1")
 
 local function last_prov_sensor()
@@ -82,18 +77,6 @@ local API_PATH      = "/www/sensor/"
 local CGI_SCRIPT    = "/usr/bin/restful"
 local AVAHI_PATH    = "/etc/avahi/services/flukso.service"
 
--- WAN settings
-local WAN_BASE_URL  = flukso.daemon.wan_base_url .. "sensor/"
-local WAN_KEY       = "0123456789abcdef0123456789abcdef"
-uci:foreach("system", "system", function(x) WAN_KEY = x.key end) -- quirky but it works
-
--- https header helpers
-local FLUKSO_VERSION = "000"
-uci:foreach("system", "system", function(x) FLUKSO_VERSION = x.version end)
-
-local USER_AGENT    = "Fluksometer v" .. FLUKSO_VERSION
-local CACERT        = flukso.daemon.cacert
-
 -- map exit codes to strings
 local EXIT_STRING = {
 	[-1] = "no synchronisation",
@@ -104,7 +87,6 @@ local EXIT_STRING = {
 	 [4] = "sensor board hardware compatibility check failed",
 	 [5] = "analog sensor numbering error",
 	 [6] = "port numbering error",
-	 [7] = "synchronisation with Flukso server failed"
 }
 
 
@@ -413,99 +395,6 @@ local function create_avahi_config()
 	end
 end
 
---- POST each sensor's parameters to the /sensor/xyz endpoint
--- @return		none
-local function phone_home()
-	local function json_config(i) -- type(i) --> "string"
-		local config = {}
-
-		config["class"]    = flukso[i]["class"]
-		config["type"]     = flukso[i]["type"]
-		config["function"] = flukso[i]["function"]
-		config["voltage"]  = tonumber(flukso[i]["voltage"])
-		config["current"]  = tonumber(flukso[i]["current"])
-		config["constant"] = tonumber(flukso[i]["constant"])
-		config["enable"]   = tonumber(flukso[i]["enable"])
-
-		if config["class"] == "analog" then
-			local phase = tonumber(flukso.main.phase)
-
-			if phase == 1 or 
-			   phase == 3 and i == "1" then
-				config["phase"] = phase
-			end
-		end
-
-		return luci.json.encode{ config = config }
-	end
-
-	local headers = {}
-	headers["Content-Type"] = "application/json"
-	headers["X-Version"] = "1.0"
-	headers["User-Agent"] = USER_AGENT
-
-	local options = {}
-	options.sndtimeo = 5
-	options.rcvtimeo = 5
-
-	options.tls_context_set_verify = "peer"
-	options.cacert = CACERT
-	options.method  = "POST"
-	options.headers = headers
-
-	local http_persist = httpclient.create_persistent()
-
-	local err = false
-
-	for i = 1, LAST_PROV_SENSOR do
-		if flukso[tostring(i)] ~= nil and flukso[tostring(i)].id then
-			local sensor_id = flukso[tostring(i)].id
-
-			if i ~= LAST_PROV_SENSOR then
-				options.headers["Connection"] = "keep-alive"
-			else
-				options.headers["Connection"] = "close"
-			end
-
-			options.body = json_config(tostring(i))
-			options.headers["Content-Length"] = tostring(#options.body)
-
-			local hash = nixio.crypto.hmac("sha1", WAN_KEY)
-			hash:update(options.body)
-			options.headers["X-Digest"] = hash:final()
-
-			local url = WAN_BASE_URL .. sensor_id
-			local response, code, call_info = http_persist(url, options)
-
-			local level
-
-			if code == 200 or code == 204 then
-				level = "info"
-			else
-				level = "err"
-				err = true
-			end
-
-			nixio.syslog(level, string.format("%s %s: %s", options.method, url, code))
-
-			-- if available, send additional error info to the syslog
-			if type(call_info) == "string" then
-				nixio.syslog("err", call_info)
-			elseif type(call_info) == "table"  then
-				local auth_error = call_info.headers["WWW-Authenticate"]
-
-				if auth_error then
-					nixio.syslog("err", string.format("WWW-Authenticate: %s", auth_error))
-				end
-			end
-		end
-	end
-
-	if err then
-		exit(7)
-	end
-end
-
 -- open the connection to the syslog deamon, specifying our identity
 nixio.openlog("fsync", "pid")
 
@@ -541,11 +430,6 @@ end
 
 -- notify other flukso daemons of a config change
 ub:send("flukso.sighup", {})
-
--- sync config with the server
-if WAN_ENABLED and not SKIP_SERVER_SYNC then
-	phone_home()
-end
 
 print(arg[0] .. " completed successfully. Bye!")
 exit(0)
