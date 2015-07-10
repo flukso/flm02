@@ -218,29 +218,38 @@ static inline bool port_low(uint8_t pinx, uint8_t i)
 	return !port_high(pinx, i);
 }
 
-static inline bool high_to_low(state_t state, uint8_t pinx, uint8_t i)
+static inline bool high_to_low(volatile state_t *pstate, uint8_t pinx, uint8_t i)
 {
-	return (state.flags & STATE_PULSE_HIGH) && port_low(pinx, i);
+	return !pstate->pulse_debounce
+		&& (pstate->flags & STATE_PULSE_HIGH)
+		&& port_low(pinx, i);
 }
 
-static inline bool low_to_high(state_t state, uint8_t pinx, uint8_t i)
+static inline bool low_to_high(volatile state_t *pstate, uint8_t pinx, uint8_t i)
 {
-	return !(state.flags & STATE_PULSE_HIGH) && port_high(pinx, i);
+	return !pstate->pulse_debounce
+		&& !(pstate->flags & STATE_PULSE_HIGH)
+		&& port_high(pinx, i);
 }
 
 static inline void register_pulse(volatile sensor_t *psensor, volatile state_t *pstate)
 {
 	psensor->counter += psensor->meterconst;
 	pstate->milli += psensor->fraction;
+	if (pstate->milli >= M_UNIT) {
+		pstate->milli -= M_UNIT;
+		psensor->counter++;
+	}
 
-	if (psensor->meterconst || pstate->milli >= M_UNIT) {
-		pstate->flags |= STATE_PULSE;
-		pstate->timestamp = time.ms;
+	pstate->flags |= STATE_PULSE;
+	pstate->timestamp = time.ms;
+}
 
-		if (pstate->milli >= M_UNIT) {
-			pstate->milli -= M_UNIT;
-			psensor->counter++;
-		}
+static inline void pulse_debounce_update(void)
+{
+	for (uint8_t i = max_analog_sensors; i < MAX_SENSORS; i++) {
+		if (state[i].pulse_debounce > 0)
+			state[i].pulse_debounce--;
 	}
 }
 
@@ -254,8 +263,9 @@ ISR(PCINT1_vect)
 
 	//check each of the pulse inputs for a high-to-low state transition
 	for (i = max_analog_sensors; i < MAX_SENSORS; i++) {
-		if (high_to_low(state[i], pinc, i)) {
+		if (high_to_low(&state[i], pinc, i)) {
 			state[i].flags &= ~STATE_PULSE_HIGH;
+			state[i].pulse_debounce = PULSE_DEBOUNCE_MS;
 
 			if (port_enabled(i)) {
 				register_pulse(&sensor[i], &state[i]);
@@ -265,13 +275,14 @@ ISR(PCINT1_vect)
 			}
 		}
 
-		if (low_to_high(state[i], pinc, i)) {
+		if (low_to_high(&state[i], pinc, i)) {
 			state[i].flags |= STATE_PULSE_HIGH;
+			state[i].pulse_debounce = PULSE_DEBOUNCE_MS;
 
 			if (port_led_ctrl(i)) {
 				DBG_LED_ON();
 			}
-		}		
+		}
 	}
 
 	DBG_ISR_END();
@@ -317,7 +328,10 @@ ISR(TIMER1_COMPA_vect)
 	if (timer > SECOND) timer = 0;
 
 	/* In order to map this to 1000Hz (=ms) we have to skip every second interrupt. */
-	if (!time.skip) time.ms++ ;
+	if (!time.skip) {
+		time.ms++;
+		pulse_debounce_update();
+	}
 	time.skip ^= 1;
 
 	ADMUX &= 0xF8;
@@ -389,7 +403,10 @@ static inline void setup_datastructs(void)
 	eeprom_read_block((void*)&enabled, (const void*)&enabled_eep, sizeof(enabled));
 	eeprom_read_block((void*)&phy_to_log, (const void*)&phy_to_log_eep, sizeof(phy_to_log));
 	eeprom_read_block((void*)&sensor, (const void*)&sensor_eep, sizeof(sensor));
-}
+
+	for (uint8_t i=0; i<MAX_SENSORS; i++)
+		state[i].milli = 0;
+}	
 
 void setup_ar_uart(void)
 {

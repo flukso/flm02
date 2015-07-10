@@ -1,6 +1,5 @@
 #
-# Copyright (C) 2011,2012 OpenWrt.org
-# Copyright (C) 2010 Jo-Philipp Wich <xm@subsignal.org>
+# Copyright (C) 2014 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -9,20 +8,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mosquitto
-PKG_VERSION:=1.2.1
-PKG_RELEASE:=1
+PKG_SOURCE_VERSION:=e9bcc641b18c947b3d19223bcb3fc6c79f665949
+PKG_VERSION:=2015-05-07
+PKG_RELEASE:=$(PKG_SOURCE_VERSION)
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-#PKG_REV:=4b30e412ab77
-#PKG_SOURCE:=$(PKG_REV).tar.bz2
-PKG_SOURCE_URL:=http://mosquitto.org/files/source/
-#PKG_SOURCE_URL:=https://bitbucket.org/oojah/mosquitto/get/
-#PKG_BUILD_DIR:=$(BUILD_DIR)/oojah-mosquitto-$(PKG_REV)
-PKG_MD5SUM:=a97f3b8ec79924fac0445984323a6b4f
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=http://git.eclipse.org/gitroot/mosquitto/org.eclipse.$(PKG_NAME).git
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.bz2
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
-MAKE_FLAGS+=WITH_MEMORY_TRACKING=no
+MAKE_FLAGS+=WITH_WEBSOCKETS=yes WITH_MEMORY_TRACKING=no WITH_EC=no WITH_DOCS=no
 TARGET_CFLAGS+=-ggdb3
 include $(INCLUDE_DIR)/version.mk
 # The version of libopenssl in backfire doesn't support psk.
@@ -36,13 +33,13 @@ define Package/$(PKG_NAME)/default
   CATEGORY:=Network
   TITLE:=mosquitto - an MQTT message broker
   URL:=http://www.mosquitto.org/
-  DEPENDS:= +librt
+  DEPENDS:= +librt +libuuid
 endef
 
 define Package/$(PKG_NAME)
     $(call Package/mosquitto/default)
     TITLE+= (with SSL support)
-    DEPENDS+= +libopenssl
+    DEPENDS+= +libopenssl +libwebsockets-openssl
     VARIANT:=ssl
 endef
 
@@ -106,7 +103,7 @@ define Package/libmosquitto/default
     $(Package/mosquitto/default)
     SECTION:=libs
     CATEGORY:=Libraries
-    DEPENDS:=+libpthread +librt
+    DEPENDS:=+libpthread +librt +libcares
     TITLE:= mosquitto - client library
 endef
 
@@ -140,12 +137,6 @@ define Package/libmosquitto-nossl/description
     This package is built without SSL support
 endef
 
-
-define Package/$(PKG_NAME)/conffiles
-/etc/mosquitto/mosquitto.conf
-/etc/config/mosquitto
-endef
-
 Package/$(PKG_NAME)-nossl/conffiles = $(Package/$(PKG_NAME)/conffiles)
 
 define Package/$(PKG_NAME)/install
@@ -156,7 +147,7 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/mosquitto.init $(1)/etc/init.d/mosquitto
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) ./files/mosquitto.uci.convert $(1)/usr/bin
+	$(INSTALL_BIN) ./files/fmosq.sh $(1)/usr/bin/fmosq
 endef
 Package/$(PKG_NAME)-nossl/install = $(Package/$(PKG_NAME)/install)
 

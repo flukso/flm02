@@ -1,0 +1,11 @@
+--- a/mosquitto.conf	2014-07-06 14:06:51.763445346 +0200
++++ b/mosquitto.conf	2014-07-06 14:07:35.815444379 +0200
+@@ -770,7 +770,7 @@
+ # in the main file. This option will only be processed from the main
+ # configuration file. The directory specified must not contain the 
+ # main configuration file.
+-#include_dir
++include_dir /var/run/mosquitto
+ 
+ # =================================================================
+ # rsmb options - unlikely to ever be supported

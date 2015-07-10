@@ -1,0 +1,38 @@
+--- a/mosquitto.conf	2014-06-22 07:14:39.080271768 +0200
++++ b/mosquitto.conf	2014-06-22 07:15:11.132271064 +0200
+@@ -133,7 +133,7 @@
+ #bind_address
+ 
+ # Port to use for the default listener.
+-#port 1883
++port 1883
+ 
+ # The maximum number of client connections to allow. This is 
+ # a per listener setting.
+@@ -149,7 +149,7 @@
+ # extremely experimental and may only work with unreleased versions of
+ # libwebsockets. Certificate based TLS may be used with websockets, except that
+ # only the cafile, certfile, keyfile and ciphers options are supported.
+-#protocol mqtt
++protocol mqtt
+ 
+ # -----------------------------------------------------------------
+ # Certificate based SSL/TLS support
+@@ -257,7 +257,7 @@
+ # address and so restrict access to the associated network and 
+ # interface. By default, mosquitto will listen on all interfaces.
+ # listener port-number [ip address/host name]
+-#listener
++listener 8083
+ 
+ # The maximum number of client connections to allow. This is 
+ # a per listener setting.
+@@ -275,7 +275,7 @@
+ # This can be either mqtt or websockets.
+ # Certificate based TLS may be used with websockets, except that only the
+ # cafile, certfile, keyfile and ciphers options are supported.
+-#protocol mqtt
++protocol websockets
+ 
+ # When a listener is using the websockets protocol, it is possible to serve
+ # http data as well. Set http_dir to a directory which contains the files you

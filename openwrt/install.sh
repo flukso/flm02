@@ -42,6 +42,11 @@ cp patches/500-early_printk_disable.patch $INSTALL_PATH/target/linux/atheros/pat
 # patch the default OpenWRT Lua package
 cp patches/600-lua-tablecreate.patch $INSTALL_PATH/package/lua/patches
 
+# overwrite the default openssl patches to get 1.0.1p to compile
+cp patches/110-optimize-for-size.patch $INSTALL_PATH/package/openssl/patches
+cp patches/160-disable_doc_tests.patch $INSTALL_PATH/package/openssl/patches
+cp patches/190-remove_timestamp_check.patch $INSTALL_PATH/package/openssl/patches
+
 # copy over the build config settings and the files directory
 cp .config $INSTALL_PATH
 cp -r files $INSTALL_PATH
@@ -49,15 +54,10 @@ cp -r files $INSTALL_PATH
 # copy flash utility to the tools dir
 cp ../tools/ap51-flash $INSTALL_PATH/tools
 
-# patch files of the OpenWRT build system
+# patch the OpenWRT build system with 900-series patches
 cd $INSTALL_PATH
-patch -p0 < $REPO_PATH/patches/900-disable_console.patch
-patch -p0 < $REPO_PATH/patches/910-redirect-console-to-devnull.patch
-patch -p0 < $REPO_PATH/patches/915-kernel_posix_mqueue_support.patch
-patch -p0 < $REPO_PATH/patches/920-add-make-flash-option.patch
-patch -p0 < $REPO_PATH/patches/921-add-make-publish-option.patch
-patch -p0 < $REPO_PATH/patches/925-add_mac_address_to_radio0.patch
-patch -p0 < $REPO_PATH/patches/930-boot_crond_without_crontabs.patch
-patch -p0 < $REPO_PATH/patches/940-wpa_supd_hook.patch
-patch -p0 < $REPO_PATH/patches/950-ntpd_supd_hook.patch
-patch -p0 < $REPO_PATH/patches/960-remove_default_banner.patch
+
+for file in $REPO_PATH/patches/9*.patch
+do
+	patch -p0 < $file
+done

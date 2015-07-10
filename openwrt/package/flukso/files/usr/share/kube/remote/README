@@ -1,0 +1,3 @@
+This directory will contain all automatic registry downloads listed in
+/etc/config/kube under 'registry_url'. If you wish to manually add a
+kube registry, please do so in ../local

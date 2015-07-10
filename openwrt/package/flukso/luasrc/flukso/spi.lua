@@ -98,7 +98,7 @@ function encode(msg)
 	end
 
 	if msg.to == 'uart' then
-		msg.encoded = nixio.bin.hexlify(msg.body or '')
+		msg.encoded = msg.body or ''
 		return
 	end
 
@@ -168,6 +168,9 @@ function encode(msg)
 	elseif msg.parsed.cmd == 'si' and argcheck(1) then
 		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
 
+	elseif msg.parsed.cmd == 'sg' and argcheck(1) then
+		msg.encoded = msg.parsed.cmd .. numtohex(msg.parsed[1], 1)
+
 	else
 		return
 	end
@@ -224,7 +227,7 @@ function decode(msg)
 	msg.decoded = {}
 
 	if msg.received.u then
-		msg.decoded.uart = nixio.bin.unhexlify(msg.received.u)
+		msg.decoded.uart = msg.received.u
 	end
 
 	if msg.received.l then
@@ -232,13 +235,19 @@ function decode(msg)
 		msg.decoded.args = msg.received.l:sub(3, -1)
 
 		if msg.decoded.cmd == 'gd' and msg.decoded.args ~= '' then
-			for i = 1, msg.decoded.args:len() / 18 do
+			for i = 1, msg.decoded.args:len() / 22 do
 				msg.decoded[(i-1)*3 + 1] =
-					hextonum(msg.decoded.args:sub((i-1)*18 +  1, (i-1)*18 +  2))
+					hextonum(msg.decoded.args:sub((i-1)*22 +  1, (i-1)*22 +  2))
 				msg.decoded[(i-1)*3 + 2] =
-					hextonum(msg.decoded.args:sub((i-1)*18 +  3, (i-1)*18 + 10))
+					hextonum(msg.decoded.args:sub((i-1)*22 +  3, (i-1)*22 + 10))
+				local milli =
+					hextonum(msg.decoded.args:sub((i-1)*22 + 11, (i-1)*22 + 14))
+				if milli > 0 then
+					msg.decoded[(i-1)*3 + 2] = msg.decoded[(i-1)*3 + 2] +
+						milli / 1e3
+				end
 				msg.decoded[(i-1)*3 + 3] =
-					hextonum(msg.decoded.args:sub((i-1)*18 + 11, (i-1)*18 + 18))
+					hextonum(msg.decoded.args:sub((i-1)*22 + 15, (i-1)*22 + 22))
 			end
 
 			msg.decoded.delta = os.time() .. ' ' .. table.concat(msg.decoded, ' ')
@@ -310,6 +319,11 @@ function decode(msg)
 			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
 
 		elseif msg.decoded.cmd == 'gi' or msg.decoded.cmd == 'si' then
+			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
+
+			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')
+
+		elseif msg.decoded.cmd == 'sg' then
 			msg.decoded[1] = hextonum(msg.decoded.args:sub(1, 2))
 
 			msg.decoded.ctrl = msg.decoded.cmd .. ' ' .. table.concat(msg.decoded, ' ')

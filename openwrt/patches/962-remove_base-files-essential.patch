@@ -1,0 +1,12 @@
+--- package/base-files/files/lib/upgrade/keep.d/base-files-essential	2014-06-21 14:16:07.101607538 +0200
++++ /dev/null	2014-06-09 14:03:06.218698986 +0200
+@@ -1,9 +0,0 @@
+-# Essential files that will be always kept
+-/etc/hosts
+-/etc/inittab
+-/etc/group
+-/etc/passwd
+-/etc/profile
+-/etc/shells
+-/etc/sysctl.conf
+-/etc/rc.local

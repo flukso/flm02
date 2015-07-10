@@ -1,0 +1,78 @@
+--- package/base-files/files/etc/init.d/boot	2014-04-06 14:24:30.120472456 +0200
++++ package/base-files/files/etc/init.d/boot	2014-04-06 14:24:48.208472057 +0200
+@@ -61,7 +61,7 @@
+ 	mkdir -p /var/lock
+ 	mkdir -p /var/state
+ 	mkdir -p /tmp/.uci
+-	chmod 0700 /tmp/.uci
++	chmod 0777 /tmp/.uci
+ 	touch /var/log/wtmp
+ 	touch /var/log/lastlog
+ 	touch /tmp/resolv.conf.auto
+--- /dev/null	2014-04-06 10:14:45.630583985 +0200
++++ package/uci/patches/100-expand_uci_permissions.patch	2014-04-06 14:43:59.396446743 +0200
+@@ -0,0 +1,64 @@
++--- a/uci.h	2014-04-03 20:12:16.298058943 +0200
+++++ b/uci.h	2014-04-03 20:13:31.550057301 +0200
++@@ -37,8 +37,8 @@
++ 
++ #define UCI_CONFDIR "/etc/config"
++ #define UCI_SAVEDIR "/tmp/.uci"
++-#define UCI_DIRMODE 0700
++-#define UCI_FILEMODE 0600
+++#define UCI_DIRMODE 0777
+++#define UCI_FILEMODE 0666
++ 
++ enum
++ {
++--- a/util.c	2014-04-03 20:16:42.930053116 +0200
+++++ b/util.c	2014-04-03 20:18:30.178050775 +0200
++@@ -185,6 +185,7 @@
++ 	int fd, ret;
++ 	int flags = (write ? O_RDWR : O_RDONLY);
++ 	mode_t mode = UCI_FILEMODE;
+++	mode_t u;
++ 	char *name = NULL;
++ 	char *filename2 = NULL;
++ 
++@@ -206,6 +207,7 @@
++ 		UCI_THROW(ctx, UCI_ERR_NOTFOUND);
++ 	}
++ 
+++	u = umask(0);
++ 	fd = open(filename, flags, mode);
++ 	if (fd < 0)
++ 		goto error;
++@@ -226,6 +228,7 @@
++ error:
++ 	UCI_THROW(ctx, UCI_ERR_IO);
++ done:
+++	umask(u);
++ 	return file;
++ }
++ 
++--- a/delta.c	2014-04-03 20:14:19.310056256 +0200
+++++ b/delta.c	2014-04-06 10:43:40.284762055 +0200
++@@ -409,6 +409,7 @@
++ 	char *filename = NULL;
++ 	struct uci_element *e, *tmp;
++ 	struct stat statbuf;
+++	mode_t u;
++ 
++ 	UCI_HANDLE_ERR(ctx);
++ 	UCI_ASSERT(ctx, p != NULL);
++@@ -426,11 +427,9 @@
++ 		return 0;
++ 
++ 	if (stat(ctx->savedir, &statbuf) < 0) {
++-		if (stat(ctx->confdir, &statbuf) == 0) {
++-			mkdir(ctx->savedir, statbuf.st_mode);
++-		} else {
++-			mkdir(ctx->savedir, UCI_DIRMODE);
++-		}
+++		u = umask(0);
+++		mkdir(ctx->savedir, UCI_DIRMODE);
+++		umask(u);
++ 	} else if ((statbuf.st_mode & S_IFMT) != S_IFDIR) {
++ 		UCI_THROW(ctx, UCI_ERR_IO);
++ 	}

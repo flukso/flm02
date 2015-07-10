@@ -158,10 +158,10 @@ local function dispatch(wan_child, lan_child)
 				print(line)
 			end
 
-			local timestamp, data = line:match('^(%d+)%s+([%-%d%s]+)$')
+			local timestamp, data = line:match('^(%d+)%s+([%-%d%.%s]+)$')
 			timestamp = tonumber(timestamp)
 
-			for i, counter, extra in data:gmatch('(%d+)%s+([%-%d]+)%s+([%-%d]+)') do
+			for i, counter, extra in data:gmatch('(%d+)%s+([%-%d%.]+)%s+([%-%d]+)') do
 				i = tonumber(i)
 				counter = tonumber(counter)
 				extra = tonumber(extra)
@@ -170,6 +170,9 @@ local function dispatch(wan_child, lan_child)
 				local sensor_id = FLUKSO[tostring(tolua(i))]['id']
 				local sensor_class = FLUKSO[tostring(tolua(i))]['class']
 				local sensor_derive = (FLUKSO[tostring(tolua(i))]['derive'] == '1')
+				local sensor_floor = (FLUKSO[tostring(tolua(i))]['floor'] == '1')
+
+				if sensor_floor then math.floor(counter) end
 
 				-- resume both branches
 				if WAN_ENABLED then
@@ -196,7 +199,7 @@ local function wan_buffer(child)
 		local previous = {}
 
 		local topic_fmt = '/sensor/%s/counter'
-		local payload_fmt = '[%d,%d,"%s"]'
+		local payload_fmt = '[%d,%s,"%s"]'
 
 		while true do
 			if not previous[sensor_id] then
@@ -209,8 +212,7 @@ local function wan_buffer(child)
 			if timestamp > TIMESTAMP_MIN
 				and timestamp > (previous[sensor_id].timestamp or 0)
 				and counter ~= (previous[sensor_id].counter or 0) 
-				then
-
+			then
 				nixio.syslog('info', string.format('processed pulse %s:%s:%s', sensor_id, timestamp, counter))
 
 				local topic = string.format(topic_fmt, sensor_id)
@@ -218,7 +220,9 @@ local function wan_buffer(child)
 				local payload = string.format(payload_fmt, timestamp, counter, unit)
 				mqtt:publish(topic, payload, MOSQ_QOS, MOSQ_RETAIN)
 
-				measurements:add(sensor_id, timestamp, counter)
+				if math.floor(counter) == counter then --int check
+					measurements:add(sensor_id, timestamp, counter)
+				end
 				previous[sensor_id].timestamp = timestamp
 				previous[sensor_id].counter = counter
 			end

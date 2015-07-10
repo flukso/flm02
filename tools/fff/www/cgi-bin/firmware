@@ -2,7 +2,7 @@
 #
 #   firmware - an fff script to update the FLM firmware after a bootloader interrupt
 #
-#   Copyright (C) 2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+#   Copyright (C) 2015 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ echo ""
 HOME=$PWD/cgi-bin
 TOOLS=$HOME/tools
 
-NOBUF="$HOME/stdbuf -i0 -o0 -e0"
+NOBUF="stdbuf -i0 -o0 -e0"
 
 HOST="192.168.255.1"
 KERNEL=firmware/openwrt-atheros-vmlinux.lzma

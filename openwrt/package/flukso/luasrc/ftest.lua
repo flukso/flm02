@@ -4,7 +4,7 @@
     
     ftest.lua - check sensor board operation
 
-    Copyright (C) 2012 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+    Copyright (C) 2014 Bart Van Der Meerssche <bart@flukso.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,29 +21,29 @@
 
 ]]--
 
-local uci    = require 'luci.model.uci'.cursor()
-local ctrl   = require 'flukso.ctrl'.init()
+local uci = require "luci.model.uci".cursor()
+local ubus = require "ubus"
+local ub = assert(ubus.connect(), "unable to connect to ubus")
 
 -- parse and load /etc/config/flukso
-local FLUKSO = uci:get_all('flukso')
+local FLUKSO = uci:get_all("flukso")
 
 -- sensor board commands
-local GET_HW_VERSION    = 'gh'
-local GET_HW_VERSION_R  = '^gh%s+(%d+)%s+(%d+)$'
+local GET_HW_VERSION    = "gh"
+local GET_HW_VERSION_R  = "^gh%s+(%d+)%s+(%d+)$"
 
-nixio.openlog('ftest', 'pid')
+local reply = ub:call("flukso.flx", "ctrl", { cmd = GET_HW_VERSION })
 
-
-local reply = ctrl:send(GET_HW_VERSION)
-
-if reply then
-	local hw_major, hw_minor = reply:match(GET_HW_VERSION_R)
+if reply and reply.success then
+	local hw_major, hw_minor = reply.result:match(GET_HW_VERSION_R)
 
 	if hw_major ~= FLUKSO.main.hw_major or hw_minor ~= FLUKSO.main.hw_minor then
-		nixio.syslog('err', 'non-matching sensor board hardware versions')
+		print("err", "sensor board hardware versions do not match")
 		os.exit(2)
 	end
 else
-	nixio.syslog('err', 'communication with sensor board failed')
+	print("err", "communication with sensor board failed")
 	os.exit(1)
 end
+
+print("communication with sensor board succeeded")

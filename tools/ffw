@@ -79,7 +79,7 @@ print @out;
 sleep(1);
 
 # flash the rootfs partition
-@out = $t->cmd(String => "fis create -l 0x6D0000 rootfs");
+@out = $t->cmd(String => "fis create -l 0x6C0000 rootfs");
 
 print @out;
 sleep(1);

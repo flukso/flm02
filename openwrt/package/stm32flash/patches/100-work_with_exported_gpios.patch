@@ -1,0 +1,91 @@
+--- a/init.c
++++ b/init.c
+@@ -58,58 +58,34 @@ static int write_to(const char *filename, const char *value)
+ }
+ 
+ #if !defined(__linux__)
+-static int drive_gpio(int n, int level, struct gpio_list **gpio_to_release)
++static int drive_gpio(int n, int level)
+ {
+ 	fprintf(stderr, "GPIO control only available in Linux\n");
+ 	return 0;
+ }
+ #else
+-static int drive_gpio(int n, int level, struct gpio_list **gpio_to_release)
++static int drive_gpio(int n, int level)
+ {
+-	char num[16]; /* sized to carry MAX_INT */
++	char lvl[16];
+ 	char file[48]; /* sized to carry longest filename */
+ 	struct stat buf;
+-	struct gpio_list *new;
+ 	int ret;
+ 
+-	sprintf(file, "/sys/class/gpio/gpio%d/direction", n);
++	sprintf(file, "/sys/class/gpio/gpio%d/value", n);
+ 	ret = stat(file, &buf);
+ 	if (ret) {
+-		/* file miss, GPIO not exported yet */
+-		sprintf(num, "%d", n);
+-		ret = write_to("/sys/class/gpio/export", num);
+-		if (!ret)
+-			return 0;
+-		ret = stat(file, &buf);
+-		if (ret) {
+-			fprintf(stderr, "GPIO %d not available\n", n);
+-			return 0;
+-		}
+-		new = (struct gpio_list *)malloc(sizeof(struct gpio_list));
+-		if (new == NULL) {
+-			fprintf(stderr, "Out of memory\n");
+-			return 0;
+-		}
+-		new->gpio = n;
+-		new->next = *gpio_to_release;
+-		*gpio_to_release = new;
++		/* file miss, GPIO not exported */
++		fprintf(stderr, "GPIO %d not available\n", n);
++		return 0;
+ 	}
+ 
+-	return write_to(file, level ? "high" : "low");
++	sprintf(lvl, "%d", level);
++	return write_to(file, lvl);
+ }
+ #endif
+ 
+-static int release_gpio(int n)
+-{
+-	char num[16]; /* sized to carry MAX_INT */
+-
+-	sprintf(num, "%d", n);
+-	return write_to("/sys/class/gpio/unexport", num);
+-}
+-
+ static int gpio_sequence(struct port_interface *port, const char *s, size_t l)
+ {
+-	struct gpio_list *gpio_to_release = NULL, *to_free;
+ 	int ret, level, gpio;
+ 
+ 	ret = 1;
+@@ -156,18 +132,12 @@ static int gpio_sequence(struct port_interface *port, const char *s, size_t l)
+ 			}
+ 		}
+ 		if (gpio < 0)
+-			ret = (port->gpio(port, -gpio, level) == PORT_ERR_OK);
++			ret = drive_gpio(-gpio, level);
+ 		else
+-			ret = drive_gpio(gpio, level, &gpio_to_release);
++			ret = drive_gpio(gpio, level);
+ 		usleep(100000);
+ 	}
+ 
+-	while (gpio_to_release) {
+-		release_gpio(gpio_to_release->gpio);
+-		to_free = gpio_to_release;
+-		gpio_to_release = gpio_to_release->next;
+-		free(to_free);
+-	}
+ 	usleep(500000);
+ 	return ret;
+ }

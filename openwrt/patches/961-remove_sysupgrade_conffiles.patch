@@ -1,0 +1,35 @@
+--- package/base-files/Makefile	2014-06-22 08:50:31.656146030 +0200
++++ package/base-files/Makefile	2014-06-22 10:06:03.228046979 +0200
+@@ -35,19 +35,7 @@
+ endef
+ 
+ define Package/base-files/conffiles
+-/etc/hosts
+-/etc/inittab
+-/etc/group
+-/etc/passwd
+-/etc/shadow
+-/etc/profile
+-/etc/shells
+-/etc/sysctl.conf
+-/etc/rc.local
+-/etc/sysupgrade.conf
+ /etc/config/
+-/etc/dropbear/
+-/etc/crontabs/
+ $(call $(TARGET)/conffiles)
+ endef
+ 
+@@ -139,12 +127,6 @@
+ 
+ 	$(call ImageConfigOptions,$(1))
+ 	$(call Package/base-files/install-target,$(1))
+-	for conffile in $(1)/etc/config/*; do \
+-		if [ -f "$$$$conffile" ]; then \
+-			grep "$$$${conffile##$(1)}" $(1)/CONTROL/conffiles || \
+-				echo "$$$${conffile##$(1)}" >> $(1)/CONTROL/conffiles; \
+-		fi \
+-	done
+ endef
+ 
+ ifneq ($(DUMP),1)

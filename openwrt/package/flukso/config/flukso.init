@@ -43,6 +43,13 @@ load_config()
 		uci set flukso.main.max_provisioned_sensors=$i
 	done
 
+	if [ $(uci get kube.main.collect_group) == 0 ]
+	then
+		# GRP will be in the range [1..211]
+		uci set kube.main.collect_group=$(($(hexdump -v -e '1/1 "%d"' -s $((0x11020)) -n 1 /dev/mtd6) % 210 + 1))
+	fi
+
+	uci set kube.main.key=$(hexdump -v -e '1/1 "%.2x"' -s $((0x11010)) -n 16 /dev/mtd6)
 	uci commit
 
 	logger 'configuring flukso device and sensor ids at firstboot'
@@ -58,6 +65,9 @@ set_hw_version()
 	elif [ $MODEL == FLM02B ]
 	then
 		MINOR=2
+	elif [ $MODEL == FLM02W ]
+	then
+		MINOR=0    
 	fi
 
 	uci set flukso.main.hw_minor=$MINOR
@@ -66,7 +76,7 @@ set_hw_version()
 
 program_sensor_board()
 {
-	fdude 2>1 >&- <&-
+	fdude &> /tmp/fdude.out
 	logger 'flashing the sensor board at firstboot'
 }
 
@@ -80,12 +90,20 @@ test_sensor_board()
 	wget -s -q "http://$IP:$PORT/cgi-bin/test?result=$RESULT"
 }
 
-set_ttyS0_B()
+set_ttyS0_B_22()
 {
 	stty -F /dev/ttyS0 9600 min 255 time 1 \
 		-icanon -isig -iexten -echo -brkint -icrnl -ignbrk \
 		-igncr -inlcr -inpck -istrip -ixon -opost parenb \
 		inpck -parodd cs7 -cstopb
+}
+
+set_ttyS0_B_40()
+{
+	stty -F /dev/ttyS0 115200 min 255 time 1 \
+		-icanon -isig -iexten -echo -brkint -icrnl -ignbrk \
+		-igncr -inlcr -inpck -istrip -ixon -opost -parenb \
+		-inpck cs8 -cstopb
 }
 
 set_ttyS0_C()
@@ -96,16 +114,51 @@ set_ttyS0_C()
 		inpck -parodd cs7 -cstopb
 }
 
+set_ttyS0_W()
+{
+	stty -F /dev/ttyS0 115200 min 255 time 1 \
+		-icanon -isig -iexten -echo -brkint -icrnl -ignbrk \
+		-igncr -inlcr -inpck -istrip -ixon -opost -parenb \
+		-inpck cs8 -cstopb
+}
 
-start()
+start_ww()
 {
 	FIRSTBOOT=$(uci get system.@system[0].firstboot)
 
 	if [ $FIRSTBOOT -eq '1' ]
 	then
-		set_version
-		load_config
-		set_hw_version
+		uci set system.@system[0].firstboot='0'
+		uci set system.@system[0].restore='0'
+		uci commit
+	fi
+	
+	chmod 666 /sys/class/leds/globe/trigger
+	/usr/sbin/supd
+	/usr/sbin/wwd
+	/usr/sbin/tmpod -u flukso
+	set_ttyS0_W
+	echo 0 > /sys/devices/virtual/gpio/gpio4/value
+	HEARTBEAT=/usr/bin/heartbeat
+	FCHECK=/usr/bin/fcheck
+	MINUTE=$(date '+%M')
+
+	# Tell the server we've had a reset
+	$HEARTBEAT 1 >&- 2>&- <&-
+
+	# Configure cron
+	echo -e "$MINUTE * * * * $HEARTBEAT 0\n*/15 * * * * $FCHECK" | crontab -
+
+	# Making sure all committed uci changes are written to flash
+	sync
+}
+
+start_fl()
+{
+	FIRSTBOOT=$(uci get system.@system[0].firstboot)
+
+	if [ $FIRSTBOOT -eq '1' ]
+	then
 		program_sensor_board
 	fi
 
@@ -114,19 +167,30 @@ start()
 	/usr/sbin/supd
 	/usr/sbin/spid -u flukso
 	/usr/sbin/fluksod -u flukso
+	/usr/sbin/tmpod -u flukso
 
 	MODEL=$(uci get system.@system[0].model)
 
 	if [ $MODEL == FLM02B ]
 	then
-		set_ttyS0_B
+		DSMR=$(uci get flukso.main.dsmr)
+
+		if [ $DSMR == 2.2 ]
+		then
+			set_ttyS0_B_22
+		elif [ $DSMR == 4.0 ]
+		then
+			set_ttyS0_B_40
+		fi
 		/usr/sbin/parsed -u flukso
+		/usr/sbin/kubed -u flukso
 	fi
 
 	if [ $MODEL == FLM02C ]
 	then
 		set_ttyS0_C
 		/usr/sbin/parsed -u flukso
+		/usr/sbin/kubed -u flukso
 	fi
 
 
@@ -144,7 +208,7 @@ start()
 	if [ $RESTORE -eq '1' ]
 	then
 		fbackup -r
-		fsync
+		fsync -s
 
 		uci set system.@system[0].restore='0'
 		uci commit
@@ -159,9 +223,27 @@ start()
 
 	# Configure cron
 	echo -e "$MINUTE * * * * $HEARTBEAT 0\n*/15 * * * * $FCHECK" | crontab -
+
+	# Making sure all committed uci changes are written to flash
+	sync
 }
 
-stop()
+stop_ww()
+{
+	crontab -r
+
+	/usr/sbin/tmpod -k
+	rm -rf /var/run/tmpod
+
+   	/usr/sbin/wwd -k
+	rm -rf /var/run/wwd
+
+	/usr/sbin/supd -k
+	rm -rf /var/run/supd
+}
+
+
+stop_fl()
 {
 	crontab -r
 
@@ -169,9 +251,15 @@ stop()
 
 	if [ $MODEL == FLM02B -o $MODEL == FLM02C ]
 	then
+		/usr/sbin/kubed -k
+		rm -rf /var/run/kubed
+
 		/usr/sbin/parsed -k
 		rm -rf /var/run/parsed
 	fi
+
+	/usr/sbin/tmpod -k
+	rm -rf /var/run/tmpod
 
 	/usr/sbin/fluksod -k
 	rm -rf /var/run/fluksod
@@ -181,5 +269,39 @@ stop()
 
 	/usr/sbin/supd -k
 	rm -rf /var/run/supd
+}
+
+start()
+{
+	FIRSTBOOT=$(uci get system.@system[0].firstboot)
+
+	if [ $FIRSTBOOT -eq '1' ]
+	then
+		set_version
+		load_config
+		set_hw_version
+		chown -R flukso:flukso /usr/share/tmpo
+	fi
+
+	MODEL=$(uci get system.@system[0].model)
+
+	if [ $MODEL == FLM02W ]
+	then
+		start_ww
+	else
+		start_fl
+	fi
+}
+
+stop()
+{
+	MODEL=$(uci get system.@system[0].model)
+
+	if [ $MODEL == FLM02W ]
+	then
+		stop_ww
+	else
+		stop_fl
+	fi
 }
 

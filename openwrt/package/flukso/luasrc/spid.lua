@@ -2,9 +2,9 @@
 
 --[[
     
-    spid.lua - Lua part of the Flukso daemon
+    spid.lua - spidev dispatcher
 
-    Copyright (C) 2011 Bart Van Der Meerssche <bart.vandermeerssche@flukso.net>
+    Copyright (C) 2014 Bart Van Der Meerssche <bart@flukso.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,120 +21,129 @@
 
 ]]--
 
-local dbg   = require 'dbg'
-local spi   = require 'flukso.spi'
-local nixio = require 'nixio'
-nixio.fs    = require 'nixio.fs'
-local uci   = require 'luci.model.uci':cursor()
+local dbg = require "dbg"
+local spi = require "flukso.spi"
+local nixio = require "nixio"
+nixio.fs = require "nixio.fs"
+local uloop = require "uloop"
+uloop.init()
+local ubus = require "ubus"
+local ub = assert(ubus.connect(), "unable to connect to ubus")
+local uci = require "luci.model.uci":cursor()
 
 local arg = arg or {} -- needed when this code is not loaded via the interpreter
 
-local DEBUG                 = (arg[1] == '-d')
-local MODEL                 = 'FLM02X'
-uci:foreach('system', 'system', function(x) MODEL = x.model end)
+local DEBUG                 = (arg[1] == "-d")
+local MODEL                 = "FLM02X"
+uci:foreach("system", "system", function(x) MODEL = x.model end)
 
-
-local SPI_DEV               = '/dev/spidev1.0'
+local SPI_DEV               = "/dev/spidev1.0"
 local SPI_MAX_CLK_SPEED_HZ  = 1e6
-local SPI_MIN_BYTE_DELAY_US = (MODEL == 'FLM02A') and 250 or 50
-local SPI_TX_RX_DELAY_NS    = (MODEL == 'FLM02A') and 2e7 or 5e6
+local SPI_MIN_BYTE_DELAY_US = (MODEL == "FLM02A") and 250 or 50
+local SPI_TX_RX_DELAY_NS    = (MODEL == "FLM02A") and 2e7 or 5e6
 local SPI_CT_DELAY_NS       = 5e8
-local POLL_TIMEOUT_MS       = (MODEL == 'FLM02A') and 100 or 50
+local POLL_TIMEOUT_MS       = (MODEL == "FLM02A") and 100 or 50
+local DELTA_TIMEOUT_MS      = 1e3
 
-local UART_MAX_BYTES        = 256
+local GET_DELTA             = "gd"
 
-local TIMERFD_ENABLE        = 1
-local TIMERFD_SEC           = 1
-local TIMERFD_NS            = 0
+local DAEMON                = os.getenv("DAEMON") or "spid"
+local DAEMON_PATH           = os.getenv("DAEMON_PATH") or "/var/run/" .. DAEMON
 
-local GET_DELTA             = 'gd'
-
-local DAEMON                = os.getenv('DAEMON') or 'spid'
-local DAEMON_PATH           = os.getenv('DAEMON_PATH') or '/var/run/' .. DAEMON
-
-local O_RDWR_NONBLOCK       = nixio.open_flags('rdwr', 'nonblock')
-local POLLIN                = nixio.poll_flags('in')
+local O_RDWR_NONBLOCK       = nixio.open_flags("rdwr", "nonblock")
 
 
 function mkfifos(input)
-	local path = string.format('%s/%s/', DAEMON_PATH, input) 
+	local path = string.format("%s/%s/", DAEMON_PATH, input) 
 
 	nixio.fs.mkdirr(path)
---	nixio.fs.unlink(path .. 'in')  -- clean up mess from previous run
---	nixio.fs.unlink(path .. 'out') -- idem
-	nixio.fs.mkfifo(path .. 'in', '644')
-	nixio.fs.mkfifo(path .. 'out', '644')
+--	nixio.fs.unlink(path .. "in")  -- clean up mess from previous run
+--	nixio.fs.unlink(path .. "out") -- idem
+	nixio.fs.mkfifo(path .. "in", "644")
+	nixio.fs.mkfifo(path .. "out", "644")
 
-	local fdin  = nixio.open(path .. 'in', O_RDWR_NONBLOCK)
-	local fdout = nixio.open(path .. 'out', O_RDWR_NONBLOCK)
+	local fdin  = nixio.open(path .. "in", O_RDWR_NONBLOCK)
+	local fdout = nixio.open(path .. "out", O_RDWR_NONBLOCK)
 
-	return { fd      = fdin, -- need this entry for nixio.poll
-                 fdin    = fdin,
-                 fdout   = fdout,
-                 events  = POLLIN,
-                 revents = 0,
-                 line    = fdin:linesource() }
+	return {
+		fdin = fdin,
+		fdout = fdout,
+		line = fdin:linesource() }
 end
 
-local uart  = mkfifos('uart')
-local ctrl  = mkfifos('ctrl')
-local delta = mkfifos('delta')
-
-if TIMERFD_ENABLE == 1 then
-	delta.fd = nixio.timerfd(TIMERFD_SEC, TIMERFD_NS, TIMERFD_SEC, TIMERFD_NS)
-end
-
-local fds = { uart, ctrl, delta }
+local delta = mkfifos("delta")
 
 local spidev = nixio.open(SPI_DEV, O_RDWR_NONBLOCK)
 nixio.spi.setspeed(spidev, SPI_MAX_CLK_SPEED_HZ, SPI_MIN_BYTE_DELAY_US)
-spidev:lock('lock') -- blocks until it can place a write lock on the spidev device
+spidev:lock("lock") -- blocks until it can place a write lock on the spidev device
 
-while true do
-	local msg
-	local poll = nixio.poll(fds, POLL_TIMEOUT_MS)
 
-	if poll == 0 then -- poll timed out, so time to 'poll' the spi bus
-		msg = spi.new_msg('', '')
-	elseif poll > 0 then
-		if ctrl.revents == POLLIN then
-			msg = spi.new_msg('ctrl', ctrl.line())
-			msg:parse()
+local function dispatch(msg, req)
+	msg:rx(spidev)
+	local decode = msg:decode()
+	if DEBUG then dbg.vardump(msg) end
 
-		elseif delta.revents == POLLIN then
-			if TIMERFD_ENABLE == 1 then
-				delta.fd:numexp() -- reset the numexp counter
-			else
-				delta.line()
-			end
+	if decode.ctrl then
+		ub:reply(req, { success = true, result = decode.ctrl })
+	end
 
-			msg = spi.new_msg('delta', GET_DELTA)
-			msg:parse()
+	if decode.delta then
+		delta.fdout:write(decode.delta .. "\n")
+	end
 
-		elseif uart.revents == POLLIN then
-			msg = spi.new_msg('uart', uart.fdin:read(UART_MAX_BYTES))
-		end
+	if decode.uart then
+		ub:send("flukso.kube.packet.rx", { hex = decode.uart })
+	end
+end
 
+local utimer_poll
+utimer_poll = uloop.timer(
+	function()
+		utimer_poll:set(POLL_TIMEOUT_MS)
+		local msg = spi.new_msg("", "") -- poll the spi bus
+		dispatch(msg)
+	end, POLL_TIMEOUT_MS)
+
+local utimer_delta
+utimer_delta = uloop.timer(
+	function()
+		utimer_delta:set(DELTA_TIMEOUT_MS)
+		local msg = spi.new_msg("delta", GET_DELTA)
+		msg:parse()
 		msg:encode()
 		msg:tx(spidev)
 		msg:wait(SPI_TX_RX_DELAY_NS, SPI_CT_DELAY_NS)
+		dispatch(msg)	
+	end, DELTA_TIMEOUT_MS)
+
+local ub_methods = {
+	["flukso.flx"] = {
+		ctrl = {
+			function(req, rpc)
+				if type(rpc.cmd) ~= "string" then return end
+				local msg = spi.new_msg("ctrl", rpc.cmd)
+				msg:parse()
+				msg:encode()
+				msg:tx(spidev)
+				msg:wait(SPI_TX_RX_DELAY_NS, SPI_CT_DELAY_NS)
+				dispatch(msg, req)
+			end, { cmd = ubus.STRING }
+		}
+	}
+}
+
+ub:add(ub_methods)
+
+local ub_events = {
+	["flukso.kube.packet.tx"] = function(pkt)
+		if type(pkt.hex) ~= "string" then return end
+		local msg = spi.new_msg("uart", pkt.hex)
+		msg:encode() --TODO do we still need an encoding step?
+		msg:tx(spidev)
+		msg:wait(SPI_TX_RX_DELAY_NS, SPI_CT_DELAY_NS)
+		dispatch(msg)
 	end
+}
 
-	if poll >= 0 then
-		msg:rx(spidev)
-		local dispatch = msg:decode()
-		if DEBUG then dbg.vardump(msg) end
-
-		if dispatch.ctrl then
-			ctrl.fdout:write(dispatch.ctrl .. '\n')
-		end
-
-		if dispatch.delta then
-			delta.fdout:write(dispatch.delta .. '\n')
-		end
-
-		if dispatch.uart then
-			uart.fdout:write(dispatch.uart)
-		end
-	end
-end
+ub:listen(ub_events)
+uloop:run()
