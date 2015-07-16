@@ -151,7 +151,7 @@ local config = {
 			for section, params in pairs(itbl) do
 				if tonumber(section)
 				and params.enable
-				and params.enable == "1"
+				and params.enable == 1
 				then
 					otbl[params.id] = params
 					params.enable = nil
