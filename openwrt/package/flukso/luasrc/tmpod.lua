@@ -126,14 +126,6 @@ local config = {
 				params[".type"] = nil
 				params[".anonymous"] = nil
 
-				if tonumber(section) -- sensor entries only
-				and params.enable
-				and params.enable == "1"
-				then
-					if not params.data_type then params.data_type = "counter" end
-					if not params.rid then params.rid = 0 end
-				end
-
 				for option, value in pairs(params) do
 					params[option] = tonumber(value) or value
 					if type(value) == "table" then -- we're dealing with a list
@@ -141,6 +133,14 @@ local config = {
 							value[i] = tonumber(value[i]) or value[i]
 						end
 					end
+				end
+
+				if tonumber(section) -- sensor entries only
+				and params.enable
+				and params.enable == 1
+				then
+					if not params.data_type then params.data_type = "counter" end
+					if not params.rid then params.rid = 0 end
 				end
 			end
 			return tbl
