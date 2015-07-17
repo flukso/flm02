@@ -42,6 +42,11 @@ cp patches/500-early_printk_disable.patch $INSTALL_PATH/target/linux/atheros/pat
 # patch the default OpenWRT Lua package
 cp patches/600-lua-tablecreate.patch $INSTALL_PATH/package/lua/patches
 
+# overwrite the default openssl patches to get 1.0.1p to compile
+cp patches/110-optimize-for-size.patch $INSTALL_PATH/package/openssl/patches
+cp patches/160-disable_doc_tests.patch $INSTALL_PATH/package/openssl/patches
+cp patches/190-remove_timestamp_check.patch $INSTALL_PATH/package/openssl/patches
+
 # copy over the build config settings and the files directory
 cp .config $INSTALL_PATH
 cp -r files $INSTALL_PATH

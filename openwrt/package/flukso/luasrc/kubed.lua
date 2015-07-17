@@ -832,7 +832,9 @@ ut = uloop.timer(function()
 		event:process()
 		-- service the mosquitto loop
 		if not mqtt:loop(MOSQ_TIMEOUT, MOSQ_MAX_PKTS) then
-			mqtt:reconnect()
+			if mqtt:reconnect() then
+				event:process("e_init")
+			end
 		end
 	end, ULOOP_TIMEOUT_MS)
 
