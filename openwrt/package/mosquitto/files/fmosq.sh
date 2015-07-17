@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (C) 2014 bart@flukso.net
+# Copyright (C) 2015 bart@flukso.net
 # Add custom flukso.net bridge parameters to /etc/mosquitto/mosquitto.conf defaults
 
 NOW=$(date)
@@ -22,12 +22,15 @@ echo "connection flukso" >> $CONFFILE
 echo "address $ADDRESS:$PORT" >> $CONFFILE
 echo "username $USERNAME" >> $CONFFILE
 echo "password $PASSWORD" >> $CONFFILE
+echo "local_clientid $ADDRESS" >> $CONFFILE
+echo "bridge_attempt_unsubscribe false" >> $CONFFILE
 echo "bridge_cafile $CACERT" >> $CONFFILE
 echo "start_type automatic" >> $CONFFILE
 echo "try_private false" >> $CONFFILE
 echo "cleansession true" >> $CONFFILE
 echo "keepalive_interval $KEEPALIVE" >> $CONFFILE
 echo "restart_timeout $TIMEOUT" >> $CONFFILE
+echo 'topic /device/+/config/sensor out 0 "" ""' >> $CONFFILE
+echo 'topic /device/+/config/kube out 0 "" ""' >> $CONFFILE
 echo 'topic /device/+/tmpo/sync out 0 "" ""' >> $CONFFILE
 echo 'topic /sensor/+/tmpo/# out 0 "" ""' >> $CONFFILE
-

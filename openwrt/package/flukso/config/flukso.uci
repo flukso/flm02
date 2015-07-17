@@ -15,6 +15,7 @@ config settings main
 	option reset_counters 0
 	option phase 1
 	option dsmr 4.0
+	option led_mode 256
 
 config settings daemon
 	option logmask info

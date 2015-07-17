@@ -94,6 +94,8 @@ local MOSQ_QOS1 = 1
 local MOSQ_RETAIN = true
 local MOSQ_ERROR = "MQTT error: %s"
 
+local MOSQ_TOPIC_SENSOR_CONFIG = string.format("/device/%s/config/sensor", DEVICE)
+
 -- increase process niceness
 nixio.nice(TMPO_NICE)
 
@@ -117,39 +119,54 @@ local config = {
 	sensor = nil,
 
 	load = function(self)
-		local function clean(itbl)
-			local otbl = { }
-			for sidx, params in pairs(itbl) do
-				if tonumber(sidx) -- only interested in sensor entries
-				and params.enable
-				and params.enable == "1"
-				then
-					otbl[params.id] = params
-					params[".index"] = nil
-					params[".name"] = nil
-					params[".type"] = nil
-					params[".anonymous"] = nil
-					params.enable = nil
-					params.counter = nil
-					if not params.data_type then params.data_type = "counter" end
-					if not params.rid then params.rid = 0 end
+		local function clean(tbl)
+			for section, params in pairs(tbl) do
+				params[".index"] = nil
+				params[".name"] = nil
+				params[".type"] = nil
+				params[".anonymous"] = nil
 
-					for option, value in pairs(params) do
-						params[option] = tonumber(value) or value
-						if type(value) == "table" then -- dealing with a list
-							for i in pairs(value) do
-								value[i] = tonumber(value[i]) or value[i]
-							end 
-						else
-							params[option] = tonumber(value) or value
+				for option, value in pairs(params) do
+					params[option] = tonumber(value) or value
+					if type(value) == "table" then -- we're dealing with a list
+						for i in pairs(value) do
+							value[i] = tonumber(value[i]) or value[i]
 						end
 					end
+				end
+
+				if tonumber(section) -- sensor entries only
+				and params.enable
+				and params.enable == 1
+				then
+					if not params.data_type then params.data_type = "counter" end
+					if not params.rid then params.rid = 0 end
+				end
+			end
+			return tbl
+		end
+
+		local function purge(itbl)
+			local otbl = { }
+			for section, params in pairs(itbl) do
+				if tonumber(section)
+				and params.enable
+				and params.enable == 1
+				then
+					otbl[params.id] = params
+					params.enable = nil
+					params.counter = nil
 				end
 			end
 			return otbl
 		end
 
-		self.sensor = clean(uci:get_all("flukso"))
+		uci:load("flukso")
+		local sensor = clean(uci:get_all("flukso"))
+		local jsensor = luci.json.encode(sensor)
+		mqtt:publish(MOSQ_TOPIC_SENSOR_CONFIG, jsensor, MOSQ_QOS0, MOSQ_RETAIN)
+		self.sensor = purge(sensor)
+
 		if DEBUG.config then dbg.vardump(self.sensor) end
 	end
 }
@@ -611,7 +628,7 @@ local tmpo = {
 	-- mqtt connection servicing
 	misc = function(self)
 		merror(mqtt:misc())
-		merror(mqtt:publish(TMPO_TOPIC_MQTT_CHECK, "", MOSQ_QOS0, not MOSQ_RETAIN))
+		-- merror(mqtt:publish(TMPO_TOPIC_MQTT_CHECK, "", MOSQ_QOS0, not MOSQ_RETAIN))
 	end
 }
 
