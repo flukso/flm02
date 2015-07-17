@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=flm-ui
-PKG_VERSION:=2015-06-27
+PKG_VERSION:=2015-07-17
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
@@ -48,6 +48,7 @@ define Package/flm-ui/install
 	$(INSTALL_DIR) $(1)/www/styles
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/app/styles/{bootstrap,main}.css $(1)/www/styles
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/app/components/angular-ui-grid/ui-grid.min.css $(1)/www/styles
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/app/components/angular-ui-grid/font/* $(1)/www/styles
 	$(INSTALL_DIR) $(1)/www/views
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/app/views/{main,sensor,wifi,status,services,syslog,mqtt,kube}.html \
 		$(1)/www/views
