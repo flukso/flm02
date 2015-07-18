@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=flukso
-PKG_VERSION:=2.4.7
+PKG_VERSION:=2.4.8
 PKG_RELEASE:=beta
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
@@ -69,10 +69,10 @@ define Package/flukso/install
 
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/luad $(1)/usr/sbin/
-	for link in fluksod spid parsed kubed tmpod wwd supd; do \
+	for link in fluksod spid parsed kubed queryd tmpod wwd supd; do \
 		$(LN) /usr/sbin/luad $(1)/usr/sbin/"$$$$link"; \
 	done
-	$(INSTALL_BIN) ./luasrc/{fluksod,spid,parsed,kubed,tmpod,wwd,supd}.lua $(1)/usr/sbin/
+	$(INSTALL_BIN) ./luasrc/{fluksod,spid,parsed,kubed,queryd,tmpod,wwd,supd}.lua $(1)/usr/sbin/
 
 	$(INSTALL_DIR) $(1)/usr/share/tmpo/sensor
 	chmod a+w $(1)/usr/share/tmpo/sensor
