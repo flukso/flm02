@@ -215,6 +215,18 @@ local ntp = {
 	end
 }
 
+local mosq = {
+	check = function(self)
+		local ps = luci.sys.process.list()
+		for k, proc in pairs(ps) do
+			if proc.COMMAND:find('mosquitto') then
+				return
+			end
+		end
+		os.execute('/etc/init.d/mosquitto start')
+	end
+}
+
 wifi:init()
 ntp:init()
 
@@ -250,6 +262,7 @@ while true do
 			timer.fd:numexp() -- reset the numexp counter
 			wifi:check()
 			ntp:check()
+			mosq:check()
 		end
 	end
 end

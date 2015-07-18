@@ -136,14 +136,6 @@ local config = {
 				params[".type"] = nil
 				params[".anonymous"] = nil
 
-				if tonumber(section) -- sensor entries only
-				and params.enable
-				and params.enable == "1"
-				then
-					if not params.data_type then params.data_type = "counter" end
-					if not params.rid then params.rid = 0 end
-				end
-
 				for option, value in pairs(params) do
 					params[option] = tonumber(value) or value
 					if type(value) == "table" then -- we're dealing with a list
@@ -151,6 +143,14 @@ local config = {
 							value[i] = tonumber(value[i]) or value[i]
 						end
 					end
+				end
+
+				if tonumber(section) -- sensor entries only
+				and params.enable
+				and params.enable == 1
+				then
+					if not params.data_type then params.data_type = "counter" end
+					if not params.rid then params.rid = 0 end
 				end
 			end
 			return tbl
@@ -161,7 +161,7 @@ local config = {
 			for section, params in pairs(itbl) do
 				if tonumber(section)
 				and params.enable
-				and params.enable == "1"
+				and params.enable == 1
 				then
 					otbl[params.id] = params
 					params.enable = nil
@@ -638,7 +638,7 @@ local tmpo = {
 	-- mqtt connection servicing
 	misc = function(self)
 		merror(mqtt:misc())
-		merror(mqtt:publish(TMPO_TOPIC_MQTT_CHECK, "", MOSQ_QOS0, not MOSQ_RETAIN))
+		-- merror(mqtt:publish(TMPO_TOPIC_MQTT_CHECK, "", MOSQ_QOS0, not MOSQ_RETAIN))
 	end
 }
 
