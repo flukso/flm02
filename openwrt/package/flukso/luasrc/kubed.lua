@@ -51,6 +51,7 @@ local O_RDONLY = nixio.open_flags("rdonly")
 local ULOOP_TIMEOUT_MS = 1e3
 local KREGCHECK = "/usr/bin/kregcheck"
 local KREGCHECK_TIMEOUT_MS = 36e5 --1h
+local GC_TIMEOUT_MS = 3e5 -- 5min
 local TIMESTAMP_MIN = 1234567890
 
 -- mosquitto client params
@@ -843,5 +844,11 @@ ut_kregcheck = uloop.timer(function()
 		ut_kregcheck:set(KREGCHECK_TIMEOUT_MS)
 		event:process("e_kregcheck")
 	end, KREGCHECK_TIMEOUT_MS)
+
+local ut_gc
+ut_gc = uloop.timer(function()
+		ut_gc:set(GC_TIMEOUT_MS)
+		collectgarbage()
+	end, GC_TIMEOUT_MS)
 
 uloop:run()
