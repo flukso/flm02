@@ -1,0 +1,57 @@
+{
+"19218" : {
+	"description": "FluksoKube FLK01B",
+	"controller": "LPC812",
+	"radio": "RFM69CW",
+	"1" : {
+		"decode": {
+			"type_bits": 0,
+			"9": "< [4| humidity:u12 pressure:u20] light:u2 [3| error:u7 battery:u3 temperature:u14]",
+			"4": "< movement:u4",
+			"2": "< vibration:u2",
+			"sensors": {
+				"error": {
+					"unit": "",
+					"data_type": "gauge"
+				},
+				"battery": {
+					"scale": "math.floor(26.93 * (x + 8 + 0.5)^(-0.985) * 10 + 0.5) / 10", 
+					"unit": "V",
+					"data_type": "gauge"
+				},
+				"temperature": {
+					"scale": "math.floor((-46.85 + 175.72 * x / 16384) * 100 + 0.5) / 100",
+					"unit": "°C",
+					"data_type": "gauge"
+				},
+				"humidity": {
+					"scale": "math.floor((-6 + 125 * x / 4096) * 10 + 0.5) / 10",
+					"unit": "%",
+					"data_type": "gauge"
+				},
+				"pressure": {
+					"scale": "x * 0.25",
+					"unit": "Pa",
+					"data_type": "gauge"
+				},
+				"light": {
+					"scale": "x * 0.25",
+					"unit": "lx",
+					"data_type": "gauge"
+				},
+				"movement": {
+					"unit": "",
+					"data_type": "counter"
+				},
+				"vibration": {
+					"unit": "",
+					"data_type": "counter"
+				},
+				"proximity": {
+					"data_type": "counter"
+				}
+			}
+		}
+	}
+}
+}
