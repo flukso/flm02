@@ -53,7 +53,7 @@ local SLEEP_S, SLEEP_NS = 1, 0
 local TIMESTAMP_MIN = 1234567890
 
 local WW_STATISTICS_INFO_INTERVAL_S = 5
-local WW_FLASH_CMD = "stm32flash -v -b 115200 -i 3,0,-0:-3,0,-0 -g 0x0 -w %s %s"
+local WW_FLASH_CMD = "stm32flash -v -b 115200 -i 3,0,-0:-3,0,-0 -R -w %s %s"
 local WW_UPGRADE_PATH = "/tmp/ww.hex"
 
 -- mosquitto client params
