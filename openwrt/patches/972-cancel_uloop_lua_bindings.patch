@@ -1,0 +1,27 @@
+--- /dev/null	2015-12-13 15:01:30.803428360 +0100
++++ package/libubox/patches/200-cancel_uloop_lua_bindings.patch	2015-12-17 14:45:58.734004254 +0100
+@@ -0,0 +1,24 @@
++--- a/lua/uloop.c
+++++ b/lua/uloop.c
++@@ -291,12 +291,21 @@
++ 	return 1;
++ }
++ 
+++static int ul_end(lua_State *L)
+++{
+++	uloop_end();
+++	lua_pushboolean(L, 1);
+++
+++	return 1;
+++}
+++
++ static luaL_reg uloop_func[] = {
++ 	{"init", ul_init},
++ 	{"run", ul_run},
++ 	{"fd", ul_fd},
++ 	{"timer", ul_timer},
++ 	{"process", ul_process},
+++	{"cancel", ul_end},
++ 	{NULL, NULL},
++ };
++ 
