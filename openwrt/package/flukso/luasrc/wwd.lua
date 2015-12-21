@@ -48,13 +48,20 @@ local DEBUG = {
 
 local DEVICE = uci:get_first("system", "system", "device")
 local ULOOP_TIMEOUT_MS = 1e3
+local O_RDONLY = nixio.open_flags("rdonly")
 local O_RDWR_NONBLOCK = nixio.open_flags("rdwr", "nonblock")
 local SLEEP_S, SLEEP_NS = 1, 0
 local TIMESTAMP_MIN = 1234567890
 
 local WW_STATISTICS_INFO_INTERVAL_S = 5
-local WW_FLASH_CMD = "stm32flash -v -b 115200 -i 3,0,-0:-3,0,-0 -g 0x0 -w %s %s"
+local WW_STM32_CMD_HEAD = "stm32flash -b 115200 -i 3,0,-0:-3,0,-0 "
+local WW_READ_UNPROTECT_CMD = WW_STM32_CMD_HEAD .. "-k %s > %s"
+local WW_READ_PROTECT_CMD = WW_STM32_CMD_HEAD .. "-j %s >> %s"
+local WW_FLASH_CMD = WW_STM32_CMD_HEAD .. "-R -v -w %s %s >> %s"
+local WW_RESET_CMD = WW_STM32_CMD_HEAD .. "-R %s >> %s"
+local WW_TTY_CONFIG_CMD = "stty -F %s 115200 min 255 time 1"
 local WW_UPGRADE_PATH = "/tmp/ww.hex"
+local WW_UPGRADE_TRACE_PATH = "/tmp/ww.trace"
 
 -- mosquitto client params
 local MOSQ_ID = DAEMON
@@ -69,6 +76,7 @@ local MOSQ_QOS1 = 1
 local MOSQ_RETAIN = true
 local MOSQ_TOPIC_SENSOR = "/sensor/%s/%s"
 local MOSQ_TOPIC_WW_UPGRADE = "/device/%s/ww/upgrade"
+local MOSQ_TOPIC_WW_UPGRADE_TRACE = "/device/%s/ww/upgrade/trace"
 
 local function merror(success, errno, err)
 	--TODO explicitely cancel the uloop on error
@@ -551,6 +559,16 @@ local ww = {
 		local topic = string.format(UART_RX_ELEMENT[elmnt.t].topic, DEVICE)
 		mqtt:publish(topic, luci.json.encode(data), MOSQ_QOS0, MOSQ_RETAIN)
 	end,
+
+	publish_upgrade_trace = function(self)
+		local fd = nixio.open(WW_UPGRADE_TRACE_PATH, O_RDONLY)
+        if fd then
+            local payload = fd:readall()
+            fd:close()
+			local topic = MOSQ_TOPIC_WW_UPGRADE_TRACE:format(DEVICE)
+			mqtt:publish(topic, payload, MOSQ_QOS0, MOSQ_RETAIN)
+		end
+	end
 }
 
 -- define gettime function for rFSM
@@ -659,8 +677,16 @@ local root = state {
 			assert(type(s_ctx.path) == "string", "stm32 bin path error")
 			ub:call("flukso.tmpo", "flush", { })
 			uart:close()
-			os.execute(WW_FLASH_CMD:format(s_ctx.path, UART_DEV))
-			uart:open()
+			os.execute(WW_READ_UNPROTECT_CMD:format(UART_DEV, WW_UPGRADE_TRACE_PATH))
+			os.execute(WW_FLASH_CMD:format(s_ctx.path, UART_DEV, WW_UPGRADE_TRACE_PATH))
+			os.execute(WW_READ_PROTECT_CMD:format(UART_DEV, WW_UPGRADE_TRACE_PATH))
+			os.execute(WW_RESET_CMD:format(UART_DEV, WW_UPGRADE_TRACE_PATH))
+			os.execute(WW_TTY_CONFIG_CMD:format(UART_DEV))
+			nixio.fs.remove(s_ctx.path)
+			ww:publish_upgrade_trace()
+			-- uloop doesn't listen on the uart fd once it has been closed
+			-- let luad take care of relaunching the wwd
+			uloop:cancel()
 		end
 	},
 
@@ -1036,3 +1062,5 @@ local ufd = uloop.fd(uart:fileno(), uloop.READ, function(events)
 	end)
 
 uloop:run()
+mqtt:disconnect()
+ub:close()
