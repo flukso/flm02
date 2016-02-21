@@ -1,0 +1,38 @@
+diff --git a/main.c b/main.c
+index 5105d21..93b708e 100644
+--- a/main.c
++++ b/main.c
+@@ -115,13 +115,13 @@ static uint32_t flash_page_to_addr(int page)
+ 
+ int main(int argc, char* argv[]) {
+ 	struct port_interface *port = NULL;
++	int i;
+ 	int ret = 1;
+ 	stm32_err_t s_err;
+ 	parser_err_t perr;
+ 	FILE *diag = stdout;
+ 
+-	fprintf(diag, "stm32flash " VERSION "\n\n");
+-	fprintf(diag, "http://stm32flash.googlecode.com/\n\n");
++	fprintf(diag, "stm32flash " VERSION " with Flukso patches\n\n");
+ 	if (parse_options(argc, argv) != 0)
+ 		goto close;
+ 
+@@ -181,9 +181,14 @@ int main(int argc, char* argv[]) {
+ 	}
+ 
+ 	fprintf(diag, "Interface %s: %s\n", port->name, port->get_cfg_str(port));
+-	if (init_flag && init_bl_entry(port, gpio_seq) == 0)
+-		goto close;
+-	stm = stm32_init(port, init_flag);
++
++	for (i = 0; i < retry; i++) {
++		if (init_flag && init_bl_entry(port, gpio_seq) == 0)
++			goto close;
++		stm = stm32_init(port, init_flag);
++		if (stm)
++			break;
++	}
+ 	if (!stm)
+ 		goto close;
+ 

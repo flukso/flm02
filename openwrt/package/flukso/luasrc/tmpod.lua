@@ -789,7 +789,10 @@ ut = uloop.timer(function()
 		end
 		if tmpo.cocompact then
 			tmpo:gc20()
-			if not tmpo:cocompact() then tmpo.cocompact = nil end
+			if not tmpo:cocompact() then
+				tmpo.cocompact = nil
+				collectgarbage()
+			end
 		end
 
 		ut:set(ULOOP_TIMEOUT_MS)
