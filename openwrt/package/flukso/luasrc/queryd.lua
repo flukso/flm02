@@ -110,8 +110,8 @@ mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
 			local str = string.format("publishing topic:%s payload:%s", topic, payload)
 			print(str)
 		end
-		-- query is published exactly once - QoS = 2
-		mqtt:publish(topic, payload, MOSQ_QOS2, not MOSQ_RETAIN)
+		-- query is published at least once - QoS = 1
+		mqtt:publish(topic, payload, MOSQ_QOS1, not MOSQ_RETAIN)
 		source:close()
 	end
 
