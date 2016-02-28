@@ -137,6 +137,7 @@ start_ww()
 	/usr/sbin/supd
 	/usr/sbin/wwd
 	/usr/sbin/tmpod -u flukso
+	/usr/sbin/queryd -u flukso
 	set_ttyS0_W
 	echo 0 > /sys/devices/virtual/gpio/gpio4/value
 	HEARTBEAT=/usr/bin/heartbeat
@@ -168,6 +169,7 @@ start_fl()
 	/usr/sbin/spid -u flukso
 	/usr/sbin/fluksod -u flukso
 	/usr/sbin/tmpod -u flukso
+        /usr/sbin/queryd -u flukso
 
 	MODEL=$(uci get system.@system[0].model)
 
@@ -235,6 +237,9 @@ stop_ww()
 	/usr/sbin/tmpod -k
 	rm -rf /var/run/tmpod
 
+	/usr/sbin/queryd -k
+	rm -rf /var/run/queryd
+
    	/usr/sbin/wwd -k
 	rm -rf /var/run/wwd
 
@@ -260,6 +265,9 @@ stop_fl()
 
 	/usr/sbin/tmpod -k
 	rm -rf /var/run/tmpod
+
+	/usr/sbin/queryd -k
+	rm -rf /var/run/queryd
 
 	/usr/sbin/fluksod -k
 	rm -rf /var/run/fluksod
