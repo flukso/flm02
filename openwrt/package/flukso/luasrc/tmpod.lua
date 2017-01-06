@@ -40,7 +40,8 @@ local DEBUG = {
 	config = false,
 	block8 = false,
 	compact = false,
-	sync = false
+	sync = false,
+	query = false
 }
 
 local DAEMON = os.getenv("DAEMON") or "tmpod"
@@ -76,6 +77,12 @@ local TMPO_TOPIC_SYNC_PUB = "/device/%s/tmpo/sync"
 local TMPO_TOPIC_SENSOR_SUB = "/sensor/+/+"
 local TMPO_TOPIC_SENSOR_PUB = "/sensor/%s/tmpo/%d/%d/%d/gz"
 -- /sensor/[sid]/tmpo/[rid]/[lvl]/[bid]/gz
+
+local TMPO_REGEX_QUERY = "^/query/(%x+)/tmpo$"
+local TMPO_TOPIC_QUERY_PUB = "/sensor/%s/query/%s/%s" -- provide queried data as payload
+local TMPO_TOPIC_QUERY_SUB = "/query/+/tmpo" -- get sensor to query with payload interval
+local TMPO_FMT_QUERY = "time:%d sid:%s rid:%d lvl:%2d bid:%d"
+
 local TMPO_TOPIC_MQTT_CHECK = string.format("/daemon/%s/check", DAEMON)
 local TMPO_GC20_THRESHOLD = 100 -- 100 free 4kB blocks out of +-1000 in jffs2 = 90% full
 local TMPO_GZCHECK_EXEC_FMT = "gzip -trS '' %s 2>&1"
@@ -91,6 +98,7 @@ local MOSQ_TIMEOUT = 0 -- return instantly from select call
 local MOSQ_MAX_PKTS = 1 -- packets
 local MOSQ_QOS0 = 0
 local MOSQ_QOS1 = 1
+local MOSQ_QOS2 = 2
 local MOSQ_RETAIN = true
 local MOSQ_ERROR = "MQTT error: %s"
 
@@ -114,6 +122,8 @@ if not mqtt:connect(MOSQ_HOST, MOSQ_PORT, MOSQ_KEEPALIVE) then
 end
 merror(mqtt:subscribe(TMPO_TOPIC_SYNC_SUB:format(DEVICE), MOSQ_QOS0))
 merror(mqtt:subscribe(TMPO_TOPIC_SENSOR_SUB, MOSQ_QOS0))
+-- subscribe to query topic
+merror(mqtt:subscribe(TMPO_TOPIC_QUERY_SUB, MOSQ_QOS0))
 
 local config = {
 	sensor = nil,
@@ -633,6 +643,37 @@ local tmpo = {
 }
 
 mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
+	local function sdir(path)
+		local files = { }
+		for file in nixio.fs.dir(path) or function() end do --dummy iterator
+			files[#files + 1] = tonumber(file) or file
+		end
+		table.sort(files)
+		return files
+	end
+
+        local function dprint(fmt, ...)
+                if DEBUG.query then
+                        print(fmt:format(
+                                os.time(),
+                        ...))
+                end
+        end
+
+        local function publish(sid, rid, lvl, bid, from, to)
+                dprint(TMPO_FMT_QUERY, sid, rid, lvl, bid)
+                local path = TMPO_PATH_TPL:format(sid, rid, lvl, bid)
+                local source = assert(io.open(path, "r"))
+                local payload = source:read("*all")
+                local topic = TMPO_TOPIC_QUERY_PUB:format(sid, from, to)
+                if DEBUG.query then
+			local str = string.format("publishing topic:%s payload:%s", topic, payload)
+			print(str)
+                end
+                merror(mqtt:publish(topic, payload, MOSQ_QOS2, not MOSQ_RETAIN))
+                source:close()
+        end
+
 	local function sensor(sid, dtype)
 		local sparams = config.sensor[sid]
 		if not (sid and sparams and dtype == sparams.data_type) then return end
@@ -648,9 +689,57 @@ mqtt:set_callback(mosq.ON_MESSAGE, function(mid, topic, jpayload, qos, retain)
 		tmpo:sync1(payload)
 	end
 
+        -- publish the stored files on a query request
+        local function query(sid)
+        	if not sid then return end
+                -- payload contains query time interval [fromtimestamp, totimestamp]
+                local payload = luci.json.decode(jpayload)
+                if payload == nil then return end
+                local lastrid = 0
+                local lastlvl = 0
+                local lastbid = 0
+                local published = false
+                local from = payload[1]
+                local to = payload[2]
+                if DEBUG.query then
+			local str = string.format("entered sensor:%s from:%s to:%s", sid, from, to)
+			print(str)
+                end
+                for rid in nixio.fs.dir(TMPO_BASE_PATH .. sid) do
+                        for _, lvl in ipairs(TMPO_LVLS_REVERSE) do -- storage has to be queried from past to now
+                                for _, bid in ipairs(sdir(TMPO_PATH_TPL:format(sid, rid, lvl, ""))) do
+                                        -- detect store with containing or overlapping values
+                                        if ((from <= bid) and (bid <= to)) then
+                                                publish(sid, rid, lvl, bid, from, to)
+                                                published = true
+                                        end
+                                        if ((lastbid ~= 0) and (lastbid < from) and (bid > from)) then
+                                                publish(sid, rid, lastlvl, lastbid, from, to)
+                                                published = true
+                                        end
+                                        -- recognize overlaps in different compression stages
+                                        lastrid = rid
+                                        lastlvl = lvl
+                                        lastbid = bid
+					if DEBUG.query then
+						str = string.format("processed file /%s/%s/%s", rid, lvl, bid)
+						print(str)
+					end                                        
+                                end
+                        end
+                end
+                -- send last stored file in case there were no further readings, e.g. on solar
+		if ((published == false) and (lastbid < from)) then
+			publish(sid, lastrid, lastlvl, lastbid, from, to)
+		end
+                return true
+        end
+
 	if retain then return end
 	if not sensor(topic:match(TMPO_REGEX_SENSOR)) then
-		sync(topic:match(TMPO_REGEX_SYNC))
+        	if not query(topic:match(TMPO_REGEX_QUERY)) then
+            		sync(topic:match(TMPO_REGEX_SYNC))
+        	end
 	end
 end)
 
